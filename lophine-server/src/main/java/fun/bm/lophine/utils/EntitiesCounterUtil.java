@@ -205,7 +205,7 @@ public class EntitiesCounterUtil {
 
                     // Paper start - Optional per player mob spawns
                     if (countMobs) {
-                        chunk.level.getChunkSource().chunkMap.updatePlayerMobTypeMap(entity);
+                        ((ServerLevel) chunk.getLevel()).getChunkSource().chunkMap.updatePlayerMobTypeMap(entity);
                     }
                     // Paper end - Optional per player mob spawns
                 });
