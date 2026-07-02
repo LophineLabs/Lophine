@@ -5,10 +5,10 @@ Subject: [PATCH] Old leader zombie health logic
 
 
 diff --git a/net/minecraft/world/entity/monster/zombie/Zombie.java b/net/minecraft/world/entity/monster/zombie/Zombie.java
-index 2734ffc103ee4760d3521609fdd090ab99df675b..a99683d341f52139003dfa5190ee118d5b06f59f 100644
+index c913cd25cf7a0eb625bc02845bf4af4f7c1a96ab..446559f235df246e7235d2cf507cdbef82349cc4 100644
 --- a/net/minecraft/world/entity/monster/zombie/Zombie.java
 +++ b/net/minecraft/world/entity/monster/zombie/Zombie.java
-@@ -597,7 +597,7 @@ public class Zombie extends Monster {
+@@ -596,7 +596,7 @@ public class Zombie extends Monster {
                  .addOrReplacePermanentModifier(
                      new AttributeModifier(LEADER_ZOMBIE_BONUS_ID, this.random.nextDouble() * 3.0 + 1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                  );

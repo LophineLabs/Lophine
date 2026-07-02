@@ -5,10 +5,10 @@ Subject: [PATCH] Restore vanilla ender pearl loading
 
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 99e61bbe15430a72096489777a4e417ec5125337..3b76045aa0b4cd97f7b104921a7fa8e29234e1d3 100644
+index 030fcda892780afb931615d948905d594872cf87..b567567379a66e96f5392ea2c735a402cb58b352 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
-@@ -272,7 +272,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -277,7 +277,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      private @Nullable BlockPos raidOmenPosition;
      private Vec3 lastKnownClientMovement = Vec3.ZERO;
      private Input lastClientInput = Input.EMPTY;
@@ -17,7 +17,7 @@ index 99e61bbe15430a72096489777a4e417ec5125337..3b76045aa0b4cd97f7b104921a7fa8e2
      private long timeEntitySatOnShoulder;
      private CompoundTag shoulderEntityLeft = new CompoundTag();
      private CompoundTag shoulderEntityRight = new CompoundTag();
-@@ -796,18 +796,20 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -785,16 +785,17 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
      private void saveEnderPearls(final ValueOutput playerOutput) {
          if (!this.enderPearls.isEmpty()) {
@@ -42,11 +42,16 @@ index 99e61bbe15430a72096489777a4e417ec5125337..3b76045aa0b4cd97f7b104921a7fa8e2
 +                    pearlsOutput.add(pearlTag);
                  }
              }
+         }
+@@ -1185,6 +1186,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+                         );
+                 }
+             }
 +            // Lophine end - restore vanilla ender pearl loading on Folia
          }
      }
  
-@@ -3598,11 +3600,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3568,11 +3570,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      }
  
      public void registerEnderPearl(final ThrownEnderpearl enderPearl) {
@@ -61,10 +66,10 @@ index 99e61bbe15430a72096489777a4e417ec5125337..3b76045aa0b4cd97f7b104921a7fa8e2
  
      public Set<ThrownEnderpearl> getEnderPearls() {
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 64779d7b28e61c91897db5226158d65c32bfc835..f665ff0bc9068aaca6d6719ef6f7d87592f39816 100644
+index 36b8cf8c466c9cd4369ceab49e3ac84f224142b8..808e144f4621daf98d1710dac103f970073b16fc 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -752,11 +752,13 @@ public abstract class PlayerList {
+@@ -798,11 +798,13 @@ public abstract class PlayerList {
          player.unRide();
  
          for (ThrownEnderpearl enderpearl : player.getEnderPearls()) {
@@ -84,10 +89,10 @@ index 64779d7b28e61c91897db5226158d65c32bfc835..f665ff0bc9068aaca6d6719ef6f7d875
  
          level.removePlayerImmediately(player, Entity.RemovalReason.UNLOADED_WITH_PLAYER);
 diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
-index dc135f1a5d1ec33195e9ac897aa7acee4cbd13c6..bc9ca4680c18f28b97c4d1afe202cc2fff320daf 100644
+index 7c0a462e6c89e325cbba4d86076b5b84a1f5124d..5b1cd3ab1eb07dc20a249ae86606824005e861a3 100644
 --- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 +++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
-@@ -29,7 +29,11 @@ import net.minecraft.world.phys.Vec3;
+@@ -31,7 +31,11 @@ import net.minecraft.world.phys.Vec3;
  import org.jspecify.annotations.Nullable;
  
  public class ThrownEnderpearl extends ThrowableItemProjectile {
@@ -99,17 +104,17 @@ index dc135f1a5d1ec33195e9ac897aa7acee4cbd13c6..bc9ca4680c18f28b97c4d1afe202cc2f
  
      public ThrownEnderpearl(final EntityType<? extends ThrownEnderpearl> type, final Level level) {
          super(type, level);
-@@ -37,6 +41,9 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+@@ -39,6 +43,9 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
  
      public ThrownEnderpearl(final Level level, final LivingEntity mob, final ItemStack itemStack) {
-         super(EntityType.ENDER_PEARL, mob, level, itemStack);
+         super(EntityTypes.ENDER_PEARL, mob, level, itemStack);
 +        // Lophine start - restore vanilla ender pearl loading on Folia
 +        this.updateLastSavedEnderPearlTag();
 +        // Lophine end - restore vanilla ender pearl loading on Folia
      }
  
      @Override
-@@ -49,21 +56,73 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+@@ -51,21 +58,73 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
          this.deregisterFromCurrentOwner();
          super.setOwner(owner);
          this.registerToCurrentOwner();
@@ -184,8 +189,8 @@ index dc135f1a5d1ec33195e9ac897aa7acee4cbd13c6..bc9ca4680c18f28b97c4d1afe202cc2f
 +
      private static @Nullable Entity findOwnerIncludingDeadPlayer(final ServerLevel serverLevel, final UUID uuid) {
          Entity owner = serverLevel.getEntityInAnyDimension(uuid);
-         return (Entity)(owner != null ? owner : serverLevel.getServer().getPlayerList().getPlayer(uuid));
-@@ -281,6 +340,9 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+         return owner != null ? owner : serverLevel.getServer().getPlayerList().getPlayer(uuid);
+@@ -283,6 +342,9 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
                      && owner instanceof ServerPlayer serverPlayer) {
                      this.ticketTimer = serverPlayer.registerAndUpdateEnderPearlTicket(this);
                  }
@@ -195,7 +200,7 @@ index dc135f1a5d1ec33195e9ac897aa7acee4cbd13c6..bc9ca4680c18f28b97c4d1afe202cc2f
              }
          } else {
              super.tick();
-@@ -328,6 +390,9 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+@@ -330,6 +392,9 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
      public void onRemoval(final Entity.RemovalReason reason) {
          if (reason != Entity.RemovalReason.UNLOADED_WITH_PLAYER) {
              this.deregisterFromCurrentOwner();
