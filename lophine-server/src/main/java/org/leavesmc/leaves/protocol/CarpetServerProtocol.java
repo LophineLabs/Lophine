@@ -6,18 +6,22 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 import org.leavesmc.leaves.protocol.core.LeavesCustomPayload;
 import org.leavesmc.leaves.protocol.core.LeavesProtocol;
 import org.leavesmc.leaves.protocol.core.ProtocolHandler;
 import org.leavesmc.leaves.protocol.core.ProtocolUtils;
 import org.slf4j.Logger;
 
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @LeavesProtocol.Register(namespace = "carpet")
 public class CarpetServerProtocol implements LeavesProtocol {
@@ -28,6 +32,9 @@ public class CarpetServerProtocol implements LeavesProtocol {
 
     private static final String HI = "69";
     private static final String HELLO = "420";
+    private static final Set<UUID> activePlayers = ConcurrentHashMap.newKeySet();
+    private static boolean batchingRules = false;
+    private static boolean rulesDirty = false;
 
     @Contract("_ -> new")
     public static Identifier id(String path) {
@@ -44,11 +51,24 @@ public class CarpetServerProtocol implements LeavesProtocol {
     @ProtocolHandler.PayloadReceiver(payload = CarpetPayload.class)
     private static void handleHello(@NotNull ServerPlayer player, @NotNull CarpetServerProtocol.CarpetPayload payload) {
         if (payload.nbt.contains(HELLO)) {
-            LOGGER.info("Player {} joined with carpet {}", player.getScoreboardName(), payload.nbt.getString(HELLO).orElse("Unknown"));
-            CompoundTag data = new CompoundTag();
-            CarpetRules.write(data);
-            ProtocolUtils.sendPayloadPacket(player, new CarpetPayload(data));
+            UUID playerId = player.getUUID();
+            String carpetVersion = payload.nbt.getString(HELLO).orElse("Unknown");
+            player.getBukkitEntity().getScheduler().execute(MinecraftInternalPlugin.INSTANCE, () -> {
+                ServerPlayer onlinePlayer = MinecraftServer.getServer().getPlayerList().getPlayer(playerId);
+                if (onlinePlayer == null) {
+                    return;
+                }
+
+                LOGGER.info("Player {} joined with carpet {}", onlinePlayer.getScoreboardName(), carpetVersion);
+                sendServerData(onlinePlayer);
+                activePlayers.add(playerId);
+            }, null, 1L);
         }
+    }
+
+    @ProtocolHandler.PlayerLeave
+    public static void onPlayerLeave(ServerPlayer player) {
+        activePlayers.remove(player.getUUID());
     }
 
     @Override
@@ -56,9 +76,43 @@ public class CarpetServerProtocol implements LeavesProtocol {
         return CarpetRules.hasRules();
     }
 
+    private static void sendServerData(ServerPlayer player) {
+        sendServerData(player.getUUID());
+    }
+
+    private static void sendServerData(UUID playerId) {
+        ServerPlayer player = MinecraftServer.getServer().getPlayerList().getPlayer(playerId);
+        if (player == null) {
+            activePlayers.remove(playerId);
+            return;
+        }
+
+        CompoundTag data = new CompoundTag();
+        CarpetRules.write(data);
+        player.getBukkitEntity().getScheduler().execute(MinecraftInternalPlugin.INSTANCE, () -> {
+            ServerPlayer onlinePlayer = MinecraftServer.getServer().getPlayerList().getPlayer(playerId);
+            if (onlinePlayer != null) {
+                ProtocolUtils.sendPayloadPacket(onlinePlayer, new CarpetPayload(data));
+            }
+        }, null, 1L);
+    }
+
     public static class CarpetRules {
 
-        private static final Map<String, CarpetRule> rules = new HashMap<>();
+        private static final Map<String, CarpetRule> rules = new ConcurrentHashMap<>();
+
+        public static void beginBatch() {
+            batchingRules = true;
+            rulesDirty = false;
+        }
+
+        public static void endBatch() {
+            batchingRules = false;
+            if (rulesDirty) {
+                activePlayers.forEach(CarpetServerProtocol::sendServerData);
+                rulesDirty = false;
+            }
+        }
 
         public static void write(@NotNull CompoundTag tag) {
             CompoundTag rulesNbt = new CompoundTag();
@@ -69,14 +123,24 @@ public class CarpetServerProtocol implements LeavesProtocol {
 
         public static void register(CarpetRule rule) {
             rules.put(rule.name, rule);
+            markDirty();
         }
 
         public static void clear() {
             rules.clear();
+            markDirty();
         }
 
         public static boolean hasRules() {
             return !rules.isEmpty();
+        }
+
+        private static void markDirty() {
+            if (batchingRules) {
+                rulesDirty = true;
+            } else {
+                activePlayers.forEach(CarpetServerProtocol::sendServerData);
+            }
         }
     }
 
