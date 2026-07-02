@@ -335,7 +335,7 @@ index e1298bbb83d1d31406c47eaf6d10db3e8d8611ea..41c7179cf2b530d8e4b0fc8161aec75f
                  ServerLevel.this.updateSleepingPlayerList();
              }
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index a13b6e60251151295e13d40840096cb002968b82..5affc3c101848e689a9044790c0f47f3dc3e214a 100644
+index 2985d5e2dde049a999a39f6edbb6696332f6d822..64943c193ae73795ddf8222a6f71ea5eb1705fe2 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -232,7 +232,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc

@@ -128,7 +128,7 @@ index 8cc4fe9feb57902a4b9a6a26e6175ac00a2cef65..9ab1a812e43145120859734075e2ac99
          // Paper start - fix converting txt to json file; moved from constructor
      }
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 4a22a07cd0e0d81cf7b12a91e75ec78d7d7b9836..82a9143d43425943d6b730c8a43446881061ac2c 100644
+index 4034b4b9bd5e567b882169b5b1e17f75b64ba8db..e5fdb195aaea5d4041d2fd33e3f96966ef1c5412 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -260,6 +260,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
