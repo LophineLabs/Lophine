@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Thu, 2 Jul 2026 18:49:40 +0800
+Subject: [PATCH] Old leader zombie health logic
+
+
+diff --git a/net/minecraft/world/entity/monster/zombie/Zombie.java b/net/minecraft/world/entity/monster/zombie/Zombie.java
+index 2734ffc103ee4760d3521609fdd090ab99df675b..a99683d341f52139003dfa5190ee118d5b06f59f 100644
+--- a/net/minecraft/world/entity/monster/zombie/Zombie.java
++++ b/net/minecraft/world/entity/monster/zombie/Zombie.java
+@@ -597,7 +597,7 @@ public class Zombie extends Monster {
+                 .addOrReplacePermanentModifier(
+                     new AttributeModifier(LEADER_ZOMBIE_BONUS_ID, this.random.nextDouble() * 3.0 + 1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
+                 );
+-            if (spawnReason != EntitySpawnReason.CONVERSION && spawnReason != EntitySpawnReason.LOAD && spawnReason != EntitySpawnReason.DIMENSION_TRAVEL) {
++            if (!fun.bm.lophine.config.modules.function.OldFeatureConfig.oldLeaderZombieHealth && spawnReason != EntitySpawnReason.CONVERSION && spawnReason != EntitySpawnReason.LOAD && spawnReason != EntitySpawnReason.DIMENSION_TRAVEL) { // Lophine - Configurable option to disable health boost for leader zombies
+                 this.setHealth(this.getMaxHealth());
+             }
+ 
