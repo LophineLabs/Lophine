@@ -57,13 +57,13 @@ public class Actions {
     }
 
     public static boolean register(@NotNull AbstractBotAction<?> action, Class<?> type) {
+        if (action.getGuiData() != null) {
+            BotActionGuiContainer.registerGuiRootNode(action.getGuiData());
+        }
         if (!actionsByName.containsKey(action.getName())) {
             actionsByName.put(action.getName(), action);
             actionsByClass.put(type, action);
             return true;
-        }
-        if (action.getGuiData() != null) {
-            BotActionGuiContainer.registerGuiRootNode(action.getGuiData());
         }
         return false;
     }
