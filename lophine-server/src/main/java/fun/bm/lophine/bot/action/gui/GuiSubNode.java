@@ -2,6 +2,7 @@ package fun.bm.lophine.bot.action.gui;
 
 import net.minecraft.world.item.ItemStack;
 
+import java.rmi.UnexpectedException;
 import java.util.Set;
 
 public class GuiSubNode extends GuiRootNode {
@@ -22,7 +23,7 @@ public class GuiSubNode extends GuiRootNode {
     }
 
     @Override
-    public String buildCommand() {
+    public String buildCommand() throws UnexpectedException {
         return ((GuiRootNode) parent).buildCommand() + getCommandNode();
     }
 }

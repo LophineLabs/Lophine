@@ -1,7 +1,10 @@
 package fun.bm.lophine.bot.action.gui;
 
+import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
+import fun.bm.lophine.config.modules.function.FakeplayerConfig;
 import net.minecraft.world.item.ItemStack;
 
+import java.rmi.UnexpectedException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,7 +42,15 @@ public class GuiRootNode extends GuiNode {
         return this.commandNode;
     }
 
-    public String buildCommand() {
-        return "/bot " + getCommandNode();
+    public String buildCommand() throws UnexpectedException {
+        boolean botCommand = FakeplayerConfig.enable;
+        boolean playerCommand = FakePlayerCompatConfig.commandPlayer;
+        if (botCommand) {
+            return "/bot " + this.getCommandNode();
+        }
+        if (playerCommand) {
+            return "/player " + this.getCommandNode();
+        }
+        throw new UnexpectedException("Unable to build String from commandNode.");
     }
 }
