@@ -27,10 +27,11 @@ import org.leavesmc.leaves.command.bot.subcommands.*;
 import static org.leavesmc.leaves.command.CommandUtils.registerPermissions;
 
 public class BotCommand extends RootNode {
-    private static final String PERM_BASE = "bukkit.command.bot";
+    private static final String PERM_BASE_BOT = "bukkit.command.bot";
+    private static final String PERM_BASE_PLAYER = "bukkit.command.player";
 
     public BotCommand(String key) {
-        super(key, PERM_BASE);
+        super(key, getPermBase(key));
         this.children(
                 ListCommand::new,
                 ConfigCommand::new,
@@ -44,15 +45,26 @@ public class BotCommand extends RootNode {
 
     @Override
     protected ArgumentBuilder<CommandSourceStack, ?> compile() {
-        registerPermissions(PERM_BASE, this.children);
+        registerPermissions(getPermBase(this.getName()), this.children);
         return super.compile();
     }
 
     public static boolean hasPermission(@NotNull CommandSender sender) {
-        return sender.hasPermission(PERM_BASE);
+        return sender.hasPermission(PERM_BASE_BOT) || sender.hasPermission(PERM_BASE_PLAYER);
     }
 
     public static boolean hasPermission(@NotNull CommandSender sender, String subcommand) {
-        return sender.hasPermission(PERM_BASE) || sender.hasPermission(PERM_BASE + "." + subcommand);
+        return sender.hasPermission(PERM_BASE_BOT) || sender.hasPermission(PERM_BASE_BOT + "." + subcommand)
+                || sender.hasPermission(PERM_BASE_PLAYER) || sender.hasPermission(PERM_BASE_PLAYER + "." + subcommand);
+    }
+
+    public static String getPermBase(String key) {
+        if (key.equals("bot")) {
+            return PERM_BASE_BOT;
+        }
+        if (key.equals("player")) {
+            return PERM_BASE_PLAYER;
+        }
+        throw new IllegalArgumentException("Invalid key: " + key);
     }
 }

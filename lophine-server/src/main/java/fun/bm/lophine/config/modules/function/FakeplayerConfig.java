@@ -99,7 +99,7 @@ public class FakeplayerConfig implements IConfigModule {
 
     @Override
     public void onLoaded(CommentedFileConfig configInstance, @Nullable Set<Exception> exs) {
-        if (enable) {
+        if (enable && command == null) {
             command = new BotCommand("bot");
             command.register();
         }

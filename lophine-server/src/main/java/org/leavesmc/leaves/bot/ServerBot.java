@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.authlib.GameProfile;
 import fun.bm.lophine.LophineLogger;
 import fun.bm.lophine.bot.BotActionGuiContainer;
+import fun.bm.lophine.bot.BotActionGuiMenu;
 import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
 import fun.bm.lophine.config.modules.function.FakeplayerConfig;
 import io.papermc.paper.adventure.PaperAdventure;
@@ -362,7 +363,7 @@ public class ServerBot extends ServerPlayer {
         if (player instanceof ServerPlayer player1 && player.getMainHandItem().isEmpty()) {
             boolean isSneaking = player.isShiftKeyDown();
             boolean enabled1Only = FakePlayerCompatConfig.openFakePlayerInventory ^ FakeplayerConfig.canOpenActionGui;
-            boolean openInventory = enabled1Only ? FakePlayerCompatConfig.openFakePlayerInventory : FakePlayerCompatConfig.openFakePlayerInventory && isSneaking;
+            boolean openInventory = enabled1Only ? FakePlayerCompatConfig.openFakePlayerInventory : FakePlayerCompatConfig.openFakePlayerInventory && !isSneaking;
             boolean openActionGui = enabled1Only ? FakeplayerConfig.canOpenActionGui : FakeplayerConfig.canOpenActionGui && isSneaking;
 
             if (openInventory) {
@@ -377,7 +378,7 @@ public class ServerBot extends ServerPlayer {
                 getServer().server.getPluginManager().callEvent(event);
                 if (!event.isCancelled()) {
                     BotActionGuiContainer container = new BotActionGuiContainer(this.getBukkitEntity(), player1.getBukkitEntity());
-                    player.openMenu(new SimpleMenuProvider((i, inventory, p) -> ChestMenu.sixRows(i, inventory, container), this.getDisplayName()));
+                    player.openMenu(new SimpleMenuProvider((i, inventory, p) -> new BotActionGuiMenu(i, inventory, container), this.getDisplayName()));
                     return InteractionResult.SUCCESS;
                 }
             }

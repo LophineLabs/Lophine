@@ -17,6 +17,8 @@
 
 package org.leavesmc.leaves.bot.agent.actions;
 
+import fun.bm.lophine.bot.action.gui.GuiRootNode;
+import fun.bm.lophine.bot.action.gui.GuiSubNode;
 import net.minecraft.world.phys.EntityHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.bot.ServerBot;
@@ -26,6 +28,9 @@ public class ServerAttackAction extends AbstractTimerBotAction<ServerAttackActio
 
     public ServerAttackAction() {
         super("attack", ServerAttackAction::new);
+        // test code, TODO later
+        this.guiData = new GuiRootNode("Attack", "Attack an entity", null, "attack");
+        this.guiData.child(new GuiSubNode("Attack", "Attack an entity", null, this.guiData, "attack"));
     }
 
     @Override

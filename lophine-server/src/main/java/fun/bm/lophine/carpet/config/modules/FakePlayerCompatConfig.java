@@ -70,7 +70,7 @@ public class FakePlayerCompatConfig implements IConfigModule {
 
     @Override
     public void onLoaded(CommentedFileConfig configInstance, @Nullable Set<Exception> exs) {
-        if (commandPlayer) {
+        if (commandPlayer && command == null) {
             command = new BotCommand("player");
             command.register();
         }
