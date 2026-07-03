@@ -2,7 +2,7 @@ package fun.bm.lophine.bot.action.gui;
 
 import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
 import fun.bm.lophine.config.modules.function.FakeplayerConfig;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
 
 import java.rmi.UnexpectedException;
 import java.util.HashSet;
@@ -15,11 +15,11 @@ public class GuiRootNode extends GuiNode {
     protected final Set<GuiNode> children;
     protected final String commandNode;
 
-    public GuiRootNode(String name, String description, ItemStack item, String commandNode) {
+    public GuiRootNode(String name, String description, Item item, String commandNode) {
         this(name, description, item, new HashSet<>(), commandNode);
     }
 
-    public GuiRootNode(String name, String description, ItemStack item, Set<GuiNode> children, String commandNode) {
+    public GuiRootNode(String name, String description, Item item, Set<GuiNode> children, String commandNode) {
         super(name, description, item);
         this.children = children;
         this.commandNode = commandNode;

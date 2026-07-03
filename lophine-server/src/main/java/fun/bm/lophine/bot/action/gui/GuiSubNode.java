@@ -1,6 +1,6 @@
 package fun.bm.lophine.bot.action.gui;
 
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
 
 import java.rmi.UnexpectedException;
 import java.util.Set;
@@ -8,12 +8,12 @@ import java.util.Set;
 public class GuiSubNode extends GuiRootNode {
     protected final GuiNode parent;
 
-    public GuiSubNode(String name, String description, ItemStack item, GuiNode parent, Set<GuiNode> children, String commandNode) {
+    public GuiSubNode(String name, String description, Item item, GuiNode parent, Set<GuiNode> children, String commandNode) {
         super(name, description, item, children, commandNode);
         this.parent = parent;
     }
 
-    public GuiSubNode(String name, String description, ItemStack item, GuiNode parent, String commandNode) {
+    public GuiSubNode(String name, String description, Item item, GuiNode parent, String commandNode) {
         super(name, description, item, commandNode);
         this.parent = parent;
     }
