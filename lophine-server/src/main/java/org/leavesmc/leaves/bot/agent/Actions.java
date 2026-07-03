@@ -17,6 +17,7 @@
 
 package org.leavesmc.leaves.bot.agent;
 
+import fun.bm.lophine.bot.BotActionGuiContainer;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -60,6 +61,9 @@ public class Actions {
             actionsByName.put(action.getName(), action);
             actionsByClass.put(type, action);
             return true;
+        }
+        if (action.getGuiData() != null) {
+            BotActionGuiContainer.registerGuiRootNode(action.getGuiData());
         }
         return false;
     }

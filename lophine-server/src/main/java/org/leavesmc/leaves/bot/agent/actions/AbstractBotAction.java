@@ -20,7 +20,7 @@ package org.leavesmc.leaves.bot.agent.actions;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import fun.bm.lophine.LophineLogger;
-import fun.bm.lophine.bot.action.gui.GuiNode;
+import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import org.apache.commons.lang3.tuple.Pair;
@@ -58,6 +58,8 @@ public abstract class AbstractBotAction<E extends AbstractBotAction<E>> {
     private Consumer<E> onFail;
     private Consumer<E> onSuccess;
     private Consumer<E> onStop;
+
+    protected GuiRootNode guiData;
 
     public AbstractBotAction(String name, Supplier<E> creator) {
         this.name = name;
@@ -264,7 +266,7 @@ public abstract class AbstractBotAction<E extends AbstractBotAction<E>> {
         this.onStop = onStop;
     }
 
-    public @Nullable GuiNode getGuiData() {
-        return null;
+    public @Nullable GuiRootNode getGuiData() {
+        return this.guiData;
     }
 }
