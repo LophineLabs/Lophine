@@ -315,11 +315,13 @@ public class BotList {
 
         bot.unRide();
         for (ThrownEnderpearl thrownEnderpearl : bot.getEnderPearls()) {
-            if (!thrownEnderpearl.level().paperConfig().misc.legacyEnderPearlBehavior) {
-                thrownEnderpearl.setRemoved(Entity.RemovalReason.UNLOADED_WITH_PLAYER, EntityRemoveEvent.Cause.PLAYER_QUIT);
-            } else {
-                thrownEnderpearl.setOwner(null);
-            }
+            // Lophine start - restore vanilla ender pearl loading on Folia
+            thrownEnderpearl.getBukkitEntity().taskScheduler.scheduleOrExecute((Entity pearl) -> {
+                if (!pearl.isRemoved()) {
+                    pearl.setRemoved(Entity.RemovalReason.UNLOADED_WITH_PLAYER, EntityRemoveEvent.Cause.PLAYER_QUIT);
+                }
+            });
+            // Lophine end - restore vanilla ender pearl loading on Folia
         }
 
         bot.level().getCurrentWorldData().connections.remove(bot.connection.connection);

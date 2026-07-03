@@ -13,6 +13,9 @@ public class OldFeatureConfig implements IConfigModule {
     @ConfigInfo(name = "old_zombie_reinforcement")
     public static boolean oldZombieReinforcement = false;
 
+    @ConfigInfo(name = "old_leader_zombie_health")
+    public static boolean oldLeaderZombieHealth = false;
+
     @ConfigInfo(name = "old_explosion_damage_calculator")
     public static boolean oldExplosionDamageCalculator = false;
 

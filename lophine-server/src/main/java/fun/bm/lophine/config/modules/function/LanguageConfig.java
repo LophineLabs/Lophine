@@ -12,7 +12,7 @@ public class LanguageConfig implements IConfigModule {
     @ConfigInfo(name = "lang", comments = """
             Please use the key from https://minecraft.wiki/w/Language
             Sample of format: en_us zh_cn zh_hk zh_tw
-            ATTENTION: If you want to edit language for carpet ststem,
+            ATTENTION: If you want to edit language for carpet system,
             please edit it in carpet config file.""")
     public static String lang = "en_us";
 
