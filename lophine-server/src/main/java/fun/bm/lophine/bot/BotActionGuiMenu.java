@@ -1,5 +1,6 @@
 package fun.bm.lophine.bot;
 
+import com.mojang.logging.LogUtils;
 import fun.bm.lophine.bot.action.gui.GuiNode;
 import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import net.minecraft.server.MinecraftServer;
@@ -98,7 +99,9 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
 
     private void executeCommand(GuiRootNode node, Player player) {
         try {
-            String command = node.buildCommand();
+            String action = "start"; // TODO later for other action
+            String extra = action + " " + bot.getName() + " ";
+            String command = node.buildCommand(extra);
             if (player instanceof ServerPlayer serverPlayer) {
                 MinecraftServer.getServer().getCommands().performPrefixedCommand(
                         serverPlayer.createCommandSourceStack(),
@@ -106,7 +109,7 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
                 );
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LogUtils.getLogger().warn("Error executing command: ", e);
         }
     }
 

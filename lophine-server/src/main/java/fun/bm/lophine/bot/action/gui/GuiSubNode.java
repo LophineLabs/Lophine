@@ -23,7 +23,7 @@ public class GuiSubNode extends GuiRootNode {
     }
 
     @Override
-    public String buildCommand() throws UnexpectedException {
-        return ((GuiRootNode) parent).buildCommand() + " " + getCommandNode();
+    public String buildCommand(String extra) throws UnexpectedException {
+        return ((GuiRootNode) parent).buildCommand(extra) + " " + getCommandNode();
     }
 }

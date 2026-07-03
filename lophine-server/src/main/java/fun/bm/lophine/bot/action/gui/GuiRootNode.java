@@ -42,14 +42,14 @@ public class GuiRootNode extends GuiNode {
         return this.commandNode;
     }
 
-    public String buildCommand() throws UnexpectedException {
+    public String buildCommand(String extra) throws UnexpectedException {
         boolean botCommand = FakeplayerConfig.enable;
         boolean playerCommand = FakePlayerCompatConfig.commandPlayer;
         if (botCommand) {
-            return "/bot " + this.getCommandNode();
+            return "/bot " + extra + this.getCommandNode();
         }
         if (playerCommand) {
-            return "/player " + this.getCommandNode();
+            return "/player " + extra + this.getCommandNode();
         }
         throw new UnexpectedException("Unable to build String from commandNode.");
     }
