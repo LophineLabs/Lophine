@@ -13,6 +13,8 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.inventory.CraftInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.entity.bot.CraftBot;
 
@@ -20,7 +22,7 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
     private final BotActionGuiContainer container;
     private final CraftBot bot;
     private final CraftPlayer player;
-    private org.bukkit.craftbukkit.inventory.CraftInventoryView view = null;
+    private CraftInventoryView view = null;
 
     public BotActionGuiMenu(int containerId, Inventory inventory, BotActionGuiContainer container) {
         super(MenuType.GENERIC_9x6, containerId);
@@ -58,8 +60,8 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
     @Override
     public org.bukkit.inventory.InventoryView getBukkitView() {
         if (this.view == null) {
-            org.bukkit.craftbukkit.inventory.CraftInventory inventory = new org.bukkit.craftbukkit.inventory.CraftInventory(this.container);
-            this.view = new org.bukkit.craftbukkit.inventory.CraftInventoryView(
+            CraftInventory inventory = new CraftInventory(this.container);
+            this.view = new CraftInventoryView(
                     this.player,
                     inventory,
                     this
@@ -105,7 +107,7 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
             if (player instanceof ServerPlayer serverPlayer) {
                 MinecraftServer.getServer().getCommands().performPrefixedCommand(
                         serverPlayer.createCommandSourceStack(),
-                        command.substring(1)
+                        command
                 );
             }
         } catch (Exception e) {
