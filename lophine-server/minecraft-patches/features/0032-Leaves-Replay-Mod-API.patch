@@ -88,10 +88,10 @@ index 6c05b9276bdc267a36376f6c64592a50e4b2b36e..21d2c97b3d1e1d29c9de02b6acd58985
                      result.add(player);
                      if (result.size() >= limit) {
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index c91e4b2143e4a801a124dfb9c2f807445539685f..31702272280b853d8a0a688eb162859412f5a646 100644
+index dd2a108f31bcbc1beae8c820c22baaa515fec7ec..67bdd2887afed082fd1bae03f030f2d25d55e282 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1896,7 +1896,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1899,7 +1899,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      }
  
      private ServerStatus.Players buildPlayerStatus() {
@@ -100,7 +100,7 @@ index c91e4b2143e4a801a124dfb9c2f807445539685f..31702272280b853d8a0a688eb1628594
          int maxPlayers = this.getMaxPlayers();
          if (this.hidesOnlinePlayers()) {
              return new ServerStatus.Players(maxPlayers, players.size(), List.of());
-@@ -2117,7 +2117,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -2120,7 +2120,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
  
      @Override
      public int getPlayerCount() {
@@ -109,7 +109,7 @@ index c91e4b2143e4a801a124dfb9c2f807445539685f..31702272280b853d8a0a688eb1628594
      }
  
      public String[] getPlayerNames() {
-@@ -2334,7 +2334,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -2337,7 +2337,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
  
          int count = 0;
  
@@ -117,8 +117,8 @@ index c91e4b2143e4a801a124dfb9c2f807445539685f..31702272280b853d8a0a688eb1628594
 +        for (ServerPlayer player : this.getPlayerList().realPlayers) { // Leaves - only real player
              player.getBukkitEntity().taskScheduler.schedule((ServerPlayer updatedPlayer) -> { // Folia - region threading
              // Paper start - Expand PlayerGameModeChangeEvent
-                 org.bukkit.event.player.PlayerGameModeChangeEvent event = updatedPlayer.setGameMode(gameType, org.bukkit.event.player.PlayerGameModeChangeEvent.Cause.DEFAULT_GAMEMODE, null); // Folia - region threading
-@@ -2525,7 +2525,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+             org.bukkit.event.player.PlayerGameModeChangeEvent event = updatedPlayer.setGameMode(gameType, org.bukkit.event.player.PlayerGameModeChangeEvent.Cause.DEFAULT_GAMEMODE, null); // Folia - region threading
+@@ -2528,7 +2528,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                  if (Thread.currentThread() != this.serverThread) return; // Paper
                  // Paper start - we don't need to save everything, just advancements
                  // this.getPlayerList().saveAll();
@@ -127,7 +127,7 @@ index c91e4b2143e4a801a124dfb9c2f807445539685f..31702272280b853d8a0a688eb1628594
                      player.getAdvancements().save();
                  }
                  // Paper end - we don't need to save everything, just advancements
-@@ -2661,7 +2661,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -2664,7 +2664,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              PlayerList playerList = this.getPlayerList();
              UserWhiteList whiteList = playerList.getWhiteList();
  
@@ -289,10 +289,10 @@ index 37c9f983ae89c497f44a1b7967d741abf909e0a0..d7fb2505f2a86ca0d81f144624ef2e1a
  
              this.setListData(players);
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 81120d1ac352995cd690dff676a3ef6b0d6dd040..0ffaec22ab8e336aa4fc540f9e578d37f7640ae4 100644
+index 558f465e9ec2536064716a196d52d78d873d95be..598867ffa41c8d38e0c18550071ac25935e34229 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -3103,7 +3103,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3077,7 +3077,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.add(player);
                  // Leaves start - skip
@@ -301,7 +301,7 @@ index 81120d1ac352995cd690dff676a3ef6b0d6dd040..0ffaec22ab8e336aa4fc540f9e578d37
                      ServerLevel.this.realPlayers.add(player);
                  }
                  // Leaves end - skip
-@@ -3189,7 +3189,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3163,7 +3163,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.remove(player);
                  // Leaves start - skip
@@ -311,7 +311,7 @@ index 81120d1ac352995cd690dff676a3ef6b0d6dd040..0ffaec22ab8e336aa4fc540f9e578d37
                  }
                  // Leaves end - skip
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index b5a22510fede9521a0d8330272876d2ceedfb1cc..049648756f9053895e773efdca33fe65b3555b10 100644
+index ed50484ca24ef24b1e5bef9f6369dfa4b30c359c..1a849654efcd42cdea3f85020fd8d018bc651b57 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -129,6 +129,7 @@ public abstract class PlayerList {

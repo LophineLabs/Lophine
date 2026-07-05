@@ -13,7 +13,7 @@ MasaGadget(https://github.com/plusls/MasaGadget)
 litematica(https://github.com/maruohon/litematica)
 
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index d50ed9e165ed68144c4f71bb39f91fc61c61f179..2ada9d75ee70754a3992a32660d125c4328ff264 100644
+index de3c09b26c28a1bc6012cff6f524f72332f7b1f0..aec23bc77fc78eea6a3137b71a6923c217ad40a7 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -2162,7 +2162,7 @@ public class ServerGamePacketListenerImpl

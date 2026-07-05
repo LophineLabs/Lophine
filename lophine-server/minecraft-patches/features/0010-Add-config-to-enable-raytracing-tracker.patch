@@ -5,7 +5,7 @@ Subject: [PATCH] Add config to enable raytracing tracker
 
 
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
-index 8afac579c755df001c91b66b207a45d331629d10..e9cd960a0733ac37fac8e956ae36628bf42b79f2 100644
+index 849ad46b2941ebba91b428846b3b20d11ee5e1c9..6cd549849bd7fb5d72431f729229d1e967cf0d98 100644
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
 @@ -1350,7 +1350,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
@@ -18,7 +18,7 @@ index 8afac579c755df001c91b66b207a45d331629d10..e9cd960a0733ac37fac8e956ae36628b
                      double rangeY = level.paperConfig().entities.trackingRangeY.get(this.entity, -1);
                      if (rangeY != -1) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index be6d31fc790ff6346ae2aedcd21a43be9d2360c1..cc47f02936cad38627c2ee87e54aa8b80a66a8af 100644
+index 65e2229f73a6f74c2271c9326aeb46feab51f818..b7cc122d45ecaf922ca1aca8ff5f1632965ad357 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -164,7 +164,7 @@ public abstract class Entity
@@ -30,7 +30,7 @@ index be6d31fc790ff6346ae2aedcd21a43be9d2360c1..cc47f02936cad38627c2ee87e54aa8b8
      // CraftBukkit start
      private static final int CURRENT_LEVEL = 2;
      static boolean isLevelAtLeast(ValueInput input, int level) {
-@@ -6504,4 +6504,48 @@ public abstract class Entity
+@@ -6505,4 +6505,48 @@ public abstract class Entity
      // Paper end
  
      public boolean shouldTickHot() { return this.tickCount > 20 * 10 && this.isAlive(); } // KioCG

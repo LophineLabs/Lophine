@@ -700,7 +700,7 @@ index 49b3f9e78ae9db257b653a6094619880784c6370..b451f8234e92c36fa1395a80b01dc878
      protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
          if (!movedByPiston) {
 diff --git a/net/minecraft/world/level/block/entity/BlockEntityType.java b/net/minecraft/world/level/block/entity/BlockEntityType.java
-index ea48b6db56d06ddb12a3b16882e09f0e2eb26433..0a3fec59c53df270c6d7bcc2379e0f6b9d753afd 100644
+index cda0d6d01035570844f03e523db7721cc6cc3e6d..b88b1b123563f06ce00f20ce775a3dfcd5df79de 100644
 --- a/net/minecraft/world/level/block/entity/BlockEntityType.java
 +++ b/net/minecraft/world/level/block/entity/BlockEntityType.java
 @@ -28,7 +28,7 @@ public class BlockEntityType<T extends BlockEntity> {
@@ -797,7 +797,7 @@ index 7358c75802a37e84e30b1b94a046251d2547a388..972b953a579120c1c05f2dc9bfc2b408
              this.getBlock().affectNeighborsAfterRemoval(this.asState(), level, pos, movedByPiston);
          }
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index 51e7c9287bc39d1ffaa60946c009711acdfa8572..c3b32f9c4c2fa17bef629453e3315c12387f5a92 100644
+index f103b1633f7483bd57da760e59fea132c63faec5..a4d5bf1773a9ce8184a940384696f0d38690a421 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -425,6 +425,8 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot

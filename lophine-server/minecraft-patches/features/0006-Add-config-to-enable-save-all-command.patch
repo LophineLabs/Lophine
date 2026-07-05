@@ -5,10 +5,10 @@ Subject: [PATCH] Add config to enable save-all command
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedServer.java b/io/papermc/paper/threadedregions/RegionizedServer.java
-index dbd713226f45b8b9992aa349ddbbc1c69ed47c04..cbfb4bdde0f32ec3996e5baa7e7ed5749e2d12a0 100644
+index 276349d778c2e6f0b1081eec4851bad5d25db237..79ef1e69ec364beec69b37c6850c038cdba73b4c 100644
 --- a/io/papermc/paper/threadedregions/RegionizedServer.java
 +++ b/io/papermc/paper/threadedregions/RegionizedServer.java
-@@ -364,6 +364,8 @@ public final class RegionizedServer {
+@@ -265,6 +265,8 @@ public final class RegionizedServer {
          // tick player ping sample
          this.tickPlayerSample();
  
@@ -18,7 +18,7 @@ index dbd713226f45b8b9992aa349ddbbc1c69ed47c04..cbfb4bdde0f32ec3996e5baa7e7ed574
          for (final ServerLevel world : this.worlds) {
              this.globalTick(world, tickCount);
 diff --git a/io/papermc/paper/threadedregions/TickRegions.java b/io/papermc/paper/threadedregions/TickRegions.java
-index b03d47746879e57ad106bc1b736358d9a5ea1a9d..25951b9858a8d141e2cde7c442ac830e6921e716 100644
+index 97c514673a454b752ab86b944fd143725ca8090d..ba91d40d6d91588a4b39abfefcb17a362bfc5490 100644
 --- a/io/papermc/paper/threadedregions/TickRegions.java
 +++ b/io/papermc/paper/threadedregions/TickRegions.java
 @@ -190,6 +190,8 @@ public final class TickRegions implements ThreadedRegionizer.RegionCallbacks<Tic
@@ -48,10 +48,10 @@ index 9800ae1d3c49800b0c7342d43d696109b5b72cf4..f9a8c79640ed6ca381e4482eaeab6b23
              SaveOnCommand.register(this.dispatcher);
              SetPlayerIdleTimeoutCommand.register(this.dispatcher);
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 56bd710443b794320f97f6e775247df9b09c4c0e..c27779b5ca53aad8c87830b2e2647dbfcdcb762b 100644
+index ecdcf0db97341d2cb460f86f451cecd5c40dbfee..437abeb7b2d021b38b438d0e046f05809e196930 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1649,6 +1649,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1652,6 +1652,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      // Folia start - region threading
      public void tickServer(final long startTime, final long scheduledEnd, final long targetBuffer,
                             final io.papermc.paper.threadedregions.TickRegions.TickRegionData region) {

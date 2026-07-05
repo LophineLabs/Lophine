@@ -5,10 +5,10 @@ Subject: [PATCH] Add tick rate support
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedServer.java b/io/papermc/paper/threadedregions/RegionizedServer.java
-index cbfb4bdde0f32ec3996e5baa7e7ed5749e2d12a0..64c9f1d36ac9f02f0dd574ffb995e56a08631bfc 100644
+index 79ef1e69ec364beec69b37c6850c038cdba73b4c..6fb3c88463ff69bddb7d8dcde0e5339567d3e1c6 100644
 --- a/io/papermc/paper/threadedregions/RegionizedServer.java
 +++ b/io/papermc/paper/threadedregions/RegionizedServer.java
-@@ -371,6 +371,14 @@ public final class RegionizedServer {
+@@ -272,6 +272,14 @@ public final class RegionizedServer {
              this.globalTick(world, tickCount);
          }
  

@@ -66,7 +66,7 @@ index cef9c7887332b91e2466a97a5250db81f7af0dcf..a17212c1910ce9490fe8df8c4ef507e2
  
      public Set<ThrownEnderpearl> getEnderPearls() {
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 36b8cf8c466c9cd4369ceab49e3ac84f224142b8..808e144f4621daf98d1710dac103f970073b16fc 100644
+index d88c54b27193dc2c4d2c8f539437bf5f6fb8466c..998d60b7f3f49b37b01ab6dcf7b3568faa00c276 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -798,11 +798,13 @@ public abstract class PlayerList {
@@ -89,7 +89,7 @@ index 36b8cf8c466c9cd4369ceab49e3ac84f224142b8..808e144f4621daf98d1710dac103f970
  
          level.removePlayerImmediately(player, Entity.RemovalReason.UNLOADED_WITH_PLAYER);
 diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
-index 7c0a462e6c89e325cbba4d86076b5b84a1f5124d..5b1cd3ab1eb07dc20a249ae86606824005e861a3 100644
+index ad35eafa457f706879ba8a9c92b3a34e620ee2d6..7b607a9fb9955f0a1b843ed59d6b15e97fd37325 100644
 --- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 +++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 @@ -31,7 +31,11 @@ import net.minecraft.world.phys.Vec3;

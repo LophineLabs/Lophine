@@ -23,10 +23,10 @@ index 8432d0ce22ddc9c9bfa98901e403697f40e53c99..9ec141359c4422c1574dac71a88b7f50
 +    // Leaves end - servux
  }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index d5db46a1fb9516cea1078bc2b3beb3f1ba65d54c..813837938b056c64f3059fe773c3d93b4f657867 100644
+index f001830e178d3c5d7ffb1486eae4b7c1d950e969..b03491230ed9b68e0e8f29719e34ea4b9947f408 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -2594,6 +2594,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2568,6 +2568,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              this.server.updateEffectiveRespawnData();
          }
          // Paper end

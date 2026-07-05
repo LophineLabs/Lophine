@@ -5,10 +5,10 @@ Subject: [PATCH] Global Entities Counter
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 6a90942f4fc3c0b366aadf7a4cead6f684eba1cd..273260d6c0da23a9cf735ccade55c1ef813b7ddc 100644
+index 24e186d05aa0333885178f444fade3b9c930ac97..5724a276cf4fdd41f239c47e4352ec05736a5e49 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-@@ -558,6 +558,9 @@ public final class RegionizedWorldData {
+@@ -563,6 +563,9 @@ public final class RegionizedWorldData {
      public final Map<Long, ChunkSectionItemEntityMovementTracker> itemEntityMovementTrackerMap = new it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap<>();
      // Luminol end
  
@@ -18,7 +18,7 @@ index 6a90942f4fc3c0b366aadf7a4cead6f684eba1cd..273260d6c0da23a9cf735ccade55c1ef
      public final TickRegions.TickRegionData regionData;
  
      public RegionizedWorldData(final ServerLevel world, final TickRegions.TickRegionData regionData) {
-@@ -570,6 +573,15 @@ public final class RegionizedWorldData {
+@@ -575,6 +578,15 @@ public final class RegionizedWorldData {
          this.turbo = new io.papermc.paper.redstone.RedstoneWireTurbo((RedStoneWireBlock)Blocks.REDSTONE_WIRE);
          this.regionData = regionData;
  
@@ -35,7 +35,7 @@ index 6a90942f4fc3c0b366aadf7a4cead6f684eba1cd..273260d6c0da23a9cf735ccade55c1ef
          this.updateTickData();
      }
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index c3b14503e1bd9025730febc883bead942beb61f7..72c4884e9aebc957333cfedf06c6f49f973828c8 100644
+index 0011653c857ee82f86355cc49b170120d9f96cfd..237ac6912f3b30c0405493b6ce9ca4765c19f985 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
 @@ -511,6 +511,26 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
@@ -99,7 +99,7 @@ index c3b14503e1bd9025730febc883bead942beb61f7..72c4884e9aebc957333cfedf06c6f49f
                  NaturalSpawner.spawnForChunk(this.level, chunk, spawnCookie, spawningCategories);
              }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 0ffaec22ab8e336aa4fc540f9e578d37f7640ae4..e9b19099f8defa8ba39d94fb585dec27a5c804ea 100644
+index 598867ffa41c8d38e0c18550071ac25935e34229..eee0cd75cc0e551cb521be190c40044cca313c5b 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -822,6 +822,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -114,7 +114,7 @@ index 0ffaec22ab8e336aa4fc540f9e578d37f7640ae4..e9b19099f8defa8ba39d94fb585dec27
          final io.papermc.paper.threadedregions.RegionizedWorldData regionizedWorldData = this.getCurrentWorldData(); // Folia - regionised ticking
          final ca.spottedleaf.leafprofiler.RegionizedProfiler.Handle foliaProfiler = io.papermc.paper.threadedregions.TickRegionScheduler.getProfiler(); // Folia - profiler
          ProfilerFiller profiler = Profiler.get();
-@@ -2910,6 +2915,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2884,6 +2889,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      public void close() throws IOException {
          super.close();
          //this.entityManager.close(); // Paper - rewrite chunk system
@@ -126,7 +126,7 @@ index 0ffaec22ab8e336aa4fc540f9e578d37f7640ae4..e9b19099f8defa8ba39d94fb585dec27
      }
  
      @Override
-@@ -3139,6 +3149,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3113,6 +3123,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              entity.inWorld = true; // CraftBukkit - Mark entity as in world
              entity.valid = true; // CraftBukkit
              ServerLevel.this.getChunkSource().addEntity(entity); // Paper - ignore and warn about illegal addEntity calls instead of crashing server
@@ -138,7 +138,7 @@ index 0ffaec22ab8e336aa4fc540f9e578d37f7640ae4..e9b19099f8defa8ba39d94fb585dec27
              // Paper start - Entity origin API
              if (entity.origin == null) {
                  entity.origin = entity.position();
-@@ -3154,6 +3169,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3128,6 +3143,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          @Override
          public void onTrackingEnd(final Entity entity) {
              org.spigotmc.AsyncCatcher.catchOp("entity unregister"); // Spigot

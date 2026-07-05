@@ -38,7 +38,7 @@ index be357d315f5c83349a7f7287ff45e92137950a8c..a542e38ea6a1e8fc81466acbca071d89
          if (count > maxAllowedCount) {
              source.sendFailure(Component.translatable("commands.give.failed.toomanyitems", maxAllowedCount, prototypeItemStack.getDisplayName()));
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 83dfc138415f676ac1831e577819ce0471640dbd..dcea7e64dd2fbad34f5de3bd682d72e4428b10a8 100644
+index fe6e1aea364620f82de44b942da0d3846c7d17b5..fd1ceb8c6f20b515e3a054050feeb443de33038c 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -3219,7 +3219,7 @@ public class ServerGamePacketListenerImpl
@@ -354,7 +354,7 @@ index 0e86b025bad2c336cc360c2ce764dad0a75de1b6..1873b9376df57ff73d2a1583b60a512c
  
      public @Nullable Identifier getNoItemIcon() {
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index 173d4c93c4f3a361946b6fe5d2aa55d596641a98..0a0fef94619eabe8c56082f3c17c663a4943ded0 100644
+index a6805d436fd3675e385cbf8a3e5b262ae694ed90..f15ee24339b04e4fe395755bf3503c17886f1782 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
 @@ -159,7 +159,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, Chang
