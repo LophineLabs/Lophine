@@ -81,10 +81,10 @@ index f063e9b7601480d0e66da22ea8e5bec2e8619fee..d46abbea2153cac2d939416fafeac7f9
      public boolean isPickable() {
          return !this.isSpectator() && super.isPickable();
 diff --git a/net/minecraft/world/item/BlockItem.java b/net/minecraft/world/item/BlockItem.java
-index f4b68c02c2beea4438cb4cd212ad70c78cfc68d3..4e31e25df5d57086027413bb5e6aa0e4f39452c7 100644
+index 0f4ac8eeb8f5f866b22a81f255f7169754437bfc..3b5aa0c45647c694e908aaae2a027db02b4f8385 100644
 --- a/net/minecraft/world/item/BlockItem.java
 +++ b/net/minecraft/world/item/BlockItem.java
-@@ -160,8 +160,9 @@ public class BlockItem extends Item {
+@@ -162,8 +162,9 @@ public class BlockItem extends Item {
          Player player = context.getPlayer();
          // CraftBukkit start
          Level world = context.getLevel(); // Paper - Cancel hit for vanished players

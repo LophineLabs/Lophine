@@ -550,10 +550,10 @@ index d46abbea2153cac2d939416fafeac7f905fe0e02..e224c1b8977cd97f2868f7db56c1df22
          sendSoundEffect(this, this.getX(), this.getY(), this.getZ(), sound, this.getSoundSource(), 1.0F, 1.0F); // Paper - send while respecting visibility
      }
 diff --git a/net/minecraft/world/item/BlockItem.java b/net/minecraft/world/item/BlockItem.java
-index 02b8f4aa4aefea0391ab4ce6d634f3a050c80f5a..af3abbc1b24d0d68cd71f14af2419df52ec5da90 100644
+index aebcab247f49ada6af76b3c0e60944134d8f6f88..eb65e9323f75a28ddc55619bf84d103750631870 100644
 --- a/net/minecraft/world/item/BlockItem.java
 +++ b/net/minecraft/world/item/BlockItem.java
-@@ -149,8 +149,12 @@ public class BlockItem extends Item {
+@@ -150,8 +150,12 @@ public class BlockItem extends Item {
          // CraftBukkit start
          Level world = context.getLevel(); // Paper - Cancel hit for vanished players
          CollisionContext collisionContext = player == null ? CollisionContext.empty() : CollisionContext.placementContext(player); // Leaves - creative no clip

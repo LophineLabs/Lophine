@@ -278,7 +278,7 @@ index e9cd960a0733ac37fac8e956ae36628bf42b79f2..4ab6959f20d8593f504f00a4feaaea7c
              }
          }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index e1298bbb83d1d31406c47eaf6d10db3e8d8611ea..41c7179cf2b530d8e4b0fc8161aec75fc9d6c4df 100644
+index 813837938b056c64f3059fe773c3d93b4f657867..81120d1ac352995cd690dff676a3ef6b0d6dd040 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -243,6 +243,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -732,7 +732,7 @@ index f6d37cba8ab5688501be9170720a0b6ded810819..fdd03c9d73a8a0527d0ead3fbbba2008
          final Player player, final ClickAction clickAction, final Slot slot, final ItemStack clicked, final ItemStack carried
      ) {
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index 92149f9bf679cf4a486b24b5197470de68e0f424..9cb7f4a5e7677ee4b66416e13045f0f7dda4cc1c 100644
+index 0a0fef94619eabe8c56082f3c17c663a4943ded0..ed8cb72e4cff33fb8e0f453b1354c0392bbc6934 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
 @@ -458,7 +458,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, Chang

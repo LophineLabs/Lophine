@@ -26,10 +26,10 @@ index d50ed9e165ed68144c4f71bb39f91fc61c61f179..2ada9d75ee70754a3992a32660d125c4
                          this.player.resetLastActionTime();
                          int maxY = level.getMaxY();
 diff --git a/net/minecraft/world/item/BlockItem.java b/net/minecraft/world/item/BlockItem.java
-index 2da4fd153b3de6e97ef264062b40855aa620ec14..f4b68c02c2beea4438cb4cd212ad70c78cfc68d3 100644
+index b94c4f0a6908a37d8a07dba6ff3ece7193aca1b5..0f4ac8eeb8f5f866b22a81f255f7169754437bfc 100644
 --- a/net/minecraft/world/item/BlockItem.java
 +++ b/net/minecraft/world/item/BlockItem.java
-@@ -138,7 +138,7 @@ public class BlockItem extends Item {
+@@ -140,7 +140,7 @@ public class BlockItem extends Item {
      }
  
      protected @Nullable BlockState getPlacementState(final BlockPlaceContext context) {
