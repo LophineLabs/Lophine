@@ -1,10 +1,15 @@
 package fun.bm.lophine.bot;
 
+import fun.bm.lophine.bot.action.gui.ActionType;
 import fun.bm.lophine.bot.action.gui.GuiNode;
 import fun.bm.lophine.bot.action.gui.GuiRootNode;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemLore;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,12 +20,14 @@ import java.util.*;
 public class BotActionGuiContainer extends SimpleContainer {
     private static final Map<String, GuiRootNode> GUI_ROOT_NODE_MAP = new HashMap<>();
     private static final int CONTAINER_SIZE = 54;
-    private static final int BACK_BUTTON_SLOT = 45;
+    private static final int BACK_BUTTON_SLOT = 50;
 
     private final CraftBot bot;
     private final CraftPlayer player;
     private final Deque<GuiNode> navigationStack = new ArrayDeque<>();
     private GuiNode currentNode = null;
+    private GuiRootNode pendingConfirmNode = null;
+    private List<GuiNode> confirmNodes = null;
 
     public static void registerGuiRootNode(GuiRootNode guiRootNode) {
         if (!GUI_ROOT_NODE_MAP.containsKey(guiRootNode.getName())) {
@@ -47,6 +54,8 @@ public class BotActionGuiContainer extends SimpleContainer {
         this.clearContent();
         this.currentNode = null;
         this.navigationStack.clear();
+        this.pendingConfirmNode = null;
+        this.confirmNodes = null;
 
         int slot = 0;
         for (GuiRootNode rootNode : GUI_ROOT_NODE_MAP.values()) {
@@ -75,7 +84,14 @@ public class BotActionGuiContainer extends SimpleContainer {
     }
 
     public boolean navigateBack() {
+        if (this.isConfirmMode()) {
+            this.pendingConfirmNode = null;
+            this.confirmNodes = null;
+        }
+
         if (this.navigationStack.isEmpty()) {
+            this.currentNode = null;
+            this.showRootNodes();
             return false;
         }
 
@@ -105,13 +121,16 @@ public class BotActionGuiContainer extends SimpleContainer {
             slot++;
         }
 
-        if (!this.navigationStack.isEmpty()) {
-            // TODO
+        if (this.canNavigateBack()) {
+            this.setItem(BACK_BUTTON_SLOT, createBackButtonItem());
         }
     }
 
     @Nullable
     private Set<GuiNode> getChildrenOfCurrentNode() {
+        if (this.isConfirmMode()) {
+            return this.confirmNodes != null ? new LinkedHashSet<>(this.confirmNodes) : null;
+        }
         if (this.currentNode == null) {
             return null;
         }
@@ -123,6 +142,10 @@ public class BotActionGuiContainer extends SimpleContainer {
 
     @Nullable
     public GuiNode getGuiNodeAtSlot(int slot) {
+        if (slot == BACK_BUTTON_SLOT && this.canNavigateBack()) {
+            return null; // back button is handled separately
+        }
+
         Set<GuiNode> nodes = this.getCurrentDisplayNodes();
         if (nodes == null) {
             return null;
@@ -138,16 +161,52 @@ public class BotActionGuiContainer extends SimpleContainer {
         return null;
     }
 
+    public boolean isBackButtonSlot(int slot) {
+        return slot == BACK_BUTTON_SLOT && this.canNavigateBack();
+    }
+
+    private static ItemStack createBackButtonItem() {
+        ItemStack item = new ItemStack(Items.BARRIER);
+        item.set(DataComponents.CUSTOM_NAME, Component.literal("§cBack"));
+        item.set(DataComponents.LORE, new ItemLore(List.of(Component.literal("Return to previous page"))));
+        return item;
+    }
+
     @Nullable
     private Set<GuiNode> getCurrentDisplayNodes() {
+        if (this.isConfirmMode()) {
+            return this.confirmNodes != null ? new LinkedHashSet<>(this.confirmNodes) : null;
+        }
         if (this.currentNode == null) {
             return new HashSet<>(GUI_ROOT_NODE_MAP.values());
         }
         return this.getChildrenOfCurrentNode();
     }
 
+    public void enterActionConfirm(GuiRootNode targetNode) {
+        if (this.currentNode != null) {
+            this.navigationStack.push(this.currentNode);
+        }
+        this.pendingConfirmNode = targetNode;
+        this.confirmNodes = new ArrayList<>();
+        for (ActionType actionType : ActionType.values()) {
+            this.confirmNodes.add(actionType.toConfirmNode(targetNode));
+        }
+        this.currentNode = null;
+        this.refreshContainer();
+    }
+
+    public boolean isConfirmMode() {
+        return this.pendingConfirmNode != null;
+    }
+
+    @Nullable
+    public GuiRootNode getPendingConfirmNode() {
+        return this.pendingConfirmNode;
+    }
+
     public boolean canNavigateBack() {
-        return !this.navigationStack.isEmpty();
+        return !this.navigationStack.isEmpty() || this.isConfirmMode();
     }
 
     @Nullable
@@ -156,7 +215,7 @@ public class BotActionGuiContainer extends SimpleContainer {
     }
 
     public boolean isAtRoot() {
-        return this.currentNode == null;
+        return this.currentNode == null && !this.isConfirmMode();
     }
 
     public CraftBot getBot() {

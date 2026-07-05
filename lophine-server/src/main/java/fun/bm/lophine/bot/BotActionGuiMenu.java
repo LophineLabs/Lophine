@@ -1,6 +1,7 @@
 package fun.bm.lophine.bot;
 
 import com.mojang.logging.LogUtils;
+import fun.bm.lophine.bot.action.gui.ActionType;
 import fun.bm.lophine.bot.action.gui.GuiNode;
 import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import net.minecraft.server.MinecraftServer;
@@ -78,6 +79,12 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
     @Override
     public void clicked(int slotIndex, int buttonNum, ContainerInput containerInput, Player player) {
         if (slotIndex >= 0 && slotIndex < 54) {
+            if (this.container.isBackButtonSlot(slotIndex)) {
+                this.container.navigateBack();
+                this.refreshSlots();
+                return;
+            }
+
             GuiNode node = this.container.getGuiNodeAtSlot(slotIndex);
             if (node != null) {
                 this.handleNodeClick(node, player);
@@ -89,19 +96,24 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
     }
 
     private void handleNodeClick(GuiNode node, Player player) {
+        if (node instanceof ActionType.ActionConfirmNode confirmNode) {
+            this.executeCommand(confirmNode.getTargetNode(), confirmNode.getAction(), player);
+            return;
+        }
+
         if (node instanceof GuiRootNode rootNode) {
             if (!rootNode.getChildren().isEmpty()) {
                 this.container.navigateToChild(rootNode);
                 this.refreshSlots();
             } else {
-                this.executeCommand(rootNode, player);
+                this.container.enterActionConfirm(rootNode);
+                this.refreshSlots();
             }
         }
     }
 
-    private void executeCommand(GuiRootNode node, Player player) {
+    private void executeCommand(GuiRootNode node, String action, Player player) {
         try {
-            String action = "start"; // TODO later for other action
             String extra = action + " " + bot.getName() + " ";
             String command = node.buildCommand(extra);
             if (player instanceof ServerPlayer serverPlayer) {
