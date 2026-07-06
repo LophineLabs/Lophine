@@ -85,6 +85,16 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
                 return;
             }
 
+            // Handle ActionType selection
+            if (this.container.isSelectingActionType()) {
+                ActionType[] actionTypes = ActionType.values();
+                if (slotIndex < actionTypes.length) {
+                    this.container.selectActionType(actionTypes[slotIndex]);
+                    this.refreshSlots();
+                }
+                return;
+            }
+
             GuiNode node = this.container.getGuiNodeAtSlot(slotIndex);
             if (node != null) {
                 this.handleNodeClick(node, player);
@@ -96,26 +106,51 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
     }
 
     private void handleNodeClick(GuiNode node, Player player) {
-        if (node instanceof ActionType.ActionConfirmNode confirmNode) {
-            this.executeCommand(confirmNode.getTargetNode(), confirmNode.getAction(), player);
-            return;
-        }
-
         if (node instanceof GuiRootNode rootNode) {
+            // Get the selected action type
+            ActionType actionType = this.container.getSelectedActionType();
+            if (actionType == null) {
+                return;
+            }
+
+            int maxAllowedParameters = actionType.getMaxAllowedParameters();
+
+            // If the node has children, check parameter limit before navigating
             if (!rootNode.getChildren().isEmpty()) {
-                this.container.navigateToChild(rootNode);
-                this.refreshSlots();
+                // Calculate current parameter count (navigation stack size + 1 for current node if exists)
+                int currentParamCount = this.container.getCurrentParameterCount();
+
+                // If adding this node would exceed the limit, execute command instead of navigating
+                if (currentParamCount + 1 > maxAllowedParameters) {
+                    this.executeCommand(rootNode, actionType, player);
+                } else {
+                    this.container.navigateToChild(rootNode);
+                    this.refreshSlots();
+                }
             } else {
-                this.container.enterActionConfirm(rootNode);
-                this.refreshSlots();
+                // Execute command with the selected action type
+                this.executeCommand(rootNode, actionType, player);
             }
         }
     }
 
-    private void executeCommand(GuiRootNode node, String action, Player player) {
+    private void executeCommand(GuiRootNode node, ActionType actionType, Player player) {
         try {
-            String extra = action + " " + bot.getName() + " ";
+            String actionPrefix = actionType.getCommandActionPrefix();
+            String actionSuffix = actionType.getCommandActionSuffix();
+            if (!actionSuffix.isEmpty()) {
+                actionSuffix = actionSuffix + " ";
+            }
+
+            String extra = actionPrefix + " " + bot.getName() + " " + actionSuffix;
             String command = node.buildCommand(extra);
+
+            // Apply parameter limit based on ActionType
+            if (actionType.getMaxAllowedParameters() == 0) {
+                // For actions like STOP that don't allow parameters, trim to just "action botName"
+                command = actionPrefix + " " + bot.getName();
+            }
+
             if (player instanceof ServerPlayer serverPlayer) {
                 MinecraftServer.getServer().getCommands().performPrefixedCommand(
                         serverPlayer.createCommandSourceStack(),

@@ -26,8 +26,10 @@ public class BotActionGuiContainer extends SimpleContainer {
     private final CraftPlayer player;
     private final Deque<GuiNode> navigationStack = new ArrayDeque<>();
     private GuiNode currentNode = null;
-    private GuiRootNode pendingConfirmNode = null;
-    private List<GuiNode> confirmNodes = null;
+
+    // New state for action type selection flow
+    private ActionType selectedActionType = null;
+    private boolean isSelectingActionType = false;
 
     public static void registerGuiRootNode(GuiRootNode guiRootNode) {
         if (!GUI_ROOT_NODE_MAP.containsKey(guiRootNode.getName())) {
@@ -47,15 +49,34 @@ public class BotActionGuiContainer extends SimpleContainer {
         super(CONTAINER_SIZE, player);
         this.bot = bot;
         this.player = player;
-        this.showRootNodes();
+        this.showActionTypes();
+    }
+
+    private void showActionTypes() {
+        this.clearContent();
+        this.currentNode = null;
+        this.navigationStack.clear();
+        this.selectedActionType = null;
+        this.isSelectingActionType = true;
+
+        int slot = 0;
+        for (ActionType actionType : ActionType.values()) {
+            if (slot >= CONTAINER_SIZE) {
+                break;
+            }
+            ItemStack item = actionType.toConfirmNode(null).getItemStack();
+            if (item != null && !item.isEmpty()) {
+                this.setItem(slot, item.copy());
+            }
+            slot++;
+        }
     }
 
     private void showRootNodes() {
         this.clearContent();
         this.currentNode = null;
         this.navigationStack.clear();
-        this.pendingConfirmNode = null;
-        this.confirmNodes = null;
+        this.isSelectingActionType = false;
 
         int slot = 0;
         for (GuiRootNode rootNode : GUI_ROOT_NODE_MAP.values()) {
@@ -84,14 +105,15 @@ public class BotActionGuiContainer extends SimpleContainer {
     }
 
     public boolean navigateBack() {
-        if (this.isConfirmMode()) {
-            this.pendingConfirmNode = null;
-            this.confirmNodes = null;
+        // If we're selecting an operation after choosing action type, go back to action type selection
+        if (!this.isSelectingActionType && this.selectedActionType != null && this.navigationStack.isEmpty()) {
+            this.showActionTypes();
+            return true;
         }
 
         if (this.navigationStack.isEmpty()) {
             this.currentNode = null;
-            this.showRootNodes();
+            this.showActionTypes();
             return false;
         }
 
@@ -128,9 +150,6 @@ public class BotActionGuiContainer extends SimpleContainer {
 
     @Nullable
     private Set<GuiNode> getChildrenOfCurrentNode() {
-        if (this.isConfirmMode()) {
-            return this.confirmNodes != null ? new LinkedHashSet<>(this.confirmNodes) : null;
-        }
         if (this.currentNode == null) {
             return null;
         }
@@ -174,8 +193,9 @@ public class BotActionGuiContainer extends SimpleContainer {
 
     @Nullable
     private Set<GuiNode> getCurrentDisplayNodes() {
-        if (this.isConfirmMode()) {
-            return this.confirmNodes != null ? new LinkedHashSet<>(this.confirmNodes) : null;
+        // If selecting action type, return null (handled separately)
+        if (this.isSelectingActionType) {
+            return null;
         }
         if (this.currentNode == null) {
             return new HashSet<>(GUI_ROOT_NODE_MAP.values());
@@ -183,30 +203,32 @@ public class BotActionGuiContainer extends SimpleContainer {
         return this.getChildrenOfCurrentNode();
     }
 
-    public void enterActionConfirm(GuiRootNode targetNode) {
-        if (this.currentNode != null) {
-            this.navigationStack.push(this.currentNode);
-        }
-        this.pendingConfirmNode = targetNode;
-        this.confirmNodes = new ArrayList<>();
-        for (ActionType actionType : ActionType.values()) {
-            this.confirmNodes.add(actionType.toConfirmNode(targetNode));
-        }
-        this.currentNode = null;
-        this.refreshContainer();
+    /**
+     * Called when user selects an ActionType (START/STOP)
+     */
+    public void selectActionType(ActionType actionType) {
+        this.selectedActionType = actionType;
+        this.isSelectingActionType = false;
+        this.showRootNodes();
     }
 
-    public boolean isConfirmMode() {
-        return this.pendingConfirmNode != null;
-    }
-
+    /**
+     * Get the currently selected ActionType
+     */
     @Nullable
-    public GuiRootNode getPendingConfirmNode() {
-        return this.pendingConfirmNode;
+    public ActionType getSelectedActionType() {
+        return this.selectedActionType;
+    }
+
+    /**
+     * Check if we're in action type selection mode
+     */
+    public boolean isSelectingActionType() {
+        return this.isSelectingActionType;
     }
 
     public boolean canNavigateBack() {
-        return !this.navigationStack.isEmpty() || this.isConfirmMode();
+        return !this.navigationStack.isEmpty() || (!this.isSelectingActionType && this.selectedActionType != null);
     }
 
     @Nullable
@@ -215,7 +237,15 @@ public class BotActionGuiContainer extends SimpleContainer {
     }
 
     public boolean isAtRoot() {
-        return this.currentNode == null && !this.isConfirmMode();
+        return this.isSelectingActionType;
+    }
+
+    /**
+     * Get the current parameter count (number of selected command nodes).
+     * This equals the navigation stack size plus 1 if currentNode is not null.
+     */
+    public int getCurrentParameterCount() {
+        return this.navigationStack.size() + (this.currentNode != null ? 1 : 0);
     }
 
     public CraftBot getBot() {
