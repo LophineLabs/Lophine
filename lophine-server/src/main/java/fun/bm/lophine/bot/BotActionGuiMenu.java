@@ -85,11 +85,31 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
                 return;
             }
 
+            if (this.container.isHomeButtonSlot(slotIndex)) {
+                this.container.navigateHome();
+                this.refreshSlots();
+                return;
+            }
+
+            // Handle command builder click
+            if (slotIndex == 49 && this.container.canExecuteCommandBuilder()) {
+                this.executeCommandBuilder(player);
+                return;
+            }
+
             // Handle ActionType selection
             if (this.container.isSelectingActionType()) {
                 ActionType[] actionTypes = ActionType.values();
-                if (slotIndex < actionTypes.length) {
-                    this.container.selectActionType(actionTypes[slotIndex]);
+                // Find which content slot was clicked and map to ActionType index
+                int contentIndex = -1;
+                for (int i = 0; i < BotActionGuiContainer.CONTENT_SLOTS.length; i++) {
+                    if (BotActionGuiContainer.CONTENT_SLOTS[i] == slotIndex) {
+                        contentIndex = i;
+                        break;
+                    }
+                }
+                if (contentIndex >= 0 && contentIndex < actionTypes.length) {
+                    this.container.selectActionType(actionTypes[contentIndex]);
                     this.refreshSlots();
                 }
                 return;
@@ -159,6 +179,19 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
             }
         } catch (Exception e) {
             LogUtils.getLogger().warn("Error executing command: ", e);
+        }
+    }
+
+    /**
+     * Execute the command from the command builder (book item).
+     * Uses the current node and selected action type.
+     */
+    private void executeCommandBuilder(Player player) {
+        GuiNode currentNode = this.container.getCurrentNode();
+        ActionType actionType = this.container.getSelectedActionType();
+
+        if (currentNode instanceof GuiRootNode rootNode && actionType != null) {
+            this.executeCommand(rootNode, actionType, player);
         }
     }
 

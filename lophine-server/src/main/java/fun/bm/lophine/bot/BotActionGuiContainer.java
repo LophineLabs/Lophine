@@ -18,13 +18,34 @@ import org.leavesmc.leaves.entity.bot.CraftBot;
 import java.util.*;
 
 public class BotActionGuiContainer extends SimpleContainer {
-    private static final Map<String, GuiRootNode> GUI_ROOT_NODE_MAP = new HashMap<>();
+    private static final Map<String, GuiRootNode> GUI_ROOT_NODE_MAP = new LinkedHashMap<>();
+
     private static final int CONTAINER_SIZE = 54;
-    private static final int BACK_BUTTON_SLOT = 50;
+
+    private static final int[] BORDER_SLOTS = {
+            0, 1, 2, 3, 4, 5, 6, 7, 8,
+            9, 17,
+            18, 26,
+            27, 28, 29, 30, 31, 32, 33, 34, 35,
+            36, 37, 38, 39, 40, 41, 42, 43, 44,
+            45, 46, 47, 48, 49, 50, 51, 52, 53
+    };
+
+    public static final int[] CONTENT_SLOTS = {
+            10, 11, 12, 13, 14, 15, 16,
+            19, 20, 21, 22, 23, 24, 25
+    };
+
+    private static final int BACK_BUTTON_SLOT = 38;
+    private static final int COMMAND_BUILDER_SLOT = 40;
+    private static final int HOME_BUTTON_SLOT = 42;
+
+    private static final ItemStack boarder = new ItemStack(Items.YELLOW_STAINED_GLASS_PANE);
 
     private final CraftBot bot;
     private final CraftPlayer player;
     private final Deque<GuiNode> navigationStack = new ArrayDeque<>();
+    private final Deque<Boolean> fromRootLevelStack = new ArrayDeque<>(); // Track if we came from root level
     private GuiNode currentNode = null;
 
     // New state for action type selection flow
@@ -42,7 +63,7 @@ public class BotActionGuiContainer extends SimpleContainer {
     }
 
     public static Map<String, GuiRootNode> getGuiRootNodes() {
-        return new HashMap<>(GUI_ROOT_NODE_MAP);
+        return new LinkedHashMap<>(GUI_ROOT_NODE_MAP);
     }
 
     public BotActionGuiContainer(@NotNull CraftBot bot, CraftPlayer player) {
@@ -52,42 +73,77 @@ public class BotActionGuiContainer extends SimpleContainer {
         this.showActionTypes();
     }
 
+    private void fillBorder() {
+        for (int slot : BORDER_SLOTS) {
+            this.setItem(slot, boarder);
+        }
+    }
+
     private void showActionTypes() {
         this.clearContent();
+        this.fillBorder();
         this.currentNode = null;
         this.navigationStack.clear();
+        this.fromRootLevelStack.clear();
         this.selectedActionType = null;
         this.isSelectingActionType = true;
 
-        int slot = 0;
+        int contentIndex = 0;
         for (ActionType actionType : ActionType.values()) {
-            if (slot >= CONTAINER_SIZE) {
+            if (contentIndex >= CONTENT_SLOTS.length) {
                 break;
             }
             ItemStack item = actionType.toConfirmNode(null).getItemStack();
             if (item != null && !item.isEmpty()) {
-                this.setItem(slot, item.copy());
+                this.setItem(CONTENT_SLOTS[contentIndex], item.copy());
             }
-            slot++;
+            contentIndex++;
+        }
+
+        // Add navigation buttons even in action type selection
+        if (this.canNavigateBack()) {
+            this.setItem(BACK_BUTTON_SLOT, createBackButtonItem());
+        }
+
+        // Add command builder info
+        this.setItem(COMMAND_BUILDER_SLOT, createCommandBuilderItem());
+
+        if (this.canNavigateHome()) {
+            this.setItem(HOME_BUTTON_SLOT, createHomeButtonItem());
         }
     }
 
     private void showRootNodes() {
         this.clearContent();
+        this.fillBorder();
         this.currentNode = null;
         this.navigationStack.clear();
+        this.fromRootLevelStack.clear();
         this.isSelectingActionType = false;
 
-        int slot = 0;
+        int contentIndex = 0;
         for (GuiRootNode rootNode : GUI_ROOT_NODE_MAP.values()) {
-            if (slot >= CONTAINER_SIZE) {
+            if (contentIndex >= CONTENT_SLOTS.length) {
                 break;
             }
-            ItemStack item = rootNode.getItemStack();
+            ItemStack item = createNodeItemWithRunHint(rootNode);
             if (item != null && !item.isEmpty()) {
-                this.setItem(slot, item.copy());
+                this.setItem(CONTENT_SLOTS[contentIndex], item.copy());
             }
-            slot++;
+            contentIndex++;
+        }
+
+        // Add back button to return to action type selection
+        if (this.canNavigateBack()) {
+            this.setItem(BACK_BUTTON_SLOT, createBackButtonItem());
+        }
+
+        // Add command builder info
+        this.setItem(COMMAND_BUILDER_SLOT, createCommandBuilderItem());
+
+        // Add home button to return to main menu
+        if (this.canNavigateHome()) {
+            this.setItem(HOME_BUTTON_SLOT, createHomeButtonItem());
         }
     }
 
@@ -96,8 +152,14 @@ public class BotActionGuiContainer extends SimpleContainer {
             return;
         }
 
+        // If we're at root level (currentNode is null but not selecting action type),
+        // we need to track that we came from root nodes level
         if (this.currentNode != null) {
             this.navigationStack.push(this.currentNode);
+            this.fromRootLevelStack.push(false);
+        } else if (!this.isSelectingActionType && this.selectedActionType != null) {
+            // We're at root nodes level, mark that we should return to root nodes
+            this.fromRootLevelStack.push(true);
         }
 
         this.currentNode = node;
@@ -105,25 +167,39 @@ public class BotActionGuiContainer extends SimpleContainer {
     }
 
     public boolean navigateBack() {
-        // If we're selecting an operation after choosing action type, go back to action type selection
-        if (!this.isSelectingActionType && this.selectedActionType != null && this.navigationStack.isEmpty()) {
-            this.showActionTypes();
-            return true;
-        }
-
-        if (this.navigationStack.isEmpty()) {
-            this.currentNode = null;
-            this.showActionTypes();
+        // If we're at root node level (no navigation stack), go back to action type selection
+        if (this.navigationStack.isEmpty() && this.fromRootLevelStack.isEmpty()) {
+            // If we have a selected action type, we're at the root nodes level
+            if (!this.isSelectingActionType && this.selectedActionType != null) {
+                this.showActionTypes();
+                return true;
+            }
+            // Already at action type selection
             return false;
         }
 
-        this.currentNode = this.navigationStack.pop();
-        this.refreshContainer();
+        // Check if we should return to root nodes level
+        boolean fromRootLevel = !this.fromRootLevelStack.isEmpty() && this.fromRootLevelStack.pop();
+
+        if (fromRootLevel) {
+            // Return to root nodes level
+            this.currentNode = null;
+            this.showRootNodes();
+        } else if (!this.navigationStack.isEmpty()) {
+            // Pop from navigation stack and refresh
+            this.currentNode = this.navigationStack.pop();
+            this.refreshContainer();
+        }
         return true;
+    }
+
+    public void navigateHome() {
+        this.showActionTypes();
     }
 
     private void refreshContainer() {
         this.clearContent();
+        this.fillBorder();
 
         Set<GuiNode> children = this.getChildrenOfCurrentNode();
         if (children == null || children.isEmpty()) {
@@ -131,20 +207,27 @@ public class BotActionGuiContainer extends SimpleContainer {
             return;
         }
 
-        int slot = 0;
+        int contentIndex = 0;
         for (GuiNode child : children) {
-            if (slot >= CONTAINER_SIZE - 1) {
+            if (contentIndex >= CONTENT_SLOTS.length) {
                 break;
             }
-            ItemStack item = child.getItemStack();
+            ItemStack item = createNodeItemWithRunHint(child);
             if (item != null && !item.isEmpty()) {
-                this.setItem(slot, item.copy());
+                this.setItem(CONTENT_SLOTS[contentIndex], item.copy());
             }
-            slot++;
+            contentIndex++;
         }
 
         if (this.canNavigateBack()) {
             this.setItem(BACK_BUTTON_SLOT, createBackButtonItem());
+        }
+
+        // Add command builder info
+        this.setItem(COMMAND_BUILDER_SLOT, createCommandBuilderItem());
+
+        if (this.canNavigateHome()) {
+            this.setItem(HOME_BUTTON_SLOT, createHomeButtonItem());
         }
     }
 
@@ -165,14 +248,34 @@ public class BotActionGuiContainer extends SimpleContainer {
             return null; // back button is handled separately
         }
 
+        // Check if slot is a border slot
+        for (int borderSlot : BORDER_SLOTS) {
+            if (borderSlot == slot) {
+                return null;
+            }
+        }
+
         Set<GuiNode> nodes = this.getCurrentDisplayNodes();
         if (nodes == null) {
             return null;
         }
 
+        // Find the content index for this slot
+        int contentIndex = -1;
+        for (int i = 0; i < CONTENT_SLOTS.length; i++) {
+            if (CONTENT_SLOTS[i] == slot) {
+                contentIndex = i;
+                break;
+            }
+        }
+
+        if (contentIndex == -1) {
+            return null;
+        }
+
         int index = 0;
         for (GuiNode node : nodes) {
-            if (index == slot) {
+            if (index == contentIndex) {
                 return node;
             }
             index++;
@@ -184,11 +287,111 @@ public class BotActionGuiContainer extends SimpleContainer {
         return slot == BACK_BUTTON_SLOT && this.canNavigateBack();
     }
 
+    public boolean isHomeButtonSlot(int slot) {
+        return slot == HOME_BUTTON_SLOT && this.canNavigateHome();
+    }
+
     private static ItemStack createBackButtonItem() {
-        ItemStack item = new ItemStack(Items.BARRIER);
+        ItemStack item = new ItemStack(Items.RED_WOOL);
         item.set(DataComponents.CUSTOM_NAME, Component.literal("§cBack"));
         item.set(DataComponents.LORE, new ItemLore(List.of(Component.literal("Return to previous page"))));
         return item;
+    }
+
+    private static ItemStack createHomeButtonItem() {
+        ItemStack item = new ItemStack(Items.RED_BED);
+        item.set(DataComponents.CUSTOM_NAME, Component.literal("§aHome"));
+        item.set(DataComponents.LORE, new ItemLore(List.of(Component.literal("Return to main menu"))));
+        return item;
+    }
+
+    private ItemStack createNodeItemWithRunHint(GuiNode node) {
+        ItemStack itemStack = node.getItemStack();
+
+        // Check if this is a last-level node (no children)
+        boolean isLastLevel;
+        if (node instanceof GuiRootNode rootNode) {
+            isLastLevel = rootNode.getChildren().isEmpty();
+        } else {
+            // Non-RootNode is always considered last level
+            isLastLevel = true;
+        }
+
+        // If it's the last level and we have an action type selected, add run hint
+        if (isLastLevel && this.selectedActionType != null && !this.isSelectingActionType) {
+            // Get existing lore or create new one
+            ItemLore existingLore = itemStack.get(DataComponents.LORE);
+            List<Component> loreLines = new ArrayList<>();
+
+            if (existingLore != null) {
+                loreLines.addAll(existingLore.lines());
+            }
+
+            // Add golden run hint
+            loreLines.add(Component.literal("§6Click to execute"));
+
+            itemStack.set(DataComponents.LORE, new ItemLore(loreLines));
+        }
+
+        return itemStack;
+    }
+
+    private ItemStack createCommandBuilderItem() {
+        ItemStack item = new ItemStack(Items.BOOK);
+
+        // Build the complete command preview
+        String commandPreview = buildCommandPreview();
+
+        // Check if current node is runnable (confirmable)
+        boolean canRun = this.currentNode != null && this.currentNode.isConfirmable();
+
+        List<Component> loreLines = new ArrayList<>();
+        loreLines.add(Component.literal("§eCommand:"));
+        loreLines.add(Component.literal("§f" + commandPreview));
+
+        // Add run hint if the node is confirmable
+        if (canRun) {
+            loreLines.add(Component.literal("§6Click to execute"));
+        }
+
+        item.set(DataComponents.CUSTOM_NAME, Component.literal("§6Command Builder"));
+        item.set(DataComponents.LORE, new ItemLore(loreLines));
+        return item;
+    }
+
+    private String buildCommandPreview() {
+        if (this.selectedActionType == null) {
+            return "Select an action type first";
+        }
+
+        try {
+            String actionPrefix = this.selectedActionType.getCommandActionPrefix();
+            String actionSuffix = this.selectedActionType.getCommandActionSuffix();
+            if (!actionSuffix.isEmpty()) {
+                actionSuffix = actionSuffix + " ";
+            }
+
+            String extra = actionPrefix + " " + this.bot.getName() + " " + actionSuffix;
+
+            // If we have a current node and it's a GuiRootNode, build the command
+            if (this.currentNode instanceof GuiRootNode rootNode) {
+                String command = rootNode.buildCommand(extra);
+
+                // Apply parameter limit based on ActionType
+                if (this.selectedActionType.getMaxAllowedParameters() == 0) {
+                    command = actionPrefix + " " + this.bot.getName();
+                }
+
+                return command;
+            } else if (!this.isSelectingActionType) {
+                // At root nodes level or selecting action type
+                return extra.trim() + " <command>";
+            } else {
+                return "Select a command node";
+            }
+        } catch (Exception e) {
+            return "Error building command";
+        }
     }
 
     @Nullable
@@ -198,7 +401,7 @@ public class BotActionGuiContainer extends SimpleContainer {
             return null;
         }
         if (this.currentNode == null) {
-            return new HashSet<>(GUI_ROOT_NODE_MAP.values());
+            return new LinkedHashSet<>(GUI_ROOT_NODE_MAP.values());
         }
         return this.getChildrenOfCurrentNode();
     }
@@ -231,13 +434,21 @@ public class BotActionGuiContainer extends SimpleContainer {
         return !this.navigationStack.isEmpty() || (!this.isSelectingActionType && this.selectedActionType != null);
     }
 
+    public boolean canNavigateHome() {
+        return !this.isSelectingActionType && (this.currentNode != null || this.selectedActionType != null);
+    }
+
+    /**
+     * Check if the command builder can be executed.
+     * Returns true if there is a current node and it is confirmable.
+     */
+    public boolean canExecuteCommandBuilder() {
+        return this.currentNode != null && this.currentNode.isConfirmable();
+    }
+
     @Nullable
     public GuiNode getCurrentNode() {
         return this.currentNode;
-    }
-
-    public boolean isAtRoot() {
-        return this.isSelectingActionType;
     }
 
     /**

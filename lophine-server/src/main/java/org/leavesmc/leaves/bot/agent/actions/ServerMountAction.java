@@ -17,6 +17,7 @@
 
 package org.leavesmc.leaves.bot.agent.actions;
 
+import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftVehicle;
 import org.bukkit.entity.Vehicle;
@@ -31,6 +32,8 @@ public class ServerMountAction extends AbstractBotAction<ServerMountAction> {
 
     public ServerMountAction() {
         super("mount", ServerMountAction::new);
+
+        this.guiData = new GuiRootNode("Mount", "Mount", null, "mount");
     }
 
     @Override

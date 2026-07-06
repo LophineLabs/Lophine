@@ -17,6 +17,7 @@
 
 package org.leavesmc.leaves.bot.agent.actions;
 
+import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -27,6 +28,8 @@ public class ServerSwapAction extends AbstractBotAction<ServerSwapAction> {
 
     public ServerSwapAction() {
         super("swap", ServerSwapAction::new);
+
+        this.guiData = new GuiRootNode("Swap", "Swap", null, "swap");
     }
 
     @Override

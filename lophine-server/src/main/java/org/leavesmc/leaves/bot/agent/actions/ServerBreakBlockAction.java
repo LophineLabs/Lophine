@@ -17,6 +17,7 @@
 
 package org.leavesmc.leaves.bot.agent.actions;
 
+import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -33,7 +34,8 @@ import org.leavesmc.leaves.entity.bot.actions.CraftBreakBlockAction;
 public class ServerBreakBlockAction extends AbstractTimerBotAction<ServerBreakBlockAction> {
 
     public ServerBreakBlockAction() {
-        super("break", ServerBreakBlockAction::new);
+        GuiRootNode guiRootNode = new GuiRootNode("Break", "Break a block", null, "break");
+        super("break", ServerBreakBlockAction::new, guiRootNode);
     }
 
     private ItemStack lastItem = null;

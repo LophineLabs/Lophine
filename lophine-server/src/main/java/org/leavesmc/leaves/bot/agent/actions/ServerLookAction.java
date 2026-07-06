@@ -45,6 +45,9 @@ public class ServerLookAction extends AbstractBotAction<ServerLookAction> {
         this.addArgument("player", ArgumentTypes.player()).setOptional(true);
         this.fork(1);
         this.addArgument("location", ArgumentTypes.finePosition());
+
+        // TODO Later
+        //GuiRootNode guiRootNode = new GuiRootNode("look", "Look", null, "look");
     }
 
     @Override

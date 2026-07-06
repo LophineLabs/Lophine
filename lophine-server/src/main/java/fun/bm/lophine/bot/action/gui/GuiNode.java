@@ -13,13 +13,19 @@ public class GuiNode {
     protected final String name;
     protected final String description;
     protected final Item item;
+    protected final boolean confirmable;
 
     private static final Item defaultItem = Items.PAPER;
 
-    public GuiNode(String name, String description, Item item) {
+    public GuiNode(String name, String description, Item item, boolean confirmable) {
         this.name = name;
         this.description = description;
         this.item = item;
+        this.confirmable = confirmable;
+    }
+
+    public GuiNode(String name, String description, Item item) {
+        this(name, description, item, true);
     }
 
     public String getName() {
@@ -28,6 +34,10 @@ public class GuiNode {
 
     public String getDescription() {
         return this.description;
+    }
+
+    public boolean isConfirmable() {
+        return this.confirmable;
     }
 
     public ItemStack getItemStack() {

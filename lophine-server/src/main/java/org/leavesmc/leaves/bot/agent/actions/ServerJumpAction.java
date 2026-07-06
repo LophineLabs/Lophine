@@ -17,6 +17,7 @@
 
 package org.leavesmc.leaves.bot.agent.actions;
 
+import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.bot.ServerBot;
 import org.leavesmc.leaves.entity.bot.actions.CraftJumpAction;
@@ -24,7 +25,8 @@ import org.leavesmc.leaves.entity.bot.actions.CraftJumpAction;
 public class ServerJumpAction extends AbstractTimerBotAction<ServerJumpAction> {
 
     public ServerJumpAction() {
-        super("jump", ServerJumpAction::new);
+        GuiRootNode guiRootNode = new GuiRootNode("Jump", "Jump", null, "jump");
+        super("jump", ServerJumpAction::new, guiRootNode);
     }
 
     @Override

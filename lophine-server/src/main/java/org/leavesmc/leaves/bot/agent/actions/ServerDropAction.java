@@ -17,6 +17,7 @@
 
 package org.leavesmc.leaves.bot.agent.actions;
 
+import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.bot.ServerBot;
 import org.leavesmc.leaves.entity.bot.actions.CraftDropAction;
@@ -24,7 +25,8 @@ import org.leavesmc.leaves.entity.bot.actions.CraftDropAction;
 public class ServerDropAction extends AbstractTimerBotAction<ServerDropAction> {
 
     public ServerDropAction() {
-        super("drop", ServerDropAction::new);
+        GuiRootNode guiRootNode = new GuiRootNode("Drop", "Drop all items", null, "drop");
+        super("drop", ServerDropAction::new, guiRootNode);
     }
 
     @Override

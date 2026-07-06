@@ -17,6 +17,7 @@
 
 package org.leavesmc.leaves.bot.agent.actions;
 
+import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.bot.ServerBot;
 import org.leavesmc.leaves.bot.agent.ExtraData;
@@ -32,6 +33,11 @@ public class ServerMoveAction extends AbstractStateBotAction<ServerMoveAction> {
     public ServerMoveAction() {
         super("move", ServerMoveAction::new);
         this.addArgument("direction", EnumArgumentType.fromEnum(MoveDirection.class));
+
+        this.guiData = new GuiRootNode("Move", "Move", null, "move", false);
+        for (MoveDirection direction : MoveDirection.values()) {
+            this.guiData.child(new GuiRootNode(direction.name, direction.name, null, "move " + direction.name));
+        }
     }
 
     @Override

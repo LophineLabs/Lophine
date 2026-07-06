@@ -5,7 +5,7 @@ import fun.bm.lophine.config.modules.function.FakeplayerConfig;
 import net.minecraft.world.item.Item;
 
 import java.rmi.UnexpectedException;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -16,11 +16,19 @@ public class GuiRootNode extends GuiNode {
     protected final String commandNode;
 
     public GuiRootNode(String name, String description, Item item, String commandNode) {
-        this(name, description, item, new HashSet<>(), commandNode);
+        this(name, description, item, commandNode, true);
+    }
+
+    public GuiRootNode(String name, String description, Item item, String commandNode, boolean confirmable) {
+        this(name, description, item, new LinkedHashSet<>(), commandNode, confirmable);
     }
 
     public GuiRootNode(String name, String description, Item item, Set<GuiNode> children, String commandNode) {
-        super(name, description, item);
+        this(name, description, item, children, commandNode, true);
+    }
+
+    public GuiRootNode(String name, String description, Item item, Set<GuiNode> children, String commandNode, boolean confirmable) {
+        super(name, description, item, confirmable);
         this.children = children;
         this.commandNode = commandNode;
     }
@@ -36,6 +44,20 @@ public class GuiRootNode extends GuiNode {
 
     public Set<GuiNode> getChildren() {
         return this.children;
+    }
+
+    public Set<GuiNode> getAllFurthestChildren() {
+        if (this.children.isEmpty()) {
+            Set<GuiNode> result = new LinkedHashSet<>();
+            result.add(this);
+            return result;
+        }
+
+        Set<GuiNode> furthestChildren = new LinkedHashSet<>();
+        for (GuiNode child : this.children) {
+            furthestChildren.addAll(((GuiRootNode) child).getAllFurthestChildren());
+        }
+        return furthestChildren;
     }
 
     public String getCommandNode() {
