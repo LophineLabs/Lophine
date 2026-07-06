@@ -18,7 +18,6 @@
 package org.leavesmc.leaves.bot;
 
 import ca.spottedleaf.moonrise.common.util.TickThread;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
@@ -33,33 +32,20 @@ import io.papermc.paper.threadedregions.scheduler.FoliaGlobalRegionScheduler;
 import io.papermc.paper.util.MCUtil;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
-import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.Connection;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.protocol.game.*;
-import net.minecraft.network.protocol.status.ServerStatus;
+import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.CommonListenerCookie;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.server.players.NameAndId;
-import net.minecraft.server.players.UserNameToIdResolver;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
-import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.gamerules.GameRules;
-import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.scores.PlayerTeam;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -204,110 +190,33 @@ public class BotList {
     public ServerBot placeNewBot(@NotNull ServerBot bot, ServerLevel world, Location location, ValueInput save) {
         Optional<ValueInput> optional = Optional.ofNullable(save);
 
-        CommonListenerCookie cookie = CommonListenerCookie.createInitial(bot.gameProfile, false);
-        bot.isRealPlayer = true; // Paper
-        bot.loginTime = System.currentTimeMillis(); // Paper - Replace OfflinePlayer#getLastPlayed
+        bot.isRealPlayer = true;
+        bot.loginTime = System.currentTimeMillis();
         bot.connection = new ServerBotPacketListenerImpl(this.server, bot);
         if (bot.connection.connection.getPlayer() != bot) {
             throw new IllegalStateException("Bot connection is not bound to its bot player");
         }
-
+        bot.connection.markClientLoaded();
         bot.getBukkitEntity().setMetadata("NPC", new FixedMetadataValue(MinecraftInternalPlugin.INSTANCE, true));
+        bot.setServerLevel(world);
 
         BotSpawnLocationEvent event = new BotSpawnLocationEvent(bot.getBukkitEntity(), location);
         this.server.server.getPluginManager().callEvent(event);
+        location = event.getSpawnLocation();
 
-        Connection connection = bot.connection.connection;
-        NameAndId gameProfile = bot.nameAndId();
-        UserNameToIdResolver profileCache = this.server.services().nameToIdCache();
-        Optional<NameAndId> oldProfile = profileCache.get(gameProfile.id());
-        String oldName = oldProfile.map(NameAndId::name).orElse(gameProfile.name());
-        if (bot.lastKnownName != null) {
-            oldName = bot.lastKnownName;
-            bot.lastKnownName = null;
-        } // CraftBukkit - Better rename detection
-        profileCache.add(gameProfile);
-        final ServerLevel[] level = {bot.level()};
-        String address = connection.getLoggableAddress(this.server.logIPs());
-        LevelData levelData = level[0].getLevelData();
-        ServerGamePacketListenerImpl playerConnection = new ServerGamePacketListenerImpl(this.server, connection, bot, cookie);
-        // Folia start - rewrite login process
-        // only after setting the connection listener to game type, add the connection to this regions list
-        level[0].getCurrentWorldData().connections.add(connection);
-        // Folia end - rewrite login process
-        if (!me.earthme.luminol.config.modules.optimizations.AsyncProtocolChangeConfig.enabled) { // Luminol - Async protocol switch // we will run async switch once these main thread logics became done
-            connection.setupInboundProtocol(
-                    GameProtocols.SERVERBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess()), playerConnection), playerConnection
-            );
-        } // Luminol - Async protocol switch
-        playerConnection.suspendFlushing();
-        GameRules gameRules = level[0].getGameRules();
-        boolean immediateRespawn = gameRules.get(GameRules.IMMEDIATE_RESPAWN);
-        boolean reducedDebugInfo = gameRules.get(GameRules.REDUCED_DEBUG_INFO);
-        boolean doLimitedCrafting = gameRules.get(GameRules.LIMITED_CRAFTING);
-        playerConnection.send(
-                new ClientboundLoginPacket(
-                        bot.getId(),
-                        levelData.isHardcore(),
-                        this.server.levelKeys(),
-                        this.server.getPlayerList().getMaxPlayers(),
-                        io.papermc.paper.FeatureHooks.getViewDistance(level[0]), // Paper - view distance
-                        io.papermc.paper.FeatureHooks.getSimulationDistance(level[0]), // Paper - simulation distance
-                        reducedDebugInfo,
-                        !immediateRespawn,
-                        doLimitedCrafting,
-                        bot.createCommonSpawnInfo(level[0]),
-                        this.server.usesAuthentication(),
-                        this.server.enforceSecureProfile()
-                )
-        );
-        bot.getBukkitEntity().sendSupportedChannels(); // CraftBukkit
-        playerConnection.send(new ClientboundChangeDifficultyPacket(levelData.getDifficulty(), levelData.isDifficultyLocked()));
-        playerConnection.send(new ClientboundPlayerAbilitiesPacket(bot.getAbilities()));
-        playerConnection.send(new ClientboundSetHeldSlotPacket(bot.getInventory().getSelectedSlot()));
-        RecipeManager recipeManager = this.server.getRecipeManager();
-        playerConnection.send(
-                new ClientboundUpdateRecipesPacket(recipeManager.getSynchronizedItemProperties(), recipeManager.getSynchronizedStonecutterRecipes())
-        );
-        this.server.getPlayerList().sendPlayerPermissionLevel(bot);
-        bot.getStats().markAllDirty();
-        bot.getRecipeBook().sendInitialRecipeBook(bot);
-        //this.updateEntireScoreboard(level.getScoreboard(), player); // Folia - region threading
-        this.server.invalidateStatus();
-        MutableComponent component;
-        if (bot.getGameProfile().name().equalsIgnoreCase(oldName)) {
-            component = Component.translatable("multiplayer.player.joined", bot.getDisplayName());
-        } else {
-            component = Component.translatable("multiplayer.player.joined.renamed", bot.getDisplayName(), oldName);
-        }
+        bot.setServerLevel(world);
+        bot.gameMode.setLevel(bot.level());
 
-        // CraftBukkit start
-        component.withStyle(ChatFormatting.YELLOW);
-        final Component[] joinMessage = {component}; // Paper - Adventure
-        playerConnection.teleport(bot.getX(), bot.getY(), bot.getZ(), bot.getYRot(), bot.getXRot());
-        ServerStatus status = this.server.getStatus();
-        if (status != null && !cookie.transferred()) {
-            bot.sendServerStatus(status);
-        }
+        bot.setPosRaw(location.getX(), location.getY(), location.getZ());
+        bot.setRot(location.getYaw(), location.getPitch());
 
-        // player.connection.send(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(this.players)); // CraftBukkit - replaced with loop below
-        this.server.getPlayerList().getPlayers().add(bot);
+        bot.connection.teleport(bot.getX(), bot.getY(), bot.getZ(), bot.getYRot(), bot.getXRot());
+
         this.bots.add(bot);
         this.botsByName.put(bot.getScoreboardName().toLowerCase(Locale.ROOT), bot);
         this.botsByUUID.put(bot.getUUID(), bot);
-        // this.broadcastAll(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(List.of(player))); // CraftBukkit - replaced with loop below
-        // Paper start - Fire PlayerJoinEvent when Player is actually ready; correctly register player BEFORE PlayerJoinEvent, so the entity is valid and doesn't require tick delay hacks
-        bot.suppressTrackerForLogin = true;
-        this.server.getPlayerList().sendLevelInfo(bot, level[0]);
-        level[0].addNewPlayer(bot);
-        this.server.getCustomBossEvents().onPlayerConnect(bot); // see commented out section below serverLevel.addPlayerJoin(player);
-        // Paper end - Fire PlayerJoinEvent when Player is actually ready
-        bot.initInventoryMenu();
-        // CraftBukkit start
-        org.bukkit.craftbukkit.entity.CraftPlayer bukkitPlayer = bot.getBukkitEntity();
 
-        // Ensure that player inventory is populated with its viewer
-        bot.containerMenu.transferTo(bot.containerMenu, bukkitPlayer);
+        bot.suppressTrackerForLogin = true;
 
         Runnable task = () -> {
             optional.ifPresent(nbt -> {
@@ -319,100 +228,21 @@ public class BotList {
             BotJoinEvent event1 = new BotJoinEvent(bot.getBukkitEntity(), PaperAdventure.asAdventure(Component.translatable("multiplayer.player.joined", bot.getDisplayName())).style(Style.style(NamedTextColor.YELLOW)));
             this.server.server.getPluginManager().callEvent(event1);
 
-            if (!bot.connection.isAcceptingMessages()) {
-                //return; // Folia - region threading - must still allow the player to connect, as we must add to chunk map before handling disconnect
+            net.kyori.adventure.text.Component joinMessage = event1.joinMessage();
+            if (joinMessage != null && !joinMessage.equals(net.kyori.adventure.text.Component.empty())) {
+                this.server.getPlayerList().broadcastSystemMessage(PaperAdventure.asVanilla(joinMessage), false);
             }
 
-            org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handlePlayerJoin(bot); // Leaves - protocol
+            bot.renderInfo();
+            bot.suppressTrackerForLogin = false;
 
-            final net.kyori.adventure.text.Component jm = event1.joinMessage();
-
-            if (jm != null && !jm.equals(net.kyori.adventure.text.Component.empty())) { // Paper - Adventure
-                joinMessage[0] = io.papermc.paper.adventure.PaperAdventure.asVanilla(jm); // Paper - Adventure
-                this.server.getPlayerList().broadcastSystemMessage(joinMessage[0], false); // Paper - Adventure
-            }
-            // CraftBukkit end
-
-            // CraftBukkit start - sendAll above replaced with this loop
-            ClientboundPlayerInfoUpdatePacket packet = ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(List.of(bot)); // Paper - Add Listing API for Player
-
-            final List<ServerPlayer> onlinePlayers = Lists.newArrayListWithExpectedSize(this.server.getPlayerList().getPlayers().size() - 1); // Paper - Use single player info update packet on join
-            for (ServerPlayer entityplayer1 : this.server.getPlayerList().getPlayers()) { // Folia - region threading
-
-                if (entityplayer1.getBukkitEntity().canSee(bukkitPlayer)) {
-                    // Paper start - Add Listing API for Player
-                    if (entityplayer1.getBukkitEntity().isListed(bukkitPlayer)) {
-                        // Paper end - Add Listing API for Player
-                        entityplayer1.connection.send(packet);
-                        // Paper start - Add Listing API for Player
-                    } else {
-                        entityplayer1.connection.send(ClientboundPlayerInfoUpdatePacket.createSinglePlayerInitializing(bot, false));
-                    }
-                    // Paper end - Add Listing API for Player
-                }
-
-                if (entityplayer1 == bot || !bukkitPlayer.canSee(entityplayer1.getBukkitEntity())) { // Paper - Use single player info update packet on join; Don't include joining player
-                    continue;
-                }
-
-                onlinePlayers.add(entityplayer1); // Paper - Use single player info update packet on join
-            }
-            // Paper start - Use single player info update packet on join
-            if (!onlinePlayers.isEmpty()) {
-                bot.connection.send(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(onlinePlayers, bot)); // Paper - Add Listing API for Player
-            }
-            // Paper end - Use single player info update packet on join
-            bot.sentListPacket = true;
-            bot.suppressTrackerForLogin = false; // Paper - Fire PlayerJoinEvent when Player is actually ready
-            bot.level().getChunkSource().addEntity(bot); // Paper - Fire PlayerJoinEvent when Player is actually ready; track entity now
-            // CraftBukkit end
-
-            //player.refreshEntityData(player); // CraftBukkit - BungeeCord#2321, send complete data to self on spawn // Paper - THIS IS NOT NEEDED ANYMORE
-
-            this.server.getPlayerList().sendLevelInfo(bot, level[0]);
-
-            // CraftBukkit start - Only add if the player wasn't moved in the event
-            if (bot.level() == level[0] && !level[0].players().contains(bot)) {
-                level[0].addNewPlayer(bot);
-                this.server.getCustomBossEvents().onPlayerConnect(bot);
-            }
-
-            level[0] = bot.level(); // CraftBukkit - Update in case join event changed it
-            // CraftBukkit end
-            this.server.getPlayerList().sendActivePlayerEffects(bot);
-            // Paper - move loading pearls / parent vehicle up
+            bot.level().getChunkSource().chunkMap.addEntity(bot);
+            bot.renderData();
             bot.initInventoryMenu();
-            this.server.notificationManager().playerJoined(bot);
-            playerConnection.resumeFlushing();
-            // Paper start - Configurable player collision; Add to collideRule team if needed
-            final net.minecraft.world.scores.Scoreboard scoreboard = this.server.getPlayerList().getServer().getLevel(Level.OVERWORLD).getScoreboard();
-            final PlayerTeam collideRuleTeam = scoreboard.getPlayerTeam(this.server.getPlayerList().collideRuleTeamName);
-            if (false && this.server.getPlayerList().collideRuleTeamName != null && collideRuleTeam != null && bot.getTeam() == null) { // Folia - region threading
-                scoreboard.addPlayerToTeam(bot.getScoreboardName(), collideRuleTeam);
-            }
-            // Paper end - Configurable player collision
-            // CraftBukkit start - moved down
-            LOGGER.info(
-                    "{}[{}] logged in with entity id {} at ([{}]{}, {}, {})", // Paper - add world identifier
-                    bot.getPlainTextName(),
-                    address,
-                    bot.getId(),
-                    level[0].dimension().identifier(), // Paper - add world identifier
-                    bot.getX(),
-                    bot.getY(),
-                    bot.getZ()
-            );
-            // CraftBukkit end - moved down
-            // Paper start - Send empty chunk, so players aren't stuck in the world loading screen with our chunk system not sending chunks when dead
-            if (bot.isDeadOrDying()) {
-                net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> plains = level[0].registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.BIOME)
-                        .getOrThrow(net.minecraft.world.level.biome.Biomes.PLAINS);
-                bot.connection.send(new net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket(
-                        new net.minecraft.world.level.chunk.EmptyLevelChunk(level[0], bot.chunkPosition(), plains),
-                        level[0].getLightEngine(), (java.util.BitSet) null, (java.util.BitSet) null, true) // Paper - Anti-Xray
-                );
-            }
-            // Paper end - Send empty chunk
+            botsNameByWorldUuid
+                    .computeIfAbsent(bot.level().uuid.toString(), (k) -> new HashSet<>())
+                    .add(bot.getBukkitEntity().getName());
+            BotList.LOGGER.info("{}[{}] logged in with entity id {} at ([{}]{}, {}, {})", bot.getName().getString(), "Local", bot.getId(), bot.level().serverLevelData.getLevelName(), bot.getX(), bot.getY(), bot.getZ());
         };
         if (TickThread.isTickThreadFor(world, location.blockX() >> 4, location.blockZ() >> 4)) {
             task.run();
@@ -485,13 +315,11 @@ public class BotList {
 
         bot.unRide();
         for (ThrownEnderpearl thrownEnderpearl : bot.getEnderPearls()) {
-            // Lophine start - restore vanilla ender pearl loading on Folia
-            thrownEnderpearl.getBukkitEntity().taskScheduler.scheduleOrExecute((Entity pearl) -> {
-                if (!pearl.isRemoved()) {
-                    pearl.setRemoved(Entity.RemovalReason.UNLOADED_WITH_PLAYER, EntityRemoveEvent.Cause.PLAYER_QUIT);
-                }
-            });
-            // Lophine end - restore vanilla ender pearl loading on Folia
+            if (!thrownEnderpearl.level().paperConfig().misc.legacyEnderPearlBehavior) {
+                thrownEnderpearl.setRemoved(Entity.RemovalReason.UNLOADED_WITH_PLAYER, EntityRemoveEvent.Cause.PLAYER_QUIT);
+            } else {
+                thrownEnderpearl.setOwner(null);
+            }
         }
 
         bot.level().getCurrentWorldData().connections.remove(bot.connection.connection);

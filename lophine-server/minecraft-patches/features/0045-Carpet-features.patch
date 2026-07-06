@@ -268,10 +268,10 @@ index aec23bc77fc78eea6a3137b71a6923c217ad40a7..3f3125e0f198f5530057371d631d8e32
                  } else {
                      LOGGER.warn("Player {} was dropping items too fast in creative mode, ignoring.", this.player.getPlainTextName());
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 1a849654efcd42cdea3f85020fd8d018bc651b57..d88c54b27193dc2c4d2c8f539437bf5f6fb8466c 100644
+index 64a87785048e103c10f6453e97a37f8501255adc..432a6dfff8e45eccea653b0d4cf04956edec6d98 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -308,7 +308,7 @@ public abstract class PlayerList {
+@@ -279,7 +279,7 @@ public abstract class PlayerList {
          // org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handlePlayerJoin(player); // Leaves - protocol
  
          // Leaves start - bot support
@@ -280,7 +280,7 @@ index 1a849654efcd42cdea3f85020fd8d018bc651b57..d88c54b27193dc2c4d2c8f539437bf5f
              org.leavesmc.leaves.bot.ServerBot bot = this.server.getBotList().getBotByName(player.getScoreboardName());
              if (bot != null) {
                  this.server.getBotList().removeBot(bot, org.leavesmc.leaves.event.bot.BotRemoveEvent.RemoveReason.INTERNAL, player.getBukkitEntity(), false, false);
-@@ -491,7 +491,7 @@ public abstract class PlayerList {
+@@ -441,7 +441,7 @@ public abstract class PlayerList {
          org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handlePlayerJoin(player); // Leaves - protocol
  
          // Leaves start - bot support
@@ -289,7 +289,7 @@ index 1a849654efcd42cdea3f85020fd8d018bc651b57..d88c54b27193dc2c4d2c8f539437bf5f
              org.leavesmc.leaves.bot.ServerBot bot = this.server.getBotList().getBotByName(player.getScoreboardName());
              if (bot != null) {
                  this.server.getBotList().removeBot(bot, org.leavesmc.leaves.event.bot.BotRemoveEvent.RemoveReason.INTERNAL, player.getBukkitEntity(), false, false);
-@@ -1019,7 +1019,7 @@ public abstract class PlayerList {
+@@ -969,7 +969,7 @@ public abstract class PlayerList {
          ).callEvent();
          // Paper end
          // Leaves start - bot support

@@ -260,9 +260,18 @@ index 2dae0f4249eade60ac55c9fa289dd146dc3675e1..239cad02f85f0d14d4abfa746ecdc4dd
          com.destroystokyo.paper.VersionHistoryManager.INSTANCE.getClass(); // Paper - load version history now
  
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
-index 6cd549849bd7fb5d72431f729229d1e967cf0d98..98fa23ea62698ff615a72747db7381efb16beaf9 100644
+index 6cd549849bd7fb5d72431f729229d1e967cf0d98..179e39574fe2a4f395c64c51d6149e01d641a428 100644
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
+@@ -971,7 +971,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
+         return this.level.moonrise$getEntityLookup().hasEntity(id); // Folia - region threading
+     }
+ 
+-    protected void addEntity(final Entity entity) {
++    public void addEntity(final Entity entity) {
+         org.spigotmc.AsyncCatcher.catchOp("entity track"); // Spigot
+         // Paper start - ignore and warn about illegal addEntity calls instead of crashing server
+         if (!entity.valid || entity.level() != this.level || entity.moonrise$getTrackedEntity() != null) { // Folia - region threading
 @@ -1388,6 +1388,13 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
                      }
                  } else {

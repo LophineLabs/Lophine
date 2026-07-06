@@ -311,7 +311,7 @@ index 558f465e9ec2536064716a196d52d78d873d95be..598867ffa41c8d38e0c18550071ac259
                  }
                  // Leaves end - skip
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index ed50484ca24ef24b1e5bef9f6369dfa4b30c359c..1a849654efcd42cdea3f85020fd8d018bc651b57 100644
+index ed50484ca24ef24b1e5bef9f6369dfa4b30c359c..64a87785048e103c10f6453e97a37f8501255adc 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -129,6 +129,7 @@ public abstract class PlayerList {
@@ -330,90 +330,61 @@ index ed50484ca24ef24b1e5bef9f6369dfa4b30c359c..1a849654efcd42cdea3f85020fd8d018
              int count = this.usersCountedAgainstLimit.size();
              if (count >= limit) {
                  return false;
-@@ -221,6 +223,173 @@ public abstract class PlayerList {
+@@ -221,6 +223,123 @@ public abstract class PlayerList {
  
      abstract public void loadAndSaveFiles(); // Paper - fix converting txt to json file; moved from DedicatedPlayerList constructor
  
 +    // Leaves start - replay mod api
 +    public void placeNewPhotographer(Connection connection, org.leavesmc.leaves.replay.ServerPhotographer player, ServerLevel worldserver) {
 +        player.isRealPlayer = true; // Paper
-+        player.loginTime = System.currentTimeMillis(); // Paper - Replace OfflinePlayer#getLastPlayed
-+        NameAndId gameProfile = player.nameAndId();
-+        UserNameToIdResolver profileCache = this.server.services().nameToIdCache();
-+        Optional<NameAndId> oldProfile = profileCache.get(gameProfile.id());
-+        String oldName = oldProfile.map(NameAndId::name).orElse(gameProfile.name());
-+        if (player.lastKnownName != null) { oldName = player.lastKnownName; player.lastKnownName = null; } // CraftBukkit - Better rename detection
-+        profileCache.add(gameProfile);
-+        ServerLevel level = player.level();
-+        LevelData levelData = level.getLevelData();
-+        CommonListenerCookie cookie = CommonListenerCookie.createInitial(player.gameProfile, false);
-+        ServerGamePacketListenerImpl playerConnection = new ServerGamePacketListenerImpl(this.server, connection, player, cookie);
-+        // Folia start - rewrite login process
-+        // only after setting the connection listener to game type, add the connection to this regions list
-+        level.getCurrentWorldData().connections.add(connection);
-+        // Folia end - rewrite login process
-+        if (!me.earthme.luminol.config.modules.optimizations.AsyncProtocolChangeConfig.enabled) { // Luminol - Async protocol switch // we will run async switch once these main thread logics became done
-+            connection.setupInboundProtocol(
-+                    GameProtocols.SERVERBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess()), playerConnection), playerConnection
-+            );
-+        } // Luminol - Async protocol switch
-+        playerConnection.suspendFlushing();
-+        GameRules gameRules = level.getGameRules();
-+        boolean immediateRespawn = gameRules.get(GameRules.IMMEDIATE_RESPAWN);
-+        boolean reducedDebugInfo = gameRules.get(GameRules.REDUCED_DEBUG_INFO);
-+        boolean doLimitedCrafting = gameRules.get(GameRules.LIMITED_CRAFTING);
-+        playerConnection.send(
-+                new ClientboundLoginPacket(
-+                        player.getId(),
-+                        levelData.isHardcore(),
-+                        this.server.levelKeys(),
-+                        this.getMaxPlayers(),
-+                        io.papermc.paper.FeatureHooks.getViewDistance(level), // Paper - view distance
-+                        io.papermc.paper.FeatureHooks.getSimulationDistance(level), // Paper - simulation distance
-+                        reducedDebugInfo,
-+                        !immediateRespawn,
-+                        doLimitedCrafting,
-+                        player.createCommonSpawnInfo(level),
-+                        this.server.usesAuthentication(),
-+                        this.server.enforceSecureProfile()
-+                )
-+        );
++        player.loginTime = System.currentTimeMillis(); // Paper
++
++        ServerLevel worldserver1 = worldserver;
++
++        player.setServerLevel(worldserver1);
++        player.gameMode.setLevel(player.level());
++
++        LevelData worlddata = worldserver1.getLevelData();
++
++        ServerGamePacketListenerImpl playerconnection = new ServerGamePacketListenerImpl(this.server, connection, player, CommonListenerCookie.createInitial(player.gameProfile, false));
++        GameRules gamerules = worldserver1.getGameRules();
++        boolean flag = gamerules.get(GameRules.IMMEDIATE_RESPAWN);
++        boolean flag1 = gamerules.get(GameRules.REDUCED_DEBUG_INFO);
++        boolean flag2 = gamerules.get(GameRules.LIMITED_CRAFTING);
++
++        playerconnection.send(new ClientboundLoginPacket(player.getId(), worlddata.isHardcore(), this.server.levelKeys(), this.getMaxPlayers(), io.papermc.paper.FeatureHooks.getViewDistance(worldserver1), io.papermc.paper.FeatureHooks.getSimulationDistance(worldserver1), flag1, !flag, flag2, player.createCommonSpawnInfo(worldserver1), this.server.usesAuthentication(), this.server.enforceSecureProfile()));
 +        player.getBukkitEntity().sendSupportedChannels(); // CraftBukkit
-+        playerConnection.send(new ClientboundChangeDifficultyPacket(levelData.getDifficulty(), levelData.isDifficultyLocked()));
-+        playerConnection.send(new ClientboundPlayerAbilitiesPacket(player.getAbilities()));
-+        playerConnection.send(new ClientboundSetHeldSlotPacket(player.getInventory().getSelectedSlot()));
-+        RecipeManager recipeManager = this.server.getRecipeManager();
-+        playerConnection.send(
-+                new ClientboundUpdateRecipesPacket(recipeManager.getSynchronizedItemProperties(), recipeManager.getSynchronizedStonecutterRecipes())
-+        );
++        playerconnection.send(new ClientboundChangeDifficultyPacket(worlddata.getDifficulty(), worlddata.isDifficultyLocked()));
++        playerconnection.send(new ClientboundPlayerAbilitiesPacket(player.getAbilities()));
++        playerconnection.send(new ClientboundSetHeldSlotPacket(player.getInventory().getSelectedSlot()));
++        RecipeManager craftingmanager = this.server.getRecipeManager();
++        playerconnection.send(new ClientboundUpdateRecipesPacket(craftingmanager.getSynchronizedItemProperties(), craftingmanager.getSynchronizedStonecutterRecipes()));
++
 +        this.sendPlayerPermissionLevel(player);
 +        player.getStats().markAllDirty();
 +        player.getRecipeBook().sendInitialRecipeBook(player);
-+        //this.updateEntireScoreboard(level.getScoreboard(), player); // Folia - region threading
++        this.updateEntireScoreboard(worldserver1.getScoreboard(), player);
 +        this.server.invalidateStatus();
 +
-+        playerConnection.teleport(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
-+        ServerStatus status = this.server.getStatus();
-+        if (status != null && !cookie.transferred()) {
-+            player.sendServerStatus(status);
++        playerconnection.teleport(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
++        ServerStatus serverping = this.server.getStatus();
++
++        if (serverping != null) {
++            player.sendServerStatus(serverping);
 +        }
 +
-+        // player.connection.send(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(this.players)); // CraftBukkit - replaced with loop below
 +        this.players.add(player);
 +        this.playersByName.put(player.getScoreboardName().toLowerCase(java.util.Locale.ROOT), player); // Spigot
 +        this.playersByUUID.put(player.getUUID(), player);
-+        // this.broadcastAll(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(List.of(player))); // CraftBukkit - replaced with loop below
-+        // Paper start - Fire PlayerJoinEvent when Player is actually ready; correctly register player BEFORE PlayerJoinEvent, so the entity is valid and doesn't require tick delay hacks
++
 +        player.suppressTrackerForLogin = true;
-+        this.sendLevelInfo(player, level);
-+        level.addNewPlayer(player);
-+        this.server.getCustomBossEvents().onPlayerConnect(player); // see commented out section below serverLevel.addPlayerJoin(player);
-+        // Paper end - Fire PlayerJoinEvent when Player is actually ready
-+        player.initInventoryMenu();
++        worldserver1.addNewPlayer(player);
++        this.server.getCustomBossEvents().onPlayerConnect(player);
 +        org.bukkit.craftbukkit.entity.CraftPlayer bukkitPlayer = player.getBukkitEntity();
 +
++        player.containerMenu.transferTo(player.containerMenu, bukkitPlayer);
 +        if (!player.connection.isAcceptingMessages()) {
-+            //return; // Folia - region threading - must still allow the player to connect, as we must add to chunk map before handling disconnect
++            return;
 +        }
 +
 +        // org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handlePlayerJoin(player); // Leaves - protocol
@@ -431,80 +402,59 @@ index ed50484ca24ef24b1e5bef9f6369dfa4b30c359c..1a849654efcd42cdea3f85020fd8d018
 +        }
 +        // Leaves end - bot support
 +
-+        // CraftBukkit start - sendAll above replaced with this loop
-+        ClientboundPlayerInfoUpdatePacket packet = ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(List.of(player)); // Paper - Add Listing API for Player
++        final List<ServerPlayer> onlinePlayers = Lists.newArrayListWithExpectedSize(this.players.size() - 1);
++        for (int i = 0; i < this.players.size(); ++i) {
++            ServerPlayer entityplayer1 = this.players.get(i);
 +
-+        final List<ServerPlayer> onlinePlayers = Lists.newArrayListWithExpectedSize(this.players.size() - 1); // Paper - Use single player info update packet on join
-+        for (ServerPlayer entityplayer1 : this.players) { // Folia - region threading
-+
-+            if (entityplayer1.getBukkitEntity().canSee(bukkitPlayer)) {
-+                // Paper start - Add Listing API for Player
-+                if (entityplayer1.getBukkitEntity().isListed(bukkitPlayer)) {
-+                    // Paper end - Add Listing API for Player
-+                    entityplayer1.connection.send(packet);
-+                    // Paper start - Add Listing API for Player
-+                } else {
-+                    entityplayer1.connection.send(ClientboundPlayerInfoUpdatePacket.createSinglePlayerInitializing(player, false));
-+                }
-+                // Paper end - Add Listing API for Player
-+            }
-+
-+            if (entityplayer1 == player || !bukkitPlayer.canSee(entityplayer1.getBukkitEntity())) { // Paper - Use single player info update packet on join; Don't include joining player
++            if (entityplayer1 == player || !bukkitPlayer.canSee(entityplayer1.getBukkitEntity())) {
 +                continue;
 +            }
 +
-+            onlinePlayers.add(entityplayer1); // Paper - Use single player info update packet on join
++            // Leaves start - skip photographer
++            if (entityplayer1 instanceof org.leavesmc.leaves.replay.ServerPhotographer) {
++                continue;
++            }
++            // Leaves end - skip photographer
++
++            onlinePlayers.add(entityplayer1);
 +        }
-+        // Paper start - Use single player info update packet on join
 +        if (!onlinePlayers.isEmpty()) {
-+            player.connection.send(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(onlinePlayers, player)); // Paper - Add Listing API for Player
++            player.connection.send(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(onlinePlayers, player));
 +        }
-+        // Paper end - Use single player info update packet on join
++
 +        player.sentListPacket = true;
-+        player.suppressTrackerForLogin = false; // Paper - Fire PlayerJoinEvent when Player is actually ready
-+        player.level().getChunkSource().addEntity(player); // Paper - Fire PlayerJoinEvent when Player is actually ready; track entity now
-+        // CraftBukkit end
++        player.suppressTrackerForLogin = false;
++        ((ServerLevel)player.level()).getChunkSource().chunkMap.addEntity(player);
 +
-+        //player.refreshEntityData(player); // CraftBukkit - BungeeCord#2321, send complete data to self on spawn // Paper - THIS IS NOT NEEDED ANYMORE
++        this.sendLevelInfo(player, worldserver1);
 +
-+        this.sendLevelInfo(player, level);
-+
-+        // CraftBukkit start - Only add if the player wasn't moved in the event
-+        if (player.level() == level && !level.players().contains(player)) {
-+            level.addNewPlayer(player);
++        if (player.level() == worldserver1 && !worldserver1.players().contains(player)) {
++            worldserver1.addNewPlayer(player);
 +            this.server.getCustomBossEvents().onPlayerConnect(player);
 +        }
 +
-+        level = player.level(); // CraftBukkit - Update in case join event changed it
-+        // CraftBukkit end
-+        this.sendActivePlayerEffects(player);
-+        // Paper - move loading pearls / parent vehicle up
-+        player.initInventoryMenu();
-+        this.server.notificationManager().playerJoined(player);
-+        playerConnection.resumeFlushing();
-+        // Paper start - Configurable player collision; Add to collideRule team if needed
-+        final net.minecraft.world.scores.Scoreboard scoreboard = this.getServer().getLevel(Level.OVERWORLD).getScoreboard();
-+        final PlayerTeam collideRuleTeam = scoreboard.getPlayerTeam(this.collideRuleTeamName);
-+        if (false && this.collideRuleTeamName != null && collideRuleTeam != null && player.getTeam() == null) { // Folia - region threading
-+            scoreboard.addPlayerToTeam(player.getScoreboardName(), collideRuleTeam);
++        worldserver1 = player.level();
++        java.util.Iterator<net.minecraft.world.effect.MobEffectInstance> iterator = player.getActiveEffects().iterator();
++        while (iterator.hasNext()) {
++            MobEffectInstance mobeffect = iterator.next();
++            playerconnection.send(new ClientboundUpdateMobEffectPacket(player.getId(), mobeffect, false));
 +        }
 +
 +        if (player.isDeadOrDying()) {
-+            net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> plains = level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.BIOME)
++            net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> plains = worldserver1.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.BIOME)
 +                    .getOrThrow(net.minecraft.world.level.biome.Biomes.PLAINS);
 +            player.connection.send(new net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket(
-+                    new net.minecraft.world.level.chunk.EmptyLevelChunk(level, player.chunkPosition(), plains),
-+                    level.getLightEngine(), null, null, true) // Paper - Anti-Xray
++                    new net.minecraft.world.level.chunk.EmptyLevelChunk(worldserver1, player.chunkPosition(), plains),
++                    worldserver1.getLightEngine(), null, null, false)
 +            );
 +        }
-+        // Paper end - Send empty chunk
 +    }
 +    // Leaves end - replay mod api
 +
      public void placeNewPlayer(final Connection connection, final ServerPlayer player, final CommonListenerCookie cookie) {
          player.isRealPlayer = true; // Paper
          player.loginTime = System.currentTimeMillis(); // Paper - Replace OfflinePlayer#getLastPlayed
-@@ -295,6 +464,7 @@ public abstract class PlayerList {
+@@ -295,6 +414,7 @@ public abstract class PlayerList {
  
          // player.connection.send(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(this.players)); // CraftBukkit - replaced with loop below
          this.players.add(player);
@@ -512,7 +462,7 @@ index ed50484ca24ef24b1e5bef9f6369dfa4b30c359c..1a849654efcd42cdea3f85020fd8d018
          this.playersByName.put(player.getScoreboardName().toLowerCase(java.util.Locale.ROOT), player); // Spigot
          this.playersByUUID.put(player.getUUID(), player);
          // this.broadcastAll(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(List.of(player))); // CraftBukkit - replaced with loop below
-@@ -510,6 +680,7 @@ public abstract class PlayerList {
+@@ -510,6 +630,7 @@ public abstract class PlayerList {
      }
  
      protected void save(final ServerPlayer player) {
@@ -520,7 +470,7 @@ index ed50484ca24ef24b1e5bef9f6369dfa4b30c359c..1a849654efcd42cdea3f85020fd8d018
          if (!player.getBukkitEntity().isPersistent()) return; // CraftBukkit
          player.lastSave = System.nanoTime(); // Folia - region threading - changed to nanoTime tracking
          this.playerIo.save(player);
-@@ -524,6 +695,48 @@ public abstract class PlayerList {
+@@ -524,6 +645,48 @@ public abstract class PlayerList {
          }
      }
  
@@ -569,7 +519,7 @@ index ed50484ca24ef24b1e5bef9f6369dfa4b30c359c..1a849654efcd42cdea3f85020fd8d018
      public net.kyori.adventure.text.@Nullable Component remove(final ServerPlayer player) { // CraftBukkit - return string // Paper - return Component
          // Paper start - Fix kick event leave message not being sent
          return this.remove(player, net.kyori.adventure.text.Component.translatable("multiplayer.player.left", net.kyori.adventure.text.format.NamedTextColor.YELLOW, io.papermc.paper.configuration.GlobalConfiguration.get().messages.useDisplayNameInQuitMessage ? player.getBukkitEntity().displayName() : io.papermc.paper.adventure.PaperAdventure.asAdventure(player.getDisplayName())));
-@@ -597,6 +810,7 @@ public abstract class PlayerList {
+@@ -597,6 +760,7 @@ public abstract class PlayerList {
          player.getBukkitEntity().packetProcessor.close(); // Folia - region threading
          player.getAdvancements().clearTriggers();
          this.players.remove(player);
@@ -577,7 +527,7 @@ index ed50484ca24ef24b1e5bef9f6369dfa4b30c359c..1a849654efcd42cdea3f85020fd8d018
          this.playersByName.remove(player.getScoreboardName().toLowerCase(java.util.Locale.ROOT)); // Spigot
          if (me.earthme.luminol.config.modules.misc.UsernameCheckConfig.allowOldPlayersJoin) this.playedPlayers.remove(player.getGameProfile().name()); // Leaf - Configurable vanilla username check
          this.server.getCustomBossEvents().onPlayerDisconnect(player);
-@@ -910,15 +1124,15 @@ public abstract class PlayerList {
+@@ -910,15 +1074,15 @@ public abstract class PlayerList {
      }
  
      public String[] getPlayerNamesArray() {
