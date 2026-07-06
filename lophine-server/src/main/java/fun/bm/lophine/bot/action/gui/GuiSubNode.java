@@ -3,14 +3,14 @@ package fun.bm.lophine.bot.action.gui;
 import net.minecraft.world.item.Item;
 
 import java.rmi.UnexpectedException;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class GuiSubNode extends GuiRootNode {
     protected final GuiNode parent;
 
     public GuiSubNode(String name, String description, Item item, GuiNode parent, Set<GuiNode> children, String commandNode) {
-        this(name, description, item, parent, new HashSet<>(), commandNode, true);
+        this(name, description, item, parent, children, commandNode, true);
     }
 
     public GuiSubNode(String name, String description, Item item, GuiNode parent, Set<GuiNode> children, String commandNode, boolean confirmable) {
@@ -23,7 +23,7 @@ public class GuiSubNode extends GuiRootNode {
     }
 
     public GuiSubNode(String name, String description, Item item, GuiNode parent, String commandNode, boolean confirmable) {
-        this(name, description, item, parent, new HashSet<>(), commandNode, confirmable);
+        this(name, description, item, parent, new LinkedHashSet<>(), commandNode, confirmable);
     }
 
     public GuiNode getParent() {
