@@ -35,7 +35,7 @@ index fcdfd4f6de5e1c2d5e80c7f3d8cb0b33a62d257d..6eaa4e9bd1ecbfa531313ce1f470d55e
                  metrics.addCustomChart(new Metrics.DrilldownPie("java_version", () -> {
                      Map<String, Map<String, Integer>> map = new HashMap<>();
 diff --git a/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java b/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java
-index fd7cd6f72390c71d036ebfc0e4c67dad51eb2e9c..818ad9b9fc952fff13baea1e8f48840daa2a1541 100644
+index fd7cd6f72390c71d036ebfc0e4c67dad51eb2e9c..62e5fcc1845d1240a1b97cdf252c94b75e81d4ab 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java
 @@ -40,8 +40,8 @@ public class PaperVersionFetcher implements VersionFetcher {
@@ -44,8 +44,8 @@ index fd7cd6f72390c71d036ebfc0e4c67dad51eb2e9c..818ad9b9fc952fff13baea1e8f48840d
      private static final int DISTANCE_UNKNOWN = -2;
 -    private static final String DOWNLOAD_PAGE = "https://github.com/LuminolMC/Luminol"; // Luminol
 -    private static final String REPOSITORY = "LuminolMC/Luminol"; // Luminol
-+    private static final String DOWNLOAD_PAGE = "https://github.com/LuminolMC/Lophine"; // Luminol // Lophine
-+    private static final String REPOSITORY = "LuminolMC/Lophine"; // Luminol // Lophine
++    private static final String DOWNLOAD_PAGE = "https://github.com/LophineCraft/Lophine"; // Luminol // Lophine
++    private static final String REPOSITORY = "LophineCraft/Lophine"; // Luminol // Lophine
      private static final ServerBuildInfo BUILD_INFO = ServerBuildInfo.buildInfo();
      private static final String USER_AGENT = BUILD_INFO.brandName() + "/" + BUILD_INFO.asString(VERSION_SIMPLE) + " (https://papermc.io)";
      private static final Gson GSON = new Gson();
