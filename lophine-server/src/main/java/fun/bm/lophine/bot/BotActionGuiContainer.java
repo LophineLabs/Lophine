@@ -4,6 +4,7 @@ import fun.bm.lophine.bot.action.gui.ActionType;
 import fun.bm.lophine.bot.action.gui.GuiNode;
 import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
@@ -14,6 +15,8 @@ import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.leavesmc.leaves.entity.bot.CraftBot;
+import org.leavesmc.leaves.entity.bot.action.BotAction;
+import org.leavesmc.leaves.entity.bot.actions.CraftBotAction;
 
 import java.util.*;
 
@@ -39,6 +42,8 @@ public class BotActionGuiContainer extends SimpleContainer {
     private static final int BACK_BUTTON_SLOT = 38;
     private static final int COMMAND_BUILDER_SLOT = 40;
     private static final int HOME_BUTTON_SLOT = 42;
+    private static final int PREV_PAGE_SLOT = 39;
+    private static final int NEXT_PAGE_SLOT = 41;
 
     private static final ItemStack boarder = new ItemStack(Items.YELLOW_STAINED_GLASS_PANE);
 
@@ -51,6 +56,9 @@ public class BotActionGuiContainer extends SimpleContainer {
     // New state for action type selection flow
     private ActionType selectedActionType = null;
     private boolean isSelectingActionType = false;
+
+    // Pagination state
+    private int currentPage = 0;
 
     public static void registerGuiRootNode(GuiRootNode guiRootNode) {
         if (!GUI_ROOT_NODE_MAP.containsKey(guiRootNode.getName())) {
@@ -73,6 +81,10 @@ public class BotActionGuiContainer extends SimpleContainer {
         this.showActionTypes();
     }
 
+    public boolean isCommandBuilderSlot(int id) {
+        return id == COMMAND_BUILDER_SLOT;
+    }
+
     private void fillBorder() {
         for (int slot : BORDER_SLOTS) {
             this.setItem(slot, boarder);
@@ -87,30 +99,17 @@ public class BotActionGuiContainer extends SimpleContainer {
         this.fromRootLevelStack.clear();
         this.selectedActionType = null;
         this.isSelectingActionType = true;
+        this.currentPage = 0;
 
-        int contentIndex = 0;
-        for (ActionType actionType : ActionType.values()) {
-            if (contentIndex >= CONTENT_SLOTS.length) {
-                break;
-            }
+        List<ActionType> allTypes = List.of(ActionType.values());
+        this.renderPagedItems(allTypes, (actionType, slot) -> {
             ItemStack item = actionType.toConfirmNode(null).getItemStack();
             if (item != null && !item.isEmpty()) {
-                this.setItem(CONTENT_SLOTS[contentIndex], item.copy());
+                this.setItem(slot, item.copy());
             }
-            contentIndex++;
-        }
+        });
 
-        // Add navigation buttons even in action type selection
-        if (this.canNavigateBack()) {
-            this.setItem(BACK_BUTTON_SLOT, createBackButtonItem());
-        }
-
-        // Add command builder info
-        this.setItem(COMMAND_BUILDER_SLOT, createCommandBuilderItem());
-
-        if (this.canNavigateHome()) {
-            this.setItem(HOME_BUTTON_SLOT, createHomeButtonItem());
-        }
+        this.addNavigationButtons();
     }
 
     private void showRootNodes() {
@@ -120,31 +119,23 @@ public class BotActionGuiContainer extends SimpleContainer {
         this.navigationStack.clear();
         this.fromRootLevelStack.clear();
         this.isSelectingActionType = false;
+        this.currentPage = 0;
 
-        int contentIndex = 0;
-        for (GuiRootNode rootNode : GUI_ROOT_NODE_MAP.values()) {
-            if (contentIndex >= CONTENT_SLOTS.length) {
-                break;
-            }
-            ItemStack item = createNodeItemWithRunHint(rootNode);
+        List<GuiRootNode> allNodes = new ArrayList<>(GUI_ROOT_NODE_MAP.values());
+        if (allNodes.isEmpty()) {
+            // No root nodes, go back to action type selection
+            this.showActionTypes();
+            return;
+        }
+
+        this.renderPagedItems(allNodes, (node, slot) -> {
+            ItemStack item = createNodeItemWithRunHint(node);
             if (item != null && !item.isEmpty()) {
-                this.setItem(CONTENT_SLOTS[contentIndex], item.copy());
+                this.setItem(slot, item.copy());
             }
-            contentIndex++;
-        }
+        });
 
-        // Add back button to return to action type selection
-        if (this.canNavigateBack()) {
-            this.setItem(BACK_BUTTON_SLOT, createBackButtonItem());
-        }
-
-        // Add command builder info
-        this.setItem(COMMAND_BUILDER_SLOT, createCommandBuilderItem());
-
-        // Add home button to return to main menu
-        if (this.canNavigateHome()) {
-            this.setItem(HOME_BUTTON_SLOT, createHomeButtonItem());
-        }
+        this.addNavigationButtons();
     }
 
     public void navigateToChild(GuiNode node) {
@@ -163,6 +154,7 @@ public class BotActionGuiContainer extends SimpleContainer {
         }
 
         this.currentNode = node;
+        this.currentPage = 0;
         this.refreshContainer();
     }
 
@@ -203,32 +195,20 @@ public class BotActionGuiContainer extends SimpleContainer {
 
         Set<GuiNode> children = this.getChildrenOfCurrentNode();
         if (children == null || children.isEmpty()) {
-            this.showRootNodes();
+            // Empty page: auto-navigate back
+            this.navigateBack();
             return;
         }
 
-        int contentIndex = 0;
-        for (GuiNode child : children) {
-            if (contentIndex >= CONTENT_SLOTS.length) {
-                break;
-            }
-            ItemStack item = createNodeItemWithRunHint(child);
+        List<GuiNode> childList = new ArrayList<>(children);
+        this.renderPagedItems(childList, (node, slot) -> {
+            ItemStack item = createNodeItemWithRunHint(node);
             if (item != null && !item.isEmpty()) {
-                this.setItem(CONTENT_SLOTS[contentIndex], item.copy());
+                this.setItem(slot, item.copy());
             }
-            contentIndex++;
-        }
+        });
 
-        if (this.canNavigateBack()) {
-            this.setItem(BACK_BUTTON_SLOT, createBackButtonItem());
-        }
-
-        // Add command builder info
-        this.setItem(COMMAND_BUILDER_SLOT, createCommandBuilderItem());
-
-        if (this.canNavigateHome()) {
-            this.setItem(HOME_BUTTON_SLOT, createHomeButtonItem());
-        }
+        this.addNavigationButtons();
     }
 
     @Nullable
@@ -273,9 +253,11 @@ public class BotActionGuiContainer extends SimpleContainer {
             return null;
         }
 
+        // Apply pagination offset
+        int actualIndex = this.currentPage * CONTENT_SLOTS.length + contentIndex;
         int index = 0;
         for (GuiNode node : nodes) {
-            if (index == contentIndex) {
+            if (index == actualIndex) {
                 return node;
             }
             index++;
@@ -336,6 +318,191 @@ public class BotActionGuiContainer extends SimpleContainer {
         return itemStack;
     }
 
+    /**
+     * Render items with pagination support.
+     *
+     * @param items    the full list of items
+     * @param renderer callback to render each item at a specific slot
+     */
+    private <T> void renderPagedItems(List<T> items, PagedItemRenderer<T> renderer) {
+        int pageSize = CONTENT_SLOTS.length;
+        int totalPages = Math.max(1, (items.size() + pageSize - 1) / pageSize);
+
+        // Clamp current page
+        if (this.currentPage >= totalPages) {
+            this.currentPage = totalPages - 1;
+        }
+        if (this.currentPage < 0) {
+            this.currentPage = 0;
+        }
+
+        int start = this.currentPage * pageSize;
+        int end = Math.min(start + pageSize, items.size());
+
+        for (int i = start; i < end; i++) {
+            int slotIndex = i - start;
+            renderer.render(items.get(i), CONTENT_SLOTS[slotIndex]);
+        }
+    }
+
+    @FunctionalInterface
+    private interface PagedItemRenderer<T> {
+        void render(T item, int slot);
+    }
+
+    /**
+     * Add navigation buttons including pagination controls.
+     */
+    private void addNavigationButtons() {
+        if (this.canNavigateBack()) {
+            this.setItem(BACK_BUTTON_SLOT, createBackButtonItem());
+        }
+
+        this.setItem(COMMAND_BUILDER_SLOT, createCommandBuilderItem());
+
+        if (this.canNavigateHome()) {
+            this.setItem(HOME_BUTTON_SLOT, createHomeButtonItem());
+        }
+
+        // Pagination buttons
+        if (this.hasPrevPage()) {
+            this.setItem(PREV_PAGE_SLOT, createPrevPageItem());
+        }
+        if (this.hasNextPage()) {
+            this.setItem(NEXT_PAGE_SLOT, createNextPageItem());
+        }
+    }
+
+    private boolean hasPrevPage() {
+        return this.currentPage > 0;
+    }
+
+    private boolean hasNextPage() {
+        int totalItems = this.getCurrentTotalItemCount();
+        int totalPages = Math.max(1, (totalItems + CONTENT_SLOTS.length - 1) / CONTENT_SLOTS.length);
+        return this.currentPage < totalPages - 1;
+    }
+
+    private int getCurrentTotalItemCount() {
+        if (this.isSelectingActionType) {
+            return ActionType.values().length;
+        }
+        if (this.selectedActionType == ActionType.ACTION_STOP) {
+            return this.bot.getActionSize();
+        }
+        if (this.currentNode == null) {
+            return GUI_ROOT_NODE_MAP.size();
+        }
+        Set<GuiNode> children = this.getChildrenOfCurrentNode();
+        return children != null ? children.size() : 0;
+    }
+
+    public void prevPage() {
+        if (this.hasPrevPage()) {
+            this.currentPage--;
+            this.redisplayCurrentViewWithoutReset();
+        }
+    }
+
+    public void nextPage() {
+        if (this.hasNextPage()) {
+            this.currentPage++;
+            this.redisplayCurrentViewWithoutReset();
+        }
+    }
+
+    public boolean isPrevPageSlot(int slot) {
+        return slot == PREV_PAGE_SLOT && this.hasPrevPage();
+    }
+
+    public boolean isNextPageSlot(int slot) {
+        return slot == NEXT_PAGE_SLOT && this.hasNextPage();
+    }
+
+    /**
+     * Re-render the current view without resetting navigation state.
+     */
+    private void redisplayCurrentView() {
+        if (this.isSelectingActionType) {
+            this.showActionTypes();
+        } else if (this.selectedActionType == ActionType.ACTION_STOP) {
+            this.showCurrentBotActions();
+        } else if (this.currentNode != null) {
+            this.refreshContainer();
+        } else {
+            this.showRootNodes();
+        }
+    }
+
+    /**
+     * Re-render the current view without resetting pagination state.
+     * Used for page navigation to preserve currentPage value.
+     */
+    private void redisplayCurrentViewWithoutReset() {
+        this.clearContent();
+        this.fillBorder();
+
+        if (this.isSelectingActionType) {
+            List<ActionType> allTypes = List.of(ActionType.values());
+            this.renderPagedItems(allTypes, (actionType, slot) -> {
+                ItemStack item = actionType.toConfirmNode(null).getItemStack();
+                if (item != null && !item.isEmpty()) {
+                    this.setItem(slot, item.copy());
+                }
+            });
+        } else if (this.selectedActionType == ActionType.ACTION_STOP) {
+            int actionSize = this.bot.getActionSize();
+            if (actionSize > 0) {
+                List<Integer> actionIndices = new ArrayList<>();
+                for (int i = 0; i < actionSize; i++) {
+                    actionIndices.add(i);
+                }
+                this.renderPagedItems(actionIndices, (index, slot) -> {
+                    org.leavesmc.leaves.entity.bot.action.BotAction<?> action = this.bot.getAction(index);
+                    ItemStack item = createActionItem(action, index);
+                    if (item != null && !item.isEmpty()) {
+                        this.setItem(slot, item.copy());
+                    }
+                });
+            }
+        } else if (this.currentNode != null) {
+            Set<GuiNode> children = this.getChildrenOfCurrentNode();
+            if (children != null && !children.isEmpty()) {
+                List<GuiNode> childList = new ArrayList<>(children);
+                this.renderPagedItems(childList, (node, slot) -> {
+                    ItemStack item = createNodeItemWithRunHint(node);
+                    if (item != null && !item.isEmpty()) {
+                        this.setItem(slot, item.copy());
+                    }
+                });
+            }
+        } else {
+            List<GuiRootNode> allNodes = new ArrayList<>(GUI_ROOT_NODE_MAP.values());
+            if (!allNodes.isEmpty()) {
+                this.renderPagedItems(allNodes, (node, slot) -> {
+                    ItemStack item = createNodeItemWithRunHint(node);
+                    if (item != null && !item.isEmpty()) {
+                        this.setItem(slot, item.copy());
+                    }
+                });
+            }
+        }
+
+        this.addNavigationButtons();
+    }
+
+    private static ItemStack createPrevPageItem() {
+        ItemStack item = new ItemStack(Items.ARROW);
+        item.set(DataComponents.CUSTOM_NAME, Component.literal("§ePrevious Page"));
+        return item;
+    }
+
+    private static ItemStack createNextPageItem() {
+        ItemStack item = new ItemStack(Items.ARROW);
+        item.set(DataComponents.CUSTOM_NAME, Component.literal("§eNext Page"));
+        return item;
+    }
+
     private ItemStack createCommandBuilderItem() {
         ItemStack item = new ItemStack(Items.BOOK);
 
@@ -362,6 +529,15 @@ public class BotActionGuiContainer extends SimpleContainer {
     private String buildCommandPreview() {
         if (this.selectedActionType == null) {
             return "Select an action type first";
+        }
+
+        // For STOP action type, show different preview
+        if (this.selectedActionType == ActionType.ACTION_STOP) {
+            int actionSize = this.bot.getActionSize();
+            if (actionSize == 0) {
+                return "No actions to stop";
+            }
+            return "Click an action to stop it (" + actionSize + " active)";
         }
 
         try {
@@ -412,7 +588,101 @@ public class BotActionGuiContainer extends SimpleContainer {
     public void selectActionType(ActionType actionType) {
         this.selectedActionType = actionType;
         this.isSelectingActionType = false;
-        this.showRootNodes();
+
+        // If STOP action type is selected, show current bot actions instead of root nodes
+        if (actionType == ActionType.ACTION_STOP) {
+            this.showCurrentBotActions();
+        } else {
+            this.showRootNodes();
+        }
+    }
+
+    /**
+     * Show the current bot's scheduled actions for stopping
+     */
+    public void showCurrentBotActions() {
+        this.clearContent();
+        this.fillBorder();
+        this.currentNode = null;
+        this.navigationStack.clear();
+        this.fromRootLevelStack.clear();
+        this.isSelectingActionType = false;
+        this.currentPage = 0;
+
+        int actionSize = this.bot.getActionSize();
+        if (actionSize == 0) {
+            // No actions to stop, auto-navigate back to action type selection
+            this.showActionTypes();
+            return;
+        }
+
+        // Build list of action indices for pagination
+        List<Integer> actionIndices = new ArrayList<>();
+        for (int i = 0; i < actionSize; i++) {
+            actionIndices.add(i);
+        }
+
+        this.renderPagedItems(actionIndices, (index, slot) -> {
+            org.leavesmc.leaves.entity.bot.action.BotAction<?> action = this.bot.getAction(index);
+            ItemStack item = createActionItem(action, index);
+            if (item != null && !item.isEmpty()) {
+                this.setItem(slot, item.copy());
+            }
+        });
+
+        this.addNavigationButtons();
+    }
+
+    /**
+     * Create an ItemStack representing a bot action for display in the GUI
+     */
+    private ItemStack createActionItem(BotAction<?> action, int index) {
+        ItemStack item = new ItemStack(Items.PAPER);
+        String actionName = action.getName();
+
+        item.set(DataComponents.CUSTOM_NAME, Component.literal("§c" + actionName));
+
+        List<Component> loreLines = new ArrayList<>();
+        CompoundTag nbt = new CompoundTag();
+        ((CraftBotAction<?, ?>) action).getHandle().save(nbt);
+        nbt.forEach((key, tag) -> loreLines.add(Component.literal("§7" + key + ": §f" + tag)));
+        loreLines.add(Component.literal("§7Index: §f" + index));
+        loreLines.add(Component.literal("§6Click to stop this action"));
+
+        item.set(DataComponents.LORE, new ItemLore(loreLines));
+        return item;
+    }
+
+    /**
+     * Get the action index at a specific slot (for STOP action type)
+     * Returns -1 if not found or not in STOP mode
+     */
+    public int getActionIndexAtSlot(int slot) {
+        if (this.selectedActionType != ActionType.ACTION_STOP) {
+            return -1;
+        }
+
+        // Find the content index for this slot
+        int contentIndex = -1;
+        for (int i = 0; i < CONTENT_SLOTS.length; i++) {
+            if (CONTENT_SLOTS[i] == slot) {
+                contentIndex = i;
+                break;
+            }
+        }
+
+        if (contentIndex == -1) {
+            return -1;
+        }
+
+        // Apply pagination offset
+        int actualIndex = this.currentPage * CONTENT_SLOTS.length + contentIndex;
+        int actionSize = this.bot.getActionSize();
+        if (actualIndex < actionSize) {
+            return actualIndex;
+        }
+
+        return -1;
     }
 
     /**

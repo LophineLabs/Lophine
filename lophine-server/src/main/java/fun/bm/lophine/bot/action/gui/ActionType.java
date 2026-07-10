@@ -12,7 +12,7 @@ import java.util.List;
 
 public enum ActionType {
     ACTION_START("Start", "Start a action", Items.LIME_DYE, "action", "start"),
-    ACTION_STOP("Stop", "Stop a action", Items.RED_DYE, "action", "stop", 0);
+    ACTION_STOP("Stop", "Stop a action or see this bot scheduled tasks", Items.RED_DYE, "action", "stop", 0);
 
     private final String displayName;
     private final String description;

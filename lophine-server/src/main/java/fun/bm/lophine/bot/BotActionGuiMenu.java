@@ -4,6 +4,8 @@ import com.mojang.logging.LogUtils;
 import fun.bm.lophine.bot.action.gui.ActionType;
 import fun.bm.lophine.bot.action.gui.GuiNode;
 import fun.bm.lophine.bot.action.gui.GuiRootNode;
+import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
+import fun.bm.lophine.config.modules.function.FakeplayerConfig;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
@@ -18,6 +20,8 @@ import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.entity.bot.CraftBot;
+
+import java.rmi.UnexpectedException;
 
 public class BotActionGuiMenu extends AbstractContainerMenu {
     private final BotActionGuiContainer container;
@@ -91,9 +95,22 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
                 return;
             }
 
+            // Handle pagination buttons
+            if (this.container.isPrevPageSlot(slotIndex)) {
+                this.container.prevPage();
+                this.refreshSlots();
+                return;
+            }
+            if (this.container.isNextPageSlot(slotIndex)) {
+                this.container.nextPage();
+                this.refreshSlots();
+                return;
+            }
+
             // Handle command builder click
-            if (slotIndex == 49 && this.container.canExecuteCommandBuilder()) {
+            if (this.container.isCommandBuilderSlot(slotIndex) && this.container.canExecuteCommandBuilder()) {
                 this.executeCommandBuilder(player);
+                this.refreshSlots();
                 return;
             }
 
@@ -115,9 +132,20 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
                 return;
             }
 
+            // Handle action stop click (when STOP action type is selected)
+            if (this.container.getSelectedActionType() == ActionType.ACTION_STOP) {
+                int actionIndex = this.container.getActionIndexAtSlot(slotIndex);
+                if (actionIndex >= 0) {
+                    this.stopActionAtIndex(actionIndex, player);
+                    this.refreshSlots();
+                }
+                return;
+            }
+
             GuiNode node = this.container.getGuiNodeAtSlot(slotIndex);
             if (node != null) {
                 this.handleNodeClick(node, player);
+                this.refreshSlots();
             }
             return;
         }
@@ -143,13 +171,20 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
                 // If adding this node would exceed the limit, execute command instead of navigating
                 if (currentParamCount + 1 > maxAllowedParameters) {
                     this.executeCommand(rootNode, actionType, player);
+                    // Close GUI after START action execution
+                    if (actionType == ActionType.ACTION_START && player instanceof ServerPlayer serverPlayer) {
+                        serverPlayer.closeContainer();
+                    }
                 } else {
                     this.container.navigateToChild(rootNode);
-                    this.refreshSlots();
                 }
             } else {
                 // Execute command with the selected action type
                 this.executeCommand(rootNode, actionType, player);
+                // Close GUI after START action execution
+                if (actionType == ActionType.ACTION_START && player instanceof ServerPlayer serverPlayer) {
+                    serverPlayer.closeContainer();
+                }
             }
         }
     }
@@ -192,7 +227,47 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
 
         if (currentNode instanceof GuiRootNode rootNode && actionType != null) {
             this.executeCommand(rootNode, actionType, player);
+            // Close GUI after START action execution
+            if (actionType != ActionType.ACTION_STOP && player instanceof ServerPlayer serverPlayer) {
+                serverPlayer.closeContainer();
+            }
         }
+    }
+
+    /**
+     * Stop a bot action at the specified index
+     */
+    private void stopActionAtIndex(int actionIndex, Player player) {
+        try {
+            if (actionIndex >= 0 && actionIndex < this.bot.getActionSize()) {
+                if (player instanceof ServerPlayer serverPlayer) {
+                    String command = getStopActionCommand(actionIndex);
+                    MinecraftServer.getServer().getCommands().performPrefixedCommand(
+                            serverPlayer.createCommandSourceStack(),
+                            command
+                    );
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.getLogger().warn("Error stopping action at index {}: ", actionIndex, e);
+        }
+        // Always refresh to show updated action list after stop attempt
+        this.container.showCurrentBotActions();
+    }
+
+    private String getStopActionCommand(int actionIndex) throws UnexpectedException {
+        boolean botCommand = FakeplayerConfig.enable;
+        boolean playerCommand = FakePlayerCompatConfig.commandPlayer;
+        String command;
+        if (botCommand) {
+            command = "bot ";
+        } else if (playerCommand) {
+            command = "player ";
+        } else {
+            throw new UnexpectedException("Unable to build String from commandNode.");
+        }
+        command = command + "action " + this.bot.getName() + " stop " + actionIndex;
+        return command;
     }
 
     private void refreshSlots() {
