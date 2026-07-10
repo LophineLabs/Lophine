@@ -56,11 +56,13 @@ public class StartCommand extends LiteralNode {
         ServerBot bot = getBot(context);
         CommandSender sender = context.getSender();
 
-        action.loadCommand(context);
-        if (bot.addBotAction(action, sender)) {
+        // Create a new instance of the action to avoid sharing state between multiple actions
+        AbstractBotAction<?> newAction = action.create();
+        newAction.loadCommand(context);
+        if (bot.addBotAction(newAction, sender)) {
             sender.sendMessage(join(spaces(),
                     text("Action", GRAY),
-                    text(action.getName(), AQUA).hoverEvent(showText(text(action.getActionDataString()))),
+                    text(newAction.getName(), AQUA).hoverEvent(showText(text(newAction.getActionDataString()))),
                     text("has been issued to", GRAY),
                     asAdventure(bot.getDisplayName())
             ));
