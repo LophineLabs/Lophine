@@ -5,15 +5,15 @@
   
   *Lophine 是一个基于Luminol的分支，具有许多有用的优化和可配置的原版特性，目标是在Folia上实现更多生电的内容（请注意，完整生电请使用Fabric）*
   
-  ![Created At](https://img.shields.io/github/created-at/LuminolMC/Lophine?style=for-the-badge&color=blue)
-  [![License](https://img.shields.io/github/license/LuminolMC/Lophine?style=for-the-badge&color=green)](LICENSE.md)
-  [![Issues](https://img.shields.io/github/issues/LuminolMC/Lophine?style=for-the-badge&color=orange)](https://github.com/LuminolMC/Lophine/issues)
+  ![Created At](https://img.shields.io/github/created-at/LophineCraft/Lophine?style=for-the-badge&color=blue)
+  [![License](https://img.shields.io/github/license/LophineCraft/Lophine?style=for-the-badge&color=green)](LICENSE.md)
+  [![Issues](https://img.shields.io/github/issues/LophineCraft/Lophine?style=for-the-badge&color=orange)](https://github.com/LophineCraft/Lophine/issues)
   
-  ![Commit Activity](https://img.shields.io/github/commit-activity/w/LuminolMC/Lophine?style=for-the-badge&color=purple)
-  ![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/LuminolMC/Lophine?style=for-the-badge&color=yellow)
-  ![GitHub all releases](https://img.shields.io/github/downloads/LuminolMC/Lophine/total?style=for-the-badge&color=red)
+  ![Commit Activity](https://img.shields.io/github/commit-activity/w/LophineCraft/Lophine?style=for-the-badge&color=purple)
+  ![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/LophineCraft/Lophine?style=for-the-badge&color=yellow)
+  ![GitHub all releases](https://img.shields.io/github/downloads/LophineCraft/Lophine/total?style=for-the-badge&color=red)
   
-  ![Repo contributors](https://img.shields.io/github/contributors/LuminolMC/Lophine?style=for-the-badge&color=brightgreen)
+  ![Repo contributors](https://img.shields.io/github/contributors/LophineCraft/Lophine?style=for-the-badge&color=brightgreen)
   
   [English](./README_EN.md) | **中文**
 </div>
@@ -124,34 +124,6 @@ dependencies {
 
 ![bStats](https://bstats.org/signatures/server-implementation/Lophine.svg "bStats")
 
-## 🎉 特别感谢
-
-### 项目赞助商
-
-<div align="center">
-  <b>感谢 <a href="https://github.com/LegacyLands">LegacyLands</a> 对本项目的赞助</b>
-  <br>
-  <i>如果你想开发跨 Folia/非 Folia 平台的插件，<a href="https://github.com/LegacyLands/legacy-lands-library/">legacy-lands-library</a> 将会是个不错的选择</i>
-  <br><br>
-  <img src="public/image/legacy-lands-logo.png" alt="LegacyLands Logo" width="200">
-</div>
-
----
-
 ## ⭐ 请给我们一个 Star！
 
 > 你的每一个免费的 ⭐Star 就是我们每一个前进的动力。
-
-### Star 历史
-
-<a href="https://star-history.com/#LuminolMC/Luminol&LuminolMC/LightingLuminol&LuminolMC/Lophine&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=LuminolMC/Luminol%2CLuminolMC/LightingLuminol%2CLuminolMC/Lophine&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=LuminolMC/Luminol%2CLuminolMC/LightingLuminol%2CLuminolMC/Lophine&type=Date" />
-    <img alt="Star历史表" src="https://api.star-history.com/svg?repos=LuminolMC/Luminol%2CLuminolMC/LightingLuminol%2CLuminolMC/Lophine&type=Date" />
-  </picture>
-</a>
-
-<div align="center">
-  <b>如果这个项目对您有帮助，请不要忘记给我们一个 ⭐Star！</b>
-</div>
