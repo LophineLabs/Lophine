@@ -45,7 +45,7 @@ public class BotActionGuiContainer extends SimpleContainer {
     private static final int PREV_PAGE_SLOT = 39;
     private static final int NEXT_PAGE_SLOT = 41;
 
-    private static final ItemStack boarder = new ItemStack(Items.YELLOW_STAINED_GLASS_PANE);
+    private static final ItemStack boarder = new ItemStack(Items.WHITE_STAINED_GLASS_PANE);
 
     private final CraftBot bot;
     private final CraftPlayer player;
