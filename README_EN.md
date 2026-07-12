@@ -5,15 +5,15 @@
   
   *Lophine is a Luminol fork with many useful optimizations and configurable vanilla features, aims to provide more function for survival-usable circuit on folia (Please note that Fabric should be used for complete survival-usable)*
   
-  ![Created At](https://img.shields.io/github/created-at/LuminolMC/Lophine?style=for-the-badge&color=blue)
-  [![License](https://img.shields.io/github/license/LuminolMC/Lophine?style=for-the-badge&color=green)](LICENSE.md)
-  [![Issues](https://img.shields.io/github/issues/LuminolMC/Lophine?style=for-the-badge&color=orange)](https://github.com/LuminolMC/Lophine/issues)
+  ![Created At](https://img.shields.io/github/created-at/LophineCraft/Lophine?style=for-the-badge&color=blue)
+  [![License](https://img.shields.io/github/license/LophineCraft/Lophine?style=for-the-badge&color=green)](LICENSE.md)
+  [![Issues](https://img.shields.io/github/issues/LophineCraft/Lophine?style=for-the-badge&color=orange)](https://github.com/LuminolMC/Lophine/issues)
   
-  ![Commit Activity](https://img.shields.io/github/commit-activity/w/LuminolMC/Lophine?style=for-the-badge&color=purple)
-  ![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/LuminolMC/Lophine?style=for-the-badge&color=yellow)
-  ![GitHub all releases](https://img.shields.io/github/downloads/LuminolMC/Lophine/total?style=for-the-badge&color=red)
+  ![Commit Activity](https://img.shields.io/github/commit-activity/w/LophineCraft/Lophine?style=for-the-badge&color=purple)
+  ![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/LophineCraft/Lophine?style=for-the-badge&color=yellow)
+  ![GitHub all releases](https://img.shields.io/github/downloads/LophineCraft/Lophine/total?style=for-the-badge&color=red)
   
-  ![Repo contributors](https://img.shields.io/github/contributors/LuminolMC/Lophine?style=for-the-badge&color=brightgreen)
+  ![Repo contributors](https://img.shields.io/github/contributors/LophineCraft/Lophine?style=for-the-badge&color=brightgreen)
   
   **English** | [中文](./README.md)
 </div>
@@ -125,34 +125,6 @@ We welcome community contributions! For detailed contribution guidelines, please
 
 ![bStats](https://bstats.org/signatures/server-implementation/Lophine.svg "bStats")
 
-## 🎉 Special Thanks
-
-### Project Sponsors
-
-<div align="center">
-  <b>Thanks to <a href="https://github.com/LegacyLands">LegacyLands</a> for sponsoring this project</b>
-  <br>
-  <i>If you want to develop cross-Folia/non-Folia platform plugins, <a href="https://github.com/LegacyLands/legacy-lands-library/">legacy-lands-library</a> would be a great choice</i>
-  <br><br>
-  <img src="public/image/legacy-lands-logo.png" alt="LegacyLands Logo" width="200">
-</div>
-
----
-
 ## ⭐ Give Us a Star!
 
 > Every free ⭐Star you give is the motivation for our every step forward.
-
-### Star History
-
-<a href="https://star-history.com/#LuminolMC/Luminol&LuminolMC/LightingLuminol&LuminolMC/Lophine&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=LuminolMC/Luminol%2CLuminolMC/LightingLuminol%2CLuminolMC/Lophine&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=LuminolMC/Luminol%2CLuminolMC/LightingLuminol%2CLuminolMC/Lophine&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=LuminolMC/Luminol%2CLuminolMC/LightingLuminol%2CLuminolMC/Lophine&type=Date" />
-  </picture>
-</a>
-
-<div align="center">
-  <b>If this project helps you, please don't forget to give us a ⭐Star!</b>
-</div>
