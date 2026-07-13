@@ -1,0 +1,151 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: NatJerry <xiaomajunqwq123@outlook.com>
+Date: Sun, 12 Jul 2026 18:29:34 +0800
+Subject: [PATCH] Add Purpur Anvil Modify
+
+
+diff --git a/net/minecraft/world/inventory/AbstractContainerMenu.java b/net/minecraft/world/inventory/AbstractContainerMenu.java
+index fdd03c9d73a8a0527d0ead3fbbba20083c617e2c..78d073cf0bef734f1f767569160def50c845b654 100644
+--- a/net/minecraft/world/inventory/AbstractContainerMenu.java
++++ b/net/minecraft/world/inventory/AbstractContainerMenu.java
+@@ -64,6 +64,9 @@ public abstract class AbstractContainerMenu {
+     private final List<ContainerListener> containerListeners = Lists.newArrayList();
+     private @Nullable ContainerSynchronizer synchronizer;
+     private boolean suppressRemoteUpdates;
++    //Lophine start // Purpur - Anvil API
++    @Nullable protected ItemStack activeQuickItem = null;
++    //Lophine end
+     // CraftBukkit start
+     public boolean checkReachable = true;
+     public abstract org.bukkit.inventory.InventoryView getBukkitView();
+diff --git a/net/minecraft/world/inventory/AnvilMenu.java b/net/minecraft/world/inventory/AnvilMenu.java
+index a577225f59bb562b860cb90db72b4d658a69956f..ed90b646b3a1c7f8f707d19411a9f50d01e9f724 100644
+--- a/net/minecraft/world/inventory/AnvilMenu.java
++++ b/net/minecraft/world/inventory/AnvilMenu.java
+@@ -5,6 +5,8 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+ import net.minecraft.core.Holder;
+ import net.minecraft.core.component.DataComponents;
+ import net.minecraft.network.chat.Component;
++import net.minecraft.network.protocol.game.ClientboundContainerSetDataPacket;
++import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+ import net.minecraft.server.level.ServerPlayer;
+ import net.minecraft.tags.BlockTags;
+ import net.minecraft.util.Mth;
+@@ -50,6 +52,12 @@ public class AnvilMenu extends ItemCombinerMenu {
+     public int maximumRepairCost = 40;
+     private org.bukkit.craftbukkit.inventory.view.CraftAnvilView bukkitEntity;
+     // CraftBukkit end
++
++    // Purpur start - Anvil API
++    public boolean bypassCost = false;
++    public boolean canDoUnsafeEnchants = false;
++    // Purpur end - Anvil API
++
+     public boolean bypassEnchantmentLevelRestriction = false; // Paper - bypass anvil level restrictions
+ 
+     public AnvilMenu(final int containerId, final Inventory inventory) {
+@@ -81,7 +89,12 @@ public class AnvilMenu extends ItemCombinerMenu {
+ 
+     @Override
+     protected void onTake(final Player player, final ItemStack carried) {
++        // Purpur start - Anvil API
++        ItemStack itemstack = this.activeQuickItem != null ? this.activeQuickItem : carried;
++        if (org.purpurmc.purpur.event.inventory.AnvilTakeResultEvent.getHandlerList().getRegisteredListeners().length > 0) new org.purpurmc.purpur.event.inventory.AnvilTakeResultEvent(player.getBukkitEntity(), getBukkitView(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack)).callEvent();
++        // Purpur end - Anvil API
+         if (!player.hasInfiniteMaterials()) {
++            if (this.bypassCost) ((ServerPlayer) player).lastSentExp = -1; else // Purpur - Anvil API
+             player.giveExperienceLevels(-this.cost.get());
+         }
+ 
+@@ -134,13 +147,19 @@ public class AnvilMenu extends ItemCombinerMenu {
+ 
+     @Override
+     public void createResult() {
++        // Purpur start - Anvil API
++        this.bypassCost = false;
++        this.canDoUnsafeEnchants = false;
++        if (org.purpurmc.purpur.event.inventory.AnvilUpdateResultEvent.getHandlerList().getRegisteredListeners().length > 0) new org.purpurmc.purpur.event.inventory.AnvilUpdateResultEvent(getBukkitView()).callEvent();
++        // Purpur end - Anvil API
++
+         ItemStack input = this.inputSlots.getItem(0);
+         this.onlyRenaming = false;
+         this.cost.set(1);
+         int price = 0;
+         long tax = 0L;
+         int namingCost = 0;
+-        if (!input.isEmpty() && EnchantmentHelper.canStoreEnchantments(input)) {
++        if (!input.isEmpty() && this.canDoUnsafeEnchants || EnchantmentHelper.canStoreEnchantments(input)) { // Purpur - Anvil API
+             ItemStack result = input.copy();
+             ItemStack addition = this.inputSlots.getItem(1);
+             ItemEnchantments.Mutable enchantments = new ItemEnchantments.Mutable(EnchantmentHelper.getEnchantmentsForCrafting(result));
+@@ -198,23 +217,38 @@ public class AnvilMenu extends ItemCombinerMenu {
+                         int level = entry.getIntValue();
+                         level = current == level ? level + 1 : Math.max(level, current);
+                         Enchantment enchantment = enchantmentHolder.value();
+-                        boolean compatible = enchantment.canEnchant(input);
++                        // Purpur start - Config to allow unsafe enchants
++                        boolean compatible = this.canDoUnsafeEnchants ||
++                                fun.bm.lophine.config.modules.function.AnvilConfig.allow_inapplicable_enchants ||
++                                enchantment.canEnchant(input); // whether the enchantment can be applied on specific item type
++                        boolean canEnchant1 = true; // whether two incompatible enchantments can be applied on a single item
++                        // Purpur end - Config to allow unsafe enchants
+                         if (this.player.hasInfiniteMaterials() || input.is(Items.ENCHANTED_BOOK)) {
+                             compatible = true;
+                         }
+ 
++                        java.util.Set<Holder<Enchantment>> removedEnchantments = new java.util.HashSet<>(); // Purpur - Config to allow unsafe enchants
+                         for (Holder<Enchantment> other : enchantments.keySet()) {
+                             if (!other.equals(enchantmentHolder) && !Enchantment.areCompatible(enchantmentHolder, other)) {
+-                                compatible = false;
++                                canEnchant1 = this.canDoUnsafeEnchants || fun.bm.lophine.config.modules.function.AnvilConfig.allow_incompatible_enchants
++//                                        || org.purpurmc.purpur.PurpurConfig.allowIncompatibleEnchants
++                                ; // Purpur - Anvil API // Purpur - canEnchant -> canEnchant1 - Config to allow unsafe enchants
++                                // Purpur start - Config to allow unsafe enchants
++                                if (!canEnchant1 && fun.bm.lophine.config.modules.function.AnvilConfig.replace_incompatible_enchants) {
++                                    removedEnchantments.add(other);
++                                    canEnchant1 = true;
++                                }
++                                // Purpur end - Config to allow unsafe enchants
+                                 price++;
+                             }
+                         }
++                        enchantments.removeIf(removedEnchantments::contains); // Purpur - Config to allow unsafe enchants
+ 
+-                        if (!compatible) {
++                        if (!compatible || !canEnchant1) { // Purpur - Config to allow unsafe enchants
+                             isAnyEnchantmentNotCompatible = true;
+                         } else {
+                             isAnyEnchantmentCompatible = true;
+-                            if (level > enchantment.getMaxLevel() && !this.bypassEnchantmentLevelRestriction) { // Paper - bypass anvil level restrictions
++                            if (!fun.bm.lophine.config.modules.function.AnvilConfig.allow_higher_enchants_levels && level > enchantment.getMaxLevel() && !this.bypassEnchantmentLevelRestriction) { // Paper - bypass anvil level restrictions // Purpur - Config to allow unsafe enchants
+                                 level = enchantment.getMaxLevel();
+                             }
+ 
+@@ -267,6 +301,12 @@ public class AnvilMenu extends ItemCombinerMenu {
+                 this.onlyRenaming = true;
+             }
+ 
++            // Purpur start - Anvil API
++            if (this.bypassCost && this.cost.get() >= this.maximumRepairCost) {
++                this.cost.set(this.maximumRepairCost - 1);
++            }
++            // Purpur end - Anvil API
++
+             if (this.cost.get() >= this.maximumRepairCost && !this.player.hasInfiniteMaterials()) { // CraftBukkit
+                 result = ItemStack.EMPTY;
+             }
+@@ -287,6 +327,14 @@ public class AnvilMenu extends ItemCombinerMenu {
+ 
+             org.bukkit.craftbukkit.event.CraftEventFactory.callPrepareAnvilEvent(this.getBukkitView(), result); // CraftBukkit
+             this.broadcastChanges();
++
++            // Purpur start - Anvil API
++            if ((this.canDoUnsafeEnchants || fun.bm.lophine.config.modules.function.AnvilConfig.allow_inapplicable_enchants || fun.bm.lophine.config.modules.function.AnvilConfig.allow_incompatible_enchants
++            ) && result != ItemStack.EMPTY) { // Purpur - Config to allow unsafe enchants
++                ((ServerPlayer) this.player).connection.send(new ClientboundContainerSetSlotPacket(this.containerId, this.incrementStateId(), 2, result));
++                ((ServerPlayer) this.player).connection.send(new ClientboundContainerSetDataPacket(this.containerId, 0, this.cost.get()));
++            }
++            // Purpur end - Anvil API
+         } else {
+             org.bukkit.craftbukkit.event.CraftEventFactory.callPrepareAnvilEvent(this.getBukkitView(), ItemStack.EMPTY); // CraftBukkit
+             this.cost.set(AnvilMenu.DEFAULT_DENIED_COST); // CraftBukkit - use a variable for set a cost for denied item
