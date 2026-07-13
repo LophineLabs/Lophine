@@ -9,7 +9,7 @@ plugins {
 paperweight {
     filterPatches = false
     upstreams.register("luminol") {
-        repo = github("LuminolMC", "Luminol")
+        repo = github("NatJerry", "Luminol")
         ref = providers.gradleProperty("luminolRef")
 
         println("Upstream commit ref: " + ref.get())
