@@ -4,10 +4,8 @@ import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
-import me.earthme.luminol.config.flags.DoNotLoad;
 import me.earthme.luminol.enums.EnumConfigCategory;
 import org.jetbrains.annotations.Nullable;
-import org.leavesmc.leaves.command.bot.BotCommand;
 
 import java.util.Set;
 
@@ -17,7 +15,7 @@ import java.util.Set;
         directory = {"carpet"},
         comments = """
                 Carpet fakeplayer compatibility mapped onto Lophine fakeplayers.
-                commandPlayer is currently backed by Lophine's /bot command surface."""
+                /player command is registered by FakeplayerConfig using the legacy NMS brigadier PlayerCommand."""
 )
 public class FakePlayerCompatConfig implements IConfigModule {
     @ConfigInfo(name = "commandPlayer", comments = """
@@ -65,22 +63,13 @@ public class FakePlayerCompatConfig implements IConfigModule {
             Persist queued fakeplayer actions across save and reload.""")
     public static boolean fakePlayerReloadAction = false;
 
-    @DoNotLoad
-    private BotCommand command = null;
-
     @Override
     public void onLoaded(CommentedFileConfig configInstance, @Nullable Set<Exception> exs) {
-        if (commandPlayer && command == null) {
-            command = new BotCommand("player");
-            command.register();
-        }
+        // /player command is now registered by FakeplayerConfig using legacy NMS brigadier PlayerCommand
     }
 
     @Override
     public void onUnloaded(CommentedFileConfig configInstance) {
-        if (command != null) {
-            command.unregister();
-            command = null;
-        }
+        // /player command unregistration handled by FakeplayerConfig
     }
 }
