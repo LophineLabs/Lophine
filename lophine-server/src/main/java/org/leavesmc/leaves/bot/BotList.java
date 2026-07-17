@@ -192,6 +192,14 @@ public class BotList {
         return java.util.Optional.empty();
     }
 
+    private void deleteTagFile(String uuid, String subDir) {
+        File dir = new File(this.server.storageSource.getLevelPath(new LevelResource("lophine_config")).toFile(), subDir);
+        File file = new File(dir, uuid + ".dat");
+        if (file.exists()) {
+            file.delete();
+        }
+    }
+
     public ServerBot createNewBot(@NotNull BotCreateState state) {
         BotCreateEvent event = new BotCreateEvent(state.fullName(), state.skinName(), state.location(), state.createReason(), state.creator());
         event.setCancelled(!BotUtil.isCreateLegal(state.fullName()));
@@ -383,6 +391,8 @@ public class BotList {
         } else {
             this.resumeDataStorage.removeSavedData(bot);
             bot.dropAll(true);
+            this.deleteTagFile(bot.getStringUUID(), "bot_configs");
+            this.deleteTagFile(bot.getStringUUID(), "bot_inventory");
         }
         botsNameByWorldUuid.getOrDefault(bot.level().uuid.toString(), new HashSet<>()).remove(bot.getBukkitEntity().getName());
 
