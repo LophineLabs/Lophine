@@ -2,6 +2,7 @@ package fun.bm.lophine.config.modules.function;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
+import fun.bm.lophine.command.player.PlayerCommand;
 import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
@@ -17,7 +18,7 @@ import java.util.Set;
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "fakeplayer")
 public class FakeplayerConfig implements IConfigModule {
     @ConfigInfo(name = "enable", comments = """
-            Enable fakeplayer functionality (/bot command)""")
+            Enable fakeplayer functionality (/bot and /player commands)""")
     public static boolean enable = true;
 
     @ConfigInfo(name = "unable-fakeplayer-names", comments = """
@@ -39,6 +40,14 @@ public class FakeplayerConfig implements IConfigModule {
     @ConfigInfo(name = "regen-amount", comments = """
             Regeneration amount for fakeplayers""")
     public static double regenAmount = 0.0;
+
+    @ConfigInfo(name = "resident-fakeplayer", comments = """
+            Allow fakeplayers to persist across restarts""")
+    public static boolean canResident = false;
+
+    @ConfigInfo(name = "open-fakeplayer-inventory", comments = """
+            Allow opening fakeplayer inventory""")
+    public static boolean canOpenInventory = false;
 
     @ConfigInfo(name = "use-action", comments = """
             Allow fakeplayers to use actions""")
@@ -98,6 +107,7 @@ public class FakeplayerConfig implements IConfigModule {
         if (enable && command == null) {
             command = new BotCommand("bot");
             command.register();
+            PlayerCommand.register();
         }
     }
 
@@ -105,6 +115,7 @@ public class FakeplayerConfig implements IConfigModule {
     public void onUnloaded(CommentedFileConfig configInstance) {
         if (command != null) {
             command.unregister();
+            PlayerCommand.unregister();
             command = null;
         }
     }
