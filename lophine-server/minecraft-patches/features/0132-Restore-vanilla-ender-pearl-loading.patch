@@ -89,7 +89,7 @@ index 432a6dfff8e45eccea653b0d4cf04956edec6d98..835c13ff69592951261f917ad999d9a7
  
          level.removePlayerImmediately(player, Entity.RemovalReason.UNLOADED_WITH_PLAYER);
 diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
-index ad35eafa457f706879ba8a9c92b3a34e620ee2d6..7b607a9fb9955f0a1b843ed59d6b15e97fd37325 100644
+index 790c1bcf11150d31bf90c32345e4eb40de9a6a41..7409b452567608dbdb36ac686791e604a267fb6a 100644
 --- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 +++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 @@ -31,7 +31,11 @@ import net.minecraft.world.phys.Vec3;
