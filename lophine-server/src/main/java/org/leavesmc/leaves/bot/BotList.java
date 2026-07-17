@@ -120,6 +120,11 @@ public class BotList {
         }
     }
 
+    public void saveBotResume(ServerBot bot) {
+        this.resumeDataStorage.save(bot);
+        bot.lastSave = System.currentTimeMillis() / 50;
+    }
+
     public void saveBotConfigs(ServerBot bot) {
         CompoundTag tag = new CompoundTag();
         for (AbstractBotConfig<?, ?> config : bot.getAllConfigs()) {
