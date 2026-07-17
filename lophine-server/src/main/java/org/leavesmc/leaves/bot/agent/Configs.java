@@ -36,6 +36,7 @@ public class Configs {
     public static final SimulationDistanceConfig SIMULATION_DISTANCE = register(new SimulationDistanceConfig());
     public static final TickTypeConfig TICK_TYPE = register(new TickTypeConfig());
     public static final LocatorBarConfig ENABLE_LOCATOR_BAR = register(new LocatorBarConfig());
+    public static final KeepInventoryConfig KEEP_INVENTORY = register(new KeepInventoryConfig());
 
     @Nullable
     public static AbstractBotConfig<?, ?> getConfig(String name) {

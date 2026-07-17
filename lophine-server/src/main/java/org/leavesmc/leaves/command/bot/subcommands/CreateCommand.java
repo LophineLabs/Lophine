@@ -17,6 +17,7 @@
 
 package org.leavesmc.leaves.command.bot.subcommands;
 
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import fun.bm.lophine.config.modules.function.FakeplayerConfig;
@@ -35,10 +36,13 @@ import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.bot.BotCreateState;
 import org.leavesmc.leaves.bot.BotList;
 import org.leavesmc.leaves.bot.BotUtil;
+import org.leavesmc.leaves.bot.ServerBot;
 import org.leavesmc.leaves.command.ArgumentNode;
 import org.leavesmc.leaves.command.CommandContext;
 import org.leavesmc.leaves.command.bot.BotSubcommand;
+import org.leavesmc.leaves.entity.bot.CraftBot;
 import org.leavesmc.leaves.event.bot.BotCreateEvent;
+import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 
 import static net.kyori.adventure.text.Component.text;
 
@@ -84,12 +88,18 @@ public class CreateCommand extends BotSubcommand {
                 .createReason(BotCreateEvent.CreateReason.COMMAND)
                 .skinName(skinName)
                 .creator(sender)
-                .spawnWithSkin(null);
+                .spawnWithSkin(bot -> {
+                    if (bot != null) {
+                        ServerBot serverBot = ((CraftBot) bot).getHandle();
+                        BotList.INSTANCE.loadBotConfigs(serverBot);
+                        BotList.INSTANCE.loadBotInventoryAndEquipment(serverBot);
+                    }
+                });
 
         return true;
     }
 
-    private static boolean canCreate(CommandSender sender, @NotNull String name) {
+    static boolean canCreate(CommandSender sender, @NotNull String name) {
         BotList botList = BotList.INSTANCE;
         if (!name.matches("^[a-zA-Z0-9_]{4,16}$")) {
             sender.sendMessage(text("This name is illegal, bot name must be 4-16 characters and contain only letters, numbers, and underscores.", NamedTextColor.RED));

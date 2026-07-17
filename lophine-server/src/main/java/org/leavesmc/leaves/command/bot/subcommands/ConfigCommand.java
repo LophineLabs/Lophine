@@ -25,6 +25,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.leavesmc.leaves.bot.BotList;
 import org.leavesmc.leaves.bot.ServerBot;
 import org.leavesmc.leaves.bot.agent.Configs;
 import org.leavesmc.leaves.bot.agent.configs.AbstractBotConfig;
@@ -135,6 +136,7 @@ public class ConfigCommand extends BotSubcommand {
             } catch (ClassCastException e) {
                 throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument().create();
             }
+            BotList.INSTANCE.saveBotConfigs(bot);
             context.getSender().sendMessage(join(spaces(),
                     text("Bot", GRAY),
                     asAdventure(bot.getDisplayName()).append(text("'s", GRAY)),

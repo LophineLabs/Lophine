@@ -39,7 +39,8 @@ public class BotCommand extends RootNode {
                 LoadCommand::new,
                 SaveCommand::new,
                 ActionCommand::new,
-                CreateCommand::new
+                CreateCommand::new,
+                TimeCreateCommand::new
         );
     }
 

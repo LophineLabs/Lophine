@@ -360,11 +360,13 @@ public class ServerBot extends ServerPlayer {
     public @NotNull InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand, @NotNull net.minecraft.world.phys.Vec3 location) { // Leaves - Paper 26.1: Entity#interact now takes Vec3
         if (FakePlayerCompatConfig.openFakePlayerInventory) {
             if (player instanceof ServerPlayer player1 && player.getMainHandItem().isEmpty()) {
-                BotInventoryOpenEvent event = new BotInventoryOpenEvent(this.getBukkitEntity(), player1.getBukkitEntity());
-                getServer().server.getPluginManager().callEvent(event);
-                if (!event.isCancelled()) {
-                    player.openMenu(new SimpleMenuProvider((i, inventory, p) -> ChestMenu.sixRows(i, inventory, this.container), this.getDisplayName()));
-                    return InteractionResult.SUCCESS;
+                if (player1.getBukkitEntity().isOp()) {
+                    BotInventoryOpenEvent event = new BotInventoryOpenEvent(this.getBukkitEntity(), player1.getBukkitEntity());
+                    getServer().server.getPluginManager().callEvent(event);
+                    if (!event.isCancelled()) {
+                        player.openMenu(new SimpleMenuProvider((i, inventory, p) -> ChestMenu.sixRows(i, inventory, this.container), this.getDisplayName()));
+                        return InteractionResult.SUCCESS;
+                    }
                 }
             }
         }
@@ -472,10 +474,10 @@ public class ServerBot extends ServerPlayer {
                 try {
                     String configName = configTag.getString("configName")
                             .orElseThrow(() -> new IllegalArgumentException("Missing configName"));
-                    AbstractBotConfig<?, ?> config = Configs.getConfig(configName);
-                    if (config != null) {
-                        config.setBot(this);
-                        config.load(configTag);
+                    AbstractBotConfig<?, ?> botConfig = this.configs.get(configName);
+                    if (botConfig != null) {
+                        botConfig.setBot(this);
+                        botConfig.load(configTag);
                     }
                 } catch (RuntimeException exception) {
                     LophineLogger.LOGGER.warn("Skipped invalid saved config for bot {}", this.getScoreboardName(), exception);
@@ -759,6 +761,15 @@ public class ServerBot extends ServerPlayer {
 
     public <T, E extends AbstractBotConfig<T, E>> T getConfigValue(@NotNull AbstractBotConfig<T, E> config) {
         return this.getConfig(config).getValue();
+    }
+
+    @Nullable
+    public AbstractBotConfig<?, ?> getConfigByName(@NotNull String name) {
+        return this.configs.get(name);
+    }
+
+    public net.minecraft.world.entity.EntityEquipment getBotEquipment() {
+        return equipment;
     }
 
     @Override

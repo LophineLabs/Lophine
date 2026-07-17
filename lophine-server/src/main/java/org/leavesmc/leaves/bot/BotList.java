@@ -33,6 +33,8 @@ import io.papermc.paper.util.MCUtil;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.resources.ResourceKey;
@@ -41,10 +43,14 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
+import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.ValueInput;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -55,10 +61,13 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.leavesmc.leaves.bot.agent.Configs;
+import org.leavesmc.leaves.bot.agent.configs.AbstractBotConfig;
 import org.leavesmc.leaves.event.bot.*;
 import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 import org.slf4j.Logger;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -109,6 +118,73 @@ public class BotList {
         for (ServerBot bot : this.bots) {
             this.resumeDataStorage.save(bot);
         }
+    }
+
+    public void saveBotConfigs(ServerBot bot) {
+        CompoundTag tag = new CompoundTag();
+        for (AbstractBotConfig<?, ?> config : bot.getAllConfigs()) {
+            config.save(tag);
+        }
+        saveTagToFile(tag, bot.getStringUUID(), "bot_configs");
+    }
+
+    public void loadBotConfigs(ServerBot bot) {
+        loadTagFromFile(bot.getStringUUID(), "bot_configs").ifPresent(tag -> {
+            for (AbstractBotConfig<?, ?> config : bot.getAllConfigs()) {
+                config.load(tag);
+            }
+        });
+    }
+
+    public void saveBotInventory(ServerBot bot) {
+        CompoundTag tag = org.leavesmc.leaves.util.TagUtil.saveEntityWithoutId(bot);
+        saveTagToFile(tag, bot.getStringUUID(), "bot_inventory");
+    }
+
+    public void loadBotInventoryAndEquipment(ServerBot bot) {
+        loadTagFromFile(bot.getStringUUID(), "bot_inventory").ifPresent(nbt -> {
+            try {
+                ValueInput input = TagValueInput.create(
+                    new ProblemReporter.ScopedCollector(bot.problemPath(), LOGGER),
+                    bot.registryAccess(), nbt
+                );
+                for (ItemStackWithSlot isws : input.listOrEmpty("Inventory", ItemStackWithSlot.CODEC)) {
+                    int s = isws.slot();
+                    if (s >= 0 && s < 36) {
+                        bot.getInventory().setItem(s, isws.stack());
+                    }
+                }
+                input.read("equipment", EntityEquipment.CODEC).ifPresent(eq -> bot.getBotEquipment().setAll(eq));
+                bot.experienceProgress = input.getFloatOr("XpP", 0.0F);
+                bot.experienceLevel = input.getIntOr("XpLevel", 0);
+                bot.totalExperience = input.getIntOr("XpTotal", 0);
+            } catch (Exception e) {
+                LOGGER.warn("加载假人背包失败: {}", bot.getScoreboardName(), e);
+            }
+        });
+    }
+
+    private void saveTagToFile(CompoundTag tag, String uuid, String subDir) {
+        File dir = new File(this.server.storageSource.getLevelPath(new LevelResource("lophine_config")).toFile(), subDir);
+        dir.mkdirs();
+        try {
+            NbtIo.writeCompressed(tag, new File(dir, uuid + ".dat").toPath());
+        } catch (Exception e) {
+            LOGGER.warn("保存文件失败: {}/{}", subDir, uuid, e);
+        }
+    }
+
+    private java.util.Optional<CompoundTag> loadTagFromFile(String uuid, String subDir) {
+        File dir = new File(this.server.storageSource.getLevelPath(new LevelResource("lophine_config")).toFile(), subDir);
+        File file = new File(dir, uuid + ".dat");
+        if (file.exists()) {
+            try {
+                return java.util.Optional.of(NbtIo.readCompressed(file.toPath(), NbtAccounter.unlimitedHeap()));
+            } catch (Exception e) {
+                LOGGER.warn("加载文件失败: {}/{}", subDir, uuid, e);
+            }
+        }
+        return java.util.Optional.empty();
     }
 
     public ServerBot createNewBot(@NotNull BotCreateState state) {
@@ -285,17 +361,25 @@ public class BotList {
 
         bot.disconnect();
 
-        this.resumeDataStorage.removeSavedData(bot);
+        boolean keepInventory = (reason == BotRemoveEvent.RemoveReason.DEATH || reason == BotRemoveEvent.RemoveReason.COMMAND)
+            && bot.getConfigValue(Configs.KEEP_INVENTORY);
+
         if (event.shouldSave()) {
+            this.resumeDataStorage.removeSavedData(bot);
             if (resume) {
                 this.resumeDataStorage.save(bot);
             } else {
                 this.manualSaveDataStorage.save(bot);
             }
+        } else if (keepInventory) {
+            this.server.playerDataStorage.save(bot);
+            this.saveBotInventory(bot);
+            this.resumeDataStorage.removeSavedData(bot);
         } else {
+            this.resumeDataStorage.removeSavedData(bot);
             bot.dropAll(true);
-            botsNameByWorldUuid.getOrDefault(bot.level().uuid.toString(), new HashSet<>()).remove(bot.getBukkitEntity().getName());
         }
+        botsNameByWorldUuid.getOrDefault(bot.level().uuid.toString(), new HashSet<>()).remove(bot.getBukkitEntity().getName());
 
         if (bot.isPassenger() && event.shouldSave()) {
             Entity entity = bot.getRootVehicle();
