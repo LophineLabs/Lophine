@@ -5,14 +5,24 @@ Subject: [PATCH] Rebrand to Lophine
 
 
 diff --git a/src/main/java/io/papermc/paper/ServerBuildInfo.java b/src/main/java/io/papermc/paper/ServerBuildInfo.java
-index db5e2f10278c20286779362cfdfadb2f42c724e0..c18c0cb45a193883aa12b5d1abe690e95d289f82 100644
+index 652ff54e7c50412503725d628bfe72ed03059790..273bd3f354281c7ddbe2a3719be063b1d46e5445 100644
 --- a/src/main/java/io/papermc/paper/ServerBuildInfo.java
 +++ b/src/main/java/io/papermc/paper/ServerBuildInfo.java
-@@ -29,6 +29,7 @@ public interface ServerBuildInfo {
+@@ -19,6 +19,17 @@ public interface ServerBuildInfo {
       */
-     Key BRAND_LUMINOL_ID = Key.key("luminolmc", "luminol");
-     // Luminol end
-+    Key BRAND_LOPHINE_ID = Key.key("luminolmc", "lophine"); // Lophine
+     Key BRAND_PAPER_ID = Key.key("papermc", "paper");
  
++    // Lophine start
++    /**
++     * The brand id for folia
++     */
++    Key BRAND_FOLIA_ID = Key.key("papermc", "folia");
++    /**
++     * The brand id for Lophine.
++     */
++    Key BRAND_LOPHINE_ID = Key.key("luminolmc", "lophine");
++    // Lophine end
++
      /**
       * Gets the {@code ServerBuildInfo}.
+      *
