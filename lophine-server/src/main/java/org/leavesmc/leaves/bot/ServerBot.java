@@ -668,6 +668,44 @@ public class ServerBot extends ServerPlayer {
         return ProjectileUtil.getEntityHitResult(entity, vec3, viewEnd, aABB, EntitySelector.CAN_BE_PICKED, d1);
     }
 
+    @Override
+    public ItemEntity drop(ItemStack itemStack, boolean randomly, boolean thrownFromHand, boolean callEvent, java.util.function.@Nullable Consumer<org.bukkit.entity.Item> entityOperation) {
+        // Bots should not fire PlayerDropItemEvent - create item entity directly
+        if (itemStack.isEmpty()) {
+            return null;
+        } else if (this.level().isClientSide()) {
+            this.swing(InteractionHand.MAIN_HAND);
+            return null;
+        } else {
+            double yHandPos = this.getEyeY() - 0.3F;
+            ItemEntity entity = new ItemEntity(this.level(), this.getX(), yHandPos, this.getZ(), itemStack);
+            entity.setPickUpDelay(40);
+            if (thrownFromHand) {
+                entity.setThrower(this);
+            }
+            if (randomly) {
+                float pow = this.random.nextFloat() * 0.5F;
+                float dir = this.random.nextFloat() * (float) (Math.PI * 2);
+                entity.setDeltaMovement(-Mth.sin(dir) * pow, 0.2F, Mth.cos(dir) * pow);
+            } else {
+                float pow = 0.3F;
+                float sinX = Mth.sin(this.getXRot() * Mth.DEG_TO_RAD);
+                float cosX = Mth.cos(this.getXRot() * Mth.DEG_TO_RAD);
+                float sinY = Mth.sin(this.getYRot() * Mth.DEG_TO_RAD);
+                float cosY = Mth.cos(this.getYRot() * Mth.DEG_TO_RAD);
+                float dir = this.random.nextFloat() * (float) (Math.PI * 2);
+                float pow2 = 0.02F * this.random.nextFloat();
+                entity.setDeltaMovement(
+                    -sinY * cosX * 0.3F + Math.cos(dir) * pow2,
+                    -sinX * 0.3F + 0.1F + (this.random.nextFloat() - this.random.nextFloat()) * 0.1F,
+                    cosY * cosX * 0.3F + Math.sin(dir) * pow2
+                );
+            }
+            this.level().addFreshEntity(entity);
+            return entity;
+        }
+    }
+
     public void dropAll(boolean death) {
         NonNullList<ItemStack> items = this.getInventory().getNonEquipmentItems();
         for (int i = 0; i < items.size(); i++) {
