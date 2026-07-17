@@ -44,6 +44,8 @@ import net.minecraft.stats.Stat;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import org.bukkit.event.entity.EntityPotionEffectEvent;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -775,6 +777,12 @@ public class ServerBot extends ServerPlayer {
 
     public net.minecraft.world.entity.EntityEquipment getBotEquipment() {
         return equipment;
+    }
+
+    @Override
+    public boolean addEffect(MobEffectInstance newEffect, @Nullable Entity source, EntityPotionEffectEvent.Cause cause, boolean fireEvent) {
+        if (this.isRemoved() || this.dead) return false;
+        return super.addEffect(newEffect, source, cause, fireEvent);
     }
 
     public BotInventoryContainer getBotContainer() {
