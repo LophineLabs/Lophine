@@ -1,0 +1,441 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 28 Jun 2026 22:45:55 +0800
+Subject: [PATCH] Gale Reduce array allocations
+
+License: GPL-3.0-only (https://www.gnu.org/licenses/gpl-3.0.html)
+Gale - https://github.com/GaleMC/Gale
+
+Enum's values returns anew array copy of the enums, this behavior is defined in
+`src/jdk.compiler/share/classes/com/sun/tools/javac/comp/Lower.java#visitEnumDef`
+
+This is a defensive programming strategy to prevent enums from being modified. However,
+copying is unnecessary if we only have read calls.
+So we can cache the values result to avoid useless allocations.
+
+Cached as the array since it does not create iterator on the enhanced for loop,
+But the list does, and may spend more time than iterating using the array.
+
+One-time calls are excluded from this patch, since no need.
+
+The JMH benchmark of this patch can be found in SunBox's `CachedEnumValuesForLoop`
+
+This patch is based on the following patch:
+"reduce allocs"
+By: Simon Gardling <titaniumtown@gmail.com>
+As part of: JettPack (https://gitlab.com/Titaniumtown/JettPack)
+Licensed under: GPL-3.0-only (https://www.gnu.org/licenses/gpl-3.0.html)
+
+diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java
+index 8d9ce3d301d5f7e4106587ae00adb8dd5b8b6f88..dd8a4e445928d93667702dedbd35ab3e0f94f3be 100644
+--- a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java
++++ b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java
+@@ -400,7 +400,6 @@ public final class ChunkEntitySlices {
+ 
+     private static final class BasicEntityList<E extends Entity> {
+ 
+-        private static final Entity[] EMPTY = new Entity[0];
+         private static final int DEFAULT_CAPACITY = 4;
+ 
+         private E[] storage;
+@@ -411,7 +410,7 @@ public final class ChunkEntitySlices {
+         }
+ 
+         public BasicEntityList(final int cap) {
+-            this.storage = (E[])(cap <= 0 ? EMPTY : new Entity[cap]);
++            this.storage = (E[])(cap <= 0 ? me.titaniumtown.ArrayConstants.emptyEntityArray : new Entity[cap]);// Gale - JettPack - reduce array allocations
+         }
+ 
+         public boolean isEmpty() {
+@@ -423,7 +422,7 @@ public final class ChunkEntitySlices {
+         }
+ 
+         private void resize() {
+-            if (this.storage == EMPTY) {
++            if (this.storage == me.titaniumtown.ArrayConstants.emptyEntityArray) { // Gale - JettPack - reduce array allocations
+                 this.storage = (E[])new Entity[DEFAULT_CAPACITY];
+             } else {
+                 this.storage = Arrays.copyOf(this.storage, this.storage.length * 2);
+diff --git a/net/minecraft/nbt/ByteArrayTag.java b/net/minecraft/nbt/ByteArrayTag.java
+index 4fc0cfeabf60d4bd0dcfd9814d13858454bc39da..0e4dbc0c736ec2ce4826a81ef561a4cd7a8b974d 100644
+--- a/net/minecraft/nbt/ByteArrayTag.java
++++ b/net/minecraft/nbt/ByteArrayTag.java
+@@ -144,7 +144,7 @@ public final class ByteArrayTag implements CollectionTag {
+ 
+     @Override
+     public void clear() {
+-        this.data = new byte[0];
++        this.data = me.titaniumtown.ArrayConstants.emptyByteArray; // Gale - JettPack - reduce array allocations
+     }
+ 
+     @Override
+diff --git a/net/minecraft/nbt/IntArrayTag.java b/net/minecraft/nbt/IntArrayTag.java
+index 8ed91b84eb90cfe31993fa32b35263e7adea918e..bf4fe7956ceb8c79427e4d89d458ed30ee1dcb54 100644
+--- a/net/minecraft/nbt/IntArrayTag.java
++++ b/net/minecraft/nbt/IntArrayTag.java
+@@ -151,7 +151,7 @@ public final class IntArrayTag implements CollectionTag {
+ 
+     @Override
+     public void clear() {
+-        this.data = new int[0];
++        this.data = me.titaniumtown.ArrayConstants.emptyIntArray; // Gale - JettPack - reduce array allocations
+     }
+ 
+     @Override
+diff --git a/net/minecraft/nbt/LongArrayTag.java b/net/minecraft/nbt/LongArrayTag.java
+index fe75d82cb43364ff58a531306bac934cbca4f729..5141d9765dc29f23a2a7f0918d2c76ddfe09fa6f 100644
+--- a/net/minecraft/nbt/LongArrayTag.java
++++ b/net/minecraft/nbt/LongArrayTag.java
+@@ -150,7 +150,7 @@ public final class LongArrayTag implements CollectionTag {
+ 
+     @Override
+     public void clear() {
+-        this.data = new long[0];
++        this.data = me.titaniumtown.ArrayConstants.emptyLongArray; // Gale - JettPack - reduce array allocations
+     }
+ 
+     @Override
+diff --git a/net/minecraft/network/CipherBase.java b/net/minecraft/network/CipherBase.java
+index 5a1fcd0a552dfcebff351c408a0403a8017930c1..1cdb3a6292133719b2e6b824ed9f78857f7b595e 100644
+--- a/net/minecraft/network/CipherBase.java
++++ b/net/minecraft/network/CipherBase.java
+@@ -7,8 +7,8 @@ import javax.crypto.ShortBufferException;
+ 
+ public class CipherBase {
+     private final Cipher cipher;
+-    private byte[] heapIn = new byte[0];
+-    private byte[] heapOut = new byte[0];
++    private byte[] heapIn = me.titaniumtown.ArrayConstants.emptyByteArray; // Gale - JettPack - reduce array allocations
++    private byte[] heapOut = me.titaniumtown.ArrayConstants.emptyByteArray; // Gale - JettPack - reduce array allocations
+ 
+     protected CipherBase(final Cipher cipher) {
+         this.cipher = cipher;
+diff --git a/net/minecraft/network/chat/contents/TranslatableContents.java b/net/minecraft/network/chat/contents/TranslatableContents.java
+index b6973f9b48092676029ff58485ec8b8dece7387b..785f5c6f683ffdb73a70afabc42d6c09abb1e1d8 100644
+--- a/net/minecraft/network/chat/contents/TranslatableContents.java
++++ b/net/minecraft/network/chat/contents/TranslatableContents.java
+@@ -28,7 +28,7 @@ import net.minecraft.util.ExtraCodecs;
+ import org.jspecify.annotations.Nullable;
+ 
+ public class TranslatableContents implements ComponentContents {
+-    public static final Object[] NO_ARGS = new Object[0];
++    public static final Object[] NO_ARGS = me.titaniumtown.ArrayConstants.emptyObjectArray; // Gale - JettPack - reduce array allocations
+     public static final Codec<Object> PRIMITIVE_ARG_CODEC = ExtraCodecs.JAVA.validate(TranslatableContents::filterAllowedArguments);
+     private static final Codec<Object> ARG_CODEC = Codec.either(PRIMITIVE_ARG_CODEC, ComponentSerialization.CODEC)
+         .xmap(
+diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
+index 2e71a1cbabf3405e3e4fd5349a1784d895e7e60c..42de919064680b1a464d813976ca5e69a0bd3b01 100644
+--- a/net/minecraft/server/level/ServerEntity.java
++++ b/net/minecraft/server/level/ServerEntity.java
+@@ -364,7 +364,7 @@ public class ServerEntity {
+         if (this.entity instanceof LivingEntity livingEntity) {
+             List<Pair<EquipmentSlot, ItemStack>> slots = Lists.newArrayList();
+ 
+-            for (EquipmentSlot slot : EquipmentSlot.VALUES) {
++            for (EquipmentSlot slot : EquipmentSlot.VALUES_ARRAY) { // Gale - JettPack - reduce array allocations
+                 ItemStack itemStack = livingEntity.getItemBySlot(slot);
+                 if (!itemStack.isEmpty()) {
+                     slots.add(Pair.of(slot, itemStack.copy()));
+diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
+index 093c48e2379c01f45277b88f6c1b19b107a46326..b4d8cc8b520266abe1921b5e990c34fce3f1d982 100644
+--- a/net/minecraft/server/level/ServerPlayer.java
++++ b/net/minecraft/server/level/ServerPlayer.java
+@@ -1424,7 +1424,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+                     this.getInventory().getNonEquipmentItems().set(i, net.minecraft.world.item.ItemStack.EMPTY);
+                 }
+             }
+-            for (final EquipmentSlot value : EquipmentSlot.VALUES) {
++            for (final EquipmentSlot value : EquipmentSlot.VALUES_ARRAY) { // Gale - JettPack - reduce array allocations
+                 if (this.getInventory().equipment.has(value) && !shouldKeepDeathEventItem(event, this.getInventory().equipment.get(value))) {
+                     this.getInventory().equipment.set(value, net.minecraft.world.item.ItemStack.EMPTY);
+                 }
+diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index 164e2101688a9f29ecfa83f62141d8cb9df22ed1..2a383eee714b7da08b552c5bfb3988fad3cadb93 100644
+--- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -3027,7 +3027,7 @@ public class ServerGamePacketListenerImpl
+                             // SPIGOT-7136 - Allays
+                             if (target instanceof net.minecraft.world.entity.animal.allay.Allay || target instanceof net.minecraft.world.entity.animal.equine.AbstractHorse) { // Paper - Fix horse armor desync
+                                 ServerGamePacketListenerImpl.this.send(new net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket(
+-                                    target.getId(), java.util.Arrays.stream(net.minecraft.world.entity.EquipmentSlot.values())
++                                    target.getId(), java.util.Arrays.stream(net.minecraft.world.entity.EquipmentSlot.VALUES_ARRAY) // Gale - JettPack - reduce array allocations
+                                     .map((slot) -> com.mojang.datafixers.util.Pair.of(slot, ((LivingEntity) target).getItemBySlot(slot).copy()))
+                                     .collect(Collectors.toList()), true)); // Paper - sanitize
+                                 player.containerMenu.sendAllDataToRemote();
+diff --git a/net/minecraft/server/players/StoredUserList.java b/net/minecraft/server/players/StoredUserList.java
+index cf6c71db3dd39094608755998ceff6ca067238f3..1353fdfb68d8dbedafd64ac69d2869b22c6bfe09 100644
+--- a/net/minecraft/server/players/StoredUserList.java
++++ b/net/minecraft/server/players/StoredUserList.java
+@@ -96,7 +96,7 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
+     }
+ 
+     public String[] getUserList() {
+-        return this.map.keySet().toArray(new String[0]);
++        return this.map.keySet().toArray(me.titaniumtown.ArrayConstants.emptyStringArray); // Gale - JettPack - reduce array allocations
+     }
+ 
+     public boolean isEmpty() {
+diff --git a/net/minecraft/util/NullOps.java b/net/minecraft/util/NullOps.java
+index c7510c99c68c66a64d391b67d93f31cfcd3dccf0..5785ecf52bbd68e6df0f25b917722999addb6a20 100644
+--- a/net/minecraft/util/NullOps.java
++++ b/net/minecraft/util/NullOps.java
+@@ -171,7 +171,7 @@ public class NullOps implements DynamicOps<Unit> {
+ 
+     @Override
+     public DataResult<ByteBuffer> getByteBuffer(final Unit input) {
+-        return DataResult.success(ByteBuffer.wrap(new byte[0]));
++        return DataResult.success(ByteBuffer.wrap(me.titaniumtown.ArrayConstants.emptyByteArray)); // Gale - JettPack - reduce array allocations
+     }
+ 
+     @Override
+diff --git a/net/minecraft/util/ZeroBitStorage.java b/net/minecraft/util/ZeroBitStorage.java
+index 3666c3efd188508153b6482db425648e3ca77dc7..6c52fcac63fb2b79472ff10cb9f544f347a3fcdd 100644
+--- a/net/minecraft/util/ZeroBitStorage.java
++++ b/net/minecraft/util/ZeroBitStorage.java
+@@ -5,7 +5,7 @@ import java.util.function.IntConsumer;
+ import org.apache.commons.lang3.Validate;
+ 
+ public class ZeroBitStorage implements BitStorage {
+-    public static final long[] RAW = new long[0];
++    public static final long[] RAW = me.titaniumtown.ArrayConstants.emptyLongArray; // Gale - JettPack - reduce array allocations
+     private final int size;
+ 
+     public ZeroBitStorage(final int size) {
+diff --git a/net/minecraft/world/entity/ConversionType.java b/net/minecraft/world/entity/ConversionType.java
+index e5e268a1b2e8c1d728d39e66a53a5ad17fa6694f..59514750c3024d0f16512d2cd2c5b79f297c7beb 100644
+--- a/net/minecraft/world/entity/ConversionType.java
++++ b/net/minecraft/world/entity/ConversionType.java
+@@ -37,7 +37,7 @@ public enum ConversionType {
+             }
+ 
+             if (params.keepEquipment()) {
+-                for (EquipmentSlot slot : EquipmentSlot.VALUES) {
++                for (EquipmentSlot slot : EquipmentSlot.VALUES_ARRAY) { // Gale - JettPack - reduce array allocations
+                     ItemStack itemStack = from.getItemBySlot(slot);
+                     if (!itemStack.isEmpty()) {
+                         to.setItemSlot(slot, itemStack.copyAndClear());
+diff --git a/net/minecraft/world/entity/EquipmentSlot.java b/net/minecraft/world/entity/EquipmentSlot.java
+index ffb5f07697e9f1fb07f83ea4739c6b9d5a622892..63a9956f4aaf6feb6de2ef59a2211448f816e4fb 100644
+--- a/net/minecraft/world/entity/EquipmentSlot.java
++++ b/net/minecraft/world/entity/EquipmentSlot.java
+@@ -20,6 +20,7 @@ public enum EquipmentSlot implements StringRepresentable {
+     SADDLE(EquipmentSlot.Type.SADDLE, 0, 1, 7, "saddle");
+ 
+     public static final int NO_COUNT_LIMIT = 0;
++    public static final EquipmentSlot[] VALUES_ARRAY = values(); // Gale - JettPack - reduce array allocations
+     public static final List<EquipmentSlot> VALUES = List.of(values());
+     public static final IntFunction<EquipmentSlot> BY_ID = ByIdMap.continuous(s -> s.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+     public static final StringRepresentable.EnumCodec<EquipmentSlot> CODEC = StringRepresentable.fromEnum(EquipmentSlot::values);
+diff --git a/net/minecraft/world/entity/EquipmentSlotGroup.java b/net/minecraft/world/entity/EquipmentSlotGroup.java
+index e9b1290f24ba30663110abc61310d0a1e784e5a1..0112c19b99c62dde19af1009030c1645297163d9 100644
+--- a/net/minecraft/world/entity/EquipmentSlotGroup.java
++++ b/net/minecraft/world/entity/EquipmentSlotGroup.java
+@@ -24,6 +24,7 @@ public enum EquipmentSlotGroup implements StringRepresentable, Iterable<Equipmen
+     BODY(9, "body", EquipmentSlot.BODY),
+     SADDLE(10, "saddle", EquipmentSlot.SADDLE);
+ 
++    public static final EquipmentSlotGroup[] VALUES_ARRAY = EquipmentSlotGroup.values(); // Gale - JettPack - reduce array allocations
+     public static final IntFunction<EquipmentSlotGroup> BY_ID = ByIdMap.continuous(s -> s.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+     public static final Codec<EquipmentSlotGroup> CODEC = StringRepresentable.fromEnum(EquipmentSlotGroup::values);
+     public static final StreamCodec<ByteBuf, EquipmentSlotGroup> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, s -> s.id);
+diff --git a/net/minecraft/world/entity/EquipmentTable.java b/net/minecraft/world/entity/EquipmentTable.java
+index 4b018c64d3123bb7a0687491d2ac3a535302890c..0e4d6c9a35d29c240a0cf30694211ea3db66895c 100644
+--- a/net/minecraft/world/entity/EquipmentTable.java
++++ b/net/minecraft/world/entity/EquipmentTable.java
+@@ -35,7 +35,7 @@ public record EquipmentTable(ResourceKey<LootTable> lootTable, Map<EquipmentSlot
+     }
+ 
+     private static Map<EquipmentSlot, Float> createForAllSlots(final float dropChance) {
+-        return createForAllSlots(List.of(EquipmentSlot.values()), dropChance);
++        return createForAllSlots(List.of(EquipmentSlot.VALUES_ARRAY), dropChance); // Gale - JettPack - reduce array allocations
+     }
+ 
+     private static Map<EquipmentSlot, Float> createForAllSlots(final List<EquipmentSlot> slots, final float dropChance) {
+diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
+index 1cb8265c1313ad4893d45c344b03007fc4e2de4b..fcaeb471dada57e9ba4d224693cefbff2fa631be 100644
+--- a/net/minecraft/world/entity/LivingEntity.java
++++ b/net/minecraft/world/entity/LivingEntity.java
+@@ -3609,7 +3609,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+         Map<org.bukkit.inventory.EquipmentSlot, io.papermc.paper.event.entity.EntityEquipmentChangedEvent.EquipmentChange> equipmentChanges = null;
+         // Paper end - EntityEquipmentChangedEvent
+ 
+-        for (EquipmentSlot slot : EquipmentSlot.VALUES) {
++        for (EquipmentSlot slot : EquipmentSlot.VALUES_ARRAY) { // Gale - JettPack - reduce array allocations
+             ItemStack previous = lastEquipmentItems.get(slot);
+             ItemStack current = this.getItemBySlot(slot);
+             if (this.equipmentHasChanged(previous, current)) {
+@@ -3892,7 +3892,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+ 
+     protected boolean canGlide() {
+         if (!this.onGround() && !this.isPassenger() && !this.hasEffect(MobEffects.LEVITATION)) {
+-            for (EquipmentSlot slot : EquipmentSlot.VALUES) {
++            for (EquipmentSlot slot : EquipmentSlot.VALUES_ARRAY) { // Gale - JettPack - reduce array allocations
+                 if (canGlideUsing(this.getItemBySlot(slot), slot)) {
+                     return true;
+                 }
+diff --git a/net/minecraft/world/entity/decoration/ArmorStand.java b/net/minecraft/world/entity/decoration/ArmorStand.java
+index 9e4293c6df1851a852423b469577388d2254e169..952b09fba4cf7de90110a7aa4b96dc03afab25e1 100644
+--- a/net/minecraft/world/entity/decoration/ArmorStand.java
++++ b/net/minecraft/world/entity/decoration/ArmorStand.java
+@@ -484,7 +484,7 @@ public class ArmorStand extends LivingEntity {
+         if (this.deathDropItems == null) this.deathDropItems = new java.util.ArrayList<>(); // Paper
+         this.dropAllDeathLoot(level, source);
+ 
+-        for (EquipmentSlot slot : EquipmentSlot.VALUES) {
++        for (EquipmentSlot slot : EquipmentSlot.VALUES_ARRAY) { // Gale - JettPack - reduce array allocations
+             this.postDeathEventTasks.add(() -> this.equipment.set(slot, ItemStack.EMPTY)); // Paper - move equipment removal past event call
+             ItemStack itemStack = this.equipment.get(slot); // Paper
+             if (!itemStack.isEmpty() && !EnchantmentHelper.has(itemStack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
+diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
+index a4bc767b799c050ce07a3685f655b4ba947d2466..a447b9fbb579591c62b3d8f8e2527796feefc4a0 100644
+--- a/net/minecraft/world/entity/player/Player.java
++++ b/net/minecraft/world/entity/player/Player.java
+@@ -346,7 +346,7 @@ public abstract class Player extends Avatar implements ContainerUser {
+     }
+ 
+     private boolean isEquipped(final Item item) {
+-        for (EquipmentSlot slot : EquipmentSlot.VALUES) {
++        for (EquipmentSlot slot : EquipmentSlot.VALUES_ARRAY) { // Gale - JettPack - reduce array allocations
+             ItemStack itemStack = this.getItemBySlot(slot);
+             Equippable equippable = itemStack.get(DataComponents.EQUIPPABLE);
+             if (itemStack.is(item) && equippable != null && equippable.slot() == slot) {
+diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
+index 88a5453ac9e3415b5b5c5e81899b9b13627ca817..a6805d436fd3675e385cbf8a3e5b262ae694ed90 100644
+--- a/net/minecraft/world/item/ItemStack.java
++++ b/net/minecraft/world/item/ItemStack.java
+@@ -1182,7 +1182,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, Chang
+ 
+     private void addAttributeTooltips(final Consumer<Component> consumer, final TooltipDisplay display, final @Nullable Player player) {
+         if (display.shows(DataComponents.ATTRIBUTE_MODIFIERS)) {
+-            for (EquipmentSlotGroup slot : EquipmentSlotGroup.values()) {
++            for (EquipmentSlotGroup slot : EquipmentSlotGroup.VALUES_ARRAY) { // Gale - JettPack - reduce array allocations
+                 MutableBoolean first = new MutableBoolean(true);
+                 this.forEachModifier(slot, (attribute, modifier, tooltip) -> {
+                     if (tooltip != ItemAttributeModifiers.Display.hidden()) {
+diff --git a/net/minecraft/world/item/crafting/ShapedRecipePattern.java b/net/minecraft/world/item/crafting/ShapedRecipePattern.java
+index b2ca30b84a6f498a2b18145eb1efaea7c4c5c943..f60e6188d25c13fc433931b0e8760869ccee8fb0 100644
+--- a/net/minecraft/world/item/crafting/ShapedRecipePattern.java
++++ b/net/minecraft/world/item/crafting/ShapedRecipePattern.java
+@@ -121,7 +121,7 @@ public final class ShapedRecipePattern {
+         }
+ 
+         if (pattern.size() == bottom) {
+-            return new String[0];
++            return me.titaniumtown.ArrayConstants.emptyStringArray; // Gale - JettPack - reduce array allocations
+         }
+ 
+         String[] result = new String[pattern.size() - bottom - top];
+diff --git a/net/minecraft/world/item/enchantment/Enchantment.java b/net/minecraft/world/item/enchantment/Enchantment.java
+index 0d981b86fa7ee8713e2a419fc2f377defbc2ed9c..26d850a0ee40c5042e99689f8bd67d8859c42d40 100644
+--- a/net/minecraft/world/item/enchantment/Enchantment.java
++++ b/net/minecraft/world/item/enchantment/Enchantment.java
+@@ -107,7 +107,7 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
+     public Map<EquipmentSlot, ItemStack> getSlotItems(final LivingEntity entity) {
+         Map<EquipmentSlot, ItemStack> itemStacks = Maps.newEnumMap(EquipmentSlot.class);
+ 
+-        for (EquipmentSlot slot : EquipmentSlot.VALUES) {
++        for (EquipmentSlot slot : EquipmentSlot.VALUES_ARRAY) { // Gale - JettPack - reduce array allocations
+             if (this.matchingSlot(slot)) {
+                 ItemStack itemStack = entity.getItemBySlot(slot);
+                 if (!itemStack.isEmpty()) {
+diff --git a/net/minecraft/world/item/enchantment/EnchantmentHelper.java b/net/minecraft/world/item/enchantment/EnchantmentHelper.java
+index ed84782f4fcaec8f12ab68641a42ad6e09079875..4f2017c4ca12dcedb9587e0d3d3c9a6be4996167 100644
+--- a/net/minecraft/world/item/enchantment/EnchantmentHelper.java
++++ b/net/minecraft/world/item/enchantment/EnchantmentHelper.java
+@@ -157,7 +157,7 @@ public class EnchantmentHelper {
+     }
+ 
+     private static void runIterationOnEquipment(final LivingEntity owner, final EnchantmentHelper.EnchantmentInSlotVisitor method) {
+-        for (EquipmentSlot slot : EquipmentSlot.VALUES) {
++        for (EquipmentSlot slot : EquipmentSlot.VALUES_ARRAY) { // Gale - JettPack - reduce array allocations
+             runIterationOnItem(owner.getItemBySlot(slot), slot, owner, method);
+         }
+     }
+@@ -495,7 +495,7 @@ public class EnchantmentHelper {
+     ) {
+         List<EnchantedItemInUse> items = new ArrayList<>();
+ 
+-        for (EquipmentSlot slot : EquipmentSlot.VALUES) {
++        for (EquipmentSlot slot : EquipmentSlot.VALUES_ARRAY) { // Gale - JettPack - reduce array allocations
+             ItemStack item = source.getItemBySlot(slot);
+             if (predicate.test(item)) {
+                 ItemEnchantments enchantments = item.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
+index 87fb17917f4cecfef2d5d03bf8fd6e61d075212e..000e4924e8e338728715a3946002903a3118a98a 100644
+--- a/net/minecraft/world/level/Level.java
++++ b/net/minecraft/world/level/Level.java
+@@ -1966,7 +1966,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+     public org.bukkit.entity.Entity[] getChunkEntities(int chunkX, int chunkZ) {
+         ca.spottedleaf.moonrise.patches.chunk_system.level.entity.ChunkEntitySlices slices = ((ServerLevel)this).moonrise$getEntityLookup().getChunk(chunkX, chunkZ);
+         if (slices == null) {
+-            return new org.bukkit.entity.Entity[0];
++            return me.titaniumtown.ArrayConstants.emptyBukkitEntityArray; // Gale - JettPack - reduce array allocations
+         }
+ 
+         List<org.bukkit.entity.Entity> ret = new java.util.ArrayList<>();
+@@ -1977,7 +1977,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+             }
+         }
+ 
+-        return ret.toArray(new org.bukkit.entity.Entity[0]);
++        return ret.toArray(me.titaniumtown.ArrayConstants.emptyBukkitEntityArray); // Gale - JettPack - reduce array allocations
+     }
+     // Paper end - rewrite chunk system
+ 
+diff --git a/net/minecraft/world/level/block/ComposterBlock.java b/net/minecraft/world/level/block/ComposterBlock.java
+index 0c8cc60efc8999e76632c605fa7d2b0cfa347e17..4e0c19970595dd2899a2e08ee122266c2338d84d 100644
+--- a/net/minecraft/world/level/block/ComposterBlock.java
++++ b/net/minecraft/world/level/block/ComposterBlock.java
+@@ -434,7 +434,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
+ 
+         @Override
+         public int[] getSlotsForFace(final Direction direction) {
+-            return new int[0];
++            return me.titaniumtown.ArrayConstants.emptyIntArray; // Gale - JettPack - reduce array allocations
+         }
+ 
+         @Override
+@@ -469,7 +469,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
+ 
+         @Override
+         public int[] getSlotsForFace(final Direction direction) {
+-            return direction == Direction.UP ? new int[]{0} : new int[0];
++            return direction == Direction.UP ? me.titaniumtown.ArrayConstants.zeroSingletonIntArray : me.titaniumtown.ArrayConstants.emptyIntArray; // Gale - JettPack - reduce array allocations
+         }
+ 
+         @Override
+@@ -521,7 +521,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
+ 
+         @Override
+         public int[] getSlotsForFace(final Direction direction) {
+-            return direction == Direction.DOWN ? new int[]{0} : new int[0];
++            return direction == Direction.DOWN ? me.titaniumtown.ArrayConstants.zeroSingletonIntArray : me.titaniumtown.ArrayConstants.emptyIntArray; // Gale - JettPack - reduce array allocations
+         }
+ 
+         @Override
+diff --git a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
+index 9006438c36771794c9375babffa8c5944a38983d..ac93d2992fe780133439302ce5b851f9ac0c7353 100644
+--- a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
++++ b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
+@@ -44,7 +44,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
+     protected static final int SLOT_FUEL = 1;
+     protected static final int SLOT_RESULT = 2;
+     public static final int DATA_LIT_TIME = 0;
+-    private static final int[] SLOTS_FOR_UP = new int[]{0};
++    private static final int[] SLOTS_FOR_UP = me.titaniumtown.ArrayConstants.zeroSingletonIntArray; // Gale - JettPack - reduce array allocations
+     private static final int[] SLOTS_FOR_DOWN = new int[]{2, 1};
+     private static final int[] SLOTS_FOR_SIDES = new int[]{1};
+     public static final int DATA_LIT_DURATION = 1;
+diff --git a/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java b/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java
+index e00caf8dc68ce49f4011f881f3558347fe848822..a9201522bdca5a6e6aae48624d3f95fcb0e3d941 100644
+--- a/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java
++++ b/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java
+@@ -268,7 +268,7 @@ public class MapItemSavedData extends SavedData {
+     }
+ 
+     private static boolean hasMapInvisibilityItemEquipped(final Player player) {
+-        for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
++        for (EquipmentSlot equipmentSlot : EquipmentSlot.VALUES_ARRAY) { // Gale - JettPack - reduce array allocations
+             if (equipmentSlot != EquipmentSlot.MAINHAND
+                 && equipmentSlot != EquipmentSlot.OFFHAND
+                 && player.getItemBySlot(equipmentSlot).is(ItemTags.MAP_INVISIBILITY_EQUIPMENT)) {

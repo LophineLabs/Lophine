@@ -1,0 +1,104 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Fri, 5 Jun 2026 15:09:29 +0800
+Subject: [PATCH] Add config to enable tick command
+
+only freeze/unfreeze/step/query can run when enabled
+
+diff --git a/io/papermc/paper/threadedregions/RegionizedServer.java b/io/papermc/paper/threadedregions/RegionizedServer.java
+index ff90abb47203c03636d3175f2b3efcf43517b3b0..276349d778c2e6f0b1081eec4851bad5d25db237 100644
+--- a/io/papermc/paper/threadedregions/RegionizedServer.java
++++ b/io/papermc/paper/threadedregions/RegionizedServer.java
+@@ -239,6 +239,11 @@ public final class RegionizedServer {
+ 
+     private void globalTick(final long tickCount) {
+         ++this.tickCount;
++        // Luminol start - Add a config to enable tick command
++        if (me.earthme.luminol.config.modules.experiment.CommandConfig.tick) {
++            MinecraftServer.getServer().tickRateManager().tick();
++        }
++        // Luminol end - Add a config to enable tick command
+         // expire invalid click command callbacks
+         io.papermc.paper.adventure.providers.ClickCallbackProviderImpl.ADVENTURE_CLICK_MANAGER.handleQueue((int)this.tickCount); // Paper // Folia - region threading - moved to global tick
+         io.papermc.paper.adventure.providers.ClickCallbackProviderImpl.DIALOG_CLICK_MANAGER.handleQueue((int)this.tickCount); // Paper // Folia - region threading - moved to global tick
+@@ -415,7 +420,7 @@ public final class RegionizedServer {
+     }
+ 
+     private void tickTime(final ServerLevel world, final long tickCount) {
+-        if (world.tickTime) {
++        if ((!me.earthme.luminol.config.modules.experiment.CommandConfig.tick || world.tickRateManager().runsNormally()) && world.tickTime) { // Luminol - Add a config to enable tick command
+             world.serverLevelData.setGameTime(world.serverLevelData.getGameTime() + tickCount);
+         }
+     }
+diff --git a/io/papermc/paper/threadedregions/TickRegionScheduler.java b/io/papermc/paper/threadedregions/TickRegionScheduler.java
+index 58e557923dfe6cee39ec45e7f5aa43a5ded9f107..5f4f80c1d4003254fd840f71d86908603b57bfa2 100644
+--- a/io/papermc/paper/threadedregions/TickRegionScheduler.java
++++ b/io/papermc/paper/threadedregions/TickRegionScheduler.java
+@@ -559,6 +559,11 @@ public final class TickRegionScheduler {
+             try {
+                 // next start isn't updated until the end of this tick
+                 this.tickRegion(tickCount, tickStart, scheduledEnd);
++                // Luminol start - Add a config to enable tick command
++                if (me.earthme.luminol.config.modules.experiment.CommandConfig.tick) {
++                    MinecraftServer.getServer().tickRateManager().endTickWork();
++                }
++                // Luminol end - Add a config to enable tick command
+             } catch (final Throwable thr) {
+                 this.scheduler.regionFailed(this, false, thr);
+                 // regionFailed will schedule a shutdown, so we should avoid letting this region tick further
+diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
+index 6823c41c08ca1a1baf9257fc861ae97bbcbe3a50..0fa14f60310b063f419620539fd40898627b46b9 100644
+--- a/net/minecraft/commands/Commands.java
++++ b/net/minecraft/commands/Commands.java
+@@ -259,7 +259,11 @@ public class Commands {
+         TeleportCommand.register(this.dispatcher);
+         TellRawCommand.register(this.dispatcher, context);
+         //TestCommand.register(this.dispatcher, context); // Folia - region threading
+-        //TickCommand.register(this.dispatcher); // Folia - region threading - TODO later
++        // Luminol start - Add a config to enable tick command
++        if (me.earthme.luminol.config.modules.experiment.CommandConfig.tick) {
++            TickCommand.register(this.dispatcher); // Folia - region threading - TODO later
++        }
++        // Luminol end - Add a config to enable tick command
+         TimeCommand.register(this.dispatcher, context);
+         TitleCommand.register(this.dispatcher, context);
+         //TriggerCommand.register(this.dispatcher); // Folia - region threading - TODO later
+diff --git a/net/minecraft/server/commands/TickCommand.java b/net/minecraft/server/commands/TickCommand.java
+index e8d6a67143f3f0b4813e51bb273498bc404899b9..64b685b219b930a1bb7f85db9947f4d1ca9df093 100644
+--- a/net/minecraft/server/commands/TickCommand.java
++++ b/net/minecraft/server/commands/TickCommand.java
+@@ -23,14 +23,14 @@ public class TickCommand {
+             Commands.literal("tick")
+                 .requires(Commands.hasPermission(Commands.LEVEL_ADMINS))
+                 .then(Commands.literal("query").executes(c -> tickQuery(c.getSource())))
+-                .then(
++/*                .then(
+                     Commands.literal("rate")
+                         .then(
+                             Commands.argument("rate", FloatArgumentType.floatArg(1.0F, 10000.0F))
+                                 .suggests((c, b) -> SharedSuggestionProvider.suggest(new String[]{DEFAULT_TICKRATE}, b))
+                                 .executes(c -> setTickingRate(c.getSource(), FloatArgumentType.getFloat(c, "rate")))
+                         )
+-                )
++                )*/
+                 .then(
+                     Commands.literal("step")
+                         .executes(c -> step(c.getSource(), 1))
+@@ -41,7 +41,7 @@ public class TickCommand {
+                                 .executes(c -> step(c.getSource(), IntegerArgumentType.getInteger(c, "time")))
+                         )
+                 )
+-                .then(
++/*                .then(
+                     Commands.literal("sprint")
+                         .then(Commands.literal("stop").executes(c -> stopSprinting(c.getSource())))
+                         .then(
+@@ -49,7 +49,7 @@ public class TickCommand {
+                                 .suggests((c, b) -> SharedSuggestionProvider.suggest(new String[]{"60s", "1d", "3d"}, b))
+                                 .executes(c -> sprint(c.getSource(), IntegerArgumentType.getInteger(c, "time")))
+                         )
+-                )
++                )*/
+                 .then(Commands.literal("unfreeze").executes(c -> setFreeze(c.getSource(), false)))
+                 .then(Commands.literal("freeze").executes(c -> setFreeze(c.getSource(), true)))
+         );

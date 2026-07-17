@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sat, 20 Jun 2026 22:37:26 +0800
+Subject: [PATCH] Add config for cpu affinity
+
+
+diff --git a/src/main/java/ca/spottedleaf/moonrise/common/util/MoonriseCommon.java b/src/main/java/ca/spottedleaf/moonrise/common/util/MoonriseCommon.java
+index b9f788693b0c4be48e8a923a3dec50555d135e7e..dc69f5ae1f405bc385b7c6cec4e23faeeda182eb 100644
+--- a/src/main/java/ca/spottedleaf/moonrise/common/util/MoonriseCommon.java
++++ b/src/main/java/ca/spottedleaf/moonrise/common/util/MoonriseCommon.java
+@@ -22,7 +22,7 @@ public final class MoonriseCommon {
+ 
+             @Override
+             public Thread newThread(final Runnable run) {
+-                final Thread thread = new Thread(run, PlatformHooks.get().getBrand() + " Common Worker #" + this.idGenerator.getAndIncrement());
++                final Thread thread = new Thread(me.earthme.luminol.config.modules.optimizations.CpuAffinityConfig.wrapForChunkSystemWorker(run), PlatformHooks.get().getBrand() + " Common Worker #" + this.idGenerator.getAndIncrement()); // Luminol - cpu affinity
+ 
+                 thread.setDaemon(true);
+                 thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+@@ -70,7 +70,7 @@ public final class MoonriseCommon {
+ 
+                 @Override
+                 public Thread newThread(final Runnable run) {
+-                    final Thread thread = new Thread(run, PlatformHooks.get().getBrand() + " I/O Worker #" + this.idGenerator.getAndIncrement());
++                    final Thread thread = new Thread(me.earthme.luminol.config.modules.optimizations.CpuAffinityConfig.wrapForChunkSystemIo(run), PlatformHooks.get().getBrand() + " I/O Worker #" + this.idGenerator.getAndIncrement()); // Luminol - cpu affinity
+ 
+                     thread.setDaemon(true);
+                     thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {

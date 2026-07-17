@@ -1,0 +1,93 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Fri, 16 Jan 2026 02:34:43 +0800
+Subject: [PATCH] Add config to enable save-all command
+
+
+diff --git a/io/papermc/paper/threadedregions/RegionizedServer.java b/io/papermc/paper/threadedregions/RegionizedServer.java
+index 276349d778c2e6f0b1081eec4851bad5d25db237..79ef1e69ec364beec69b37c6850c038cdba73b4c 100644
+--- a/io/papermc/paper/threadedregions/RegionizedServer.java
++++ b/io/papermc/paper/threadedregions/RegionizedServer.java
+@@ -265,6 +265,8 @@ public final class RegionizedServer {
+         // tick player ping sample
+         this.tickPlayerSample();
+ 
++        fun.bm.lophine.utils.SaveAllUtil.checkTimeout(); // Lophine - save-all fix
++
+         // tick worlds
+         for (final ServerLevel world : this.worlds) {
+             this.globalTick(world, tickCount);
+diff --git a/io/papermc/paper/threadedregions/TickRegions.java b/io/papermc/paper/threadedregions/TickRegions.java
+index 97c514673a454b752ab86b944fd143725ca8090d..ba91d40d6d91588a4b39abfefcb17a362bfc5490 100644
+--- a/io/papermc/paper/threadedregions/TickRegions.java
++++ b/io/papermc/paper/threadedregions/TickRegions.java
+@@ -190,6 +190,8 @@ public final class TickRegions implements ThreadedRegionizer.RegionCallbacks<Tic
+         public final ThreadedRegionizer.ThreadedRegion<TickRegionData, TickRegionSectionData> region;
+         public final ServerLevel world;
+ 
++        public long lastSavedTime = 0; // Lophine - save-all fix
++
+         // generic regionised data
+         private final Reference2ReferenceOpenHashMap<RegionizedData<?>, Object> regionizedData = new Reference2ReferenceOpenHashMap<>();
+ 
+diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
+index 9800ae1d3c49800b0c7342d43d696109b5b72cf4..f9a8c79640ed6ca381e4482eaeab6b23db59419f 100644
+--- a/net/minecraft/commands/Commands.java
++++ b/net/minecraft/commands/Commands.java
+@@ -299,7 +299,11 @@ public class Commands {
+             PardonCommand.register(this.dispatcher);
+             PardonIpCommand.register(this.dispatcher);
+             //PerfCommand.register(this.dispatcher); // Folia - region threading - TODO later
+-            //SaveAllCommand.register(this.dispatcher); // Folia - region threading - TODO later
++            // Lophine start - Add a config to enable save all command
++            if (fun.bm.lophine.config.modules.experiment.CommandConfig.saveAll) {
++                SaveAllCommand.register(this.dispatcher); // Folia - region threading - TODO later
++            }
++            // Lophine end - Add a config to enable save all command
+             SaveOffCommand.register(this.dispatcher);
+             SaveOnCommand.register(this.dispatcher);
+             SetPlayerIdleTimeoutCommand.register(this.dispatcher);
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index 4b6f961e695155db1d6cc86496491017bf3a6383..e7f7f7927fc1e2ce45ea5dbf7cc9ec19197c599f 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -1652,6 +1652,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+     // Folia start - region threading
+     public void tickServer(final long startTime, final long scheduledEnd, final long targetBuffer,
+                            final io.papermc.paper.threadedregions.TickRegions.TickRegionData region) {
++        // Lophine start - save-all fix
++        if (fun.bm.lophine.utils.SaveAllUtil.isSaving()) {
++            fun.bm.lophine.utils.SaveAllUtil.postRegionSave(region);
++        }
++        // Lophine end - save-all fix
+         final ca.spottedleaf.leafprofiler.RegionizedProfiler.Handle foliaProfiler = io.papermc.paper.threadedregions.TickRegionScheduler.getProfiler(); // Folia - profiler
+         // Folia end - region threading
+         org.spigotmc.WatchdogThread.tick(); // Spigot
+diff --git a/net/minecraft/server/commands/SaveAllCommand.java b/net/minecraft/server/commands/SaveAllCommand.java
+index 299991905c24a7018f8ac60d0c16e56fa43cd710..39c1b67e457c26a7e8d87be21658bbe6e802440c 100644
+--- a/net/minecraft/server/commands/SaveAllCommand.java
++++ b/net/minecraft/server/commands/SaveAllCommand.java
+@@ -22,14 +22,21 @@ public class SaveAllCommand {
+     }
+ 
+     private static int saveAll(final CommandSourceStack source, final boolean flush) throws CommandSyntaxException {
+-        source.sendSuccess(() -> Component.translatable("commands.save.saving"), false);
++        // Lophine start - save all
++        fun.bm.lophine.utils.SaveAllUtil.preSaveAll(source, flush);
++/*        source.sendSuccess(() -> Component.translatable("commands.save.saving"), false);
+         MinecraftServer server = source.getServer();
+         boolean success = server.saveEverything(true, flush, true);
+         if (!success) {
+             throw ERROR_FAILED.create();
+         }
+ 
+-        source.sendSuccess(() -> Component.translatable("commands.save.success"), true);
++        source.sendSuccess(() -> Component.translatable("commands.save.success"), true);*/
+         return Command.SINGLE_SUCCESS;
+     }
++
++    public static SimpleCommandExceptionType getErrorFailed() {
++        return ERROR_FAILED;
++    }
++    // Lophine end - save all
+ }

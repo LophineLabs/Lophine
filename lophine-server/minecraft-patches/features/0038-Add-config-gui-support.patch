@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sat, 18 Apr 2026 09:15:04 +0800
+Subject: [PATCH] Add config gui support
+
+
+diff --git a/net/minecraft/server/dialog/action/ParsedTemplate.java b/net/minecraft/server/dialog/action/ParsedTemplate.java
+index 8a720ef5cd10bf04e97fb34c1ca0f0b265e98468..f1807523e1e6dbd13093f195c368b43a92b82af9 100644
+--- a/net/minecraft/server/dialog/action/ParsedTemplate.java
++++ b/net/minecraft/server/dialog/action/ParsedTemplate.java
+@@ -13,7 +13,7 @@ public class ParsedTemplate {
+     private final String raw;
+     private final StringTemplate parsed;
+ 
+-    private ParsedTemplate(final String raw, final StringTemplate parsed) {
++    public ParsedTemplate(final String raw, final StringTemplate parsed) { // Luminol - make public
+         this.raw = raw;
+         this.parsed = parsed;
+     }

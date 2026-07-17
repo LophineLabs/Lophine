@@ -1,72 +1,152 @@
---- a/luminol-server/build.gradle.kts
-+++ b/luminol-server/build.gradle.kts
-@@ -50,7 +_,23 @@
+--- a/folia-server/build.gradle.kts
++++ b/folia-server/build.gradle.kts
+@@ -7,15 +_,16 @@
+     `java-library`
+     `maven-publish`
+     idea
+-    id("io.papermc.paperweight.core")
++    id("moe.luminolmc.hyacinthusweight.core") // TODO Later - rebrand
+     id("io.papermc.fill.gradle") version "1.0.12"
+ }
+ 
+ val paperMavenPublicUrl = "https://repo.papermc.io/repository/maven-public/"
++val bacteriawaMavenPublicUrl = "https://repo.bacteriawa.com/repository/maven-public/"
+ 
+ dependencies {
+     mache("io.papermc:mache:26.2+build.1")
+-    paperclip("io.papermc:paperclip:3.0.4")
++    hyacinthusclip("moe.luminolmc:hyacinthusclip:${providers.gradleProperty("clipVersion").get()}") // TODO Later - rebrand
+ }
+ 
+ paperweight {
+@@ -23,7 +_,8 @@
+     filterPatches = false
+     gitFilePatches = false
+ 
+-    val fork = forks.register("folia") {
++    val folia = forks.register("folia") {
++        rootDirectory = upstreamsDirectory().map { it.dir("folia") }
+         upstream.patchDir("paperServer") {
+             upstreamPath = "paper-server"
+             excludes = setOf("src/minecraft", "patches", "build.gradle.kts")
+@@ -32,7 +_,23 @@
          }
      }
  
--    activeFork = luminol
+-    activeFork = fork
 +    val lophine = forks.register("lophine") {
-+        forks = luminol
++        forks = folia
 +        upstream.patchRepo("paperServer") {
-+            upstreamRepo = luminol.patchedRepo("paperServer")
++            upstreamRepo = folia.patchedRepo("paperServer")
 +            patchesDir = rootDirectory.dir("lophine-server/paper-patches")
 +            outputDir = rootDirectory.dir("paper-server")
 +        }
 +
-+        upstream.patchDir("luminolServer") {
-+            upstreamPath = "luminol-server"
++        upstream.patchDir("foliaServer") {
++            upstreamPath = "folia-server"
 +            excludes = setOf("src/minecraft", "paper-patches", "minecraft-patches", "build.gradle.kts", "build.gradle.kts.patch")
-+            patchesDir = rootDirectory.dir("lophine-server/luminol-patches")
-+            outputDir = rootDirectory.dir("luminol-server")
++            patchesDir = rootDirectory.dir("lophine-server/folia-patches")
++            outputDir = rootDirectory.dir("folia-server")
 +        }
 +    }
 +
 +    activeFork = lophine
  
  
+     updatingMinecraft {
+@@ -44,6 +_,7 @@
+     libraryRepositories.addAll(
+         "https://repo.maven.apache.org/maven2/",
+         paperMavenPublicUrl,
++        bacteriawaMavenPublicUrl
+     )
+ }
  
-@@ -125,12 +_,16 @@
+@@ -103,10 +_,14 @@
+     main {
+         java { srcDir("../paper-server/src/main/java"); srcDir("../paper-server/src/generated/java") }
          resources { srcDir("../paper-server/src/main/resources") }
-         java { srcDir("../folia-server/src/main/java") }
-         resources { srcDir("../folia-server/src/main/resources") }
-+        java { srcDir("../luminol-server/src/main/java") }
-+        resources { srcDir("../luminol-server/src/main/resources") }
++        java { srcDir("../folia-server/src/main/java") }
++        resources { srcDir("../folia-server/src/main/resources") }
      }
      test {
          java { srcDir("../paper-server/src/test/java") }
          resources { srcDir("../paper-server/src/test/resources") }
-         java { srcDir("../folia-server/src/test/java") }
-         resources { srcDir("../folia-server/src/test/resources") }
-+        java { srcDir("../luminol-server/src/main/java") }
-+        resources { srcDir("../luminol-server/src/main/resources") }
++        java { srcDir("../folia-server/src/test/java") }
++        resources { srcDir("../folia-server/src/test/resources") }
      }
  }
  val log4jPlugins = sourceSets.create("log4jPlugins") {
-@@ -158,7 +_,7 @@
+@@ -134,7 +_,21 @@
  }
  
  dependencies {
--    implementation(project(":luminol-api"))
-+    implementation(project(":lophine-api"))
-     // Luminol start - Dependenices insert
-     implementation("net.objecthunter:exp4j:0.4.8")
-     implementation("com.electronwill.night-config:toml:3.9.0") // Night config
-@@ -234,14 +_,14 @@
+-    implementation(project(":folia-api"))
++    implementation(project(":lophine-api")) // Lophine - api update
++    // Lophine start - Dependenices insert
++    implementation("net.objecthunter:exp4j:0.4.8")
++    implementation("com.electronwill.night-config:toml:3.9.0") // Night config
++    implementation("com.github.luben:zstd-jni:1.5.4-1")
++    implementation("net.openhft:zero-allocation-hashing:0.16")
++    implementation("io.github.classgraph:classgraph:4.8.158")
++    implementation("net.openhft:affinity:3.23.3")
++    // Leaves start - leaves plugin
++    implementation("org.spongepowered:configurate-gson:4.2.0-SNAPSHOT") {
++        exclude(group = "com.google.code.gson", module = "gson")
++        exclude(group = "com.google.guava", module = "guava")
++    }
++    // Leaves end - leaves plugin
++    // Lophine end
+     implementation("ca.spottedleaf:leafpile:1.0.0")
+     implementation("org.jline:jline-terminal-ffm:3.27.1") // use ffm on java 22+
+     implementation("org.jline:jline-terminal-jni:3.27.1") // fall back to jni on java 21
+@@ -189,21 +_,22 @@
+         val git = Git(rootProject.layout.projectDirectory.path)
+         val mcVersion = rootProject.providers.gradleProperty("mcVersion").get()
+         val build = System.getenv("BUILD_NUMBER") ?: null
+-        val buildTime = providers.environmentVariable("BUILD_STARTED_AT").map(Instant::parse).orElse(Instant.EPOCH).get()
++        val buildTime = Instant.now() // Always use current as build time
+         val gitHash = git.exec(providers, "rev-parse", "--short=7", "HEAD").get().trim()
+         val implementationVersion = "$mcVersion-${build ?: "DEV"}-$gitHash"
+         val date = git.exec(providers, "show", "-s", "--format=%ci", gitHash).get().trim()
          val gitBranch = git.exec(providers, "rev-parse", "--abbrev-ref", "HEAD").get().trim()
          attributes(
              "Main-Class" to "org.bukkit.craftbukkit.Main",
--            "Implementation-Title" to "Luminol", // Luminol - Rebrand
-+            "Implementation-Title" to "Lophine", // Luminol - Rebrand
+-            "Implementation-Title" to "Folia",
++            "Implementation-Title" to "Lophine", // Lophine - Rebrand
              "Implementation-Version" to implementationVersion,
              "Implementation-Vendor" to date,
--            "Specification-Title" to "Luminol", // Luminol - Rebrand
-+            "Specification-Title" to "Lophine", // Luminol - Rebrand
+-            "Specification-Title" to "Folia",
++            "Specification-Title" to "Lophine", // Lophine - Rebrand
              "Specification-Version" to project.version,
-             "Specification-Vendor" to "LuminoLMC", // Luminol - Rebrand
--            "Brand-Id" to "luminolmc:luminol", // Luminol - Rebrand
--            "Brand-Name" to "Luminol", // Luminol - Rebrand
-+            "Brand-Id" to "luminolmc:lophine", // Luminol - Rebrand
-+            "Brand-Name" to "Lophine", // Luminol - Rebrand
+-            "Specification-Vendor" to "Paper Team",
+-            "Brand-Id" to "papermc:folia",
+-            "Brand-Name" to "Folia",
++            // TODO Later - rebrand org name
++            "Specification-Vendor" to "LuminoLMC", // Lophine - Rebrand
++            "Brand-Id" to "luminolmc:lophine", // Lophine - Rebrand
++            "Brand-Name" to "Lophine", // Lophine - Rebrand
              "Build-Number" to (build ?: ""),
              "Build-Time" to buildTime.toString(),
              "Git-Branch" to gitBranch,
+@@ -214,6 +_,20 @@
+         }
+     }
+ }
++// Pufferfish Start
++tasks.withType<JavaCompile> {
++    val compilerArgs = options.compilerArgs
++    compilerArgs.add("--add-modules=jdk.incubator.vector")
++}
++// Pufferfish End
++// Lophine start - Hide unnecessary warnings
++tasks.withType<JavaCompile> {
++    val compilerArgs = options.compilerArgs
++    compilerArgs.add("-Xlint:-module")
++    compilerArgs.add("-Xlint:-removal")
++    compilerArgs.add("-Xlint:-dep-ann")
++}
++// Lophine end
+ 
+ // Compile tests with -parameters for better junit parameterized test names
+ tasks.compileTestJava {

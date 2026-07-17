@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sat, 18 Apr 2026 12:26:25 +0800
+Subject: [PATCH] Leaves: Configurable collision behavior
+
+Co-authored by: Fortern <blueten.ki@gmail.com>
+As part of: Leaves (https://github.com/LeavesMC/Leaves/blob/c5f18b7864206cea4411211b51787f10affbcb9c/leaves-server/minecraft-patches/features/0111-Configurable-collision-behavior.patch)
+Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
+
+diff --git a/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java b/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
+index 8d2518600ad518999b75124f0a87db9efe541f2e..09e1d701038042052fcbde4b4686da5d6a15f695 100644
+--- a/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
++++ b/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
+@@ -101,6 +101,14 @@ public final class CollisionUtil {
+                (box1.minZ - box2.maxZ) < -COLLISION_EPSILON && (box1.maxZ - box2.minZ) > COLLISION_EPSILON;
+     }
+ 
++    // Leaves start - Configurable collision behavior
++    public static boolean voxelShapeIntersectVanilla(final AABB box1, final AABB box2) {
++        return box1.minX < box2.maxX && box1.maxX > box2.minX &&
++               box1.minY < box2.maxY && box1.maxY > box2.minY &&
++               box1.minZ < box2.maxZ && box1.maxZ > box2.minZ;
++    }
++    // Leaves end - Configurable collision behavior
++
+     // assume !isEmpty(target) && abs(source_move) >= COLLISION_EPSILON
+     public static double collideX(final AABB target, final AABB source, final double source_move) {
+         if ((source.minY - target.maxY) < -COLLISION_EPSILON && (source.maxY - target.minY) > COLLISION_EPSILON &&
+@@ -2033,7 +2041,7 @@ public final class CollisionUtil {
+                                                 continue;
+                                             }
+                                         } else {
+-                                            if (!voxelShapeIntersect(aabb, singleAABB)) {
++                                            if (shouldSkip(aabb, blockCollision, singleAABB)) { // Leaves - Configurable collision behavior
+                                                 continue;
+                                             }
+                                         }
+@@ -2087,6 +2095,18 @@ public final class CollisionUtil {
+         return ret;
+     }
+ 
++    // Leaves start - Configurable collision behavior
++    private static boolean shouldSkip(AABB aabb, VoxelShape blockCollision, AABB singleAABB) {
++        boolean isBlockShape = blockCollision == Shapes.block();
++        return switch (me.earthme.luminol.config.modules.fixes.CollisionBehaviorConfig.behaviorMode) {
++            case me.earthme.luminol.enums.EnumCollisionBehaviorMode.VANILLA -> !voxelShapeIntersectVanilla(aabb, singleAABB);
++            case me.earthme.luminol.enums.EnumCollisionBehaviorMode.PAPER -> !voxelShapeIntersect(aabb, singleAABB);
++            default -> isBlockShape && !voxelShapeIntersectVanilla(aabb, singleAABB) || !isBlockShape && !voxelShapeIntersect(aabb, singleAABB);
++            // All other value as BLOCK_SHAPE_VANILLA to process
++        };
++    }
++    // Leaves end - Configurable collision behavior
++
+     public static boolean getEntityHardCollisions(final Level world, final Entity entity, AABB aabb,
+                                                   final List<AABB> into, final int collisionFlags, final Predicate<Entity> predicate) {
+         final boolean checkOnly = (collisionFlags & COLLISION_FLAG_CHECK_ONLY) != 0;

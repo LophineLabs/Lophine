@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sat, 18 Apr 2026 10:49:29 +0800
+Subject: [PATCH] Add tick regions api
+
+
+diff --git a/io/papermc/paper/threadedregions/ThreadedRegionizer.java b/io/papermc/paper/threadedregions/ThreadedRegionizer.java
+index 3449918b5001bb39c541ce1168eac4acf9144e1f..a346b96500ae859e9469c80e2ff6b39c4d3d0b52 100644
+--- a/io/papermc/paper/threadedregions/ThreadedRegionizer.java
++++ b/io/papermc/paper/threadedregions/ThreadedRegionizer.java
+@@ -43,6 +43,7 @@ public final class ThreadedRegionizer<R extends ThreadedRegionizer.ThreadedRegio
+     private final RegionCallbacks<R, S> callbacks;
+     private final StampedLock regionLock = new StampedLock();
+     private Thread writeLockOwner;
++    public final me.earthme.luminol.api.ThreadedRegionizer threadedRegionizerAPI; // Luminol - Tick region API
+ 
+     /*
+     static final record Operation(String type, int chunkX, int chunkZ) {}
+@@ -72,6 +73,7 @@ public final class ThreadedRegionizer<R extends ThreadedRegionizer.ThreadedRegio
+         this.world = world;
+         this.callbacks = callbacks;
+         //this.loadTestData();
++        this.threadedRegionizerAPI = new me.earthme.luminol.api.impl.ThreadedRegionizerImpl(this.world); // Luminol - Tick region API
+     }
+ 
+     /*
+@@ -693,6 +695,7 @@ public final class ThreadedRegionizer<R extends ThreadedRegionizer.ThreadedRegio
+ 
+         private final ReferenceOpenHashSet<ThreadedRegion<R, S>> mergeIntoLater = new ReferenceOpenHashSet<>();
+         private final ReferenceOpenHashSet<ThreadedRegion<R, S>> expectingMergeFrom = new ReferenceOpenHashSet<>();
++        public final me.earthme.luminol.api.ThreadedRegion threadedRegionAPI = new me.earthme.luminol.api.impl.ThreadedRegionImpl((ThreadedRegion<TickRegions.TickRegionData, TickRegions.TickRegionSectionData>) this); // Luminol - Tickregion API
+ 
+         public ThreadedRegion(final ThreadedRegionizer<R, S> regioniser) {
+             this.regioniser = regioniser;
+@@ -819,7 +822,7 @@ public final class ThreadedRegionizer<R extends ThreadedRegionizer.ThreadedRegio
+             return this.deadSections.size() == this.sectionByKey.size();
+         }
+ 
+-        private final double getDeadSectionPercent() {
++        public final double getDeadSectionPercent() { // Luminol - Threaded regions api
+             return (double)this.deadSections.size() / (double)this.sectionByKey.size();
+         }
+ 
+diff --git a/io/papermc/paper/threadedregions/TickRegions.java b/io/papermc/paper/threadedregions/TickRegions.java
+index a6ab9cb01f4f49f5f44b6ed324fa6d51139aabb6..97c514673a454b752ab86b944fd143725ca8090d 100644
+--- a/io/papermc/paper/threadedregions/TickRegions.java
++++ b/io/papermc/paper/threadedregions/TickRegions.java
+@@ -156,6 +156,7 @@ public final class TickRegions implements ThreadedRegionizer.RegionCallbacks<Tic
+         private final AtomicInteger entityCount = new AtomicInteger();
+         private final AtomicInteger playerCount = new AtomicInteger();
+         private final AtomicInteger chunkCount = new AtomicInteger();
++        public final me.earthme.luminol.api.RegionStats regionStatsAPI = new me.earthme.luminol.api.impl.RegionStatsImpl(this); // Luminol - Tickregion API
+ 
+         public int getEntityCount() {
+             return this.entityCount.get();
+@@ -207,6 +208,7 @@ public final class TickRegions implements ThreadedRegionizer.RegionCallbacks<Tic
+         private final AtomicBoolean hasPackets = new AtomicBoolean(false);
+ 
+         public volatile ca.spottedleaf.leafprofiler.RegionizedProfiler.Handle profiler; // Folia - profiler
++        public final me.earthme.luminol.api.TickRegionData tickRegionDataAPI = new me.earthme.luminol.api.impl.TickRegionDataImpl(this); // Luminol - Tickregion API
+ 
+         private TickRegionData(final ThreadedRegionizer.ThreadedRegion<TickRegionData, TickRegionSectionData> region) {
+             this.region = region;

@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <wangxyper@163.com>
+Date: Mon, 27 Jan 2025 13:01:59 +0800
+Subject: [PATCH] Tick regions api
+
+
+diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
+index c66cd17fd037b73d8ff04dd2ed328ca25e8b0f1a..b86cd3b37ec3fd63f34acd6bf17f6a91c24b5038 100644
+--- a/src/main/java/org/bukkit/World.java
++++ b/src/main/java/org/bukkit/World.java
+@@ -4708,4 +4708,8 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
+             }
+         }
+     }
++
++    // Luminol start - Tick regions api
++    me.earthme.luminol.api.ThreadedRegionizer getThreadedRegionizer();
++    // Luminol end - Tick regions api
+ }

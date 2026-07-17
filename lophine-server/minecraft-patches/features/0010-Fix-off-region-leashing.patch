@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Fri, 17 Apr 2026 23:16:45 +0800
+Subject: [PATCH] Fix off region leashing
+
+PS: My friend reported me this bug and I still need to check the details of how the bug was caused
+
+XD
+
+diff --git a/net/minecraft/world/entity/Leashable.java b/net/minecraft/world/entity/Leashable.java
+index 98034a4c96bf2972316078d3b3a49140921aab50..284ba0c3742d5d5ab0b344a84a9c8e2c2a98a74a 100644
+--- a/net/minecraft/world/entity/Leashable.java
++++ b/net/minecraft/world/entity/Leashable.java
+@@ -95,10 +95,24 @@ public interface Leashable {
+             if (leashUuid.isPresent()) {
+                 Entity leasher = serverLevel.getEntity(leashUuid.get());
+                 if (leasher != null) {
++                    // Luminol start - Fix off region leashing
++                    if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(leasher)) {
++                        entity.spawnAtLocation(serverLevel, Items.LEAD);
++                        entity.setLeashData(null);
++                        return;
++                    }
++                    // Luminol end
+                     setLeashedTo(entity, leasher, true);
+                     return;
+                 }
+             } else if (pos.isPresent()) {
++                // Luminol start - Fix off region leashing
++                if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(serverLevel, pos.get())) {
++                    entity.spawnAtLocation(serverLevel, Items.LEAD);
++                    entity.setLeashData(null);
++                    return;
++                }
++                // Luminol end
+                 setLeashedTo(entity, LeashFenceKnotEntity.getOrCreateKnot(serverLevel, pos.get()), true);
+                 return;
+             }

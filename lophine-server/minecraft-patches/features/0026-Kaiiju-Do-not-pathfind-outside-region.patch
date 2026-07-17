@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Bacteriawa <A3167717663@hotmail.com>
+Date: Tue, 21 Apr 2026 01:32:38 +0800
+Subject: [PATCH] Kaiiju: Do not pathfind outside region
+
+Co-authored by: Sofiane H. Djerbi <46628754+kugge@users.noreply.github.com>
+As part of: Kaiiju (https://github.com/KaiijuMC/Kaiiju/blob/c2b7aec8f7b418a39a2ec408e6411e6f752379da/patches/server/0028-Don-t-pathfind-outside-region.patch)
+Licensed under: GPL-3.0 (https://github.com/KaiijuMC/Kaiiju/blob/c2b7aec8f7b418a39a2ec408e6411e6f752379da/LICENSE)
+
+diff --git a/net/minecraft/world/entity/ai/behavior/MoveToTargetSink.java b/net/minecraft/world/entity/ai/behavior/MoveToTargetSink.java
+index b40da004b5281a041ee896ae176bfb9c4660f353..ffb8a725c41d49a0f0e023ab37bb77062d67eccc 100644
+--- a/net/minecraft/world/entity/ai/behavior/MoveToTargetSink.java
++++ b/net/minecraft/world/entity/ai/behavior/MoveToTargetSink.java
+@@ -117,7 +117,9 @@ public class MoveToTargetSink extends Behavior<Mob> {
+ 
+     private boolean tryComputePath(final Mob body, final WalkTarget walkTarget, final long timestamp) {
+         BlockPos targetPos = walkTarget.getTarget().currentBlockPosition();
++        if (ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(body.level(), targetPos)) // Kaiiju - Don't pathfind outside region
+         this.path = body.getNavigation().createPath(targetPos, 0);
++        else this.path = null; // Kaiiju - Don't pathfind outside region
+         this.speedModifier = walkTarget.getSpeedModifier();
+         Brain<?> brain = body.getBrain();
+         if (this.reachedTarget(body, walkTarget)) {

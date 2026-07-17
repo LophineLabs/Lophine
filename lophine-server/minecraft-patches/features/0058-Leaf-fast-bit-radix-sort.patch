@@ -1,0 +1,70 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sun, 17 May 2026 10:10:21 +0800
+Subject: [PATCH] Leaf fast bit radix sort
+
+This is a part of Leaf(https://github.com/Winds-Studio/Leaf/blob/d0ed97cf45dfa94f686ef32f0eea1ec7323f78d5/leaf-server/minecraft-patches/features/0284-fast-bit-radix-sort.patch)
+
+Original license: https://github.com/Winds-Studio/Leaf/blob/d0ed97cf45dfa94f686ef32f0eea1ec7323f78d5/LICENSE.md
+
+diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
+index 2d5d4170e1f45ae9113c37623b4066861dc79d64..48fea9051efe038a823d7c2c9ae3bf28078f2fcc 100644
+--- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
++++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
+@@ -457,6 +457,7 @@ public final class RegionizedWorldData {
+     public final PathTypeCache pathTypesByPosCache = new PathTypeCache();
+     public final List<LevelChunk> temporaryChunkTickList = new java.util.ArrayList<>();
+     public final Set<ChunkHolder> chunkHoldersToBroadcast = new ReferenceLinkedOpenHashSet<>();
++    public final org.dreeam.leaf.util.FastBitRadixSort radixBitSorter = new org.dreeam.leaf.util.FastBitRadixSort();
+ 
+     // not transient
+     public java.util.ArrayDeque<net.minecraft.world.level.block.RedstoneTorchBlock.Toggle> redstoneUpdateInfos;
+diff --git a/net/minecraft/world/entity/ai/sensing/NearestItemSensor.java b/net/minecraft/world/entity/ai/sensing/NearestItemSensor.java
+index 8aeea55380462421cde43afb4b2fb0ce44b65195..73247b46d778dcb9b3be742e4e4c4c037e3ac0e5 100644
+--- a/net/minecraft/world/entity/ai/sensing/NearestItemSensor.java
++++ b/net/minecraft/world/entity/ai/sensing/NearestItemSensor.java
+@@ -15,6 +15,7 @@ public class NearestItemSensor extends Sensor<Mob> {
+     private static final long XZ_RANGE = 32L;
+     private static final long Y_RANGE = 16L;
+     public static final int MAX_DISTANCE_TO_WANTED_ITEM = 32;
++    private static final double MAX_DIST_SQ = (double) MAX_DISTANCE_TO_WANTED_ITEM * MAX_DISTANCE_TO_WANTED_ITEM; // Leaf - quick sort
+ 
+     @Override
+     public Set<MemoryModuleType<?>> requires() {
+@@ -24,8 +25,16 @@ public class NearestItemSensor extends Sensor<Mob> {
+     @Override
+     protected void doTick(final ServerLevel level, final Mob body) {
+         Brain<?> brain = body.getBrain();
+-        List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class, body.getBoundingBox().inflate(32.0, 16.0, 32.0), item -> item.closerThan(body, MAX_DISTANCE_TO_WANTED_ITEM) && body.wantsToPickUp(level, item.getItem())); // Paper - Perf: Move predicate into getEntities
+-        items.sort(Comparator.comparingDouble(body::distanceToSqr));
++        // Leaf start - fast bit radix sort
++        net.minecraft.core.Position pos = body.position();
++        double x = pos.x();
++        double y = pos.y();
++        double z = pos.z();
++        net.minecraft.world.phys.AABB boundingBox = body.getBoundingBox().inflate(32.0, 16.0, 32.0);
++        it.unimi.dsi.fastutil.objects.ObjectArrayList<ItemEntity> items = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
++        ((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemLevel) level).moonrise$getEntityLookup().getEntities(ItemEntity.class, null, boundingBox, items, (ItemEntity itemEntity) -> itemEntity.distanceToSqr(x, y, z) < MAX_DIST_SQ && body.wantsToPickUp(level, itemEntity.getItem())); // Paper - Perf: Move predicate into getEntities
++        level.getCurrentWorldData().radixBitSorter.sort(items.elements(), items.size(), pos);
++        // Leaf end - fast bit radix sort
+         // Paper start - Perf: remove streams from hot code
+         ItemEntity nearest = null;
+         for (final ItemEntity item : items) {
+diff --git a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
+index 3578ece216827fd5d8c1206c689fc608e97b50df..9fbe439663edf57e018369a44ed7576d947d1fbc 100644
+--- a/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
++++ b/net/minecraft/world/entity/ai/sensing/NearestLivingEntitySensor.java
+@@ -17,8 +17,11 @@ public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T>
+     protected void doTick(final ServerLevel level, final T body) {
+         double followRange = body.getAttributeValue(Attributes.FOLLOW_RANGE);
+         AABB boundingBox = body.getBoundingBox().inflate(followRange, followRange, followRange);
+-        List<LivingEntity> livingEntities = level.getEntitiesOfClass(LivingEntity.class, boundingBox, mob -> mob != body && mob.isAlive());
+-        livingEntities.sort(Comparator.comparingDouble(body::distanceToSqr));
++        // Leaf start - fast bit radix sort
++        it.unimi.dsi.fastutil.objects.ObjectArrayList<LivingEntity> livingEntities = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
++        ((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemLevel) level).moonrise$getEntityLookup().getEntities(LivingEntity.class, body, boundingBox, livingEntities, LivingEntity::isAlive);
++        level.getCurrentWorldData().radixBitSorter.sort(livingEntities.elements(), livingEntities.size(), body.position());
++        // Leaf end - fast bit radix sort
+         Brain<?> brain = body.getBrain();
+         brain.setMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES, livingEntities);
+         brain.setMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, new NearestVisibleLivingEntities(level, body, livingEntities));

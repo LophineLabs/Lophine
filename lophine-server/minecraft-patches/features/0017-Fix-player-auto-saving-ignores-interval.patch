@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Wed, 24 Jun 2026 22:52:13 +0800
+Subject: [PATCH] Fix player auto saving ignores interval
+
+
+diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
+index 98d1ab3aa8dfbe571371d01544da2750339ce988..264de9099b19779f20ad23c41d0967670759ae12 100644
+--- a/net/minecraft/server/level/ServerPlayer.java
++++ b/net/minecraft/server/level/ServerPlayer.java
+@@ -208,7 +208,7 @@ import org.slf4j.Logger;
+ 
+ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patches.chunk_system.player.ChunkSystemServerPlayer { // Paper - rewrite chunk system
+     private static final Logger LOGGER = LogUtils.getLogger();
+-    public static final long LAST_SAVE_ABSENT = Long.MIN_VALUE; public long lastSave = LAST_SAVE_ABSENT; // Paper // Folia - threaded regions - changed to nanoTime
++    public static final long LAST_SAVE_ABSENT = Long.MIN_VALUE; public long lastSave = System.nanoTime(); // Paper // Folia - threaded regions - changed to nanoTime // Luminol - Fix player auto saving ignores interval
+     private static final int NEUTRAL_MOB_DEATH_NOTIFICATION_RADII_XZ = 32;
+     private static final int NEUTRAL_MOB_DEATH_NOTIFICATION_RADII_Y = 10;
+     private static final int FLY_STAT_RECORDING_SPEED = 25;

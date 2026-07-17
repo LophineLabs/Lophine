@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 14 Jun 2026 18:10:19 +0800
+Subject: [PATCH] Luminol Config System
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 9d0dc8815842a0583b212891680bd0c6461c30b9..2f5a73ac33fbb47cc025fe2d7ad16a5c34c06944 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -3033,6 +3033,17 @@ public final class CraftServer implements Server {
+         this.console.addPluginAllowingSleep(plugin.getName(), value);
+     }
+ 
++    // Luminol start - Config API
++    @Override
++    public me.earthme.luminol.api.config.LuminolConfigsInstance getLuminolConfigs(String name) {
++        return me.earthme.luminol.config.ConfigManager.getConfigs(name);
++    }
++
++    public me.earthme.luminol.api.config.LuminolConfigBuilder getLuminolConfigBuilder() {
++        return me.earthme.luminol.config.ConfigManager.getBuilder();
++    }
++    // Luminol end - Config API
++
+     // Folia start - region TPS API
+     /**
+      * Gets the TPS from the region which owns the specified location, or {@code null} if no region owns

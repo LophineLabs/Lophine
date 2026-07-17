@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sat, 18 Apr 2026 10:45:19 +0800
+Subject: [PATCH] Fix misbehaved ender pearls when player switched dimension
+
+A fix of https://github.com/PaperMC/Folia/issues/421
+
+Almost the same bug as:
+https://github.com/PaperMC/Folia/pull/418 and https://github.com/PaperMC/Folia/issues/393
+
+diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
+index 501a0e89cc7bcfce6793f059b080b38666e0fb64..ad35eafa457f706879ba8a9c92b3a34e620ee2d6 100644
+--- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
++++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
+@@ -264,7 +264,8 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+             int previousChunkZ = SectionPos.blockToSectionCoord(this.position().z());
+             Entity owner = this.owner != null ? findOwnerIncludingDeadPlayer(serverLevel, this.owner.getUUID()) : null;
+             if (owner instanceof ServerPlayer serverPlayer
+-                && !owner.isAlive()
++                // && !owner.isAlive() // Luminol - Fix misbehaved ender pearls when player switched dimension
++                && (owner.getBukkitEntity().taskScheduler.isRetired() || serverPlayer.getHealth() <= 0.0D) // Luminol - Fix misbehaved ender pearls when player switched dimension
+                 && !serverPlayer.wonGame
+                 && serverPlayer.level().getGameRules().get(GameRules.ENDER_PEARLS_VANISH_ON_DEATH)) {
+                 this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause

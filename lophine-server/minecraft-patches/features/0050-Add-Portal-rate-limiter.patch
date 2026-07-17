@@ -1,0 +1,130 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Bacteriawa <A3167717663@hotmail.com>
+Date: Tue, 21 Apr 2026 02:27:38 +0800
+Subject: [PATCH] Add Portal rate limiter
+
+
+diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
+index f32d118e1e925b2155cef3fcdcb1e194c541e242..2d5d4170e1f45ae9113c37623b4066861dc79d64 100644
+--- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
++++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
+@@ -157,6 +157,10 @@ public final class RegionizedWorldData {
+             for (final ChunkHolder chunkHolder : from.chunkHoldersToBroadcast) {
+                 into.chunkHoldersToBroadcast.add(chunkHolder);
+             }
++            // Luminol start - Portal rate limiter
++            into.portalRateThrottler.mergeWith(from.portalRateThrottler);
++            from.portalRateThrottler.destroy();
++            // Luminol end
+         }
+ 
+         @Override
+@@ -322,6 +326,12 @@ public final class RegionizedWorldData {
+                     into.chunkHoldersToBroadcast.add(chunkHolder);
+                 }
+             }
++            // Luminol start - Portal rate limiter
++            for (var worldData : dataSet) {
++                from.portalRateThrottler.splitInto(worldData.portalRateThrottler);
++            }
++            from.portalRateThrottler.destroy();
++            // Luminol end
+         }
+     };
+ 
+@@ -343,6 +353,35 @@ public final class RegionizedWorldData {
+         return this.isHandlingTick;
+     }
+ 
++    // Luminol start - Portal rate limiter
++    public final me.earthme.luminol.utils.RateThrottler portalRateThrottler = new me.earthme.luminol.utils.RateThrottler();
++    public final net.objecthunter.exp4j.Expression portalRateCapExpression = me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.getExpressionIfConfigured();
++
++    private int computePortalRateCap() {
++        // expression mode is disabled
++        if (this.portalRateCapExpression == null) {
++            return me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.maxPortalTeleportsPerTick;
++        }
++
++        final int tickingEntityCount = this.entityTickList.size();
++        final int tickingChunkCount = this.tickingChunks.size();
++        final int playerCount = this.localPlayers.size();
++
++        return me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.computeExpression(
++                this.portalRateCapExpression,
++                tickingEntityCount,
++                tickingChunkCount,
++                playerCount
++        );
++    }
++    public boolean isPortalTeleportationOutOfRate() {
++        if (!me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.enabled) {
++            return false;
++        }
++
++        return this.portalRateThrottler.isOutOfRate(this.computePortalRateCap());
++    }
++    // Luminol end
+     // entities
+     // this is copy on write to allow packet processing to iterate safely
+     private final CopyOnWriteArrayList<ServerPlayer> localPlayers = new CopyOnWriteArrayList<>();
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index 350b788e17dc49118498541ad8ac54f6e0a59c9d..dc83fea1f4b8a1d2a82a52b88ee5c3157653f6f8 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -1973,6 +1973,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+             //net.minecraft.world.level.block.entity.HopperBlockEntity.skipHopperEvents = level.paperConfig().hopper.disableMoveEvent || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0; // Paper - Perf: Optimize Hoppers // Folia - region threading
+             profiler.push(() -> level + " " + level.dimension().identifier());
+             profiler.push("tick");
++            // Luminol start - Portal rate limiter
++            regionizedWorldData.portalRateThrottler.begin();
++            // Luminol end
+ 
+             try {
+                 foliaProfiler.startTimer(level.tickTimerId); try { // Folia - profiler
+@@ -1987,6 +1990,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+             profiler.pop();
+             profiler.pop();
+             regionizedWorldData.explosionDensityCache.clear(); // Paper - Optimize explosions // Folia - region threading
++            // Luminol start - Portal rate limiter
++            regionizedWorldData.portalRateThrottler.done();
++            // Luminol end
+         }
+         //this.isIteratingOverLevels = false; // Paper - Throw exception on world create while being ticked // Folia - region threading
+ 
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index cea4bc7036dfd8777c151a0dd811fc13579d6501..402e2f01f2b3a8e9ce5c818f07581b4dab38fc26 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -1536,8 +1536,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+             // removed from region while ticking
+             return;
+         }
++        // Luminol start - Portal rate limiter
++        var worldData = entity.level().getCurrentWorldData();
++        if (entity.portalProcess != null && worldData.isPortalTeleportationOutOfRate()) {
++            return;
++        }
++        // Luminol end
+         if (entity.handlePortal()) {
+             // portalled
++            worldData.portalRateThrottler.increase(); // Luminol - Portal rate limiter
+             return;
+         }
+         }
+@@ -1584,8 +1591,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+                 // removed from region while ticking
+                 return;
+             }
++                // Luminol start - Portal rate limiter
++                var worldData = entity.level().getCurrentWorldData();
++                if (entity.portalProcess != null && worldData.isPortalTeleportationOutOfRate()) {
++                    return;
++                }
++                // Luminol end
+             if (entity.handlePortal()) {
+                 // portalled
++                worldData.portalRateThrottler.increase(); // Luminol - Portal rate limiter
+                 return;
+             }
+             // Folia end - region threading

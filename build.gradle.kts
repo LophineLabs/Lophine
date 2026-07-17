@@ -8,19 +8,19 @@ plugins {
 
 paperweight {
     filterPatches = false
-    upstreams.register("luminol") {
-        repo = github("LuminolCustomArchive", "Luminol")
-        ref = providers.gradleProperty("luminolRef")
+    upstreams.register("folia") {
+        repo = github("PaperMC", "Folia")
+        ref = providers.gradleProperty("foliaRef")
 
         println("Upstream commit ref: " + ref.get())
 
         patchFile {
-            path = "luminol-server/build.gradle.kts"
+            path = "folia-server/build.gradle.kts"
             outputFile = file("lophine-server/build.gradle.kts")
             patchFile = file("lophine-server/build.gradle.kts.patch")
         }
         patchFile {
-            path = "luminol-api/build.gradle.kts"
+            path = "folia-api/build.gradle.kts"
             outputFile = file("lophine-api/build.gradle.kts")
             patchFile = file("lophine-api/build.gradle.kts.patch")
         }
@@ -29,16 +29,11 @@ paperweight {
             patchesDir = file("lophine-api/paper-patches")
             outputDir = file("paper-api")
         }
-        patchRepo("foliaApi") {
+        patchDir("foliaApi") {
             upstreamPath = "folia-api"
+            excludes = listOf("build.gradle.kts", "build.gradle.kts.patch", "paper-patches")
             patchesDir = file("lophine-api/folia-patches")
             outputDir = file("folia-api")
-        }
-        patchDir("luminolApi") {
-            upstreamPath = "luminol-api"
-            excludes = listOf("build.gradle.kts", "build.gradle.kts.patch", "paper-patches")
-            patchesDir = file("lophine-api/luminol-patches")
-            outputDir = file("luminol-api")
         }
     }
 }

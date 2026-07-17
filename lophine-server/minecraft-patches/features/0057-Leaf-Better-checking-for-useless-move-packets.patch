@@ -1,0 +1,53 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Mon, 4 May 2026 13:44:05 +0800
+Subject: [PATCH] Leaf Better checking for useless move packets
+
+A part of leaf(https://github.com/Winds-Studio/Leaf/blob/b794fca6080c47ff305b6d065a579171b1fe1e98/leaf-server/minecraft-patches/features/0018-Better-checking-for-useless-move-packets.patch)
+
+Original license: https://github.com/Winds-Studio/Leaf/blob/b794fca6080c47ff305b6d065a579171b1fe1e98/LICENSE.md
+
+diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
+index 60af82925d2f7e605bf7340cf01f1a5668f4d725..2e71a1cbabf3405e3e4fd5349a1784d895e7e60c 100644
+--- a/net/minecraft/server/level/ServerEntity.java
++++ b/net/minecraft/server/level/ServerEntity.java
+@@ -186,18 +186,35 @@ public class ServerEntity {
+                     packet = ClientboundEntityPositionSyncPacket.of(this.entity);
+                     sentPosition = true;
+                     sentRotation = true;
+-                } else if ((!pos || !shouldSendRotation) && !(this.entity instanceof AbstractArrow)) {
++                /*} else if ((!pos || !shouldSendRotation) && !(this.entity instanceof AbstractArrow)) { // Gale - Airplane - better checking for useless move packets
+                     if (pos) {
+                         packet = new ClientboundMoveEntityPacket.Pos(this.entity.getId(), (short)xa, (short)ya, (short)za, this.entity.onGround());
+                         sentPosition = true;
+                     } else if (shouldSendRotation) {
+                         packet = new ClientboundMoveEntityPacket.Rot(this.entity.getId(), yRotn, xRotn, this.entity.onGround());
+                         sentRotation = true;
+-                    }
++                    }*/ // Gale - Airplane - better checking for useless move packets
+                 } else {
+-                    packet = new ClientboundMoveEntityPacket.PosRot(this.entity.getId(), (short)xa, (short)ya, (short)za, yRotn, xRotn, this.entity.onGround());
++                    /*packet = new ClientboundMoveEntityPacket.PosRot(this.entity.getId(), (short)xa, (short)ya, (short)za, yRotn, xRotn, this.entity.onGround()); // Gale - Airplane - better checking for useless move packets
+                     sentPosition = true;
+-                    sentRotation = true;
++                    sentRotation = true;*/ // Gale - Airplane - better checking for useless move packets
++                    // Gale start - Airplane - better checking for useless move packets
++                    if (pos || shouldSendRotation || this.entity instanceof AbstractArrow) {
++                        if ((!pos || !shouldSendRotation) && !(this.entity instanceof AbstractArrow)) {
++                            if (pos) {
++                                packet = new ClientboundMoveEntityPacket.Pos(this.entity.getId(), (short) xa, (short) ya, (short) za, this.entity.onGround());
++                                sentPosition = true;
++                            } else if (shouldSendRotation) {
++                                packet = new ClientboundMoveEntityPacket.Rot(this.entity.getId(), yRotn, xRotn, this.entity.onGround());
++                                sentRotation = true;
++                            }
++                        } else {
++                            packet = new ClientboundMoveEntityPacket.PosRot(this.entity.getId(), (short) xa, (short) ya, (short) za, yRotn, xRotn, this.entity.onGround());
++                            sentPosition = true;
++                            sentRotation = true;
++                        }
++                    }
++                    // Gale end - Airplane - better checking for useless move packets
+                 }
+ 
+                 if (this.entity.needsSync || this.trackDelta || this.entity instanceof LivingEntity livingEntity && livingEntity.isFallFlying()) {

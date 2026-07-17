@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Thu, 4 Jun 2026 17:28:24 +0800
+Subject: [PATCH] Gale: Cache ShapePairKey hash
+
+License: LGPL-3.0-only (https://www.gnu.org/licenses/lgpl-3.0.html)
+Gale - https://github.com/GaleMC/Gale
+
+The JMH benchmark of this patch can be found in SunBox's `RecordHashCode`
+
+diff --git a/net/minecraft/world/level/block/Block.java b/net/minecraft/world/level/block/Block.java
+index 423c45d7be8ac0c27fd3caa0aa8f15f25ad4a3a6..1af396a051cc47dccb973ca864cf1ec2e8b756ed 100644
+--- a/net/minecraft/world/level/block/Block.java
++++ b/net/minecraft/world/level/block/Block.java
+@@ -696,7 +696,20 @@ public class Block extends BlockBehaviour implements ItemLike {
+     }
+     // CraftBukkit end
+ 
+-    private record ShapePairKey(VoxelShape first, VoxelShape second) {
++    // Gale start - cache ShapePairKey hash
++    static class ShapePairKey {
++
++        private final VoxelShape first;
++        private final VoxelShape second;
++        private final int hash;
++
++        private ShapePairKey(VoxelShape first, VoxelShape second) {
++            this.first = first;
++            this.second = second;
++            this.hash = System.identityHashCode(this.first) * 31 + System.identityHashCode(this.second);
++        }
++    // Gale end - cache ShapePairKey hash
++
+         @Override
+         public boolean equals(final Object o) {
+             return o instanceof Block.ShapePairKey that && this.first == that.first && this.second == that.second;
+@@ -704,7 +717,7 @@ public class Block extends BlockBehaviour implements ItemLike {
+ 
+         @Override
+         public int hashCode() {
+-            return System.identityHashCode(this.first) * 31 + System.identityHashCode(this.second);
++            return this.hash; // Gale - cache ShapePairKey hash
+         }
+     }
+ 

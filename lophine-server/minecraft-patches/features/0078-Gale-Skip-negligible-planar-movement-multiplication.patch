@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Thu, 4 Jun 2026 17:32:39 +0800
+Subject: [PATCH] Gale: Skip negligible planar movement multiplication
+
+License: GPL-3.0-only (https://www.gnu.org/licenses/gpl-3.0.html)
+Gale - https://github.com/GaleMC/Gale
+
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index 1888210d014f9c00316059a7ccce086dfb0e3a0f..00bc928a19cb877698b34b7c039bee5fe8b5cda5 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -1302,8 +1302,17 @@ public abstract class Entity
+                     }
+                 }
+ 
+-                float blockSpeedFactor = this.getBlockSpeedFactor();
+-                this.setDeltaMovement(this.getDeltaMovement().multiply(blockSpeedFactor, 1.0, blockSpeedFactor));
++                // Gale start - skip negligible planar movement multiplication
++                Vec3 oldDeltaMovement = this.getDeltaMovement();
++                if (oldDeltaMovement.x < -1e-6 || oldDeltaMovement.x > 1e-6 || oldDeltaMovement.z < -1e-6 || oldDeltaMovement.z > 1e-6) {
++                    // Gale end - skip negligible planar movement multiplication
++                    float blockSpeedFactor = this.getBlockSpeedFactor();
++                    // Gale start - skip negligible planar movement multiplication
++                    if (blockSpeedFactor < 1 - 1e-6 || blockSpeedFactor > 1 + 1e-6) {
++                        this.setDeltaMovement(oldDeltaMovement.multiply(blockSpeedFactor, 1.0, blockSpeedFactor));
++                    }
++                }
++                // Gale end - skip negligible planar movement multiplication
+                 profiler.pop();
+             }
+         }

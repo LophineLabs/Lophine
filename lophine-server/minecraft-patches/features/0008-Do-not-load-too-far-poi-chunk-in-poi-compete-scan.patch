@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Fri, 17 Apr 2026 23:25:45 +0800
+Subject: [PATCH] Do not load too far poi chunk in poi compete scan
+
+Beeeeeeeeeeeeeeee
+
+diff --git a/net/minecraft/world/entity/ai/behavior/PoiCompetitorScan.java b/net/minecraft/world/entity/ai/behavior/PoiCompetitorScan.java
+index 53131c1b8d5562f9a1b45dfab4fdbdd37b655139..0e9c19a820aefa802d6df134b21f5128a5e8d656 100644
+--- a/net/minecraft/world/entity/ai/behavior/PoiCompetitorScan.java
++++ b/net/minecraft/world/entity/ai/behavior/PoiCompetitorScan.java
+@@ -24,8 +24,18 @@ public class PoiCompetitorScan {
+                             return true;
+                         }
+                         // Folia end - region threading
+-                        level.getPoiManager()
+-                            .getType(pos.pos())
++                        // Luminol start - POI fixes
++                        var blockPosOfJobSite = pos.pos();
++                        var sectionPosOfJobSite = net.minecraft.core.SectionPos.asLong(blockPosOfJobSite);
++                        var poiManager = level.getPoiManager();
++                        // we don't care if we should clear the memory of JOB_SITE
++                        // as it will be automatically removed in SetWalkTargetFromBlockMemory
++                        // so simply break down if it's not loaded
++                        var poiChunk = me.earthme.luminol.config.modules.fixes.POIRangeFixes.doNotCompetePOIIfUnloaded ? poiManager.get(sectionPosOfJobSite) : poiManager.getOrLoad(sectionPosOfJobSite);
++                        poiChunk.flatMap(poiSection -> poiSection.getType(blockPosOfJobSite))
++                        // Luminol end - POI fixes
++                        /*level.getPoiManager() // Luminol - POI fixes
++                            .getType(pos.pos())*/ // Luminol - POI fixes
+                             .ifPresent(
+                                 // Paper start - Improve performance of PoiCompetitorScan by unrolling stream
+                                 // The previous logic used Stream#reduce to simulate a form of single-iteration bubble sort

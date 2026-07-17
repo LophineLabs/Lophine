@@ -1,0 +1,57 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sat, 18 Apr 2026 12:22:30 +0800
+Subject: [PATCH] Gale: Variable entity wake-up duration
+
+Co-authored by: Martijn Muijsers <martijnmuijsers@live.nl>
+As part of: Gale (https://github.com/GaleMC/Gale/blob/276e903b2688f23b19bdc8d493c0bf87656d2400/patches/server/0054-Variable-entity-wake-up-duration.patch)
+Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
+
+diff --git a/io/papermc/paper/entity/activation/ActivationRange.java b/io/papermc/paper/entity/activation/ActivationRange.java
+index b4f9f41a56bbc40e90217c0344c070ebdd08c119..6e1c2dcb1ef0b496e3d3bca9353d070488d16f44 100644
+--- a/io/papermc/paper/entity/activation/ActivationRange.java
++++ b/io/papermc/paper/entity/activation/ActivationRange.java
+@@ -61,27 +61,39 @@ public final class ActivationRange {
+         if (entity.activationType == ActivationType.VILLAGER) {
+             if (inactiveFor > config.wakeUpInactiveVillagersEvery && worldData.wakeupInactiveRemainingVillagers > 0) { // Folia - threaded regions
+                 worldData.wakeupInactiveRemainingVillagers--; // Folia - threaded regions
+-                return config.wakeUpInactiveVillagersFor;
++                return getWakeUpDurationWithVariance(entity, config.wakeUpInactiveVillagersFor); // Gale - variable entity wake-up duration
+             }
+         } else if (entity.activationType == ActivationType.ANIMAL) {
+             if (inactiveFor > config.wakeUpInactiveAnimalsEvery && worldData.wakeupInactiveRemainingAnimals > 0) { // Folia - threaded regions
+                 worldData.wakeupInactiveRemainingAnimals--; // Folia - threaded regions
+-                return config.wakeUpInactiveAnimalsFor;
++                return getWakeUpDurationWithVariance(entity, config.wakeUpInactiveAnimalsFor); // Gale - variable entity wake-up duration
+             }
+         } else if (entity.activationType == ActivationType.FLYING_MONSTER) {
+             if (inactiveFor > config.wakeUpInactiveFlyingEvery && worldData.wakeupInactiveRemainingFlying > 0) { // Folia - threaded regions
+                 worldData.wakeupInactiveRemainingFlying--; // Folia - threaded regions
+-                return config.wakeUpInactiveFlyingFor;
++                return getWakeUpDurationWithVariance(entity, config.wakeUpInactiveFlyingFor); // Gale - variable entity wake-up duration
+             }
+         } else if (entity.activationType == ActivationType.MONSTER || entity.activationType == ActivationType.RAIDER) {
+             if (inactiveFor > config.wakeUpInactiveMonstersEvery && worldData.wakeupInactiveRemainingMonsters > 0) { // Folia - threaded regions
+                 worldData.wakeupInactiveRemainingMonsters--; // Folia - threaded regions
+-                return config.wakeUpInactiveMonstersFor;
++                return getWakeUpDurationWithVariance(entity, config.wakeUpInactiveMonstersFor); // Gale - variable entity wake-up duration
+             }
+         }
+         return -1;
+     }
+ 
++    // Gale start - variable entity wake-up duration
++    private static final java.util.concurrent.ThreadLocalRandom wakeUpDurationRandom = java.util.concurrent.ThreadLocalRandom.current();
++
++    private static int getWakeUpDurationWithVariance(Entity entity, int wakeUpDuration) {
++        double deviation = me.earthme.luminol.config.modules.optimizations.GaleVariableEntityWakeupConfig.entityWakeUpDurationRatioStandardDeviation;
++        if (deviation <= 0) {
++            return wakeUpDuration;
++        }
++        return (int) Math.min(Integer.MAX_VALUE, Math.max(1, Math.round(wakeUpDuration * wakeUpDurationRandom.nextGaussian(1, deviation))));
++    }
++    // Gale end - variable entity wake-up duration
++
+     //static AABB maxBB = new AABB(0, 0, 0, 0, 0, 0); // Folia - threaded regions - replaced by local variable
+ 
+     /**

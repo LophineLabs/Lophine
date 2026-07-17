@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 14 Jun 2026 18:10:20 +0800
+Subject: [PATCH] Luminol Config System
+
+
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index fb5ca3ab0ddba433a39e65572beeb955b50d6f72..42335e351e0cb4f82f46501503a15349f8a82e1b 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -2776,6 +2776,11 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+      */
+     void allowPausing(@NotNull org.bukkit.plugin.Plugin plugin, boolean value);
+     // Paper end - API to check if the server is sleeping
++
++    // Luminol start - Luminol Config API
++    me.earthme.luminol.api.config.LuminolConfigsInstance getLuminolConfigs(String name);
++    // Luminol end - Luminol Config API
++
+     // Folia start - region TPS API
+     /**
+      * Gets the TPS from the region which owns the specified location, or {@code null} if no region owns

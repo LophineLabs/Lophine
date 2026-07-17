@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sat, 18 Apr 2026 10:49:40 +0800
+Subject: [PATCH] Add tick regions api
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 89d545a6d6396423a53d4c655fb7bae7a98b84fc..f5373786032b3f1db8e6c0c928c781998b2fe194 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -2082,4 +2082,11 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+         return POINTERS_SUPPLIER.view(this);
+     }
+     // Paper end
++
++    // Luminol start - Tick regions api
++    @Override
++    public me.earthme.luminol.api.ThreadedRegionizer getThreadedRegionizer() {
++        return this.world.regioniser.threadedRegionizerAPI;
++    }
++    // Luminol end
+ }

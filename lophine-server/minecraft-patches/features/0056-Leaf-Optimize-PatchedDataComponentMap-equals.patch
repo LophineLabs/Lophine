@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sat, 2 May 2026 22:26:57 +0800
+Subject: [PATCH] Leaf Optimize PatchedDataComponentMap equals
+
+This is a part of Leaf(https://github.com/Winds-Studio/Leaf/blob/db41340915c7768d726342fb29d16bc428081074/leaf-server/minecraft-patches/features/0300-Optimize-PatchedDataComponentMap-equals.patch)
+
+Original author: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+
+Original license: https://github.com/Winds-Studio/Leaf/blob/db41340915c7768d726342fb29d16bc428081074/LICENSE.md
+
+diff --git a/net/minecraft/core/component/PatchedDataComponentMap.java b/net/minecraft/core/component/PatchedDataComponentMap.java
+index 08ea8107fc8cbec3742278ab5cf03ef9048720f9..217e4fb33d2707c5e50c7ec2dd2aaee410154254 100644
+--- a/net/minecraft/core/component/PatchedDataComponentMap.java
++++ b/net/minecraft/core/component/PatchedDataComponentMap.java
+@@ -221,7 +221,19 @@ public final class PatchedDataComponentMap implements DataComponentMap {
+ 
+     @Override
+     public boolean equals(final Object obj) {
+-        return this == obj || obj instanceof PatchedDataComponentMap otherMap && this.prototype.equals(otherMap.prototype) && this.patch.equals(otherMap.patch);
++        // return this == obj || obj instanceof PatchedDataComponentMap otherMap && this.prototype.equals(otherMap.prototype) && this.patch.equals(otherMap.patch); // Leaf - Optimize PatchedDataComponentMap equals
++        // Leaf start - Optimize PatchedDataComponentMap equals
++        if (this == obj) return true;
++        if (!(obj instanceof PatchedDataComponentMap that)) return false;
++        if (this.patch.size() != that.patch.size()) {
++            return false;
++        }
++        if (!this.prototype.equals(that.prototype)) {
++            return false;
++        }
++        if (this.patch == that.patch) return true;
++        return this.patch.equals(that.patch);
++        // Leaf end - Optimize PatchedDataComponentMap equals
+     }
+ 
+     @Override

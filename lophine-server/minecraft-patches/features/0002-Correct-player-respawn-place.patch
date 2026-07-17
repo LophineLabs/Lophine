@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 28 Jun 2026 17:56:30 +0800
+Subject: [PATCH] Correct player respawn place
+
+
+diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
+index fbe0ef19bfabfc42d9e0e08e17b08159321b3804..44b3dfbf529630d8cca9a4270ae2a7c94c5a077c 100644
+--- a/net/minecraft/server/level/ServerPlayer.java
++++ b/net/minecraft/server/level/ServerPlayer.java
+@@ -511,8 +511,10 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+         double amountX = selectMaxX - selectMinX;
+         double amountZ = selectMaxZ - selectMinZ;
+ 
+-        int selectX = amountX < 1.0 ? Mth.floor(worldBorder.getCenterX()) : (int)Mth.floor((amountX + 1.0) * random.nextDouble() + selectMinX);
+-        int selectZ = amountZ < 1.0 ? Mth.floor(worldBorder.getCenterZ()) : (int)Mth.floor((amountZ + 1.0) * random.nextDouble() + selectMinZ);
++        // Luminol start - Correct player respawn place
++        int selectX = amountX < 0.0 ? Mth.floor(worldBorder.getCenterX()) : (int)Mth.floor(amountX * random.nextDouble() + selectMinX);
++        int selectZ = amountZ < 0.0 ? Mth.floor(worldBorder.getCenterZ()) : (int)Mth.floor(amountZ * random.nextDouble() + selectMinZ);
++        // Luminol end - Correct player respawn place
+ 
+         return new BlockPos(selectX, 0, selectZ);
+     }
+@@ -523,10 +525,20 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+     }
+ 
+     private static BlockPos findSpawnAround(ServerLevel world, BlockPos selected) {
++        // Luminol start - Correct player respawn place
++        BlockPos inChunk = PlayerSpawnFinder.getLevelRespawnPos(world, selected.getX(), selected.getZ());
++        if (inChunk != null) {
++            AABB checkVolume = PlayerSpawnFinder.PLAYER_DIMENSIONS.makeBoundingBox((double)inChunk.getX() + 0.5, (double)inChunk.getY(), (double)inChunk.getZ() + 0.5);
++
++            if (world.noCollision(null, checkVolume, true)) {
++                return inChunk;
++            }
++        }
++        // Luminol end - Correct player respawn place
+         // try hard to find, so that we don't attempt another chunk load
+         for (int dz = -SPAWN_RADIUS_SELECTION_SEARCH; dz <= SPAWN_RADIUS_SELECTION_SEARCH; ++dz) {
+             for (int dx = -SPAWN_RADIUS_SELECTION_SEARCH; dx <= SPAWN_RADIUS_SELECTION_SEARCH; ++dx) {
+-                BlockPos inChunk = PlayerSpawnFinder.getLevelRespawnPos(world, selected.getX() + dx, selected.getZ() + dz);
++                inChunk = PlayerSpawnFinder.getLevelRespawnPos(world, selected.getX() + dx, selected.getZ() + dz); // Luminol - Correct player respawn place
+                 if (inChunk == null) {
+                     continue;
+                 }
+@@ -2018,7 +2030,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+         }
+ 
+         if (newLevel.dimension() == lastDimension) {
+-            this.connection.internalTeleport(PositionMoveRotation.of(transition), transition.relatives()); // CraftBukkit  
++            this.connection.internalTeleport(PositionMoveRotation.of(transition), transition.relatives()); // CraftBukkit // Luminol - Correct player respawn place
+             this.connection.resetPosition();
+             transition.postTeleportTransition().onTransition(this);
+             return this;

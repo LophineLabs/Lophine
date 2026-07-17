@@ -1,0 +1,61 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sat, 18 Apr 2026 09:18:31 +0800
+Subject: [PATCH] Add back read-only datapack command
+
+
+diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
+index afbaf2116930d72ebb0c77745d02115abab14dc4..6823c41c08ca1a1baf9257fc861ae97bbcbe3a50 100644
+--- a/net/minecraft/commands/Commands.java
++++ b/net/minecraft/commands/Commands.java
+@@ -205,7 +205,7 @@ public class Commands {
+         if(me.earthme.luminol.config.modules.experiment.CommandConfig.data) { // Luminol - Config for data command
+         DataCommands.register(this.dispatcher); // Folia - region threading - TODO // Luminol - Config for data command
+         } // Luminol - Config for data command
+-        //DataPackCommand.register(this.dispatcher, context); // Folia - region threading - TODO
++        DataPackCommand.register(this.dispatcher, context); // Folia - region threading - TODO // Luminol - Add back read-only datapack command
+         //DebugCommand.register(this.dispatcher); // Folia - region threading - TODO
+         DefaultGameModeCommands.register(this.dispatcher);
+         //DialogCommand.register(this.dispatcher, context); // Folia - region threading - TODO
+diff --git a/net/minecraft/server/commands/DataPackCommand.java b/net/minecraft/server/commands/DataPackCommand.java
+index 0da1e4ada8616af825ddd4678e61246c672f9c4f..80d9bc3d680c30dae15064e0e8c3d1379ccd52e6 100644
+--- a/net/minecraft/server/commands/DataPackCommand.java
++++ b/net/minecraft/server/commands/DataPackCommand.java
+@@ -99,7 +99,7 @@ public class DataPackCommand {
+         dispatcher.register(
+             Commands.literal("datapack")
+                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+-                .then(
++                /*.then( // Luminol - Add back read-only datapack command
+                     Commands.literal("enable")
+                         .then(
+                             Commands.argument("name", StringArgumentType.string())
+@@ -146,11 +146,11 @@ public class DataPackCommand {
+                                 .suggests(SELECTED_PACKS)
+                                 .executes(c -> disablePack(c.getSource(), getPack(c, "name", false)))
+                         )
+-                )
++                )*/ // Luminol - Add back read-only datapack command
+                 .then(
+                     Commands.literal("list")
+                         .executes(c -> listPacks(c.getSource()))
+-                        .then(Commands.literal("available").executes(c -> listAvailablePacks(c.getSource())))
++                        //.then(Commands.literal("available").executes(c -> listAvailablePacks(c.getSource()))) // Luminol - Add back read-only datapack command
+                         .then(Commands.literal("enabled").executes(c -> listEnabledPacks(c.getSource())))
+                 )
+                 .then(
+@@ -238,12 +238,12 @@ public class DataPackCommand {
+     }
+ 
+     private static int listPacks(final CommandSourceStack source) {
+-        return listEnabledPacks(source) + listAvailablePacks(source);
++        return listEnabledPacks(source) ;// + listAvailablePacks(source); // Luminol - Add back read-only datapack command
+     }
+ 
+     private static int listAvailablePacks(final CommandSourceStack source) {
+         PackRepository repository = source.getServer().getPackRepository();
+-        repository.reload();
++        //repository.reload(); // Luminol - Add back read-only datapack command
+         Collection<Pack> selectedPacks = repository.getSelectedPacks();
+         Collection<Pack> availablePacks = repository.getAvailablePacks();
+         FeatureFlagSet enabledFeatures = source.enabledFeatures();

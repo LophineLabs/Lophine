@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Fri, 17 Apr 2026 23:01:59 +0800
+Subject: [PATCH] Correct volatile reference get in RegionizedTaskQueue
+
+
+diff --git a/io/papermc/paper/threadedregions/RegionizedTaskQueue.java b/io/papermc/paper/threadedregions/RegionizedTaskQueue.java
+index d1a045d47dcd12f246d95ecdfc202da357897cbf..b264dbd13a392cde3f24ff75c0034985fda68ccc 100644
+--- a/io/papermc/paper/threadedregions/RegionizedTaskQueue.java
++++ b/io/papermc/paper/threadedregions/RegionizedTaskQueue.java
+@@ -533,7 +533,7 @@ public final class RegionizedTaskQueue {
+             }
+ 
+             private ReferenceCountData getReferenceCounterVolatile() {
+-                return (ReferenceCountData)REFERENCE_COUNTER_HANDLE.get(this);
++                return (ReferenceCountData)REFERENCE_COUNTER_HANDLE.getVolatile(this); // Luminol - Correct volatile reference get in RegionizedTaskQueue
+             }
+ 
+             private ReferenceCountData compareAndExchangeReferenceCounter(final ReferenceCountData expect, final ReferenceCountData update) {

@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sat, 18 Apr 2026 12:24:51 +0800
+Subject: [PATCH] Gale: Skip entity move if movement is zero
+
+Co-authored by: Martijn Muijsers <martijnmuijsers@live.nl>
+ishland <ishlandmc@yeah.net>
+A part of: Gale (https://github.com/GaleMC/Gale/blob/276e903b2688f23b19bdc8d493c0bf87656d2400/patches/server/0103-Skip-entity-move-if-movement-is-zero.patch)
+VMP (https://github.com/RelativityMC/VMP-fabric)
+Licensed under: MIT (https://opensource.org/licenses/MIT)
+
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index 6b3c691dcc9c9e4a8b2b43110aedd5d5131a9520..d1298c499f6551d7a084f2d1ccd2a2b8b9a2475b 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -1155,8 +1155,14 @@ public abstract class Entity
+     private double moveStartY;
+     private double moveStartZ;
+     // Paper end - detailed watchdog information
++    private boolean boundingBoxChanged = false; // Gale - VMP - skip entity move if movement is zero
+ 
+     public void move(final MoverType moverType, Vec3 delta) {
++        // Gale start - VMP - skip entity move if movement is zero
++        if (!this.boundingBoxChanged && delta.equals(Vec3.ZERO)) {
++            return;
++        }
++        // Gale end - VMP - skip entity move if movement is zero
+         final Vec3 originalMovement = delta; // Paper - Expose pre-collision velocity
+         // Paper start - detailed watchdog information
+         ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread("Cannot move an entity off-main");
+@@ -5634,6 +5640,11 @@ public abstract class Entity
+     }
+ 
+     public final void setBoundingBox(final AABB bb) {
++        // Gale start - VMP - skip entity move if movement is zero
++        if (!this.bb.equals(bb)) {
++            this.boundingBoxChanged = true;
++        }
++        // Gale end - VMP - skip entity move if movement is zero
+         // CraftBukkit start - block invalid bounding boxes
+         double minX = bb.minX,
+                 minY = bb.minY,

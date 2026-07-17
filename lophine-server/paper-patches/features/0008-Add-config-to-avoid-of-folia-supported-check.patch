@@ -1,0 +1,48 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sat, 18 Apr 2026 09:47:28 +0800
+Subject: [PATCH] Add config to avoid of folia-supported check
+
+This is in dangerous zone, we won't support it if you find any plugin bug if you enable it
+
+Co-authored-by: Helvetica Volubi <88063803+suisuroru@users.noreply.github.com>
+
+diff --git a/src/main/java/io/papermc/paper/plugin/provider/type/paper/PaperPluginProviderFactory.java b/src/main/java/io/papermc/paper/plugin/provider/type/paper/PaperPluginProviderFactory.java
+index 6369b13e1fcdbdb25dd9d6e4d3bffdedbee4f739..c20c04938b2f62b9e75831c5fdfabbd6ec51538a 100644
+--- a/src/main/java/io/papermc/paper/plugin/provider/type/paper/PaperPluginProviderFactory.java
++++ b/src/main/java/io/papermc/paper/plugin/provider/type/paper/PaperPluginProviderFactory.java
+@@ -25,7 +25,7 @@ class PaperPluginProviderFactory implements PluginTypeFactory<PaperPluginParent,
+     @Override
+     public PaperPluginParent build(JarFile file, PaperPluginMeta configuration, Path source) {
+         // Folia start - block plugins not marked as supported
+-        if (!configuration.isFoliaSupported()) {
++        if (!configuration.isFoliaSupported() && !me.earthme.luminol.config.modules.unsupported.DisableCheckForFoliaSupported.disableForPaper) { // Luminol - disable check for folia supported
+             throw new RuntimeException("Could not load plugin '" + configuration.getDisplayName() + "' as it is not marked as supporting Folia!");
+         }
+         // Folia end - block plugins not marked as supported
+diff --git a/src/main/java/io/papermc/paper/plugin/provider/type/spigot/SpigotPluginProviderFactory.java b/src/main/java/io/papermc/paper/plugin/provider/type/spigot/SpigotPluginProviderFactory.java
+index 6ef0042a355c65262bdb89dcf151bd644653216d..8f0b7b2985d3aadaacd5313d52d48ac916d871c9 100644
+--- a/src/main/java/io/papermc/paper/plugin/provider/type/spigot/SpigotPluginProviderFactory.java
++++ b/src/main/java/io/papermc/paper/plugin/provider/type/spigot/SpigotPluginProviderFactory.java
+@@ -27,7 +27,7 @@ class SpigotPluginProviderFactory implements PluginTypeFactory<SpigotPluginProvi
+     @Override
+     public SpigotPluginProvider build(JarFile file, PluginDescriptionFile configuration, Path source) throws InvalidDescriptionException {
+         // Folia start - block plugins not marked as supported
+-        if (!configuration.isFoliaSupported()) {
++        if (!configuration.isFoliaSupported() && !me.earthme.luminol.config.modules.unsupported.DisableCheckForFoliaSupported.disableForPaper) { // Luminol - disable check for folia supported
+             throw new RuntimeException("Could not load plugin '" + configuration.getDisplayName() + "' as it is not marked as supporting Folia!");
+         }
+         // Folia end - block plugins not marked as supported
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+index 55a095e00bfe15321d8a1d69beb232e9956b0df7..c189f583598f94fc7944afcabe130c5ee9504c0d 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+@@ -323,7 +323,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
+         }
+ 
+         // Folia start - block plugins not marked as supported
+-        if (!descriptionFile.isFoliaSupported()) {
++        if (!descriptionFile.isFoliaSupported() && !me.earthme.luminol.config.modules.unsupported.DisableCheckForFoliaSupported.disableForPaper) { // Luminol - disable check for folia supported
+             throw new InvalidPluginException("Plugin " + descriptionFile.getFullName() + " is not marked as supporting regionised multithreading");
+         }
+         // Folia end - block plugins not marked as supported

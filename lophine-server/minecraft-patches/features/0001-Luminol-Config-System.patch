@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 14 Jun 2026 18:10:20 +0800
+Subject: [PATCH] Luminol Config System
+
+
+diff --git a/net/minecraft/server/Main.java b/net/minecraft/server/Main.java
+index a4d608d64b7d3477c9144d93547fd3b4f39a1b02..2a75f8fbd2e5f41ca138740319d34683915e3b5b 100644
+--- a/net/minecraft/server/Main.java
++++ b/net/minecraft/server/Main.java
+@@ -107,6 +107,7 @@ public class Main {
+                 JvmProfiler.INSTANCE.start(Environment.SERVER);
+             }
+ 
++            me.earthme.luminol.config.ConfigManager.initConfigs(); // Luminol - Luminol config
+             io.papermc.paper.plugin.PluginInitializerManager.load(options); // Paper
+             Bootstrap.bootStrap();
+             Bootstrap.validate();
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index 6f13870a1b463049dd37cf1c65d0bdecfc35b5c4..a49c46eb7df50fc3c5587a2c3668ab6edc887107 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -1169,6 +1169,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+             ca.spottedleaf.moonrise.common.util.MoonriseCommon.haltExecutors();
+         }
+         // Paper end - rewrite chunk system
++        // Luminol start - Config Systems
++        me.earthme.luminol.config.ConfigManager.saveConfigs(false);
++        // Luminol end
+         // Paper start - Improved watchdog support - move final shutdown items here
+         Util.shutdownExecutors();
+         this.onServerExit();
+diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
+index cd5551c0221ad2a7b5c7d452d8d91ffc9711c3ee..1ad4704523a3d90414ac514488207b1b5def9afd 100644
+--- a/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -238,6 +238,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+         this.paperConfigurations.initializeGlobalConfiguration(this.registryAccess());
+         this.paperConfigurations.initializeWorldDefaultsConfiguration(this.registryAccess());
+         // Paper end - initialize global and world-defaults configuration
++        me.earthme.luminol.config.ConfigManager.loadConfigFiles(); // Luminol - load config file
+         this.server.spark.enableEarlyIfRequested(); // Paper - spark
+         // Paper start - fix converting txt to json file; convert old users earlier after PlayerList creation but before file load/save
+         if (this.convertOldUsers()) {

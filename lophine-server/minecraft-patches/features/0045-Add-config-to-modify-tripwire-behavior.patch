@@ -1,0 +1,110 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 28 Jun 2026 20:30:46 +0800
+Subject: [PATCH] Add config to modify tripwire behavior
+
+
+diff --git a/net/minecraft/world/level/block/TripWireHookBlock.java b/net/minecraft/world/level/block/TripWireHookBlock.java
+index 8bcc8b6f83ab4d5a472741185511b5d84f4974be..49b3f9e78ae9db257b653a6094619880784c6370 100644
+--- a/net/minecraft/world/level/block/TripWireHookBlock.java
++++ b/net/minecraft/world/level/block/TripWireHookBlock.java
+@@ -201,10 +201,17 @@ public class TripWireHookBlock extends Block {
+                     BlockPos testPos = pos.relative(direction, i);
+                     BlockState wireData = wireStates[i];
+                     if (wireData != null) {
+-                        BlockState testPosState = level.getBlockState(testPos);
+-                        if (testPosState.is(Blocks.TRIPWIRE) || testPosState.is(Blocks.TRIPWIRE_HOOK)) {
+-                            if (!io.papermc.paper.configuration.GlobalConfiguration.get().blockUpdates.disableTripwireUpdates || !testPosState.is(Blocks.TRIPWIRE)) level.setBlock(testPos, wireData.trySetValue(ATTACHED, attached), Block.UPDATE_ALL); // Paper - prevent tripwire from updating
++                        // Luminol start - tripwire and tripwireHook dupe
++                        if (me.earthme.luminol.config.modules.function.TripwireBehaviorConfig.enabled) {
++                            level.setBlock(testPos, wireData.trySetValue(ATTACHED, attached), 3);
++                            level.getBlockState(testPos);
++                        } else {
++                            BlockState testPosState = level.getBlockState(testPos);
++                            if (testPosState.is(Blocks.TRIPWIRE) || testPosState.is(Blocks.TRIPWIRE_HOOK)) {
++                                if (!io.papermc.paper.configuration.GlobalConfiguration.get().blockUpdates.disableTripwireUpdates || !testPosState.is(Blocks.TRIPWIRE)) level.setBlock(testPos, wireData.trySetValue(ATTACHED, attached), Block.UPDATE_ALL); // Paper - prevent tripwire from updating
++                            }
+                         }
++                        // Luminol end - tripwire and tripwireHook dupe
+                     }
+                 }
+             }
+diff --git a/net/minecraft/world/level/levelgen/feature/EndPlatformFeature.java b/net/minecraft/world/level/levelgen/feature/EndPlatformFeature.java
+index b67f5f7b76037ab77548c37a83e4d0918915223a..a8e69343f47ba2383f9dcc2cf6328463892aaeec 100644
+--- a/net/minecraft/world/level/levelgen/feature/EndPlatformFeature.java
++++ b/net/minecraft/world/level/levelgen/feature/EndPlatformFeature.java
+@@ -28,14 +28,39 @@ public class EndPlatformFeature extends Feature<NoneFeatureConfiguration> {
+         // CraftBukkit end
+         BlockPos.MutableBlockPos pos = origin.mutable();
+ 
+-        for (int dz = -2; dz <= 2; dz++) {
++        // Luminol start - tripwire behavior modifier
++        java.util.List<BlockPos> blockList1 = new java.util.ArrayList<>();
++        java.util.List<BlockPos> blockList2 = new java.util.ArrayList<>();
++        boolean flag21 = me.earthme.luminol.config.modules.function.TripwireBehaviorConfig.behaviorMode == me.earthme.luminol.enums.EnumTripwireBehavior.VANILLA21;        for (int dz = -2; dz <= 2; dz++) {
+             for (int dx = -2; dx <= 2; dx++) {
+                 for (int dy = -1; dy < 3; dy++) {
+                     BlockPos blockPos = pos.set(origin).move(dx, dy, dz);
+                     Block block = dy == -1 ? Blocks.OBSIDIAN : Blocks.AIR;
+                     if (!blockList.getBlockState(blockPos).is(block)) { // CraftBukkit
+                         if (dropResources) {
+-                            blockList.destroyBlock(blockPos, true, null); // CraftBukkit
++                            boolean flag = false;
++                            if (me.earthme.luminol.config.modules.function.TripwireBehaviorConfig.enabled) {
++                                switch (me.earthme.luminol.config.modules.function.TripwireBehaviorConfig.behaviorMode) {
++                                    case me.earthme.luminol.enums.EnumTripwireBehavior.VANILLA20: {
++                                        flag = true;
++                                    }
++                                    case me.earthme.luminol.enums.EnumTripwireBehavior.MIXED: {
++                                        net.minecraft.world.level.block.state.BlockState state = newLevel.getBlockState(blockPos);
++                                        if (state.is(Blocks.TRIPWIRE)) {
++                                            if (state.getValue(net.minecraft.world.level.block.TripWireBlock.DISARMED)) {
++                                                flag = true;
++                                                blockList2.add(blockPos.immutable());
++                                            }
++                                            if (!flag) {
++                                                flag = checkString(blockList2, blockPos);
++                                            }
++                                        }
++                                    }
++                                    default: {} // Luminol - 1.21 & default Logic - default empty
++                                }
++                            }
++                            if (flag) blockList1.add(blockPos.immutable());
++                            else blockList.destroyBlock(blockPos, true, null); // CraftBukkit
+                         }
+ 
+                         blockList.setBlock(blockPos, block.defaultBlockState(), Block.UPDATE_ALL); // CraftBukkit
+@@ -53,11 +78,30 @@ public class EndPlatformFeature extends Feature<NoneFeatureConfiguration> {
+             if (portalEvent.isCancelled()) return;
+         }
+ 
+-        if (dropResources) {
+-            blockList.placeBlocks(state -> newLevel.destroyBlock(state.getPosition(), true, null));
++        if (flag21 || !me.earthme.luminol.config.modules.function.TripwireBehaviorConfig.enabled) {
++            if (dropResources) {
++                blockList.placeBlocks(state -> newLevel.destroyBlock(state.getPosition(), true, null));
++            } else {
++                blockList.placeBlocks();
++            }
+         } else {
++            if (dropResources) {
++                blockList.getSnapshotBlocks().forEach((state) -> {
++                                        newLevel.destroyBlock(state.getPosition(), !blockList1.contains(state.getPosition()), null);
++                });
++                // Luminol - prevent tripwire dupe in end platform generate
++            }
+             blockList.placeBlocks();
+         }
+         // CraftBukkit end
+     }
++
++    private static boolean checkString(java.util.List<BlockPos> blockList, BlockPos blockPos) {
++        for (BlockPos pos : blockList) {
++            if (pos.getY() != blockPos.getY()) continue;
++            if (pos.getX() == blockPos.getX() || pos.getZ() == blockPos.getZ()) return true;
++        }
++        return false;
++    }
++    // Luminol end - tripwire behavior modifier
+ }

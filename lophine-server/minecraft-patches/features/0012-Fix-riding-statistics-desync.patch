@@ -1,0 +1,64 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Fri, 17 Apr 2026 23:24:07 +0800
+Subject: [PATCH] Fix riding statistics desync
+
+Referred to: https://github.com/CraftCanvasMC/Canvas/commit/057175b0c10d5a4d1d9059fd9d077750c32633b2
+
+diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
+index 34cc36f6bdf435593d16f2e7af280a27be048280..98d1ab3aa8dfbe571371d01544da2750339ce988 100644
+--- a/net/minecraft/server/level/ServerPlayer.java
++++ b/net/minecraft/server/level/ServerPlayer.java
+@@ -2537,7 +2537,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+         }
+     }
+ 
+-    private void checkRidingStatistics(final double dx, final double dy, final double dz) {
++    public void checkRidingStatistics(final double dx, final double dy, final double dz) { // Luminol - Fix riding statics desync (make public)
+         if (this.isPassenger() && !didNotMove(dx, dy, dz)) {
+             int distance = Math.round((float)Math.sqrt(dx * dx + dy * dy + dz * dz) * 100.0F);
+             Entity vehicle = this.getVehicle();
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index a2b57f62b745dd21e215f919d335f14f5cb1706f..2cf8bdf6c4ab04ab42829b7af5eb89e6bd509d7a 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -4198,7 +4198,13 @@ public abstract class Entity
+             }
+         }
+ 
++        // Luminol start  - Fix riding statics desync
+         public void adjustRiders(boolean teleport) {
++            this.adjustRiders(teleport, false);
++        }
++
++        public void adjustRiders(boolean teleport, boolean syncStatics) {
++        // Luminol end - Fix riding statics desync
+             java.util.ArrayDeque<EntityTreeNode> queue = new java.util.ArrayDeque<>();
+             queue.add(this);
+ 
+@@ -4211,14 +4217,24 @@ public abstract class Entity
+ 
+                 for (EntityTreeNode passenger : passengers) {
+                     queue.add(passenger);
++                    // Luminol start  - Fix riding statics desync
++                    final double oldX = passenger.root.getX();
++                    final double oldY = passenger.root.getY();
++                    final double oldZ = passenger.root.getZ();
++                    // Luminol end - Fix riding statics desync
+                     curr.root.positionRider(passenger.root, teleport ? Entity::snapTo : Entity::setPos);
++                    // Luminol start  - Fix riding statics desync
++                    if (syncStatics && passenger.root instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
++                        serverPlayer.checkRidingStatistics(serverPlayer.getX() - oldX, serverPlayer.getY() - oldY, serverPlayer.getZ() - oldZ);
++                    }
++                    // Luminol end - Fix riding statics desync
+                 }
+             }
+         }
+     }
+ 
+     public void repositionAllPassengers(boolean teleport) {
+-        this.makePassengerTree().adjustRiders(teleport);
++        this.makePassengerTree().adjustRiders(teleport, true); // Luminol - Fix riding statics desync
+     }
+ 
+     protected EntityTreeNode makePassengerTree() {

@@ -1,0 +1,89 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sat, 18 Apr 2026 10:48:14 +0800
+Subject: [PATCH] Purpur: Lobotomize stuck villagers
+
+Co-authored by: William Blake Galbreath <Blake.Galbreath@GMail.com>
+As part of: Purpur (https://github.com/PurpurMC/Purpur/blob/09f547de09fc5d886f18f6d99ff389289766ec9d/purpur-server/minecraft-patches/features/0001-Ridables.patch)
+Licensed under: MIT (https://github.com/PurpurMC/Purpur/blob/09f547de09fc5d886f18f6d99ff389289766ec9d/LICENSE)
+
+diff --git a/net/minecraft/world/entity/npc/villager/Villager.java b/net/minecraft/world/entity/npc/villager/Villager.java
+index f649c46cc9a34e646f8da3244866c6e011d30aa3..10715e891205eadd3774dc349c52963606ce1ab7 100644
+--- a/net/minecraft/world/entity/npc/villager/Villager.java
++++ b/net/minecraft/world/entity/npc/villager/Villager.java
+@@ -190,6 +190,53 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
+         this.setCanPickUpLoot(true);
+     }
+ 
++    // Purpur start
++    private boolean isLobotomized = false; public boolean isLobotomized() { return this.isLobotomized; } // Purpur
++    private int notLobotomizedCount = 0; // Purpur
++
++    private boolean checkLobotomized() {
++        int interval = me.earthme.luminol.config.modules.optimizations.LobotomizeVillageConfig.villagerLobotomizeCheckInterval;
++        boolean shouldCheckForTradeLocked = me.earthme.luminol.config.modules.optimizations.LobotomizeVillageConfig.villagerLobotomizeWaitUntilTradeLocked;
++        if (this.notLobotomizedCount > 3) {
++            // check half as often if not lobotomized for the last 3+ consecutive checks
++            interval *= 2;
++        }
++        if (this.level().getGameTime() % interval == 0) {
++            // offset Y for short blocks like dirt_path/farmland
++            this.isLobotomized = !(shouldCheckForTradeLocked && this.getVillagerXp() == 0) && !canTravelFrom(net.minecraft.core.BlockPos.containing(this.position().x, this.getBoundingBox().minY + 0.0625D, this.position().z));
++
++            if (this.isLobotomized) {
++                this.notLobotomizedCount = 0;
++            } else {
++                this.notLobotomizedCount++;
++            }
++        }
++        return this.isLobotomized;
++    }
++    // Purpur end
++
++    private boolean canTravelFrom(net.minecraft.core.BlockPos pos) {
++        return canTravelTo(pos.east()) || canTravelTo(pos.west()) || canTravelTo(pos.north()) || canTravelTo(pos.south());
++    }
++
++    private boolean canTravelTo(net.minecraft.core.BlockPos pos) {
++        net.minecraft.world.level.block.state.BlockState state = this.level().getBlockStateIfLoaded(pos);
++        if (state == null) {
++            // chunk not loaded
++            return false;
++        }
++        net.minecraft.world.level.block.Block bottom = state.getBlock();
++        if (bottom instanceof net.minecraft.world.level.block.FenceBlock ||
++                bottom instanceof net.minecraft.world.level.block.FenceGateBlock ||
++                bottom instanceof net.minecraft.world.level.block.WallBlock) {
++            // bottom block is too tall to get over
++            return false;
++        }
++        net.minecraft.world.level.block.Block top = level().getBlockState(pos.above()).getBlock();
++        // only if both blocks have no collision
++        return !bottom.hasCollision && !top.hasCollision;
++    }
++
+     @Override
+     public Brain<Villager> getBrain() {
+         return (Brain<Villager>)super.getBrain();
+@@ -259,11 +306,20 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
+         // Paper start - EAR 2
+         this.customServerAiStep(level, false);
+     }
+-    protected void customServerAiStep(ServerLevel level, final boolean inactive) {
++    protected void customServerAiStep(ServerLevel level, boolean inactive) { // Purpur - not final
+         // Paper end - EAR 2
+         ProfilerFiller profiler = Profiler.get();
+         profiler.push("villagerBrain");
++        // Purpur start
++        if (me.earthme.luminol.config.modules.optimizations.LobotomizeVillageConfig.villagerLobotomizeEnabled) {
++            // treat as inactive if lobotomized
++            inactive = inactive || checkLobotomized();
++        } else {
++            this.isLobotomized = false;
++        }
++        // Purpur end
+         if (!inactive) this.getBrain().tick(level, this); // Paper - EAR 2
++        else if (this.isLobotomized && shouldRestock(level)) restock(); // Purpur - Lobotomize stuck villagers
+         profiler.pop();
+         if (this.assignProfessionWhenSpawned) {
+             this.assignProfessionWhenSpawned = false;

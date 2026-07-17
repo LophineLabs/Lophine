@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 28 Jun 2026 20:51:53 +0800
+Subject: [PATCH] Leaf: Remove useless creating stats json bases on player name
+ logic
+
+Co-authored by: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+As part of: Leaf (https://github.com/Winds-Studio/Leaf/blob/7f3e240bbe0970683c40279a7a65f0fde47503b6/leaf-server/minecraft-patches/features/0043-Remove-useless-creating-stats-json-bases-on-player-n.patch)
+Licensed under: MIT (https://github.com/Winds-Studio/Leaf/blob/7f3e240bbe0970683c40279a7a65f0fde47503b6/licenses/MIT.txt)
+
+diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
+index 53449af103c1774f68cb0c296d47e7032e4e3843..a8f051e6aff31a723a3ba59842fac3a43f4911fe 100644
+--- a/net/minecraft/server/players/PlayerList.java
++++ b/net/minecraft/server/players/PlayerList.java
+@@ -1294,22 +1294,26 @@ public abstract class PlayerList {
+         Path uuidStatsFile = statFolder.resolve(gameProfile.id() + ".json");
+         if (Files.exists(uuidStatsFile)) {
+             return uuidStatsFile;
+-        }
+-
+-        String playerNameStatsFile = gameProfile.name() + ".json";
+-        if (FileUtil.isValidPathSegment(playerNameStatsFile)) {
+-            Path playerNameStatsPath = statFolder.resolve(playerNameStatsFile);
+-            if (Files.isRegularFile(playerNameStatsPath)) {
+-                try {
+-                    return Files.move(playerNameStatsPath, uuidStatsFile);
+-                } catch (IOException e) {
+-                    LOGGER.warn("Failed to copy file {} to {}", playerNameStatsFile, uuidStatsFile);
+-                    return playerNameStatsPath;
++        } else {
++            // Leaf start - Remove useless creating stats json bases on player name logic
++            /*
++            String playerNameStatsFile = gameProfile.name() + ".json";
++            if (FileUtil.isValidPathSegment(playerNameStatsFile)) {
++                Path playerNameStatsPath = statFolder.resolve(playerNameStatsFile);
++                if (Files.isRegularFile(playerNameStatsPath)) {
++                    try {
++                        return Files.move(playerNameStatsPath, uuidStatsFile);
++                    } catch (IOException e) {
++                        LOGGER.warn("Failed to copy file {} to {}", playerNameStatsFile, uuidStatsFile);
++                        return playerNameStatsPath;
++                    }
+                 }
+             }
+-        }
++            */
++            // Leaf end - Remove useless creating stats json bases on player name logic
+ 
+-        return uuidStatsFile;
++            return uuidStatsFile;
++        }
+     }
+ 
+     public PlayerAdvancements getPlayerAdvancements(final ServerPlayer player) {

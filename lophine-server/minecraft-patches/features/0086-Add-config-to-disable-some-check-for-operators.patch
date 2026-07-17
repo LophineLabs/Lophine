@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 3 Aug 2025 14:26:37 +0800
+Subject: [PATCH] Add config to disable some check for operators
+
+
+diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index 2a383eee714b7da08b552c5bfb3988fad3cadb93..6f5d5b123f69b7bdc3960e0ad216ec291aa100c3 100644
+--- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -402,7 +402,7 @@ public class ServerGamePacketListenerImpl
+         this.tickCount++;
+         this.knownMovePacketCount = this.receivedMovePacketCount;
+         if (this.clientIsFloating && !this.player.isSleeping() && !this.player.isPassenger() && !this.player.isDeadOrDying()) {
+-            if (++this.aboveGroundTickCount > this.getMaximumFlyingTicks(this.player)) {
++            if (++this.aboveGroundTickCount > this.getMaximumFlyingTicks(this.player) && !(fun.bm.lophine.config.modules.misc.DisableCheckConfig.disableOpFlyCheck && MinecraftServer.getServer().getPlayerList().isOp(this.player.nameAndId()))) { // Lophine - disable fly check for operator
+                 // LOGGER.warn("{} was kicked for floating too long!", this.player.getPlainTextName()); // Paper - Logging moved to net.minecraft.server.network.ServerCommonPacketListenerImpl.disconnect()
+                 this.disconnect(io.papermc.paper.configuration.GlobalConfiguration.get().messages.kick.flyingPlayer, org.bukkit.event.player.PlayerKickEvent.Cause.FLYING_PLAYER); // Paper - use configurable kick message & kick event cause
+                 return true;
+@@ -421,7 +421,7 @@ public class ServerGamePacketListenerImpl
+             this.vehicleLastGoodY = this.lastVehicle.getY();
+             this.vehicleLastGoodZ = this.lastVehicle.getZ();
+             if (this.clientVehicleIsFloating && this.lastVehicle.getControllingPassenger() == this.player) {
+-                if (++this.aboveGroundVehicleTickCount > this.getMaximumFlyingTicks(this.lastVehicle)) {
++                if (++this.aboveGroundVehicleTickCount > this.getMaximumFlyingTicks(this.lastVehicle) && !(fun.bm.lophine.config.modules.misc.DisableCheckConfig.disableOpFlyCheck && MinecraftServer.getServer().getPlayerList().isOp(this.player.nameAndId()))) { // Lophine - disable fly check for operator
+                     // LOGGER.warn("{} was kicked for floating a vehicle too long!", this.player.getPlainTextName()); // Paper - Logging moved to net.minecraft.server.network.ServerCommonPacketListenerImpl.disconnect()
+                     this.disconnect(io.papermc.paper.configuration.GlobalConfiguration.get().messages.kick.flyingVehicle, org.bukkit.event.player.PlayerKickEvent.Cause.FLYING_VEHICLE); // Paper - use configurable kick message & kick event cause
+                     return true;
+@@ -674,7 +674,7 @@ public class ServerGamePacketListenerImpl
+                 zDist = targetZ - vehicle.getZ();
+                 movedDist = xDist * xDist + yDist * yDist + zDist * zDist;
+                 boolean fail = false;
+-                if (!me.earthme.luminol.config.modules.misc.DisableWarningConfig.disableMovedWronglyThresholdWarning && movedDist > org.spigotmc.SpigotConfig.movedWronglyThreshold) { // Spigot // Leaves - disable can
++                if (!me.earthme.luminol.config.modules.misc.DisableWarningConfig.disableMovedWronglyThresholdWarning && movedDist > org.spigotmc.SpigotConfig.movedWronglyThreshold && !(fun.bm.lophine.config.modules.misc.DisableCheckConfig.disableOpMoveCheck && MinecraftServer.getServer().getPlayerList().isOp(this.player.nameAndId()))) { // Spigot // Leaves - disable can // Lophine - disable move check for operator
+                     fail = true;
+                     LOGGER.warn("{} (vehicle of {}) moved wrongly! {}", vehicle.getPlainTextName(), this.player.getPlainTextName(), Math.sqrt(movedDist));
+                 }
+@@ -1619,7 +1619,7 @@ public class ServerGamePacketListenerImpl
+                                             // Paper start - Add fail move event
+                                             io.papermc.paper.event.player.PlayerFailMoveEvent event = fireFailMove(io.papermc.paper.event.player.PlayerFailMoveEvent.FailReason.MOVED_TOO_QUICKLY,
+                                                     targetX, targetY, targetZ, targetYRot, targetXRot, true);
+-                                            if (!event.isAllowed()) {
++                                            if (!event.isAllowed() && !(fun.bm.lophine.config.modules.misc.DisableCheckConfig.disableOpMoveCheck && MinecraftServer.getServer().getPlayerList().isOp(this.player.nameAndId()))) { // Lophine - disable move check for operator
+                                                 if (event.getLogWarning()) {
+                                             LOGGER.warn("{} moved too quickly! {},{},{}", this.player.getPlainTextName(), xDist, yDist, zDist);
+                                                 }
+@@ -1685,7 +1685,7 @@ public class ServerGamePacketListenerImpl
+                                     // Paper start - Add fail move event
+                                     io.papermc.paper.event.player.PlayerFailMoveEvent event = fireFailMove(io.papermc.paper.event.player.PlayerFailMoveEvent.FailReason.MOVED_WRONGLY,
+                                             targetX, targetY, targetZ, targetYRot, targetXRot, true);
+-                                    if (!event.isAllowed()) {
++                                    if (!event.isAllowed() && !(fun.bm.lophine.config.modules.misc.DisableCheckConfig.disableOpMoveCheck && MinecraftServer.getServer().getPlayerList().isOp(this.player.nameAndId()))) { // Lophine - disable move check for operator
+                                         movedWrongly = true;
+                                         if (event.getLogWarning())
+                                      // Paper end

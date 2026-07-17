@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 28 Jun 2026 19:32:34 +0800
+Subject: [PATCH] Teleport async if entity was moving to another region at once
+
+On folia, entity usually cannot move out of the tickregion, but sometimes it actually does(like some end pearl gun that can shoot an end pearl to the block faraway than 10000 blocks even more). To fix this, we added a temporary fix which teleport these entities to the destination instead running its move logics so that we could ensure anything is under control.But one thing need to consider is that teleportAsync is actually calling halfway of the entity tick and there is still something running when teleportAsync called, which is actually modified the entity in another thread, so there is still need an improvement
+
+Reference from : https://github.com/KaiijuMC/Kaiiju/blob/ver/1.20.1/patches/server/0040-Teleport-async-if-we-cannot-move-entity-off-main.patch
+
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index 6b7382f06a8c76b216b081e66789fe51466b1e29..8c909108a0c468f353837787188c12f907369b9b 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -1163,6 +1163,19 @@ public abstract class Entity
+             this.moveStartZ = this.getZ();
+             this.moveVector = delta;
+         }
++        //Luminol start - Fix high position moving
++        // Filter the threads as it may be called by the chunk system worker thread
++        if (me.earthme.luminol.config.modules.fixes.FoliaEntityMovingFixConfig.enabled && ca.spottedleaf.moonrise.common.util.TickThread.isTickThread()){
++            var finalPosition = delta.add(this.position);
++            // not NaN (Prevent incorrect checks under NaN minecarts)
++            if (!Double.isNaN(finalPosition.x) && !Double.isNaN(finalPosition.y) && !Double.isNaN(finalPosition.z)) {
++                // kill tick passively if it's moving out of region and we'll catch this exception
++                if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(this.level,finalPosition)) {
++                    throw new me.earthme.luminol.utils.EntityMoveOutOfRegionException(this, delta, moverType);
++                }
++            }
++        }
++        //Luminol end
+         try {
+         // Paper end - detailed watchdog information
+         if (this.noPhysics) {
+diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
+index a0eb1f608a99301e0197ab1d1a6fbbb0a0be4ce0..dc28223684091cd0d8dbf7ff01626b20e4f1b662 100644
+--- a/net/minecraft/world/level/Level.java
++++ b/net/minecraft/world/level/Level.java
+@@ -1571,6 +1571,25 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+     public <T extends Entity> void guardEntityTick(final Consumer<T> tick, final T entity) {
+         try {
+             tick.accept(entity);
++        } catch (me.earthme.luminol.utils.EntityMoveOutOfRegionException moveOutOfRegionException) {  // Luminol - Teleport async if entity was moving to another region at once
++            // Luminol start - Teleport async if entity was moving to another region at once
++            final Entity ent = moveOutOfRegionException.getEntity();
++            var currPosition = ent.position();
++            var toPosition = moveOutOfRegionException.getMovement().add(currPosition);
++
++            if (me.earthme.luminol.config.modules.fixes.FoliaEntityMovingFixConfig.warnOnDetected) {
++                MinecraftServer.LOGGER.warn("Entity {} with entityId {} has tried moving to another region!",ent, ent.getId());
++            }
++
++            ent.getBukkitEntity().taskScheduler.schedule(entityFresh -> entityFresh.teleportAsync(
++                    (ServerLevel) entityFresh.level(),
++                    toPosition,
++                    entityFresh.getYRot(), entityFresh.getXRot(),
++                    entityFresh.getDeltaMovement(), org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.UNKNOWN,
++                    Entity.TELEPORT_FLAG_LOAD_CHUNK | Entity.TELEPORT_FLAG_TELEPORT_PASSENGERS,
++                    null
++            ), null, 1L);
++            // Luminol end
+         } catch (Throwable t) {
+             // Paper start - Prevent block entity and entity crashes
+             final String msg = String.format("Entity threw exception at %s:%s,%s,%s", io.papermc.paper.util.MCUtil.getLevelName(entity.level()), entity.getX(), entity.getY(), entity.getZ());

@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sat, 18 Apr 2026 12:23:37 +0800
+Subject: [PATCH] Gale: Replace AI attributes with optimized collections
+
+Co-authored by: Martijn Muijsers <martijnmuijsers@live.nl>
+2No2Name <2No2Name@web.de>
+As part of: Gale (https://github.com/GaleMC/Gale/blob/276e903b2688f23b19bdc8d493c0bf87656d2400/patches/server/0087-Replace-AI-attributes-with-optimized-collections.patch)
+Lithium (https://github.com/CaffeineMC/lithium-fabric)
+Licensed under: LGPL-3.0 (https://www.gnu.org/licenses/lgpl-3.0.html)
+
+diff --git a/net/minecraft/world/entity/ai/attributes/AttributeMap.java b/net/minecraft/world/entity/ai/attributes/AttributeMap.java
+index 68bad6752bd313ca3ebde7fd4e3b2c46c5dee3ef..c951a04126a75c7caf046237ae00768a1114c03f 100644
+--- a/net/minecraft/world/entity/ai/attributes/AttributeMap.java
++++ b/net/minecraft/world/entity/ai/attributes/AttributeMap.java
+@@ -14,9 +14,11 @@ import net.minecraft.resources.Identifier;
+ import org.jspecify.annotations.Nullable;
+ 
+ public class AttributeMap {
+-    private final Map<Holder<Attribute>, AttributeInstance> attributes = new Object2ObjectOpenHashMap<>();
+-    private final Set<AttributeInstance> attributesToSync = new ObjectOpenHashSet<>();
+-    private final Set<AttributeInstance> attributesToUpdate = new ObjectOpenHashSet<>();
++    // Gale start - Lithium - replace AI attributes with optimized collections
++    private final Map<Holder<Attribute>, AttributeInstance> attributes = new it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap<>(0);
++    private final Set<AttributeInstance> attributesToSync = new it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<>(0);
++    private final Set<AttributeInstance> attributesToUpdate = new it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<>(0);
++    // Gale end - Lithium - replace AI attributes with optimized collections
+     private final AttributeSupplier supplier;
+ 
+     public AttributeMap(final AttributeSupplier supplier) {

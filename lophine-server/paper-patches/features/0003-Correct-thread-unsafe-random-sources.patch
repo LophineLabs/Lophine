@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Tue, 30 Jun 2026 22:34:04 +0800
+Subject: [PATCH] Correct thread unsafe random sources
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java
+index 70e21e1fc337c6ea40e64020fa1832d1630cae97..196301994341f7ff9eaf3b9401132df7d6eaaa8e 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java
+@@ -40,7 +40,7 @@ import org.bukkit.inventory.meta.ItemMeta;
+ public final class CraftItemFactory implements ItemFactory {
+     static final Color DEFAULT_LEATHER_COLOR = Color.fromRGB(0xA06540);
+     private static final CraftItemFactory instance;
+-    private static final RandomSource randomSource = RandomSource.create();
++    private static final RandomSource randomSource = io.papermc.paper.threadedregions.util.ThreadLocalRandomSource.INSTANCE; // Luminol - Correct thread unsafe random sources
+ 
+     static {
+         instance = new CraftItemFactory();

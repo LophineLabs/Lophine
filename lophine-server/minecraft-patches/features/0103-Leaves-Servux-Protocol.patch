@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 3 Aug 2025 15:19:23 +0800
+Subject: [PATCH] Leaves: Servux Protocol
+
+Co-authored by: violetc <58360096+s-yh-china@users.noreply.github.com>
+As a part of : Leaves (https://github.com/LeavesMC/Leaves/blob/ea91106ae57fc4cc14e2e0225009cf9919072f7f/leaves-server/minecraft-patches/features/0090-Servux-Protocol.patch)
+Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
+
+diff --git a/net/minecraft/server/ServerTickRateManager.java b/net/minecraft/server/ServerTickRateManager.java
+index 8432d0ce22ddc9c9bfa98901e403697f40e53c99..9ec141359c4422c1574dac71a88b7f5043350901 100644
+--- a/net/minecraft/server/ServerTickRateManager.java
++++ b/net/minecraft/server/ServerTickRateManager.java
+@@ -139,4 +139,10 @@ public class ServerTickRateManager extends TickRateManager {
+         player.connection.send(ClientboundTickingStatePacket.from(this));
+         player.connection.send(ClientboundTickingStepPacket.from(this));
+     }
++
++    // Leaves start - servux
++    public long getRemainingSprintTicks() {
++        return remainingSprintTicks;
++    }
++    // Leaves end - servux
+ }
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index 7e362b71c629c75475016973a0181fce75a5156a..cb11830c2f399c9706b20f8104686dc0d9b686f9 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -2569,6 +2569,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+             this.server.updateEffectiveRespawnData();
+         }
+         // Paper end
++
++        org.leavesmc.leaves.protocol.servux.ServuxHudDataProtocol.refreshSpawnMetadata = true; // Leaves - servux
+     }
+ 
+     @Override

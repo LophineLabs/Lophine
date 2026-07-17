@@ -1,0 +1,80 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Fri, 1 May 2026 21:51:11 +0800
+Subject: [PATCH] Some optimizations from krypton
+
+A part of krypton's mixin:
+
+https://github.com/astei/krypton/blob/master/src/main/java/me/steinborn/krypton/mixin/shared/network/microopt/StringEncodingMixin.java and https://github.com/astei/krypton/blob/master/src/main/java/me/steinborn/krypton/mixin/shared/network/microopt/VarIntsMixin.java
+
+Original project license: https://github.com/astei/krypton/blob/master/LICENSE
+
+diff --git a/net/minecraft/network/Utf8String.java b/net/minecraft/network/Utf8String.java
+index 8b778744a5f01943976f180ad340a1cbce7db506..c46bf9940d4275ac09e8c94c8ae1019312fa90b7 100644
+--- a/net/minecraft/network/Utf8String.java
++++ b/net/minecraft/network/Utf8String.java
+@@ -33,6 +33,22 @@ public class Utf8String {
+     }
+ 
+     public static void write(final ByteBuf output, final CharSequence value, final int maxLength) {
++        // Luminol start - Krypton optimizations
++        if (true) {
++            if (value.length() > maxLength) {
++                throw new EncoderException("String too big (was " + value.length() + " characters, max " + maxLength + ")");
++            }
++            int utf8Bytes = ByteBufUtil.utf8Bytes(value);
++            int maxBytesPermitted = ByteBufUtil.utf8MaxBytes(maxLength);
++            if (utf8Bytes > maxBytesPermitted) {
++                throw new EncoderException("String too big (was " + utf8Bytes + " bytes encoded, max " + maxBytesPermitted + ")");
++            } else {
++                VarInt.write(output, utf8Bytes);
++                output.writeCharSequence(value, StandardCharsets.UTF_8);
++            }
++            return;
++        }
++        // Luminol end
+         if (value.length() > maxLength) {
+             throw new EncoderException("String too big (was " + value.length() + " characters, max " + maxLength + ")");
+         }
+diff --git a/net/minecraft/network/VarInt.java b/net/minecraft/network/VarInt.java
+index 1428ce80e8316a24cfca7b6aafdea8588a5a790e..73b01c4ac8c69f6a984c8f3947cdd2688cd70c14 100644
+--- a/net/minecraft/network/VarInt.java
++++ b/net/minecraft/network/VarInt.java
+@@ -60,7 +60,8 @@ public class VarInt {
+             int s = (value & 0x7F | 0x80) << 8 | (value >>> 7);
+             output.writeShort(s);
+         } else {
+-            writeSlow(output, value);
++            // writeSlow(output, value); // Luminol - Krypton optimizations
++            writeVarIntFull(output, value); // Luminol - Krypton optimizations
+         }
+         return output;
+     }
+@@ -74,4 +75,27 @@ public class VarInt {
+         output.writeByte(value);
+         return output;
+     }
++    // Luminol start - Krypton optimizations
++    private static void writeVarIntFull(ByteBuf buf, int value) {
++        // See https://steinborn.me/posts/performance/how-fast-can-you-write-a-varint/
++        if ((value & (0xFFFFFFFF << 7)) == 0) {
++            buf.writeByte(value);
++        } else if ((value & (0xFFFFFFFF << 14)) == 0) {
++            int w = (value & 0x7F | 0x80) << 8 | (value >>> 7);
++            buf.writeShort(w);
++        } else if ((value & (0xFFFFFFFF << 21)) == 0) {
++            int w = (value & 0x7F | 0x80) << 16 | ((value >>> 7) & 0x7F | 0x80) << 8 | (value >>> 14);
++            buf.writeMedium(w);
++        } else if ((value & (0xFFFFFFFF << 28)) == 0) {
++            int w = (value & 0x7F | 0x80) << 24 | (((value >>> 7) & 0x7F | 0x80) << 16)
++                    | ((value >>> 14) & 0x7F | 0x80) << 8 | (value >>> 21);
++            buf.writeInt(w);
++        } else {
++            int w = (value & 0x7F | 0x80) << 24 | ((value >>> 7) & 0x7F | 0x80) << 16
++                    | ((value >>> 14) & 0x7F | 0x80) << 8 | ((value >>> 21) & 0x7F | 0x80);
++            buf.writeInt(w);
++            buf.writeByte(value >>> 28);
++        }
++    }
++    // Luminol end
+ }

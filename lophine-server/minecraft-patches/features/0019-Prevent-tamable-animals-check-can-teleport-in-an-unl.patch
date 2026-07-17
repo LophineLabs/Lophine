@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 28 Jun 2026 19:10:30 +0800
+Subject: [PATCH] Prevent tamable animals check can teleport in an unloaded
+ chunk
+
+Based on the implementation of Canvas(https://github.com/CraftCanvasMC/Canvas/commit/af2aacb12cbccfd328dda4961167786f5d9dad53)
+
+We need to check canTeleport for TamableAnimal but this logic could do the check in another tick region itself, so we need to prevent that. But it needs to push off this check to schedule to the correct tickregion, which needs costly rewriting of this logic, so we could simply allow the read when the owner's position is loaded
+
+diff --git a/net/minecraft/world/entity/TamableAnimal.java b/net/minecraft/world/entity/TamableAnimal.java
+index 95ba821a895c7ea8fffcbf1df2e7b3c174463d9e..b0a01673224522552672b7c8c9aa219108e8010f 100644
+--- a/net/minecraft/world/entity/TamableAnimal.java
++++ b/net/minecraft/world/entity/TamableAnimal.java
+@@ -318,7 +318,8 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
+             return false;
+         }
+ 
+-        BlockState blockStateBelow = this.level().getBlockState(pos.below());
++        BlockState blockStateBelow = this.level().getBlockStateIfLoaded(pos.below()); // Luminol - Prevent tamable animals check can teleport in an unloaded chunk
++        if (blockStateBelow == null) return false;  // Luminol - Prevent tamable animals check can teleport in an unloaded chunk
+         if (!this.canFlyToOwner() && blockStateBelow.getBlock() instanceof LeavesBlock) {
+             return false;
+         }

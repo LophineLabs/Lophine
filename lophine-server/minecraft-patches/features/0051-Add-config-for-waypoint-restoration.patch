@@ -1,0 +1,161 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Fri, 1 May 2026 22:05:23 +0800
+Subject: [PATCH] Add config for waypoint restoration
+
+
+diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
+index 0fa14f60310b063f419620539fd40898627b46b9..9800ae1d3c49800b0c7342d43d696109b5b72cf4 100644
+--- a/net/minecraft/commands/Commands.java
++++ b/net/minecraft/commands/Commands.java
+@@ -267,7 +267,7 @@ public class Commands {
+         TimeCommand.register(this.dispatcher, context);
+         TitleCommand.register(this.dispatcher, context);
+         //TriggerCommand.register(this.dispatcher); // Folia - region threading - TODO later
+-        //WaypointCommand.register(this.dispatcher, context); // Folia - region threading - TODO later
++        if (me.earthme.luminol.config.modules.experiment.CommandConfig.waypointsAndWaypointCommand) WaypointCommand.register(this.dispatcher, context); // Folia - region threading - TODO later // Luminol - Restore waypoints
+         WeatherCommand.register(this.dispatcher);
+         WorldBorderCommand.register(this.dispatcher);
+         if (JvmProfiler.INSTANCE.isAvailable()) {
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index dc83fea1f4b8a1d2a82a52b88ee5c3157653f6f8..7840b0e00ab84eab016e971ac0c2693056fb0721 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -3117,8 +3117,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+             level.players().forEach(playerx -> playerx.connection.send(packet)); // Paper - per-world game rules
+         } else if (rule == GameRules.LOCATOR_BAR) {
+             // this.getAllLevels().forEach(level -> { // Paper - per-world game rules
+-                ServerWaypointManager waypointManager = level.getWaypointManager();
+-                waypointManager.locatorBarEnabled = (Boolean) value; // Paper - optimize ServerWaypointManager with locator bar disabled
++                ServerWaypointManager waypointManager = level.getWaypointManager(); // Luminol - Restore waypoints
++                //waypointManager.locatorBarEnabled = (Boolean) value; // Paper - optimize ServerWaypointManager with locator bar disabled // Luminol - Restore waypoints
+                 if ((Boolean)value) {
+                     level.players().forEach(waypointManager::updatePlayer);
+                 } else {
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index 402e2f01f2b3a8e9ce5c818f07581b4dab38fc26..a1c3f3e5c7c3f32e0bdead33ebd72c7601295291 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -690,7 +690,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+ 
+         this.sleepStatus = new SleepStatus();
+         this.gameEventDispatcher = new GameEventDispatcher(this);
+-        this.waypointManager = new ServerWaypointManager(this); // Paper - optimize ServerWaypointManager with locator bar disabled
++        //this.waypointManager = new ServerWaypointManager(this); // Paper - optimize ServerWaypointManager with locator bar disabled // Luminol - Restore waypoints
++        this.waypointManager = new me.earthme.luminol.utils.FoliaServerWaypointManager(this); // Luminol - Restore waypoints
+         this.environmentAttributes = EnvironmentAttributeSystem.builder().addDefaultLayers(this).build();
+         //this.updateSkyBrightness(); // Folia - region threading - delay until first tick
+         // Paper start - rewrite chunk system
+diff --git a/net/minecraft/world/waypoints/WaypointTransmitter.java b/net/minecraft/world/waypoints/WaypointTransmitter.java
+index 2866b750a28cc32c2913d3c1afee95f05956982c..f0b62f49382eb808dcd6b6b654b99b9f7763c342 100644
+--- a/net/minecraft/world/waypoints/WaypointTransmitter.java
++++ b/net/minecraft/world/waypoints/WaypointTransmitter.java
+@@ -76,7 +76,8 @@ public interface WaypointTransmitter extends Waypoint {
+         private final LivingEntity source;
+         private final Waypoint.Icon icon;
+         private final ServerPlayer receiver;
+-        private float lastAngle;
++        private volatile float lastAngle; // Luminol - Restore waypoints
++        private final java.util.UUID sourceUUID; // Luminol - Restore waypoints (prevent UUID mutation)
+ 
+         public EntityAzimuthConnection(final LivingEntity source, final Waypoint.Icon icon, final ServerPlayer receiver) {
+             this.source = source;
+@@ -84,6 +85,7 @@ public interface WaypointTransmitter extends Waypoint {
+             this.receiver = receiver;
+             Vec3 direction = receiver.position().subtract(source.position()).rotateClockwise90();
+             this.lastAngle = (float)Mth.atan2(direction.z(), direction.x());
++            this.sourceUUID = this.source.getUUID(); // Luminol - Restore waypoints (prevent UUID mutation)
+         }
+ 
+         @Override
+@@ -95,16 +97,16 @@ public interface WaypointTransmitter extends Waypoint {
+ 
+         @Override
+         public void connect() {
+-            this.receiver.connection.send(ClientboundTrackedWaypointPacket.addWaypointAzimuth(this.source.getUUID(), this.icon, this.lastAngle));
++            this.receiver.connection.send(ClientboundTrackedWaypointPacket.addWaypointAzimuth(this.sourceUUID, this.icon, this.lastAngle)); // Luminol - Restore waypoints (prevent UUID mutation)
+         }
+ 
+         @Override
+         public void disconnect() {
+-            this.receiver.connection.send(ClientboundTrackedWaypointPacket.removeWaypoint(this.source.getUUID()));
++            this.receiver.connection.send(ClientboundTrackedWaypointPacket.removeWaypoint(this.sourceUUID)); // Luminol - Restore waypoints (prevent UUID mutation)
+         }
+ 
+         @Override
+-        public void update() {
++        public synchronized void update() { // Luminol - Restore waypoints
+             Vec3 direction = this.receiver.position().subtract(this.source.position()).rotateClockwise90();
+             float currentAngle = (float)Mth.atan2(direction.z(), direction.x());
+             if (Mth.abs(currentAngle - this.lastAngle) > 0.008726646F) {
+@@ -118,27 +120,29 @@ public interface WaypointTransmitter extends Waypoint {
+         private final LivingEntity source;
+         private final Waypoint.Icon icon;
+         private final ServerPlayer receiver;
+-        private BlockPos lastPosition;
++        private volatile BlockPos lastPosition; // Luminol - Restore waypoints
++        private final java.util.UUID sourceUUID; // Luminol - Restore waypoints (prevent UUID mutation)
+ 
+         public EntityBlockConnection(final LivingEntity source, final Waypoint.Icon icon, final ServerPlayer receiver) {
+             this.source = source;
+             this.receiver = receiver;
+             this.icon = icon;
+             this.lastPosition = source.blockPosition();
++            this.sourceUUID = this.source.getUUID(); // Luminol - Restore waypoints (prevent UUID mutation)
+         }
+ 
+         @Override
+         public void connect() {
+-            this.receiver.connection.send(ClientboundTrackedWaypointPacket.addWaypointPosition(this.source.getUUID(), this.icon, this.lastPosition));
++            this.receiver.connection.send(ClientboundTrackedWaypointPacket.addWaypointPosition(this.sourceUUID, this.icon, this.lastPosition)); // Luminol - Restore waypoints (prevent UUID mutation)
+         }
+ 
+         @Override
+         public void disconnect() {
+-            this.receiver.connection.send(ClientboundTrackedWaypointPacket.removeWaypoint(this.source.getUUID()));
++            this.receiver.connection.send(ClientboundTrackedWaypointPacket.removeWaypoint(this.sourceUUID)); // Luminol - Restore waypoints (prevent UUID mutation)
+         }
+ 
+         @Override
+-        public void update() {
++        public synchronized void update() { // Luminol - Restore waypoints
+             BlockPos currentPosition = this.source.blockPosition();
+             if (currentPosition.distManhattan(this.lastPosition) > 0) {
+                 this.receiver.connection.send(ClientboundTrackedWaypointPacket.updateWaypointPosition(this.source.getUUID(), this.icon, currentPosition));
+@@ -161,13 +165,15 @@ public interface WaypointTransmitter extends Waypoint {
+         private final LivingEntity source;
+         private final Waypoint.Icon icon;
+         private final ServerPlayer receiver;
+-        private ChunkPos lastPosition;
++        private volatile ChunkPos lastPosition; // Luminol - Restore waypoints
++        private final java.util.UUID sourceUUID; // Luminol - Restore waypoints (prevent UUID mutation)
+ 
+         public EntityChunkConnection(final LivingEntity source, final Waypoint.Icon icon, final ServerPlayer receiver) {
+             this.source = source;
+             this.icon = icon;
+             this.receiver = receiver;
+             this.lastPosition = source.chunkPosition();
++            this.sourceUUID = this.source.getUUID(); // Luminol - Restore waypoints (prevent UUID mutation)
+         }
+ 
+         @Override
+@@ -177,16 +183,16 @@ public interface WaypointTransmitter extends Waypoint {
+ 
+         @Override
+         public void connect() {
+-            this.receiver.connection.send(ClientboundTrackedWaypointPacket.addWaypointChunk(this.source.getUUID(), this.icon, this.lastPosition));
++            this.receiver.connection.send(ClientboundTrackedWaypointPacket.addWaypointChunk(this.sourceUUID, this.icon, this.lastPosition)); // Luminol - Restore waypoints (prevent UUID mutable)
+         }
+ 
+         @Override
+         public void disconnect() {
+-            this.receiver.connection.send(ClientboundTrackedWaypointPacket.removeWaypoint(this.source.getUUID()));
++            this.receiver.connection.send(ClientboundTrackedWaypointPacket.removeWaypoint(this.sourceUUID)); // Luminol - Restore waypoints (prevent UUID mutable)
+         }
+ 
+         @Override
+-        public void update() {
++        public synchronized void update() { // Luminol - Restore waypoints
+             ChunkPos currentPosition = this.source.chunkPosition();
+             if (currentPosition.getChessboardDistance(this.lastPosition) > 0) {
+                 this.receiver.connection.send(ClientboundTrackedWaypointPacket.updateWaypointChunk(this.source.getUUID(), this.icon, currentPosition));

@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Tue, 30 Jun 2026 22:34:00 +0800
+Subject: [PATCH] Correct thread unsafe random sources
+
+
+diff --git a/net/minecraft/world/entity/npc/wanderingtrader/WanderingTraderSpawner.java b/net/minecraft/world/entity/npc/wanderingtrader/WanderingTraderSpawner.java
+index 01b3cda3da79abd30860eb33491ac00f9e958767..dd35e72757b1be1a73e67b272c138bb4e3b6336a 100644
+--- a/net/minecraft/world/entity/npc/wanderingtrader/WanderingTraderSpawner.java
++++ b/net/minecraft/world/entity/npc/wanderingtrader/WanderingTraderSpawner.java
+@@ -30,7 +30,7 @@ public class WanderingTraderSpawner implements CustomSpawner {
+     private static final int SPAWN_CHANCE_INCREASE = 25;
+     private static final int SPAWN_ONE_IN_X_CHANCE = 10;
+     private static final int NUMBER_OF_SPAWN_ATTEMPTS = 10;
+-    private final RandomSource random = RandomSource.create();
++    private final RandomSource random = io.papermc.paper.threadedregions.util.ThreadLocalRandomSource.INSTANCE; // Luminol - Correct thread unsafe random sources
+     private final SavedDataStorage savedDataStorage;
+     // Folia - moved to global data
+ 
+diff --git a/net/minecraft/world/level/block/entity/EnchantingTableBlockEntity.java b/net/minecraft/world/level/block/entity/EnchantingTableBlockEntity.java
+index 22b9f70f76ff8f592359e958fa439e9806a29fcc..818598ed4e498bf3f177faac03336097b41915ee 100644
+--- a/net/minecraft/world/level/block/entity/EnchantingTableBlockEntity.java
++++ b/net/minecraft/world/level/block/entity/EnchantingTableBlockEntity.java
+@@ -28,7 +28,7 @@ public class EnchantingTableBlockEntity extends BlockEntity implements Nameable
+     public float rot;
+     public float oRot;
+     public float tRot;
+-    private static final RandomSource RANDOM = RandomSource.create();
++    private static final RandomSource RANDOM = io.papermc.paper.threadedregions.util.ThreadLocalRandomSource.INSTANCE; // Luminol - Correct thread unsafe random sources
+     private @Nullable Component name;
+ 
+     public EnchantingTableBlockEntity(final BlockPos worldPosition, final BlockState blockState) {

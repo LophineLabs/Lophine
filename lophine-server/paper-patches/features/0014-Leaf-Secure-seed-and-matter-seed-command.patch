@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sat, 18 Apr 2026 10:31:41 +0800
+Subject: [PATCH] Leaf Secure seed and matter seed command
+
+As part of: Leaf
+Licensed under: GPL-3.0 (https://github.com/Winds-Studio/Leaf/blob/7f3e240bbe0970683c40279a7a65f0fde47503b6/licenses/GPL-3.0.txt)
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftChunk.java b/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
+index 10b351d8bd6b0e117ecbe961ae2f101686a38fe4..fb89f6ef3adac92639d999f173383c3eeb8fabab 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
+@@ -191,7 +191,12 @@ public class CraftChunk implements Chunk {
+     @Override
+     public boolean isSlimeChunk() {
+         // 987234911L is taken from Slime when seeing if a slime can spawn in a chunk
+-        return this.level.paperConfig().entities.spawning.allChunksAreSlimeChunks || WorldgenRandom.seedSlimeChunk(this.getX(), this.getZ(), this.getWorld().getSeed(), level.spigotConfig.slimeSeed).nextInt(10) == 0; // Paper
++        // Leaf start - Matter - Secure Seed
++        boolean isSlimeChunk = me.earthme.luminol.config.modules.function.SecureSeedConfig.enabled
++            ? level.getChunk(this.getX(), this.getZ()).isSlimeChunk()
++            : WorldgenRandom.seedSlimeChunk(this.getX(), this.getZ(), this.getWorld().getSeed(), level.spigotConfig.slimeSeed).nextInt(10) == 0; // Paper
++        return this.level.paperConfig().entities.spawning.allChunksAreSlimeChunks || isSlimeChunk;
++        // Leaf end - Matter - Secure Seed
+     }
+ 
+     @Override
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 606235c9af5afce55be8bbc963e8af7291a050c5..8cfa8a077ffc4b297f802a63f1d414ad004e45b7 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -1261,7 +1261,11 @@ public final class CraftServer implements Server {
+             .orElse(null);
+         RegistryAccess contextRegistryAccess = registryAccess;
+         if (worldGenSettings == null) {
+-            WorldOptions worldOptions = new WorldOptions(creator.seed(), creator.generateStructures(), creator.bonusChest());
++            // Leaf start - Matter - Secure Seed
++            WorldOptions worldOptions = me.earthme.luminol.config.modules.function.SecureSeedConfig.enabled
++                    ? new WorldOptions(creator.seed(), su.plo.matter.Globals.createRandomWorldSeed(), creator.generateStructures(), false)
++                    : new WorldOptions(creator.seed(), creator.generateStructures(), creator.bonusChest());
++            // Leaf end - Matter - Secure Seed
+ 
+             String flatGenSettings = creator.generatorSettings();
+             if (flatGenSettings.isEmpty()) {

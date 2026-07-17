@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Bacteriawa <A3167717663@hotmail.com>
+Date: Wed, 6 May 2026 18:27:15 +0800
+Subject: [PATCH] Add tpsbar with chunkhot membar and region bar
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftChunk.java b/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
+index f020f310c4bca49a23de91bea72ccd9941c0b03c..10b351d8bd6b0e117ecbe961ae2f101686a38fe4 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
+@@ -406,4 +406,12 @@ public class CraftChunk implements Chunk {
+     static {
+         Arrays.fill(FULL_LIGHT, (byte) 0xFF);
+     }
++
++    // KioCG start - ChunkHot
++    @Override
++    public long getChunkHotAvg() {
++        final net.minecraft.world.level.chunk.LevelChunk target = this.level.getChunkIfLoaded(this.x,this.z);
++        return target == null ? -1 : target.getChunkHot().getAverage();
++    }
++    // KioCG end
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index a3f2e97c1e0c9c2add3c5efd5a5cebe84ace78bf..d47c1b8cc17eb13669fbe21670c3a6eaaa995844 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -3396,4 +3396,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+         super.knockback(strength, directionX, directionZ);
+         this.entity.hurtMarked = true;
+     }
++
++    // KioCG start - ChunkHot
++    @Override
++    public long getNearbyChunkHot() {
++        return this.getHandle().getNearbyChunkHot();
++    }
++    // KioCG end
+ }

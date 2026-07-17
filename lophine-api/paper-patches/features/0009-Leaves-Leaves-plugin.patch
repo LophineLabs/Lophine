@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Wed, 22 Apr 2026 12:59:08 +0800
+Subject: [PATCH] Leaves: Leaves plugin
+
+Co-authored by: MC_XiaoHei <xiaohei.xor7@outlook.com>
+As part of: Leaves (https://github.com/HyacinthHaru/Leaves/blob/90080d238e2fcfc14a9293150dc351a4f0f696e6/leaves-api/paper-patches/features/0009-Leaves-Plugin.patch)
+Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
+
+diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
+index 8a24b84db656da4cec59e9bccac306467c8155b0..0ac1e049fad85de8365380b03e60d915ee643f16 100644
+--- a/src/main/java/org/bukkit/Bukkit.java
++++ b/src/main/java/org/bukkit/Bukkit.java
+@@ -3046,4 +3046,10 @@ public final class Bukkit {
+     public static void restart() {
+         server.restart();
+     }
++
++    // Leaves start - Feature API
++    public static org.leavesmc.leaves.plugin.FeatureManager getFeatureManager() {
++        return server.getFeatureManager();
++    }
++    // Leaves end - Feature API
+ }
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index 42335e351e0cb4f82f46501503a15349f8a82e1b..cd5f47f6d7fa15c1533724673b8bc2c75394795b 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -2781,6 +2781,10 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+     me.earthme.luminol.api.config.LuminolConfigsInstance getLuminolConfigs(String name);
+     // Luminol end - Luminol Config API
+ 
++    // Leaves start - Feature API
++    org.leavesmc.leaves.plugin.FeatureManager getFeatureManager();
++    // Leaves End - Feature API
++
+     // Folia start - region TPS API
+     /**
+      * Gets the TPS from the region which owns the specified location, or {@code null} if no region owns

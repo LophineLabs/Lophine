@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Thu, 12 Jun 2025 08:00:15 +0800
+Subject: [PATCH] Purpur: Lobotomize stuck villagers
+
+Co-authored by: William Blake Galbreath <Blake.Galbreath@GMail.com>
+As part of: Purpur (https://github.com/PurpurMC/Purpur/blob/09f547de09fc5d886f18f6d99ff389289766ec9d/purpur-server/minecraft-patches/features/0001-Ridables.patch)
+Licensed under: MIT (https://github.com/PurpurMC/Purpur/blob/09f547de09fc5d886f18f6d99ff389289766ec9d/LICENSE)
+
+diff --git a/src/main/java/org/bukkit/entity/Villager.java b/src/main/java/org/bukkit/entity/Villager.java
+index a2024b5dda030a7724c13b2446224903ae837339..71f34a40b136f7f08a4820056c00692b986f63bd 100644
+--- a/src/main/java/org/bukkit/entity/Villager.java
++++ b/src/main/java/org/bukkit/entity/Villager.java
+@@ -405,4 +405,13 @@ public interface Villager extends AbstractVillager {
+      * Demand is still updated even if all events are canceled.
+      */
+     public void restock();
++    // Purpur start
++
++    /**
++     * Check if villager is currently lobotomized
++     *
++     * @return True if lobotomized
++     */
++    boolean isLobotomized();
++    // Purpur end
+ }

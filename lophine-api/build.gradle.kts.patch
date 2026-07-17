@@ -1,27 +1,52 @@
---- a/luminol-api/build.gradle.kts
-+++ b/luminol-api/build.gradle.kts
-@@ -107,20 +_,24 @@
+--- a/folia-api/build.gradle.kts
++++ b/folia-api/build.gradle.kts
+@@ -53,6 +_,7 @@
+     api("org.apache.logging.log4j:log4j-api:$log4jVersion")
+     api("org.slf4j:slf4j-api:$slf4jVersion")
+     api("com.mojang:brigadier:1.3.10")
++    api("io.sentry:sentry:8.0.0-rc.2") // Pufferfish
+ 
+     // Deprecate bungeecord-chat in favor of adventure
+     api("net.md-5:bungeecord-chat:$bungeeCordChatVersion") {
+@@ -105,17 +_,21 @@
+         java {
              srcDir(generatedDir)
              srcDir(file("../paper-api/src/main/java"))
-             srcDir(file("../folia-api/src/main/java"))
-+            srcDir(file("../luminol-api/src/main/java"))
++            srcDir(file("../folia-api/src/main/java"))
          }
          resources {
              srcDir(file("../paper-api/src/main/resources"))
-             srcDir(file("../folia-api/src/main/resources"))
-+            srcDir(file("../luminol-api/src/main/resources"))
++            srcDir(file("../folia-api/src/main/resources"))
          }
      }
      test {
          java {
              srcDir(file("../paper-api/src/test/java"))
-             srcDir(file("../folia-api/src/test/java"))
-+            srcDir(file("../luminol-api/src/test/java"))
++            srcDir(file("../folia-api/src/test/java"))
          }
          resources {
              srcDir(file("../paper-api/src/test/resources"))
-             srcDir(file("../folia-api/src/test/resources"))
-+            srcDir(file("../luminol-api/src/test/resources"))
++            srcDir(file("../folia-api/src/test/resources"))
          }
      }
  }
+@@ -259,3 +_,19 @@
+ tasks.check {
+     dependsOn(scanJarForBadCalls)
+ }
++
++// Pufferfish Start
++tasks.withType<JavaCompile> {
++    val compilerArgs = options.compilerArgs
++    compilerArgs.add("--add-modules=jdk.incubator.vector")
++}
++// Pufferfish End
++
++// Lophine start - Hide unnecessary warnings
++tasks.withType<JavaCompile> {
++    val compilerArgs = options.compilerArgs
++    compilerArgs.add("-Xlint:-module")
++    compilerArgs.add("-Xlint:-removal")
++    compilerArgs.add("-Xlint:-dep-ann")
++}
++// Lophine end

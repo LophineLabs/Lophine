@@ -1,0 +1,287 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 28 Jun 2026 19:02:01 +0800
+Subject: [PATCH] Fixes around entity brain and memories
+
+
+diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
+index 3b1c3e84ab24b6e3a0e4d129b3617b393b6d6651..9c8e8de53cbbd87ac7cb8483bd3c1af3fcf66b6e 100644
+--- a/net/minecraft/world/entity/Mob.java
++++ b/net/minecraft/world/entity/Mob.java
+@@ -299,6 +299,11 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
+         if (Objects.equals(currentTarget, target)) {
+             return false;
+         }
++        // Luminol start - Fix off-region targeting
++        if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(target)) {
++            return false;
++        }
++        // Luminol end
+         LivingEntity originalTarget = target;
+         target = asValidTarget(target);
+         if (reason != null) {
+diff --git a/net/minecraft/world/entity/ai/Brain.java b/net/minecraft/world/entity/ai/Brain.java
+index e097bc1268b4050e3948413c52dea69950858458..27894e2935e2afee8190708def4be3b00f922f64 100644
+--- a/net/minecraft/world/entity/ai/Brain.java
++++ b/net/minecraft/world/entity/ai/Brain.java
+@@ -383,7 +383,7 @@ public class Brain<E extends LivingEntity> {
+     }
+ 
+     public void tick(final ServerLevel level, final E body) {
+-        this.forgetOutdatedMemories();
++        this.forgetOutdatedMemories(body); // Luminol - Add config to force clean entity memory that don't belong to current tick region
+         this.tickSensors(level, body);
+         this.startEachNonRunningBehavior(level, body);
+         this.tickEachRunningBehavior(level, body);
+@@ -395,8 +395,8 @@ public class Brain<E extends LivingEntity> {
+         }
+     }
+ 
+-    private void forgetOutdatedMemories() {
+-        this.memories.values().forEach(MemorySlot::tick);
++    private void forgetOutdatedMemories(E body) { // Luminol - Add config to force clean entity memory that don't belong to current tick region
++        this.memories.values().forEach(slot -> slot.tick(body)); // Luminol - Add config to force clean entity memory that don't belong to current tick region
+     }
+ 
+     public void stopAll(final ServerLevel level, final E body) {
+diff --git a/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java b/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java
+index f744ecd20dc70786311a7162b52aa4ceca0717db..aa60fbfbe7283f1ed9cf5343d59d1222380857dd 100644
+--- a/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java
++++ b/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java
+@@ -81,6 +81,11 @@ public class BehaviorUtils {
+     public static void setWalkAndLookTargetMemories(
+         final LivingEntity walker, final PositionTracker target, final float speedModifier, final int closeEnoughDistance
+     ) {
++        // Luminol - Do not set walk target if target position is out of current tick region
++        if (!target.checkThread(walker.level())) {
++            return;
++        }
++        // Luminol end
+         WalkTarget walkTarget = new WalkTarget(target, speedModifier, closeEnoughDistance);
+         walker.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, target);
+         walker.getBrain().setMemory(MemoryModuleType.WALK_TARGET, walkTarget);
+diff --git a/net/minecraft/world/entity/ai/behavior/BlockPosTracker.java b/net/minecraft/world/entity/ai/behavior/BlockPosTracker.java
+index 68251875edfa47ac34c64f99510998ad4bbb14b4..d83b353395bad7c6c41dfaa24018fd207904d995 100644
+--- a/net/minecraft/world/entity/ai/behavior/BlockPosTracker.java
++++ b/net/minecraft/world/entity/ai/behavior/BlockPosTracker.java
+@@ -37,4 +37,11 @@ public class BlockPosTracker implements PositionTracker {
+     public String toString() {
+         return "BlockPosTracker{blockPos=" + this.blockPos + ", centerPosition=" + this.centerPosition + "}";
+     }
++
++    // Luminol start - Fix a series issue around entity memory typed GlobalPos and WalkTarget
++    @Override
++    public boolean checkThread(net.minecraft.world.level.Level currOwnedByLevel) {
++        return ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(currOwnedByLevel, this.blockPos);
++    }
++    // Luminol end
+ }
+diff --git a/net/minecraft/world/entity/ai/behavior/EntityTracker.java b/net/minecraft/world/entity/ai/behavior/EntityTracker.java
+index 3ac52b025ac3e1a3f9135b8e593a385a847afe0f..29c13f18cff52e9950e8932c75cb12fb02f952cb 100644
+--- a/net/minecraft/world/entity/ai/behavior/EntityTracker.java
++++ b/net/minecraft/world/entity/ai/behavior/EntityTracker.java
+@@ -55,4 +55,11 @@ public class EntityTracker implements PositionTracker {
+     public String toString() {
+         return "EntityTracker for " + this.entity;
+     }
++
++    // Luminol start - Fix a series issue around entity memory typed GlobalPos and WalkTarget
++    @Override
++    public boolean checkThread(net.minecraft.world.level.Level currOwnedByLevel) {
++        return ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(this.entity);
++    }
++    // Luminol end
+ }
+diff --git a/net/minecraft/world/entity/ai/behavior/PositionTracker.java b/net/minecraft/world/entity/ai/behavior/PositionTracker.java
+index ce6cf5ecfb190428e3ef9b7dd39c98e3d27a7b9d..3334da2236fbe90cbdc3e67884f9c6ed80ac0f56 100644
+--- a/net/minecraft/world/entity/ai/behavior/PositionTracker.java
++++ b/net/minecraft/world/entity/ai/behavior/PositionTracker.java
+@@ -10,4 +10,7 @@ public interface PositionTracker {
+     BlockPos currentBlockPosition();
+ 
+     boolean isVisibleBy(final LivingEntity body);
++
++
++    boolean checkThread(net.minecraft.world.level.Level currOwnedByLevel); // Luminol - Fix a series issue around entity memory typed GlobalPos and WalkTarget
+ }
+diff --git a/net/minecraft/world/entity/ai/behavior/SleepInBed.java b/net/minecraft/world/entity/ai/behavior/SleepInBed.java
+index 16017d819c28b077f732e2ef571eac179d24e323..7a598aa1a0963fda3302946a30d0330c341da74f 100644
+--- a/net/minecraft/world/entity/ai/behavior/SleepInBed.java
++++ b/net/minecraft/world/entity/ai/behavior/SleepInBed.java
+@@ -57,6 +57,11 @@ public class SleepInBed extends Behavior<LivingEntity> {
+             }
+         }
+ 
++        // Luminol Start - Prevent off-tick-region chunk operations
++        if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(level, target.pos())) {
++            return false;
++        }
++        // Luminol End
+         BlockState blockState = level.getBlockStateIfLoaded(target.pos()); // Paper - Prevent sync chunk loads when villagers try to find beds
+         if (blockState == null) return false; // Paper - Prevent sync chunk loads when villagers try to find beds
+         return target.pos().closerToCenterThan(body.position(), 2.0) && blockState.is(BlockTags.BEDS) && !blockState.getValue(BedBlock.OCCUPIED);
+diff --git a/net/minecraft/world/entity/ai/memory/MemorySlot.java b/net/minecraft/world/entity/ai/memory/MemorySlot.java
+index 88a89b4c72cc99dc89d3f3cc928b2dfda4125759..3b51a44ab700740047c9e725547ceec65c0c80b1 100644
+--- a/net/minecraft/world/entity/ai/memory/MemorySlot.java
++++ b/net/minecraft/world/entity/ai/memory/MemorySlot.java
+@@ -13,7 +13,7 @@ public class MemorySlot<T> {
+         this.timeToLive = timeToLive;
+     }
+ 
+-    public void tick() {
++    public void tick(net.minecraft.world.entity.Entity owner) { // Luminol - Add config to force clean entity memory that don't belong to current tick region
+         if (this.hasValue() && this.canExpire()) {
+             if (this.hasExpired()) {
+                 this.clear();
+@@ -21,6 +21,41 @@ public class MemorySlot<T> {
+                 this.timeToLive--;
+             }
+         }
++        // Luminol start - Add config to force clean entity memory that don't belong to current tick region
++        final net.minecraft.world.level.Level ownerLevel = owner.level();
++
++        // type: entity
++        if (me.earthme.luminol.config.modules.fixes.ForceCleanupEntityBrainMemoryConfig.enabledForEntity && this.value instanceof net.minecraft.world.entity.Entity entity) {
++            if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(entity)) {
++                this.clear();
++            }
++        }
++
++        // type: block_pos
++        if (me.earthme.luminol.config.modules.fixes.ForceCleanupEntityBrainMemoryConfig.enabledForBlockPos && this.value instanceof net.minecraft.core.BlockPos blockPos) {
++            if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(ownerLevel, blockPos)) {
++                this.clear();
++            }
++        }
++
++
++        //type: position_tracker and walk_target
++        if (me.earthme.luminol.config.modules.fixes.ForceCleanupEntityBrainMemoryConfig.enabledForPositionTracker) {
++            net.minecraft.world.entity.ai.behavior.PositionTracker tracker = null;
++
++            if (value instanceof net.minecraft.world.entity.ai.behavior.PositionTracker positionTracker) {
++                tracker = positionTracker;
++            }
++
++            if (value instanceof net.minecraft.world.entity.ai.memory.WalkTarget walkTarget) {
++                tracker = walkTarget.getTarget();
++            }
++
++            if (tracker != null && !tracker.checkThread(owner.level())) {
++                this.clear();
++            }
++        }
++        // Luminol end
+     }
+ 
+     public static <T> MemorySlot<T> create() {
+diff --git a/net/minecraft/world/entity/ai/navigation/FlyingPathNavigation.java b/net/minecraft/world/entity/ai/navigation/FlyingPathNavigation.java
+index e44814cfb6afb594456b8215bd13a92e93de2c85..c18e2071c699d9c5f4d46b7a58191df4f4d8ab5d 100644
+--- a/net/minecraft/world/entity/ai/navigation/FlyingPathNavigation.java
++++ b/net/minecraft/world/entity/ai/navigation/FlyingPathNavigation.java
+@@ -60,6 +60,17 @@ public class FlyingPathNavigation extends PathNavigation {
+ 
+             if (!this.isDone()) {
+                 Vec3 target = this.path.getNextEntityPos(this.mob);
++                // Luminol - Recompute path when path finding out of current tick region
++                if (me.earthme.luminol.config.modules.fixes.PathfindingFixesConfig.breakDownPathfindingWhenOutOfRegion) {
++                    // we assume that:
++                    // 1. The code above doesn't touch the 'main thread context' with the position from 'this.path'
++                    // 2. The pathfinder could correctly recompute or discard the incorrect target position and this situation is happening rarely
++                    if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(this.mob.level(), target)) {
++                        this.hasDelayedRecomputation = true;
++                        return;
++                    }
++                }
++                // Luminol end
+                 this.mob.getMoveControl().setWantedPosition(target.x, target.y, target.z, this.speedModifier);
+             }
+         }
+diff --git a/net/minecraft/world/entity/ai/navigation/PathNavigation.java b/net/minecraft/world/entity/ai/navigation/PathNavigation.java
+index 2ea1ec39a37899ae1510d0036aa670e758077537..4c727e4f224f6a31a4cd9d024bdcfaf0fa1bc0e5 100644
+--- a/net/minecraft/world/entity/ai/navigation/PathNavigation.java
++++ b/net/minecraft/world/entity/ai/navigation/PathNavigation.java
+@@ -188,6 +188,18 @@ public abstract class PathNavigation {
+             }
+         }
+         // Paper end - EntityPathfindEvent
++        // Luminol start - Do not path find for targets out of current region
++        if (me.earthme.luminol.config.modules.fixes.PathfindingFixesConfig.doNotPathfindToNotOwnedTargets) {
++            // filter the targets not owned by current region
++            targets = new java.util.HashSet<>(targets); // well no idea about how to determine if this should be copied to a modifiable one
++            targets.removeIf(pos -> !ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(this.mob.level(), pos));
++
++            // return if no available (observe the logic in the first if block)
++            if (targets.isEmpty()) {
++                return null;
++            }
++        }
++        // Luminol end
+         ProfilerFiller profiler = Profiler.get();
+         profiler.push("pathfind");
+         BlockPos fromPos = above ? this.mob.blockPosition().above() : this.mob.blockPosition();
+@@ -286,6 +298,17 @@ public abstract class PathNavigation {
+ 
+             if (!this.isDone()) {
+                 Vec3 target = this.path.getNextEntityPos(this.mob);
++                // Luminol - Recompute path when path finding out of current tick region
++                if (me.earthme.luminol.config.modules.fixes.PathfindingFixesConfig.breakDownPathfindingWhenOutOfRegion) {
++                    // we assume that:
++                    // 1. The code above doesn't touch the 'main thread context' with the position from 'this.path'
++                    // 2. The pathfinder could correctly recompute or discard the incorrect target position and this situation is happening rarely
++                    if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(this.mob.level(), target)) {
++                        this.hasDelayedRecomputation = true;
++                        return;
++                    }
++                }
++                // Luminol end
+                 this.mob.getMoveControl().setWantedPosition(target.x, this.getGroundY(target), target.z, this.speedModifier);
+             }
+         }
+diff --git a/net/minecraft/world/entity/animal/allay/AllayAi.java b/net/minecraft/world/entity/animal/allay/AllayAi.java
+index c3667e7997551e0f5ce63bc6ee890082d1431400..2e2458535a8ec542d6371ceba2fff1260773c7f5 100644
+--- a/net/minecraft/world/entity/animal/allay/AllayAi.java
++++ b/net/minecraft/world/entity/animal/allay/AllayAi.java
+@@ -112,6 +112,17 @@ public class AllayAi {
+         Optional<GlobalPos> likedNoteblockPos = brain.getMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION);
+         if (likedNoteblockPos.isPresent()) {
+             GlobalPos position = likedNoteblockPos.get();
++            // Luminol start - Do not like item if they were out of current tickregion
++            final Level targetLevel = allay.level().getServer().getLevel(position.dimension());
++            final BlockPos targetPos = position.pos();
++
++            // thread checks
++            if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(targetLevel, targetPos)) {
++                brain.eraseMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION); // The memory value is not being belong to current tick region anymore
++                return Optional.empty();
++            }
++            // Luminol end
++
+             if (shouldDepositItemsAtLikedNoteblock(allay, brain, position)) {
+                 return Optional.of(new BlockPosTracker(position.pos().above()));
+             }
+diff --git a/net/minecraft/world/entity/animal/sniffer/Sniffer.java b/net/minecraft/world/entity/animal/sniffer/Sniffer.java
+index d5394ae7ce56555ad21aeafb2d78c291c62e2988..a2873d8bbfa3e04678bc31637222b3a10cd6fedd 100644
+--- a/net/minecraft/world/entity/animal/sniffer/Sniffer.java
++++ b/net/minecraft/world/entity/animal/sniffer/Sniffer.java
+@@ -279,8 +279,18 @@ public class Sniffer extends Animal {
+ 
+     private boolean canDig(final BlockPos position) {
+         return this.level().getBlockState(position).is(BlockTags.SNIFFER_DIGGABLE_BLOCK)
+-            && this.getExploredPositions().noneMatch(explored -> GlobalPos.of(this.level().dimension(), position).equals(explored))
+-            && Optional.ofNullable(this.getNavigation().createPath(position, 1)).map(Path::canReach).orElse(false);
++            && this.getExploredPositions().noneMatch(explored -> { // Luminol start - Do not pathfind out of tickregion
++            // thread checks
++            final Level targetLevel = net.minecraft.server.MinecraftServer.getServer().getLevel(explored.dimension());
++            final BlockPos targetPos = explored.pos();
++
++            if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(targetLevel, targetPos)) {
++                return false;
++            }
++
++            return GlobalPos.of(this.level().dimension(), position).equals(explored); // Original logic
++        }) // Luminol end
++        && Optional.ofNullable(this.getNavigation().createPath(position, 1)).map(Path::canReach).orElse(false); // Luminol - Do not pathfind out of tickregion - diff on change
+     }
+ 
+     private void dropSeed() {

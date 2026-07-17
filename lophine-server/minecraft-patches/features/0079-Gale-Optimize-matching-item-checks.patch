@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Thu, 4 Jun 2026 17:34:43 +0800
+Subject: [PATCH] Gale: Optimize matching item checks
+
+License: GPL-3.0-only (https://www.gnu.org/licenses/gpl-3.0.html)
+Gale - https://github.com/GaleMC/Gale
+
+diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
+index 5cbfc9e178b5823f92c0afedb1b0248d34c96292..88a5453ac9e3415b5b5c5e81899b9b13627ca817 100644
+--- a/net/minecraft/world/item/ItemStack.java
++++ b/net/minecraft/world/item/ItemStack.java
+@@ -841,11 +841,11 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, Chang
+     }
+ 
+     public static boolean isSameItem(final ItemStack a, final ItemStack b) {
+-        return a.is(b.getItem());
++        return a == b || a.is(b.getItem()); // Gale - optimize identical item checks
+     }
+ 
+     public static boolean isSameItemSameComponents(final ItemStack a, final ItemStack b) {
+-        return a.is(b.getItem()) && (a.isEmpty() && b.isEmpty() || Objects.equals(a.components, b.components));
++        return a == b || a.is(b.getItem()) && (a.isEmpty() && b.isEmpty() || Objects.equals(a.components, b.components)); // Gale - optimize identical item checks
+     }
+ 
+     public static boolean matchesIgnoringComponents(final ItemStack a, final ItemStack b, final Predicate<DataComponentType<?>> ignoredPredicate) {

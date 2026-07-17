@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sat, 18 Apr 2026 09:09:10 +0800
+Subject: [PATCH] Add config for server mod name
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/network/PaperServerListPingEventImpl.java b/src/main/java/com/destroystokyo/paper/network/PaperServerListPingEventImpl.java
+index 13b03dab807c5d83e086993af705e1d9a2676b4d..6776af9928b3f24dd18bb3a19ad85629e42a1b5d 100644
+--- a/src/main/java/com/destroystokyo/paper/network/PaperServerListPingEventImpl.java
++++ b/src/main/java/com/destroystokyo/paper/network/PaperServerListPingEventImpl.java
+@@ -14,7 +14,7 @@ class PaperServerListPingEventImpl extends PaperServerListPingEvent {
+ 
+     PaperServerListPingEventImpl(MinecraftServer server, StatusClient client, int protocolVersion, @Nullable CachedServerIcon icon) {
+         super(client, server.motd(), server.getPlayerCount(), server.getMaxPlayers(),
+-                server.getServerModName() + ' ' + server.getServerVersion(), protocolVersion, icon);
++                me.earthme.luminol.config.modules.misc.ServerModNameConfig.fakeVanilla ? server.getServerVersion() : server.getServerModName() + ' ' + server.getServerVersion(), protocolVersion, icon);//Luminol - Fake vanilla mode
+         this.server = server;
+     }
+ 
