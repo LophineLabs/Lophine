@@ -1,14 +1,28 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Helvetica Volubi <suisuroru@blue-millennium.fun>
 Date: Wed, 2 Jul 2025 23:36:25 +0800
-Subject: [PATCH] Fix datapack command save function
+Subject: [PATCH] Add back read-only datapack command & Fix datapack command
+ save function
 
 
+diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
+index afbaf2116930d72ebb0c77745d02115abab14dc4..6823c41c08ca1a1baf9257fc861ae97bbcbe3a50 100644
+--- a/net/minecraft/commands/Commands.java
++++ b/net/minecraft/commands/Commands.java
+@@ -205,7 +205,7 @@ public class Commands {
+         if(me.earthme.luminol.config.modules.experiment.CommandConfig.data) { // Luminol - Config for data command
+         DataCommands.register(this.dispatcher); // Folia - region threading - TODO // Luminol - Config for data command
+         } // Luminol - Config for data command
+-        //DataPackCommand.register(this.dispatcher, context); // Folia - region threading - TODO
++        DataPackCommand.register(this.dispatcher, context); // Folia - region threading - TODO // Luminol - Add back read-only datapack command
+         //DebugCommand.register(this.dispatcher); // Folia - region threading - TODO
+         DefaultGameModeCommands.register(this.dispatcher);
+         //DialogCommand.register(this.dispatcher, context); // Folia - region threading - TODO
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index d2303ad91c9634cdbf599552a6bce7279a1f0e0a..4b6f961e695155db1d6cc86496491017bf3a6383 100644
+index d4e31bb829451a687bf567fd0357f46fd7d46902..4f292468194baae343eeb077362e51dcfb6c0df1 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -2460,6 +2460,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -2415,6 +2415,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          return this.reloadResources(packsToEnable, io.papermc.paper.event.server.ServerResourcesReloadedEvent.Cause.PLUGIN);
      }
  
@@ -25,42 +39,6 @@ index d2303ad91c9634cdbf599552a6bce7279a1f0e0a..4b6f961e695155db1d6cc86496491017
      public CompletableFuture<Void> reloadResources(
          final Collection<String> packsToEnable, final io.papermc.paper.event.server.ServerResourcesReloadedEvent.Cause cause
      ) {
-diff --git a/net/minecraft/server/commands/DataPackCommand.java b/net/minecraft/server/commands/DataPackCommand.java
-index 80d9bc3d680c30dae15064e0e8c3d1379ccd52e6..2bc9cf924d40d5d11935f73cf6d35442b0b0ba06 100644
---- a/net/minecraft/server/commands/DataPackCommand.java
-+++ b/net/minecraft/server/commands/DataPackCommand.java
-@@ -99,7 +99,7 @@ public class DataPackCommand {
-         dispatcher.register(
-             Commands.literal("datapack")
-                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
--                /*.then( // Luminol - Add back read-only datapack command
-+                .then( // Lophine - Fix datapack command save function
-                     Commands.literal("enable")
-                         .then(
-                             Commands.argument("name", StringArgumentType.string())
-@@ -146,11 +146,11 @@ public class DataPackCommand {
-                                 .suggests(SELECTED_PACKS)
-                                 .executes(c -> disablePack(c.getSource(), getPack(c, "name", false)))
-                         )
--                )*/ // Luminol - Add back read-only datapack command
-+                )
-                 .then(
-                     Commands.literal("list")
-                         .executes(c -> listPacks(c.getSource()))
--                        //.then(Commands.literal("available").executes(c -> listAvailablePacks(c.getSource()))) // Luminol - Add back read-only datapack command
-+                        .then(Commands.literal("available").executes(c -> listAvailablePacks(c.getSource()))) // Luminol - Add back read-only datapack command
-                         .then(Commands.literal("enabled").executes(c -> listEnabledPacks(c.getSource())))
-                 )
-                 .then(
-@@ -238,7 +238,7 @@ public class DataPackCommand {
-     }
- 
-     private static int listPacks(final CommandSourceStack source) {
--        return listEnabledPacks(source) ;// + listAvailablePacks(source); // Luminol - Add back read-only datapack command
-+        return listEnabledPacks(source) + listAvailablePacks(source); // Lophine - Fix datapack command save function
-     }
- 
-     private static int listAvailablePacks(final CommandSourceStack source) {
 diff --git a/net/minecraft/server/commands/ReloadCommand.java b/net/minecraft/server/commands/ReloadCommand.java
 index 80fef4277b9e986c17a4cb895e130726bdb63229..4bed8d0432508cbe5c0d1fc7d68052ec2af7260f 100644
 --- a/net/minecraft/server/commands/ReloadCommand.java
