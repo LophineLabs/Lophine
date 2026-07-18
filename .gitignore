@@ -13,4 +13,14 @@ build
 /paper-api
 /paper-api-generator
 
+# Ignore AI agent config directories
+.opencode/
+.mimocode/
+
+# Ignore generated/patch source directories
+folia-api/
+luminol-api/
+luminol-server/
+/lophine-server/src/minecraft/
+
 .idea/
