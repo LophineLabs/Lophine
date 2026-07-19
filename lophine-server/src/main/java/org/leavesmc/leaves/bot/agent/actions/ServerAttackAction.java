@@ -18,6 +18,7 @@
 package org.leavesmc.leaves.bot.agent.actions;
 
 import fun.bm.lophine.bot.action.gui.GuiRootNode;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.EntityHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.bot.ServerBot;
@@ -26,7 +27,7 @@ import org.leavesmc.leaves.entity.bot.actions.CraftAttackAction;
 public class ServerAttackAction extends AbstractTimerBotAction<ServerAttackAction> {
 
     public ServerAttackAction() {
-        GuiRootNode guiData = new GuiRootNode("Attack", "Attack an entity", null, "attack");
+        GuiRootNode guiData = new GuiRootNode("Attack", "Attack an entity", Items.DIAMOND_SWORD, "attack");
         super("attack", ServerAttackAction::new, guiData);
     }
 

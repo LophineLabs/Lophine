@@ -18,6 +18,7 @@
 package org.leavesmc.leaves.bot.agent.actions;
 
 import fun.bm.lophine.bot.action.gui.GuiRootNode;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.bot.ServerBot;
@@ -28,7 +29,7 @@ public class ServerSwimAction extends AbstractStateBotAction<ServerSwimAction> {
     public ServerSwimAction() {
         super("swim", ServerSwimAction::new);
 
-        this.guiData = new GuiRootNode("Swim", "Swim", null, "swim");
+        this.guiData = new GuiRootNode("Swim", "Swim", Items.WATER_BUCKET, "swim");
     }
 
     @Override

@@ -22,6 +22,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -34,7 +35,7 @@ import org.leavesmc.leaves.entity.bot.actions.CraftBreakBlockAction;
 public class ServerBreakBlockAction extends AbstractTimerBotAction<ServerBreakBlockAction> {
 
     public ServerBreakBlockAction() {
-        GuiRootNode guiRootNode = new GuiRootNode("Break", "Break a block", null, "break");
+        GuiRootNode guiRootNode = new GuiRootNode("Break", "Break a block", Items.DIAMOND_PICKAXE, "break");
         super("break", ServerBreakBlockAction::new, guiRootNode);
     }
 
