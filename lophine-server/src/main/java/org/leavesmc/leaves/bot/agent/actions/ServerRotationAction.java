@@ -58,9 +58,6 @@ public class ServerRotationAction extends AbstractBotAction<ServerRotationAction
                     }
                 })
                 .setOptional(true);
-
-        // TODO Later
-        //GuiRootNode guiRootNode = new GuiRootNode("rotation", "Set rotation", null, "rotation");
     }
 
     private float yaw = 0.0f;

@@ -18,6 +18,7 @@
 package org.leavesmc.leaves.bot.agent.actions;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.FinePositionResolver;
@@ -45,9 +46,6 @@ public class ServerLookAction extends AbstractBotAction<ServerLookAction> {
         this.addArgument("player", ArgumentTypes.player()).setOptional(true);
         this.fork(1);
         this.addArgument("location", ArgumentTypes.finePosition());
-
-        // TODO Later
-        //GuiRootNode guiRootNode = new GuiRootNode("look", "Look", null, "look");
     }
 
     @Override
