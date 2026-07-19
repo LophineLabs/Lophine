@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Wed, 8 Jul 2026 21:37:19 +0800
+Subject: [PATCH] Camellia: Fix teleport missing original rotation and velocity
+
+
+diff --git a/io/papermc/paper/threadedregions/TeleportUtils.java b/io/papermc/paper/threadedregions/TeleportUtils.java
+index 2a64a5b2cf049661fe3f5a22ddfa39979624f5ec..335e9775e0d9a61f0e9641aba691a3bdf3ac7f2b 100644
+--- a/io/papermc/paper/threadedregions/TeleportUtils.java
++++ b/io/papermc/paper/threadedregions/TeleportUtils.java
+@@ -41,7 +41,7 @@ public final class TeleportUtils {
+                             return;
+                         }
+                         (useFromRootVehicle ? realFrom.getRootVehicle() : realFrom).teleportAsync(
+-                            ((CraftWorld)loc.getWorld()).getHandle(), pos, null, null, null,
++                            ((CraftWorld)loc.getWorld()).getHandle(), pos, yaw, pitch, null, // Camellia - Fix teleport missing original rotation and velocity
+                             cause, teleportFlags, onComplete
+                         );
+                     },
+diff --git a/net/minecraft/server/commands/TeleportCommand.java b/net/minecraft/server/commands/TeleportCommand.java
+index f3b697eda0f47a2d1c64d7978ccdfb77fa226929..f657cda7c3856623f60f00f9fa44367ea771133c 100644
+--- a/net/minecraft/server/commands/TeleportCommand.java
++++ b/net/minecraft/server/commands/TeleportCommand.java
+@@ -247,10 +247,8 @@ public class TeleportCommand {
+             // Folia start - region threading
+             if (true) {
+                 Vec3 posFinal = new Vec3(x, y, z);
+-                //Float yawFinal = Float.valueOf(newYRot); // Luminol - fix teleport yaw issue
+-                //Float pitchFinal = Float.valueOf(newXRot); // Luminol - fix teleport yaw issue
+-                Float yawFinal = Float.valueOf(newYRot + victim.getYRot()); // Luminol - fix teleport yaw issue
+-                Float pitchFinal = Float.valueOf(newXRot + victim.getXRot()); // Luminol - fix teleport pitch issue
++                Float yawFinal = Float.valueOf(newYRot + victim.getYRot()); // Camellia - Fix teleport missing original rotation and velocity
++                Float pitchFinal = Float.valueOf(newXRot + victim.getXRot()); // Camellia - Fix teleport missing original rotation and velocity
+                 victim.getBukkitEntity().taskScheduler.schedule((Entity nmsEntity) -> {
+                     nmsEntity.stopRiding();
+                     nmsEntity.teleportAsync(
+diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
+index bc9ca4680c18f28b97c4d1afe202cc2fff320daf..08c3b8ee0ed015572823bb0218ac7522ec8945b3 100644
+--- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
++++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
+@@ -156,7 +156,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+                 }
+ 
+                 entity.teleportAsync(
+-                    checkWorld, to, null, null, null,
++                    checkWorld, to, null, null, entity.getDeltaMovement(), // Camellia - Fix teleport missing original rotation and velocity
+                     org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.ENDER_PEARL,
+                     // chunk could have been unloaded
+                     Entity.TELEPORT_FLAG_TELEPORT_PASSENGERS | Entity.TELEPORT_FLAG_LOAD_CHUNK,
