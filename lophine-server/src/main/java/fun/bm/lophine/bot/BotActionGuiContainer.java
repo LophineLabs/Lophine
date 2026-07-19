@@ -48,6 +48,7 @@ public class BotActionGuiContainer extends SimpleContainer {
     private static final int NEXT_PAGE_SLOT = 41;
 
     private static final ItemStack boarder = new ItemStack(Items.WHITE_STAINED_GLASS_PANE);
+    private static final ItemStack emptyActionPlaceholder = createEmptyActionPlaceholder();
 
     private final CraftBot bot;
     private final CraftPlayer player;
@@ -213,7 +214,7 @@ public class BotActionGuiContainer extends SimpleContainer {
         this.renderPagedItems(allTypes, (actionType, slot) -> {
             ItemStack item = actionType.toConfirmNode(null).getItemStack();
             if (item != null && !item.isEmpty()) {
-                this.setItem(slot, item.copy());
+                this.setItem(slot, item);
             }
         });
     }
@@ -223,7 +224,7 @@ public class BotActionGuiContainer extends SimpleContainer {
         this.renderPagedItems(allNodes, (node, slot) -> {
             ItemStack item = createNodeItemWithRunHint(node);
             if (item != null && !item.isEmpty()) {
-                this.setItem(slot, item.copy());
+                this.setItem(slot, item);
             }
         });
     }
@@ -235,7 +236,7 @@ public class BotActionGuiContainer extends SimpleContainer {
             this.renderPagedItems(childList, (node, slot) -> {
                 ItemStack item = createNodeItemWithRunHint(node);
                 if (item != null && !item.isEmpty()) {
-                    this.setItem(slot, item.copy());
+                    this.setItem(slot, item);
                 }
             });
         }
@@ -251,11 +252,24 @@ public class BotActionGuiContainer extends SimpleContainer {
             this.renderPagedItems(actionIndices, (index, slot) -> {
                 BotAction<?> action = this.bot.getAction(index);
                 ItemStack item = createActionItem(action, index);
-                if (item != null && !item.isEmpty()) {
-                    this.setItem(slot, item.copy());
+                if (!item.isEmpty()) {
+                    this.setItem(slot, item);
                 }
             });
+        } else {
+            // Show empty placeholder when no actions are active
+            this.setItem(CONTENT_SLOTS[0], emptyActionPlaceholder);
         }
+    }
+
+    private static ItemStack createEmptyActionPlaceholder() {
+        ItemStack item = new ItemStack(Items.STRUCTURE_VOID);
+        item.set(DataComponents.CUSTOM_NAME, Component.literal("§cNo active actions"));
+        item.set(DataComponents.LORE, new ItemLore(List.of(
+                Component.literal("§cThis bot has no running actions"),
+                Component.literal("§cUse START to add new actions")
+        )));
+        return item;
     }
 
     @Nullable
@@ -456,21 +470,6 @@ public class BotActionGuiContainer extends SimpleContainer {
     }
 
     /**
-     * Re-render the current view without resetting navigation state.
-     */
-    private void redisplayCurrentView() {
-        if (this.isSelectingActionType) {
-            this.showActionTypes();
-        } else if (this.selectedActionType == ActionType.ACTION_STOP) {
-            this.showCurrentBotActions();
-        } else if (this.currentNode != null) {
-            this.refreshContainer();
-        } else {
-            this.showRootNodes();
-        }
-    }
-
-    /**
      * Re-render the current view without resetting pagination state.
      * Used for page navigation to preserve currentPage value.
      */
@@ -608,13 +607,6 @@ public class BotActionGuiContainer extends SimpleContainer {
         this.fromRootLevelStack.clear();
         this.isSelectingActionType = false;
         this.currentPage = 0;
-
-        int actionSize = this.bot.getActionSize();
-        if (actionSize == 0) {
-            // No actions to stop, auto-navigate back to action type selection
-            this.showActionTypes();
-            return;
-        }
 
         this.renderBotActions();
         this.addNavigationButtons();

@@ -18,7 +18,6 @@
 package org.leavesmc.leaves.bot.agent.actions;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.FinePositionResolver;
