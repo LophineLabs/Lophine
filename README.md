@@ -32,7 +32,7 @@
 ## 📥 下载
 
 ### 稳定版本
-所有发布版本都可以在 [Releases](https://github.com/LuminolMC/Lophine/releases) 页面找到。
+所有发布版本都可以在 [Releases](https://github.com/LophineCraft/Lophine/releases) 页面找到。
 
 ### 开发版本
 如果您想体验最新功能，可以通过以下步骤自行构建。
@@ -41,7 +41,7 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/LuminolMC/Lophine.git
+git clone https://github.com/LophineCraft/Lophine.git
 cd Lophine
 
 # 应用补丁并构建 Paperclip JAR
@@ -98,8 +98,8 @@ dependencies {
 
 ### 获取帮助
 
-- 📋 [提交 Issue](https://github.com/LuminolMC/Lophine/issues)
-- 💬 [GitHub Discussions](https://github.com/LuminolMC/Lophine/discussions)
+- 📋 [提交 Issue](https://github.com/LophineCraft/Lophine/issues)
+- 💬 [GitHub Discussions](https://github.com/LophineCraft/Lophine/discussions)
 - 📖 [项目文档](./docs/)
 
 ## 🐛 问题反馈
