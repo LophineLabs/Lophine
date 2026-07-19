@@ -7,7 +7,7 @@
   
   ![Created At](https://img.shields.io/github/created-at/LophineCraft/Lophine?style=for-the-badge&color=blue)
   [![License](https://img.shields.io/github/license/LophineCraft/Lophine?style=for-the-badge&color=green)](LICENSE.md)
-  [![Issues](https://img.shields.io/github/issues/LophineCraft/Lophine?style=for-the-badge&color=orange)](https://github.com/LuminolMC/Lophine/issues)
+  [![Issues](https://img.shields.io/github/issues/LophineCraft/Lophine?style=for-the-badge&color=orange)](https://github.com/LophineCraft/Lophine/issues)
   
   ![Commit Activity](https://img.shields.io/github/commit-activity/w/LophineCraft/Lophine?style=for-the-badge&color=purple)
   ![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/LophineCraft/Lophine?style=for-the-badge&color=yellow)
@@ -32,7 +32,7 @@
 ## 📥 Download
 
 ### Stable Releases
-All release versions can be found on the [Releases](https://github.com/LuminolMC/Lophine/releases) page.
+All release versions can be found on the [Releases](https://github.com/LophineCraft/Lophine/releases) page.
 
 ### Development Builds
 If you want to experience the latest features, you can build it yourself following the steps below.
@@ -41,7 +41,7 @@ If you want to experience the latest features, you can build it yourself followi
 
 ```bash
 # Clone the project
-git clone https://github.com/LuminolMC/Lophine.git
+git clone https://github.com/LophineCraft/Lophine.git
 cd Lophine
 
 # Apply patches and build Paperclip JAR
@@ -99,8 +99,8 @@ dependencies {
 
 ### Get Help
 
-- 📋 [Submit Issues](https://github.com/LuminolMC/Lophine/issues)
-- 💬 [GitHub Discussions](https://github.com/LuminolMC/Lophine/discussions)
+- 📋 [Submit Issues](https://github.com/LophineCraft/Lophine/issues)
+- 💬 [GitHub Discussions](https://github.com/LophineCraft/Lophine/discussions)
 - 📖 [Project Documentation](./docs/)
 
 ## 🐛 Bug Reports
