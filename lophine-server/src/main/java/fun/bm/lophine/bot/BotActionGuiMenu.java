@@ -114,19 +114,11 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
                 return;
             }
 
-            // Handle ActionType selection
+            // Handle ActionType selection (with pagination offset)
             if (this.container.isSelectingActionType()) {
-                ActionType[] actionTypes = ActionType.values();
-                // Find which content slot was clicked and map to ActionType index
-                int contentIndex = -1;
-                for (int i = 0; i < BotActionGuiContainer.CONTENT_SLOTS.length; i++) {
-                    if (BotActionGuiContainer.CONTENT_SLOTS[i] == slotIndex) {
-                        contentIndex = i;
-                        break;
-                    }
-                }
-                if (contentIndex >= 0 && contentIndex < actionTypes.length) {
-                    this.container.selectActionType(actionTypes[contentIndex]);
+                ActionType clickedType = this.container.getActionTypeAtSlot(slotIndex);
+                if (clickedType != null) {
+                    this.container.selectActionType(clickedType);
                     this.refreshSlots();
                 }
                 return;

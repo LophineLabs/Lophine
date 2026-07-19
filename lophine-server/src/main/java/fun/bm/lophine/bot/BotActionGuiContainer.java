@@ -695,6 +695,35 @@ public class BotActionGuiContainer extends SimpleContainer {
     }
 
     /**
+     * Get the ActionType at a specific slot, accounting for pagination offset.
+     * Returns null if the slot is not a valid content slot or the index is out of bounds.
+     */
+    @Nullable
+    public ActionType getActionTypeAtSlot(int slot) {
+        if (!this.isSelectingActionType) {
+            return null;
+        }
+
+        int contentIndex = -1;
+        for (int i = 0; i < CONTENT_SLOTS.length; i++) {
+            if (CONTENT_SLOTS[i] == slot) {
+                contentIndex = i;
+                break;
+            }
+        }
+        if (contentIndex == -1) {
+            return null;
+        }
+
+        ActionType[] actionTypes = ActionType.values();
+        int actualIndex = this.currentPage * CONTENT_SLOTS.length + contentIndex;
+        if (actualIndex >= 0 && actualIndex < actionTypes.length) {
+            return actionTypes[actualIndex];
+        }
+        return null;
+    }
+
+    /**
      * Get the currently selected ActionType
      */
     @Nullable
