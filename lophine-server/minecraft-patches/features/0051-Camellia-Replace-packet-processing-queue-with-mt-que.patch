@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: NanaChiyo0721 <nanachiyo0721@163.com>
+Date: Mon, 13 Jul 2026 23:10:31 +0800
+Subject: [PATCH] Camellia: Replace packet processing queue with mt-queue
+
+
+diff --git a/net/minecraft/network/PacketProcessor.java b/net/minecraft/network/PacketProcessor.java
+index a25bc31c04778bf12e3b6301ffcfb2275fcc2d90..b91c669438dc4692144143c8eef0d3450a824969 100644
+--- a/net/minecraft/network/PacketProcessor.java
++++ b/net/minecraft/network/PacketProcessor.java
+@@ -11,7 +11,7 @@ import org.slf4j.Logger;
+ 
+ public class PacketProcessor implements AutoCloseable {
+     private static final Logger LOGGER = LogUtils.getLogger();
+-    private final Queue<PacketProcessor.ListenerAndPacket<?>> packetsToBeHandled = Queues.newConcurrentLinkedQueue();
++    private final Queue<PacketProcessor.ListenerAndPacket<?>> packetsToBeHandled = new ca.spottedleaf.concurrentutil.collection.MultiThreadedQueue<>(); // Camellia - Replace packet processing queue with mt-queue
+     private final Thread runningThread;
+     private boolean closed;
+ 
