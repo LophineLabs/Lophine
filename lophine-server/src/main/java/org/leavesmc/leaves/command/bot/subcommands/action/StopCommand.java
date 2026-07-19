@@ -114,17 +114,6 @@ public class StopCommand extends LiteralNode {
         }
 
         @Override
-        protected CompletableFuture<Suggestions> getSuggestions(CommandContext context, SuggestionsBuilder builder) throws CommandSyntaxException {
-            ServerBot bot = ActionCommand.BotArgument.getBot(context);
-
-            for (AbstractBotAction<?> action : bot.getBotActions()) {
-                builder.suggest(action.getUUID().toString(), Component.literal(action.getName()));
-            }
-
-            return builder.buildFuture();
-        }
-
-        @Override
         protected boolean execute(CommandContext context) throws CommandSyntaxException {
             ServerBot bot = ActionCommand.BotArgument.getBot(context);
             CommandSender sender = context.getSender();
