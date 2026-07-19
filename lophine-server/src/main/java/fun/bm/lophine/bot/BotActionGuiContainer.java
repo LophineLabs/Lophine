@@ -5,6 +5,7 @@ import fun.bm.lophine.bot.action.gui.GuiNode;
 import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
@@ -639,14 +640,21 @@ public class BotActionGuiContainer extends SimpleContainer {
     private ItemStack createActionItem(BotAction<?> action, int index) {
         ItemStack item = new ItemStack(Items.PAPER);
         String actionName = action.getName();
+        String actionHash = action.getUUID().toString();
 
         item.set(DataComponents.CUSTOM_NAME, Component.literal("§c" + actionName));
+
+        // Store action hash in CUSTOM_DATA for later retrieval
+        CompoundTag customTag = new CompoundTag();
+        customTag.putString("action_hash", actionHash);
+        item.set(DataComponents.CUSTOM_DATA, CustomData.of(customTag));
 
         List<Component> loreLines = new ArrayList<>();
         CompoundTag nbt = new CompoundTag();
         ((CraftBotAction<?, ?>) action).getHandle().save(nbt);
         nbt.forEach((key, tag) -> loreLines.add(Component.literal("§7" + key + ": §f" + tag)));
         loreLines.add(Component.literal("§7Index: §f" + index));
+        loreLines.add(Component.literal("§7Hash: §f" + actionHash.substring(0, 8)));
         loreLines.add(Component.literal("§6Click to stop this action"));
 
         item.set(DataComponents.LORE, new ItemLore(loreLines));
@@ -654,35 +662,32 @@ public class BotActionGuiContainer extends SimpleContainer {
     }
 
     /**
-     * Get the action index at a specific slot (for STOP action type)
-     * Returns -1 if not found or not in STOP mode
+     * Get the action hash (UUID string) at a specific slot (for STOP action type)
+     * Returns null if not found or not in STOP mode
      */
-    public int getActionIndexAtSlot(int slot) {
+    @Nullable
+    public String getActionHashAtSlot(int slot) {
         if (this.selectedActionType != ActionType.ACTION_STOP) {
-            return -1;
+            return null;
         }
 
-        // Find the content index for this slot
-        int contentIndex = -1;
-        for (int i = 0; i < CONTENT_SLOTS.length; i++) {
-            if (CONTENT_SLOTS[i] == slot) {
-                contentIndex = i;
-                break;
-            }
+        // Read the action hash directly from the ItemStack's CUSTOM_DATA
+        ItemStack item = this.getItem(slot);
+        if (item.isEmpty()) {
+            return null;
         }
 
-        if (contentIndex == -1) {
-            return -1;
+        CustomData customData = item.get(DataComponents.CUSTOM_DATA);
+        if (customData == null) {
+            return null;
         }
 
-        // Apply pagination offset
-        int actualIndex = this.currentPage * CONTENT_SLOTS.length + contentIndex;
-        int actionSize = this.bot.getActionSize();
-        if (actualIndex < actionSize) {
-            return actualIndex;
+        CompoundTag tag = customData.copyTag();
+        if (tag.contains("action_hash")) {
+            return tag.getString("action_hash").get();
         }
 
-        return -1;
+        return null;
     }
 
     /**

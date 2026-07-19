@@ -134,9 +134,9 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
 
             // Handle action stop click (when STOP action type is selected)
             if (this.container.getSelectedActionType() == ActionType.ACTION_STOP) {
-                int actionIndex = this.container.getActionIndexAtSlot(slotIndex);
-                if (actionIndex >= 0) {
-                    this.stopActionAtIndex(actionIndex, player);
+                String actionHash = this.container.getActionHashAtSlot(slotIndex);
+                if (actionHash != null) {
+                    this.stopActionByHash(actionHash, player);
                     this.refreshSlots();
                 }
                 return;
@@ -179,7 +179,7 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
                     this.container.navigateToChild(rootNode);
                 }
             } else {
-                // Execute command with the selected action type
+                // Execute command with t`he selected action type
                 this.executeCommand(rootNode, actionType, player);
                 // Close GUI after START action execution
                 if (actionType == ActionType.ACTION_START && player instanceof ServerPlayer serverPlayer) {
@@ -235,27 +235,25 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
     }
 
     /**
-     * Stop a bot action at the specified index
+     * Stop a bot action by its hash (UUID string)
      */
-    private void stopActionAtIndex(int actionIndex, Player player) {
+    private void stopActionByHash(String actionHash, Player player) {
         try {
-            if (actionIndex >= 0 && actionIndex < this.bot.getActionSize()) {
-                if (player instanceof ServerPlayer serverPlayer) {
-                    String command = getStopActionCommand(actionIndex);
-                    MinecraftServer.getServer().getCommands().performPrefixedCommand(
-                            serverPlayer.createCommandSourceStack(),
-                            command
-                    );
-                }
+            if (player instanceof ServerPlayer serverPlayer) {
+                String command = getStopActionCommand(actionHash);
+                MinecraftServer.getServer().getCommands().performPrefixedCommand(
+                        serverPlayer.createCommandSourceStack(),
+                        command
+                );
             }
         } catch (Exception e) {
-            LogUtils.getLogger().warn("Error stopping action at index {}: ", actionIndex, e);
+            LogUtils.getLogger().warn("Error stopping action with hash {}: ", actionHash, e);
         }
         // Always refresh to show updated action list after stop attempt
         this.container.showCurrentBotActions();
     }
 
-    private String getStopActionCommand(int actionIndex) throws UnexpectedException {
+    private String getStopActionCommand(String actionHash) throws UnexpectedException {
         boolean botCommand = FakeplayerConfig.enable;
         boolean playerCommand = FakePlayerCompatConfig.commandPlayer;
         String command;
@@ -266,7 +264,7 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
         } else {
             throw new UnexpectedException("Unable to build String from commandNode.");
         }
-        command = command + "action " + this.bot.getName() + " stop " + actionIndex;
+        command = command + "action " + this.bot.getName() + " stop " + actionHash;
         return command;
     }
 
