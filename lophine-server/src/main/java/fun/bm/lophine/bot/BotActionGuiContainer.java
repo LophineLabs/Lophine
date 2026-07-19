@@ -5,12 +5,12 @@ import fun.bm.lophine.bot.action.gui.GuiNode;
 import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ItemLore;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.jetbrains.annotations.NotNull;
@@ -65,6 +65,10 @@ public class BotActionGuiContainer extends SimpleContainer {
         if (!GUI_ROOT_NODE_MAP.containsKey(guiRootNode.getName())) {
             GUI_ROOT_NODE_MAP.put(guiRootNode.getName(), guiRootNode);
         }
+    }
+
+    public static void unregisterGuiRootNode(String name) {
+        GUI_ROOT_NODE_MAP.remove(name);
     }
 
     public static GuiRootNode getGuiRootNode(String name) {
