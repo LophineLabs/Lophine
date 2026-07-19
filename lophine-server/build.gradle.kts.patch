@@ -85,7 +85,7 @@
 +    implementation(project(":lophine-api")) // Lophine - api update
 +    // Lophine start - Dependenices insert
 +    implementation("net.objecthunter:exp4j:0.4.8")
-+    implementation("com.electronwill.night-config:toml:3.9.0") // Night config
++    implementation("com.electronwill.night-config:toml:3.8.4") // Night config
 +    implementation("com.github.luben:zstd-jni:1.5.4-1")
 +    implementation("net.openhft:zero-allocation-hashing:0.16")
 +    implementation("io.github.classgraph:classgraph:4.8.158")
