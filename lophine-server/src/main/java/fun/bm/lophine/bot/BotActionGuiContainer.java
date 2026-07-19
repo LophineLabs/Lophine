@@ -107,14 +107,7 @@ public class BotActionGuiContainer extends SimpleContainer {
         this.isSelectingActionType = true;
         this.currentPage = 0;
 
-        List<ActionType> allTypes = List.of(ActionType.values());
-        this.renderPagedItems(allTypes, (actionType, slot) -> {
-            ItemStack item = actionType.toConfirmNode(null).getItemStack();
-            if (item != null && !item.isEmpty()) {
-                this.setItem(slot, item.copy());
-            }
-        });
-
+        this.renderActionTypes();
         this.addNavigationButtons();
     }
 
@@ -134,13 +127,7 @@ public class BotActionGuiContainer extends SimpleContainer {
             return;
         }
 
-        this.renderPagedItems(allNodes, (node, slot) -> {
-            ItemStack item = createNodeItemWithRunHint(node);
-            if (item != null && !item.isEmpty()) {
-                this.setItem(slot, item.copy());
-            }
-        });
-
+        this.renderRootNodes();
         this.addNavigationButtons();
     }
 
@@ -206,14 +193,7 @@ public class BotActionGuiContainer extends SimpleContainer {
             return;
         }
 
-        List<GuiNode> childList = new ArrayList<>(children);
-        this.renderPagedItems(childList, (node, slot) -> {
-            ItemStack item = createNodeItemWithRunHint(node);
-            if (item != null && !item.isEmpty()) {
-                this.setItem(slot, item.copy());
-            }
-        });
-
+        this.renderCurrentNodeChildren();
         this.addNavigationButtons();
     }
 
@@ -226,6 +206,56 @@ public class BotActionGuiContainer extends SimpleContainer {
             return rootNode.getChildren();
         }
         return null;
+    }
+
+    private void renderActionTypes() {
+        List<ActionType> allTypes = List.of(ActionType.values());
+        this.renderPagedItems(allTypes, (actionType, slot) -> {
+            ItemStack item = actionType.toConfirmNode(null).getItemStack();
+            if (item != null && !item.isEmpty()) {
+                this.setItem(slot, item.copy());
+            }
+        });
+    }
+
+    private void renderRootNodes() {
+        List<GuiRootNode> allNodes = new ArrayList<>(GUI_ROOT_NODE_MAP.values());
+        this.renderPagedItems(allNodes, (node, slot) -> {
+            ItemStack item = createNodeItemWithRunHint(node);
+            if (item != null && !item.isEmpty()) {
+                this.setItem(slot, item.copy());
+            }
+        });
+    }
+
+    private void renderCurrentNodeChildren() {
+        Set<GuiNode> children = this.getChildrenOfCurrentNode();
+        if (children != null && !children.isEmpty()) {
+            List<GuiNode> childList = new ArrayList<>(children);
+            this.renderPagedItems(childList, (node, slot) -> {
+                ItemStack item = createNodeItemWithRunHint(node);
+                if (item != null && !item.isEmpty()) {
+                    this.setItem(slot, item.copy());
+                }
+            });
+        }
+    }
+
+    private void renderBotActions() {
+        int actionSize = this.bot.getActionSize();
+        if (actionSize > 0) {
+            List<Integer> actionIndices = new ArrayList<>();
+            for (int i = 0; i < actionSize; i++) {
+                actionIndices.add(i);
+            }
+            this.renderPagedItems(actionIndices, (index, slot) -> {
+                BotAction<?> action = this.bot.getAction(index);
+                ItemStack item = createActionItem(action, index);
+                if (item != null && !item.isEmpty()) {
+                    this.setItem(slot, item.copy());
+                }
+            });
+        }
     }
 
     @Nullable
@@ -449,49 +479,13 @@ public class BotActionGuiContainer extends SimpleContainer {
         this.fillBorder();
 
         if (this.isSelectingActionType) {
-            List<ActionType> allTypes = List.of(ActionType.values());
-            this.renderPagedItems(allTypes, (actionType, slot) -> {
-                ItemStack item = actionType.toConfirmNode(null).getItemStack();
-                if (item != null && !item.isEmpty()) {
-                    this.setItem(slot, item.copy());
-                }
-            });
+            this.renderActionTypes();
         } else if (this.selectedActionType == ActionType.ACTION_STOP) {
-            int actionSize = this.bot.getActionSize();
-            if (actionSize > 0) {
-                List<Integer> actionIndices = new ArrayList<>();
-                for (int i = 0; i < actionSize; i++) {
-                    actionIndices.add(i);
-                }
-                this.renderPagedItems(actionIndices, (index, slot) -> {
-                    org.leavesmc.leaves.entity.bot.action.BotAction<?> action = this.bot.getAction(index);
-                    ItemStack item = createActionItem(action, index);
-                    if (item != null && !item.isEmpty()) {
-                        this.setItem(slot, item.copy());
-                    }
-                });
-            }
+            this.renderBotActions();
         } else if (this.currentNode != null) {
-            Set<GuiNode> children = this.getChildrenOfCurrentNode();
-            if (children != null && !children.isEmpty()) {
-                List<GuiNode> childList = new ArrayList<>(children);
-                this.renderPagedItems(childList, (node, slot) -> {
-                    ItemStack item = createNodeItemWithRunHint(node);
-                    if (item != null && !item.isEmpty()) {
-                        this.setItem(slot, item.copy());
-                    }
-                });
-            }
+            this.renderCurrentNodeChildren();
         } else {
-            List<GuiRootNode> allNodes = new ArrayList<>(GUI_ROOT_NODE_MAP.values());
-            if (!allNodes.isEmpty()) {
-                this.renderPagedItems(allNodes, (node, slot) -> {
-                    ItemStack item = createNodeItemWithRunHint(node);
-                    if (item != null && !item.isEmpty()) {
-                        this.setItem(slot, item.copy());
-                    }
-                });
-            }
+            this.renderRootNodes();
         }
 
         this.addNavigationButtons();
@@ -622,20 +616,7 @@ public class BotActionGuiContainer extends SimpleContainer {
             return;
         }
 
-        // Build list of action indices for pagination
-        List<Integer> actionIndices = new ArrayList<>();
-        for (int i = 0; i < actionSize; i++) {
-            actionIndices.add(i);
-        }
-
-        this.renderPagedItems(actionIndices, (index, slot) -> {
-            org.leavesmc.leaves.entity.bot.action.BotAction<?> action = this.bot.getAction(index);
-            ItemStack item = createActionItem(action, index);
-            if (item != null && !item.isEmpty()) {
-                this.setItem(slot, item.copy());
-            }
-        });
-
+        this.renderBotActions();
         this.addNavigationButtons();
     }
 
