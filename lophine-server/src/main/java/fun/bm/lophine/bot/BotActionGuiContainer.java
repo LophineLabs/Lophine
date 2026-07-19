@@ -15,6 +15,7 @@ import net.minecraft.world.item.component.ItemLore;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.leavesmc.leaves.bot.agent.actions.AbstractBotAction;
 import org.leavesmc.leaves.entity.bot.CraftBot;
 import org.leavesmc.leaves.entity.bot.action.BotAction;
 import org.leavesmc.leaves.entity.bot.actions.CraftBotAction;
@@ -642,7 +643,10 @@ public class BotActionGuiContainer extends SimpleContainer {
      * Create an ItemStack representing a bot action for display in the GUI
      */
     private ItemStack createActionItem(BotAction<?> action, int index) {
-        ItemStack item = new ItemStack(Items.PAPER);
+        // Use the same item model as registered in GuiRootNode (start action display)
+        AbstractBotAction<?> handle = ((CraftBotAction<?, ?>) action).getHandle();
+        GuiRootNode guiData = handle.getGuiData();
+        ItemStack item = guiData != null ? guiData.getItemStack() : new ItemStack(Items.PAPER);
         String actionName = action.getName();
         String actionHash = action.getUUID().toString();
 
