@@ -91,10 +91,8 @@ dependencies {
 
 ### 加入我们的社区
 
-- **QQ群**: [1015048616](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=QML5kIVsniPi1PlZvnjHQT_02EHsZ5Jc&authKey=%2FTCJsZC7JFQ9sxAroPCKuYnlV57Z5fyqp36ewXZk3Sn4iJ9p4MB1JKdc%2FFcX3HOM&noverify=0&group_code=1015048616)
-- **QQ频道**: [点击加入](https://pd.qq.com/s/eq9krf9j)
-- **Telegram**: [点击加入](https://t.me/LuminolMinecraft)
-- **Discord**: [点击加入](https://discord.gg/Qd7m3V6eDx)
+- **QQ群**: [1020403749](https://qm.qq.com/cgi-bin/qm/qr?k=y_MA9UaN7PM9e9J1LIs9Eea3LK8C0h6J&jump_from=webapi&authKey=ap5f8MlbeezXYtnmpnT5ZOFljDuOyV6OAb2PIcViQ+Ilr60Ycq63FDDTsJOZDYtj)
+- **Discord**: [点击加入](https://discord.gg/UXSgPZczcy)
 
 ### 获取帮助
 

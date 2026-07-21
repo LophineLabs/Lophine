@@ -92,10 +92,8 @@ dependencies {
 
 ### Join Our Community
 
-- **QQ Group**: [1015048616](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=QML5kIVsniPi1PlZvnjHQT_02EHsZ5Jc&authKey=%2FTCJsZC7JFQ9sxAroPCKuYnlV57Z5fyqp36ewXZk3Sn4iJ9p4MB1JKdc%2FFcX3HOM&noverify=0&group_code=1015048616)
-- **QQ Channel**: [Join Here](https://pd.qq.com/s/eq9krf9j)
-- **Telegram**: [Join Here](https://t.me/LuminolMinecraft)
-- **Discord**: [Join Here](https://discord.gg/Qd7m3V6eDx)
+- **QQ Group**: [1020403749](https://qm.qq.com/cgi-bin/qm/qr?k=y_MA9UaN7PM9e9J1LIs9Eea3LK8C0h6J&jump_from=webapi&authKey=ap5f8MlbeezXYtnmpnT5ZOFljDuOyV6OAb2PIcViQ+Ilr60Ycq63FDDTsJOZDYtj)
+- **Discord**: [Join Here](https://discord.gg/UXSgPZczcy)
 
 ### Get Help
 
