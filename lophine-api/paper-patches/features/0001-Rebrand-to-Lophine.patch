@@ -20,7 +20,7 @@ index 652ff54e7c50412503725d628bfe72ed03059790..273bd3f354281c7ddbe2a3719be063b1
 +    /**
 +     * The brand id for Lophine.
 +     */
-+    Key BRAND_LOPHINE_ID = Key.key("luminolmc", "lophine");
++    Key BRAND_LOPHINE_ID = Key.key("lophinelabs", "lophine");
 +    // Lophine end
 +
      /**

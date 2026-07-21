@@ -100,7 +100,7 @@
      implementation("ca.spottedleaf:leafpile:1.0.0")
      implementation("org.jline:jline-terminal-ffm:3.27.1") // use ffm on java 22+
      implementation("org.jline:jline-terminal-jni:3.27.1") // fall back to jni on java 21
-@@ -189,21 +_,22 @@
+@@ -189,21 +_,21 @@
          val git = Git(rootProject.layout.projectDirectory.path)
          val mcVersion = rootProject.providers.gradleProperty("mcVersion").get()
          val build = System.getenv("BUILD_NUMBER") ?: null
@@ -122,14 +122,13 @@
 -            "Specification-Vendor" to "Paper Team",
 -            "Brand-Id" to "papermc:folia",
 -            "Brand-Name" to "Folia",
-+            // TODO Later - rebrand org name
-+            "Specification-Vendor" to "LuminoLMC", // Lophine - Rebrand
-+            "Brand-Id" to "luminolmc:lophine", // Lophine - Rebrand
++            "Specification-Vendor" to "LophineLabs", // Lophine - Rebrand
++            "Brand-Id" to "lophinelabs:lophine", // Lophine - Rebrand
 +            "Brand-Name" to "Lophine", // Lophine - Rebrand
              "Build-Number" to (build ?: ""),
              "Build-Time" to buildTime.toString(),
              "Git-Branch" to gitBranch,
-@@ -214,6 +_,20 @@
+@@ -213,6 +_,20 @@
          }
      }
  }

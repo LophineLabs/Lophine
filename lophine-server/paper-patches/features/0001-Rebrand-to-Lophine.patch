@@ -8,7 +8,7 @@ Helvetica Volubi <suisuroru@blue-millennium.fun>
 bdlvl <bdlvl@blendreams.cn>
 
 diff --git a/src/main/java/com/destroystokyo/paper/Metrics.java b/src/main/java/com/destroystokyo/paper/Metrics.java
-index 08745a35b1ce8cc56d970472088de3cd17b9e43a..6eaa4e9bd1ecbfa531313ce1f470d55edf31b467 100644
+index 08745a35b1ce8cc56d970472088de3cd17b9e43a..ce97076bd642bff22c9fc10212e19f81327d7c5a 100644
 --- a/src/main/java/com/destroystokyo/paper/Metrics.java
 +++ b/src/main/java/com/destroystokyo/paper/Metrics.java
 @@ -593,7 +593,7 @@ public class Metrics {
@@ -16,7 +16,7 @@ index 08745a35b1ce8cc56d970472088de3cd17b9e43a..6eaa4e9bd1ecbfa531313ce1f470d55e
              // Only start Metrics, if it's enabled in the config
              if (config.getBoolean("enabled", true)) {
 -                Metrics metrics = new Metrics("Folia", serverUUID, logFailedRequests, Bukkit.getLogger()); // Folia - we have our own bstats page
-+                Metrics metrics = new Metrics("Lophine", serverUUID, logFailedRequests, Bukkit.getLogger()); // Folia - we have our own bstats page // Luminol // Lophine
++                Metrics metrics = new Metrics("Lophine", serverUUID, logFailedRequests, Bukkit.getLogger()); // Folia - we have our own bstats page // Lophine
  
                  metrics.addCustomChart(new Metrics.SimplePie("minecraft_version", () -> {
                      String minecraftVersion = Bukkit.getVersion();
@@ -25,17 +25,17 @@ index 08745a35b1ce8cc56d970472088de3cd17b9e43a..6eaa4e9bd1ecbfa531313ce1f470d55e
                  if (implVersion != null) {
                      final String buildOrHash = implVersion.substring(implVersion.lastIndexOf('-') + 1);
 -                    paperVersion = "git-Folia-%s-%s".formatted(Bukkit.getServer().getMinecraftVersion(), buildOrHash); // Folia - we have our own bstats page
-+                    paperVersion = "git-Lophine-%s-%s".formatted(Bukkit.getServer().getMinecraftVersion(), buildOrHash); // Folia - we have our own bstats page // Luminol - Rebrand to Luminol // Lophine - Rebrand to Lophine
++                    paperVersion = "git-Lophine-%s-%s".formatted(Bukkit.getServer().getMinecraftVersion(), buildOrHash); // Folia - we have our own bstats page // Lophine - Rebrand to Lophine
                  } else {
                      paperVersion = "unknown";
                  }
 -                metrics.addCustomChart(new Metrics.SimplePie("folia_version", () -> paperVersion)); // Folia - we have our own bstats page
-+                metrics.addCustomChart(new Metrics.SimplePie("lophine_version", () -> paperVersion)); // Folia - we have our own bstats page // Luminol // Lophine
++                metrics.addCustomChart(new Metrics.SimplePie("lophine_version", () -> paperVersion)); // Folia - we have our own bstats page // Lophine
  
                  metrics.addCustomChart(new Metrics.DrilldownPie("java_version", () -> {
                      Map<String, Map<String, Integer>> map = new HashMap<>();
 diff --git a/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java b/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java
-index 30815c8970b1f1c88a3c7bb5fd36efd915f1687d..62e5fcc1845d1240a1b97cdf252c94b75e81d4ab 100644
+index 30815c8970b1f1c88a3c7bb5fd36efd915f1687d..37ca11405d4f77e3acf7fc3c175d1f9ced8f0f20 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java
 @@ -40,8 +40,8 @@ public class PaperVersionFetcher implements VersionFetcher {
@@ -44,8 +44,8 @@ index 30815c8970b1f1c88a3c7bb5fd36efd915f1687d..62e5fcc1845d1240a1b97cdf252c94b7
      private static final int DISTANCE_UNKNOWN = -2;
 -    private static final String DOWNLOAD_PAGE = "https://papermc.io/downloads/folia"; // Folia
 -    private static final String REPOSITORY = "PaperMC/Folia"; // Folia
-+    private static final String DOWNLOAD_PAGE = "https://github.com/LophineCraft/Lophine"; // Luminol // Lophine
-+    private static final String REPOSITORY = "LophineCraft/Lophine"; // Luminol // Lophine
++    private static final String DOWNLOAD_PAGE = "https://github.com/LophineLabs/Lophine"; // Lophine
++    private static final String REPOSITORY = "LophineLabs/Lophine"; // Lophine
      private static final ServerBuildInfo BUILD_INFO = ServerBuildInfo.buildInfo();
      private static final String USER_AGENT = BUILD_INFO.brandName() + "/" + BUILD_INFO.asString(VERSION_SIMPLE) + " (https://papermc.io)";
      private static final Gson GSON = new Gson();
@@ -54,7 +54,7 @@ index 30815c8970b1f1c88a3c7bb5fd36efd915f1687d..62e5fcc1845d1240a1b97cdf252c94b7
          } else {
              final Optional<MinecraftVersionFetcher> apiResult = fetchMinecraftVersionList();
 -            if (buildNumber.isPresent()) {
-+            if (buildNumber.isPresent() && false) { // Luminol
++            if (buildNumber.isPresent() && false) {
                  distance = fetchDistanceFromSiteApi(buildNumber.getAsInt());
              } else {
                  final Optional<String> gitBranch = BUILD_INFO.gitBranch();
@@ -68,7 +68,7 @@ index 30815c8970b1f1c88a3c7bb5fd36efd915f1687d..62e5fcc1845d1240a1b97cdf252c94b7
          } else {
              final Optional<String> gitBranch = PaperVersionFetcher.BUILD_INFO.gitBranch();
 diff --git a/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java b/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
-index 10a0be7a4db1a51579d113d279af7a9effe7f438..dbdfceab299ccae83302af261e190b8111f13e25 100644
+index 10a0be7a4db1a51579d113d279af7a9effe7f438..883cb95cb4ef72e40af7073f76fc2f3219a51127 100644
 --- a/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
 +++ b/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
 @@ -31,6 +31,7 @@ public record ServerBuildInfoImpl(
@@ -96,12 +96,12 @@ index 10a0be7a4db1a51579d113d279af7a9effe7f438..dbdfceab299ccae83302af261e190b81
      @Override
      public boolean isBrandCompatible(final @NotNull Key brandId) {
 -        return brandId.equals(this.brandId);
-+        return brandId.equals(this.brandId) || brandId.equals(BRAND_PAPER_ID) || brandId.equals(BRAND_FOLIA_ID) || brandId.equals(BRAND_LOPHINE_ID); // Luminol // Lophine
++        return brandId.equals(this.brandId) || brandId.equals(BRAND_PAPER_ID) || brandId.equals(BRAND_FOLIA_ID) || brandId.equals(BRAND_LOPHINE_ID); // Lophine
      }
  
      @Override
 diff --git a/src/main/java/org/spigotmc/WatchdogThread.java b/src/main/java/org/spigotmc/WatchdogThread.java
-index 5607f4cc8ca2f620461eb5e97d01d9db0d6b2303..2572eeff745d7b6eb68023a1e39ded79239264e8 100644
+index 5607f4cc8ca2f620461eb5e97d01d9db0d6b2303..f5462b42c8231a5cf58a24e5fc5dc77bd550eb0a 100644
 --- a/src/main/java/org/spigotmc/WatchdogThread.java
 +++ b/src/main/java/org/spigotmc/WatchdogThread.java
 @@ -80,9 +80,10 @@ public class WatchdogThread extends ca.spottedleaf.moonrise.common.util.TickThre
@@ -110,7 +110,7 @@ index 5607f4cc8ca2f620461eb5e97d01d9db0d6b2303..2572eeff745d7b6eb68023a1e39ded79
                      logger.log(Level.SEVERE, "\t If this is the case, consider increasing timeout-time in spigot.yml but note that this will replace the crash with LARGE lag spikes");
 -                    logger.log(Level.SEVERE, "If you are unsure or still think this is a Paper bug, please report this to https://github.com/PaperMC/Paper/issues");
 +                    logger.log(Level.SEVERE, "DO NOT REPORT THIS TO PAPER!");
-+                    logger.log(Level.SEVERE, "If you are unsure or still think this is a Luminol bug, please report this to https://github.com/LophineCraft/Lophine/issues");
++                    logger.log(Level.SEVERE, "If you are unsure or still think this is a Lophine bug, please report this to https://github.com/LophineLabs/Lophine/issues");
                      logger.log(Level.SEVERE, "Be sure to include ALL relevant console errors and Minecraft crash reports");
 -                    logger.log(Level.SEVERE, "Paper version: " + Bukkit.getServer().getVersion());
 +                    logger.log(Level.SEVERE, "Server version: " + Bukkit.getServer().getVersion());
