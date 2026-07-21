@@ -47,7 +47,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Configure Git User Details
-        run: git config --global user.email "ci@lophinecraft.com" && git config --global user.name "LophineCraftCI"
+        run: git config --global user.email "ci@lophinelabs.com" && git config --global user.name "LophineLabsCI"
 
       - name: Apply All Patches
         run: ./gradlew --refresh-dependencies applyAllPatches
@@ -124,7 +124,7 @@ jobs:
           tag: ${{ env.tag }}
           name: ${{ env.project_id_b }} ${{ env.mcversion }} - ${{ env.commit_id }}${{ env.release_count }}
           body: |
-            📦Version: `${{ env.mcversion }}` | Commit ${{ env.commit_id }} [![download](https://img.shields.io/github/downloads/LophineCraft/${{ env.project_id }}/${{ env.tag }}/total?color=red&style=flat-square)](https://github.com/LophineCraft/${{ env.project_id }}/releases/download/${{ env.tag }}/${{ env.jar }})
+            📦Version: `${{ env.mcversion }}` | Commit ${{ env.commit_id }} [![download](https://img.shields.io/github/downloads/LophineLabs/${{ env.project_id }}/${{ env.tag }}/total?color=red&style=flat-square)](https://github.com/LophineLabs/${{ env.project_id }}/releases/download/${{ env.tag }}/${{ env.jar }})
             This release is automatically compiled by GitHub Actions
             ### Branch Info
             > ${{ github.ref_name }}
@@ -143,7 +143,7 @@ jobs:
           tag: ${{ env.tag }}
           name: ${{ env.project_id_b }} ${{ env.mcversion }} - ${{ env.commit_id }}${{ env.release_count }}
           body: |
-            📦Version: `${{ env.mcversion }}` | Commit ${{ env.commit_id }} [![download](https://img.shields.io/github/downloads/LophineCraft/${{ env.project_id }}/${{ env.tag }}/total?color=red&style=flat-square)](https://github.com/LophineCraft/${{ env.project_id }}/releases/download/${{ env.tag }}/${{ env.jar }})
+            📦Version: `${{ env.mcversion }}` | Commit ${{ env.commit_id }} [![download](https://img.shields.io/github/downloads/LophineLabs/${{ env.project_id }}/${{ env.tag }}/total?color=red&style=flat-square)](https://github.com/LophineLabs/${{ env.project_id }}/releases/download/${{ env.tag }}/${{ env.jar }})
             This release is automatically compiled by GitHub Actions
             ### Comments
             > ${{ inputs.comments }}

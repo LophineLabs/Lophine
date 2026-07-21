@@ -5,15 +5,15 @@
   
   *Lophine 是一个基于Luminol的分支，具有许多有用的优化和可配置的原版特性，目标是在Folia上实现更多生电的内容（请注意，完整生电请使用Fabric）*
   
-  ![Created At](https://img.shields.io/github/created-at/LophineCraft/Lophine?style=for-the-badge&color=blue)
-  [![License](https://img.shields.io/github/license/LophineCraft/Lophine?style=for-the-badge&color=green)](LICENSE.md)
-  [![Issues](https://img.shields.io/github/issues/LophineCraft/Lophine?style=for-the-badge&color=orange)](https://github.com/LophineCraft/Lophine/issues)
+  ![Created At](https://img.shields.io/github/created-at/LophineLabs/Lophine?style=for-the-badge&color=blue)
+  [![License](https://img.shields.io/github/license/LophineLabs/Lophine?style=for-the-badge&color=green)](LICENSE.md)
+  [![Issues](https://img.shields.io/github/issues/LophineLabs/Lophine?style=for-the-badge&color=orange)](https://github.com/LophineLabs/Lophine/issues)
   
-  ![Commit Activity](https://img.shields.io/github/commit-activity/w/LophineCraft/Lophine?style=for-the-badge&color=purple)
-  ![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/LophineCraft/Lophine?style=for-the-badge&color=yellow)
-  ![GitHub all releases](https://img.shields.io/github/downloads/LophineCraft/Lophine/total?style=for-the-badge&color=red)
+  ![Commit Activity](https://img.shields.io/github/commit-activity/w/LophineLabs/Lophine?style=for-the-badge&color=purple)
+  ![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/LophineLabs/Lophine?style=for-the-badge&color=yellow)
+  ![GitHub all releases](https://img.shields.io/github/downloads/LophineLabs/Lophine/total?style=for-the-badge&color=red)
   
-  ![Repo contributors](https://img.shields.io/github/contributors/LophineCraft/Lophine?style=for-the-badge&color=brightgreen)
+  ![Repo contributors](https://img.shields.io/github/contributors/LophineLabs/Lophine?style=for-the-badge&color=brightgreen)
   
   [English](./README_EN.md) | **中文**
 </div>
@@ -32,7 +32,7 @@
 ## 📥 下载
 
 ### 稳定版本
-所有发布版本都可以在 [Releases](https://github.com/LophineCraft/Lophine/releases) 页面找到。
+所有发布版本都可以在 [Releases](https://github.com/LophineLabs/Lophine/releases) 页面找到。
 
 ### 开发版本
 如果您想体验最新功能，可以通过以下步骤自行构建。
@@ -41,7 +41,7 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/LophineCraft/Lophine.git
+git clone https://github.com/LophineLabs/Lophine.git
 cd Lophine
 
 # 应用补丁并构建 Paperclip JAR
@@ -91,15 +91,13 @@ dependencies {
 
 ### 加入我们的社区
 
-- **QQ群**: [1015048616](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=QML5kIVsniPi1PlZvnjHQT_02EHsZ5Jc&authKey=%2FTCJsZC7JFQ9sxAroPCKuYnlV57Z5fyqp36ewXZk3Sn4iJ9p4MB1JKdc%2FFcX3HOM&noverify=0&group_code=1015048616)
-- **QQ频道**: [点击加入](https://pd.qq.com/s/eq9krf9j)
-- **Telegram**: [点击加入](https://t.me/LuminolMinecraft)
-- **Discord**: [点击加入](https://discord.gg/Qd7m3V6eDx)
+- **QQ群**: [1020403749](https://qm.qq.com/cgi-bin/qm/qr?k=y_MA9UaN7PM9e9J1LIs9Eea3LK8C0h6J&jump_from=webapi&authKey=ap5f8MlbeezXYtnmpnT5ZOFljDuOyV6OAb2PIcViQ+Ilr60Ycq63FDDTsJOZDYtj)
+- **Discord**: [点击加入](https://discord.gg/UXSgPZczcy)
 
 ### 获取帮助
 
-- 📋 [提交 Issue](https://github.com/LophineCraft/Lophine/issues)
-- 💬 [GitHub Discussions](https://github.com/LophineCraft/Lophine/discussions)
+- 📋 [提交 Issue](https://github.com/LophineLabs/Lophine/issues)
+- 💬 [GitHub Discussions](https://github.com/LophineLabs/Lophine/discussions)
 - 📖 [项目文档](./docs/)
 
 ## 🐛 问题反馈
