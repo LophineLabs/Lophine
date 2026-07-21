@@ -5,15 +5,15 @@
   
   *Lophine is a Luminol fork with many useful optimizations and configurable vanilla features, aims to provide more function for survival-usable circuit on folia (Please note that Fabric should be used for complete survival-usable)*
   
-  ![Created At](https://img.shields.io/github/created-at/LophineCraft/Lophine?style=for-the-badge&color=blue)
-  [![License](https://img.shields.io/github/license/LophineCraft/Lophine?style=for-the-badge&color=green)](LICENSE.md)
-  [![Issues](https://img.shields.io/github/issues/LophineCraft/Lophine?style=for-the-badge&color=orange)](https://github.com/LophineCraft/Lophine/issues)
+  ![Created At](https://img.shields.io/github/created-at/LophineLabs/Lophine?style=for-the-badge&color=blue)
+  [![License](https://img.shields.io/github/license/LophineLabs/Lophine?style=for-the-badge&color=green)](LICENSE.md)
+  [![Issues](https://img.shields.io/github/issues/LophineLabs/Lophine?style=for-the-badge&color=orange)](https://github.com/LophineLabs/Lophine/issues)
   
-  ![Commit Activity](https://img.shields.io/github/commit-activity/w/LophineCraft/Lophine?style=for-the-badge&color=purple)
-  ![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/LophineCraft/Lophine?style=for-the-badge&color=yellow)
-  ![GitHub all releases](https://img.shields.io/github/downloads/LophineCraft/Lophine/total?style=for-the-badge&color=red)
+  ![Commit Activity](https://img.shields.io/github/commit-activity/w/LophineLabs/Lophine?style=for-the-badge&color=purple)
+  ![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/LophineLabs/Lophine?style=for-the-badge&color=yellow)
+  ![GitHub all releases](https://img.shields.io/github/downloads/LophineLabs/Lophine/total?style=for-the-badge&color=red)
   
-  ![Repo contributors](https://img.shields.io/github/contributors/LophineCraft/Lophine?style=for-the-badge&color=brightgreen)
+  ![Repo contributors](https://img.shields.io/github/contributors/LophineLabs/Lophine?style=for-the-badge&color=brightgreen)
   
   **English** | [中文](./README.md)
 </div>
@@ -32,7 +32,7 @@
 ## 📥 Download
 
 ### Stable Releases
-All release versions can be found on the [Releases](https://github.com/LophineCraft/Lophine/releases) page.
+All release versions can be found on the [Releases](https://github.com/LophineLabs/Lophine/releases) page.
 
 ### Development Builds
 If you want to experience the latest features, you can build it yourself following the steps below.
@@ -41,7 +41,7 @@ If you want to experience the latest features, you can build it yourself followi
 
 ```bash
 # Clone the project
-git clone https://github.com/LophineCraft/Lophine.git
+git clone https://github.com/LophineLabs/Lophine.git
 cd Lophine
 
 # Apply patches and build Paperclip JAR
@@ -92,15 +92,13 @@ dependencies {
 
 ### Join Our Community
 
-- **QQ Group**: [1015048616](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=QML5kIVsniPi1PlZvnjHQT_02EHsZ5Jc&authKey=%2FTCJsZC7JFQ9sxAroPCKuYnlV57Z5fyqp36ewXZk3Sn4iJ9p4MB1JKdc%2FFcX3HOM&noverify=0&group_code=1015048616)
-- **QQ Channel**: [Join Here](https://pd.qq.com/s/eq9krf9j)
-- **Telegram**: [Join Here](https://t.me/LuminolMinecraft)
-- **Discord**: [Join Here](https://discord.gg/Qd7m3V6eDx)
+- **QQ Group**: [1020403749](https://qm.qq.com/cgi-bin/qm/qr?k=y_MA9UaN7PM9e9J1LIs9Eea3LK8C0h6J&jump_from=webapi&authKey=ap5f8MlbeezXYtnmpnT5ZOFljDuOyV6OAb2PIcViQ+Ilr60Ycq63FDDTsJOZDYtj)
+- **Discord**: [Join Here](https://discord.gg/UXSgPZczcy)
 
 ### Get Help
 
-- 📋 [Submit Issues](https://github.com/LophineCraft/Lophine/issues)
-- 💬 [GitHub Discussions](https://github.com/LophineCraft/Lophine/discussions)
+- 📋 [Submit Issues](https://github.com/LophineLabs/Lophine/issues)
+- 💬 [GitHub Discussions](https://github.com/LophineLabs/Lophine/discussions)
 - 📖 [Project Documentation](./docs/)
 
 ## 🐛 Bug Reports
