@@ -40,6 +40,11 @@ public class FakeplayerConfig implements IConfigModule {
             Regeneration amount for fakeplayers""")
     public static double regenAmount = 0.0;
 
+    @ConfigInfo(name = "open-action-gui", comments = """
+            Allow opening fakeplayer action gui,
+            need sneak to open if you enabled inventory open gui""")
+    public static boolean canOpenActionGui = false;
+
     @ConfigInfo(name = "use-action", comments = """
             Allow fakeplayers to use actions""")
     public static boolean canUseAction = true;

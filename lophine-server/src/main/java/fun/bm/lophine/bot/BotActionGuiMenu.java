@@ -1,0 +1,279 @@
+package fun.bm.lophine.bot;
+
+import com.mojang.logging.LogUtils;
+import fun.bm.lophine.bot.action.gui.ActionType;
+import fun.bm.lophine.bot.action.gui.GuiNode;
+import fun.bm.lophine.bot.action.gui.GuiRootNode;
+import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
+import fun.bm.lophine.config.modules.function.FakeplayerConfig;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.inventory.CraftInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryView;
+import org.jetbrains.annotations.NotNull;
+import org.leavesmc.leaves.entity.bot.CraftBot;
+
+import java.rmi.UnexpectedException;
+
+public class BotActionGuiMenu extends AbstractContainerMenu {
+    private final BotActionGuiContainer container;
+    private final CraftBot bot;
+    private final CraftPlayer player;
+    private CraftInventoryView view = null;
+
+    public BotActionGuiMenu(int containerId, Inventory inventory, BotActionGuiContainer container) {
+        super(MenuType.GENERIC_9x6, containerId);
+        this.container = container;
+        this.bot = container.getBot();
+        this.player = container.getPlayer();
+
+        for (int row = 0; row < 6; row++) {
+            for (int col = 0; col < 9; col++) {
+                this.addSlot(new Slot(container, col + row * 9, 8 + col * 18, 18 + row * 18) {
+                    @Override
+                    public boolean mayPickup(Player player) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean mayPlace(ItemStack stack) {
+                        return false;
+                    }
+                });
+            }
+        }
+
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 9; col++) {
+                this.addSlot(new Slot(inventory, col + row * 9 + 9, 8 + col * 18, 140 + row * 18));
+            }
+        }
+
+        for (int col = 0; col < 9; col++) {
+            this.addSlot(new Slot(inventory, col, 8 + col * 18, 198));
+        }
+    }
+
+    @Override
+    public org.bukkit.inventory.InventoryView getBukkitView() {
+        if (this.view == null) {
+            CraftInventory inventory = new CraftInventory(this.container);
+            this.view = new CraftInventoryView(
+                    this.player,
+                    inventory,
+                    this
+            );
+        }
+        return this.view;
+    }
+
+    @Override
+    public boolean stillValid(@NotNull Player player) {
+        return this.container.stillValid(player);
+    }
+
+    @Override
+    public void clicked(int slotIndex, int buttonNum, ContainerInput containerInput, Player player) {
+        if (slotIndex >= 0 && slotIndex < 54) {
+            if (this.container.isBackButtonSlot(slotIndex)) {
+                this.container.navigateBack();
+                this.refreshSlots();
+                return;
+            }
+
+            if (this.container.isHomeButtonSlot(slotIndex)) {
+                this.container.navigateHome();
+                this.refreshSlots();
+                return;
+            }
+
+            // Handle pagination buttons
+            if (this.container.isPrevPageSlot(slotIndex)) {
+                this.container.prevPage();
+                this.refreshSlots();
+                return;
+            }
+            if (this.container.isNextPageSlot(slotIndex)) {
+                this.container.nextPage();
+                this.refreshSlots();
+                return;
+            }
+
+            // Handle command builder click
+            if (this.container.isCommandBuilderSlot(slotIndex) && this.container.canExecuteCommandBuilder()) {
+                this.executeCommandBuilder(player);
+                this.refreshSlots();
+                return;
+            }
+
+            // Handle ActionType selection (with pagination offset)
+            if (this.container.isSelectingActionType()) {
+                ActionType clickedType = this.container.getActionTypeAtSlot(slotIndex);
+                if (clickedType != null) {
+                    this.container.selectActionType(clickedType);
+                    this.refreshSlots();
+                }
+                return;
+            }
+
+            // Handle action stop click (when STOP action type is selected)
+            if (this.container.getSelectedActionType() == ActionType.ACTION_STOP) {
+                String actionHash = this.container.getActionHashAtSlot(slotIndex);
+                if (actionHash != null) {
+                    this.stopActionByHash(actionHash, player);
+                    this.refreshSlots();
+                }
+                return;
+            }
+
+            GuiNode node = this.container.getGuiNodeAtSlot(slotIndex);
+            if (node != null) {
+                this.handleNodeClick(node, player);
+                this.refreshSlots();
+            }
+            return;
+        }
+
+        super.clicked(slotIndex, buttonNum, containerInput, player);
+    }
+
+    private void handleNodeClick(GuiNode node, Player player) {
+        if (node instanceof GuiRootNode rootNode) {
+            // Get the selected action type
+            ActionType actionType = this.container.getSelectedActionType();
+            if (actionType == null) {
+                return;
+            }
+
+            int maxAllowedParameters = actionType.getMaxAllowedParameters();
+
+            // If the node has children, check parameter limit before navigating
+            if (!rootNode.getChildren().isEmpty()) {
+                // Calculate current parameter count (navigation stack size + 1 for current node if exists)
+                int currentParamCount = this.container.getCurrentParameterCount();
+
+                // If adding this node would exceed the limit, execute command instead of navigating
+                if (currentParamCount + 1 > maxAllowedParameters) {
+                    this.executeCommand(rootNode, actionType, player);
+                    // Close GUI after START action execution
+                    if (actionType == ActionType.ACTION_START && player instanceof ServerPlayer serverPlayer) {
+                        serverPlayer.closeContainer();
+                    }
+                } else {
+                    this.container.navigateToChild(rootNode);
+                }
+            } else {
+                // Execute command with t`he selected action type
+                this.executeCommand(rootNode, actionType, player);
+                // Close GUI after START action execution
+                if (actionType == ActionType.ACTION_START && player instanceof ServerPlayer serverPlayer) {
+                    serverPlayer.closeContainer();
+                }
+            }
+        }
+    }
+
+    private void executeCommand(GuiRootNode node, ActionType actionType, Player player) {
+        try {
+            String actionPrefix = actionType.getCommandActionPrefix();
+            String actionSuffix = actionType.getCommandActionSuffix();
+            if (!actionSuffix.isEmpty()) {
+                actionSuffix = actionSuffix + " ";
+            }
+
+            String extra = actionPrefix + " " + bot.getName() + " " + actionSuffix;
+            String command = node.buildCommand(extra);
+
+            // Apply parameter limit based on ActionType
+            if (actionType.getMaxAllowedParameters() == 0) {
+                // For actions like STOP that don't allow parameters, trim to just "action botName"
+                command = actionPrefix + " " + bot.getName();
+            }
+
+            if (player instanceof ServerPlayer serverPlayer) {
+                MinecraftServer.getServer().getCommands().performPrefixedCommand(
+                        serverPlayer.createCommandSourceStack(),
+                        command
+                );
+            }
+        } catch (Exception e) {
+            LogUtils.getLogger().warn("Error executing command: ", e);
+        }
+    }
+
+    /**
+     * Execute the command from the command builder (book item).
+     * Uses the current node and selected action type.
+     */
+    private void executeCommandBuilder(Player player) {
+        GuiNode currentNode = this.container.getCurrentNode();
+        ActionType actionType = this.container.getSelectedActionType();
+
+        if (currentNode instanceof GuiRootNode rootNode && actionType != null) {
+            this.executeCommand(rootNode, actionType, player);
+            // Close GUI after START action execution
+            if (actionType != ActionType.ACTION_STOP && player instanceof ServerPlayer serverPlayer) {
+                serverPlayer.closeContainer();
+            }
+        }
+    }
+
+    /**
+     * Stop a bot action by its hash (UUID string)
+     */
+    private void stopActionByHash(String actionHash, Player player) {
+        try {
+            if (player instanceof ServerPlayer serverPlayer) {
+                String command = getStopActionCommand(actionHash);
+                MinecraftServer.getServer().getCommands().performPrefixedCommand(
+                        serverPlayer.createCommandSourceStack(),
+                        command
+                );
+            }
+        } catch (Exception e) {
+            LogUtils.getLogger().warn("Error stopping action with hash {}: ", actionHash, e);
+        }
+        // Always refresh to show updated action list after stop attempt
+        this.container.showCurrentBotActions();
+    }
+
+    private String getStopActionCommand(String actionHash) throws UnexpectedException {
+        boolean botCommand = FakeplayerConfig.enable;
+        boolean playerCommand = FakePlayerCompatConfig.commandPlayer;
+        String command;
+        if (botCommand) {
+            command = "bot ";
+        } else if (playerCommand) {
+            command = "player ";
+        } else {
+            throw new UnexpectedException("Unable to build String from commandNode.");
+        }
+        command = command + "action " + this.bot.getName() + " stop " + actionHash;
+        return command;
+    }
+
+    private void refreshSlots() {
+        for (int i = 0; i < 54; i++) {
+            Slot slot = this.slots.get(i);
+            ItemStack item = this.container.getItem(i);
+            slot.set(item);
+        }
+    }
+
+    @Override
+    public ItemStack quickMoveStack(Player player, int index) {
+        return ItemStack.EMPTY;
+    }
+
+    public BotActionGuiContainer getContainer() {
+        return this.container;
+    }
+}

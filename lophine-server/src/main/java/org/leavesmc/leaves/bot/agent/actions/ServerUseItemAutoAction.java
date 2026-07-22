@@ -17,10 +17,12 @@
 
 package org.leavesmc.leaves.bot.agent.actions;
 
+import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -37,7 +39,8 @@ import static org.leavesmc.leaves.bot.agent.actions.ServerUseItemToAction.useIte
 public class ServerUseItemAutoAction extends AbstractUseBotAction<ServerUseItemAutoAction> {
 
     public ServerUseItemAutoAction() {
-        super("use_auto", ServerUseItemAutoAction::new);
+        GuiRootNode guiRootNode = new GuiRootNode("Use", "Use Item", Items.BOW, "use_auto");
+        super("use_auto", ServerUseItemAutoAction::new, guiRootNode);
     }
 
     @Override

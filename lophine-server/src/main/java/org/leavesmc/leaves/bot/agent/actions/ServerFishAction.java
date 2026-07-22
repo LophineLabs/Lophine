@@ -17,11 +17,13 @@
 
 package org.leavesmc.leaves.bot.agent.actions;
 
+import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.bot.ServerBot;
 import org.leavesmc.leaves.entity.bot.actions.CraftFishAction;
@@ -29,7 +31,8 @@ import org.leavesmc.leaves.entity.bot.actions.CraftFishAction;
 public class ServerFishAction extends AbstractTimerBotAction<ServerFishAction> {
 
     public ServerFishAction() {
-        super("fish", ServerFishAction::new);
+        GuiRootNode guiRootNode = new GuiRootNode("Fish", "Fish", Items.FISHING_ROD, "fish");
+        super("fish", ServerFishAction::new, guiRootNode);
     }
 
     private static final int CATCH_ENTITY_DELAY = 20;

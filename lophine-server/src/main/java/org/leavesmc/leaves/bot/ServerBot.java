@@ -20,6 +20,8 @@ package org.leavesmc.leaves.bot;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.authlib.GameProfile;
 import fun.bm.lophine.LophineLogger;
+import fun.bm.lophine.bot.BotActionGuiContainer;
+import fun.bm.lophine.bot.BotActionGuiMenu;
 import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
 import fun.bm.lophine.config.modules.function.FakeplayerConfig;
 import io.papermc.paper.adventure.PaperAdventure;
@@ -357,13 +359,26 @@ public class ServerBot extends ServerPlayer {
     }
 
     @Override
-    public @NotNull InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand, @NotNull net.minecraft.world.phys.Vec3 location) { // Leaves - Paper 26.1: Entity#interact now takes Vec3
-        if (FakePlayerCompatConfig.openFakePlayerInventory) {
-            if (player instanceof ServerPlayer player1 && player.getMainHandItem().isEmpty()) {
+    public @NotNull InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand, @NotNull net.minecraft.world.phys.Vec3 location) {
+        if (player instanceof ServerPlayer player1 && player.getMainHandItem().isEmpty()) {
+            boolean isSneaking = player.isShiftKeyDown();
+            boolean enabled1Only = FakePlayerCompatConfig.openFakePlayerInventory ^ FakeplayerConfig.canOpenActionGui;
+            boolean openInventory = enabled1Only ? FakePlayerCompatConfig.openFakePlayerInventory : FakePlayerCompatConfig.openFakePlayerInventory && !isSneaking;
+            boolean openActionGui = enabled1Only ? FakeplayerConfig.canOpenActionGui : FakeplayerConfig.canOpenActionGui && isSneaking;
+
+            if (openInventory) {
                 BotInventoryOpenEvent event = new BotInventoryOpenEvent(this.getBukkitEntity(), player1.getBukkitEntity());
                 getServer().server.getPluginManager().callEvent(event);
                 if (!event.isCancelled()) {
                     player.openMenu(new SimpleMenuProvider((i, inventory, p) -> ChestMenu.sixRows(i, inventory, this.container), this.getDisplayName()));
+                    return InteractionResult.SUCCESS;
+                }
+            } else if (openActionGui) {
+                BotActionGuiOpenEvent event = new BotActionGuiOpenEvent(this.getBukkitEntity(), player1.getBukkitEntity());
+                getServer().server.getPluginManager().callEvent(event);
+                if (!event.isCancelled()) {
+                    BotActionGuiContainer container = new BotActionGuiContainer(this.getBukkitEntity(), player1.getBukkitEntity());
+                    player.openMenu(new SimpleMenuProvider((i, inventory, p) -> new BotActionGuiMenu(i, inventory, container), this.getDisplayName()));
                     return InteractionResult.SUCCESS;
                 }
             }
