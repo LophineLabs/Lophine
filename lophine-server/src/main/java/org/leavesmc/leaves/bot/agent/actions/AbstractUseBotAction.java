@@ -17,6 +17,9 @@
 
 package org.leavesmc.leaves.bot.agent.actions;
 
+import fun.bm.lophine.bot.action.gui.GuiNode;
+import fun.bm.lophine.bot.action.gui.GuiRootNode;
+import fun.bm.lophine.bot.action.gui.GuiSubNode;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
@@ -35,8 +38,8 @@ public abstract class AbstractUseBotAction<T extends AbstractUseBotAction<T>> ex
     private int alreadyUsedTick = 0;
     private int useItemRemainingTicks = 0;
 
-    public AbstractUseBotAction(String name, Supplier<T> supplier) {
-        super(name, supplier);
+    public AbstractUseBotAction(String name, Supplier<T> supplier, GuiRootNode guiData) {
+        super(name, supplier, guiData);
         this.addArgument("use_timeout", integer(-1))
                 .suggests((context, builder) -> {
                     builder.suggest("-1", Component.literal("no use timeout"));
@@ -44,6 +47,17 @@ public abstract class AbstractUseBotAction<T extends AbstractUseBotAction<T>> ex
                     builder.suggest("10", Component.literal("minimum trident shoot time"));
                 })
                 .setOptional(true);
+
+        if (guiData == null) return;
+
+        for (GuiNode node : guiData.getAllFurthestChildren()) {
+            GuiSubNode node0 = (GuiSubNode) node;
+            node0.child(
+                    new GuiSubNode("-1", "no use timeout", null, node0, "-1"),
+                    new GuiSubNode("3", "minimum bow shoot time", null, node0, "3"),
+                    new GuiSubNode("10", "minimum trident shoot time", null, node0, "10")
+            );
+        }
     }
 
     @Override
