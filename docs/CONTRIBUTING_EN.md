@@ -23,7 +23,7 @@ See also [This issue](https://github.com/isaacs/github/issues/1681), and then yo
 Before coding, you need these pieces of software / tools as Dev Environment.
 
 - `git`
-- `JDK 21 or higher`
+- `JDK 25 or higher`
 
 PS: You need to enable long path support in your System and Git before start, some of the platform's resolution here.
 
