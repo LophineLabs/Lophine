@@ -41,7 +41,8 @@ public class FakeplayerConfig implements IConfigModule {
     public static double regenAmount = 0.0;
 
     @ConfigInfo(name = "open-action-gui", comments = """
-            Allow opening fakeplayer action gui""")
+            Allow opening fakeplayer action gui,
+            need sneak to open if you enabled inventory open gui""")
     public static boolean canOpenActionGui = false;
 
     @ConfigInfo(name = "use-action", comments = """
