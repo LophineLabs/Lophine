@@ -41,7 +41,7 @@ Lophine 使用和 Folia 一样的补丁系统，并为了针对不同部分的�
 
 1. 将你的仓库 clone 到本地；
 2. 在你的 IDE 或 终端 内执行 Gradle 的 `applyAllPatches` 任务，如果是在终端内，你可以执行 `./gradlew applyAllPatches`；
-3. 在执行操作后，仓库根目录下应该存在以下目录对： `lophine-api` 和 `lophine-server` ， `luminol-api` 和 `luminol-server` ， `folia-api` 和 `folia-server` ， 以及 `paper-api` 和 `paper-server`（下文称作 `*-api` 和 `*-server` ）；
+3. 在执行操作后，仓库根目录下应该存在以下目录对： `lophine-api` 和 `lophine-server` , `folia-api` 和 `folia-server` ， 以及 `paper-api` 和 `paper-server`（下文称作 `*-api` 和 `*-server` ）；
 4. 进入 仓库根目录下的 `*-api` 和 `*-server` 文件夹进行修改。
 
 以下为对上述各个文件夹的简单描述，详细描述可以参考[这里](https://github.com/Toffikk/paperweight-examples/blob/18241979c88068d5b061d95ad69c98ecb201c246/README.md)：
@@ -49,14 +49,12 @@ Lophine 使用和 Folia 一样的补丁系统，并为了针对不同部分的�
 1. API部分
 
 - `lophine-api` ：对新增API的修改
-- `luminol-api` ：对luminol-API的修改应当在此文件夹下进行
 - `folia-api` ：对folia-API的修改应当在此文件夹下进行
 - `paper-api` ：对paper-API/spigot-API/bukkit-API的修改应该在此文件夹下进行
 
 2. Server部分
 
 - `lophine-server` ：对Minecraft原版服务器的修改和新增文件应当在此文件夹下进行
-- `luminol-server` ：对luminol-server的修改应当在此文件夹下进行
 - `folia-server` ：对folia-Server的修改应当在此文件夹下进行
 - `paper-server` ：对于paper对服务器逻辑的修改应当在此文件夹下进行
 
@@ -64,7 +62,7 @@ Lophine 使用和 Folia 一样的补丁系统，并为了针对不同部分的�
 
 - 在应用补丁前，基点将会指向未被更改的源码
 - 在基点后的每一个提交都是一个补丁
-- 只有在 Luminol 最后一个提交后的提交才会被视为 lophine 补丁
+- 只有在 Folia 最后一个提交后的提交才会被视为 lophine 补丁
 
 ## 增加补丁
 

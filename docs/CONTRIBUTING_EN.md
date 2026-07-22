@@ -44,7 +44,7 @@ If you have forked the main repository, then you should follow the steps below:
 
 1. Clone your repository to local
 2. Run Gradle's `applyAllPatches` task in your IDE or terminal (You can run `./gradlew applyAllPatches` directly in terminal.)
-3. After performing the operation, the following directory pairs should exist in the root directory of the warehouse: `lophine-api` and `lophine-server` , `luminol-api` and `luminol-server` , `folia-api` and `folia-server` , `paper-api` and `paper-server` (Referred to `*-api` and `*-server` as below)
+3. After performing the operation, the following directory pairs should exist in the root directory of the warehouse: `lophine-api` and `lophine-server` , `folia-api` and `folia-server` , `paper-api` and `paper-server` (Referred to `*-api` and `*-server` as below)
 4. Enter `*-api` and `*-server` directory to carry out modifications.
 
 The following is the simple description of the aforementioned folders, detailed description can be referred to [here](https://github.com/Toffikk/paperweight-examples/blob/18241979c88068d5b061d95ad69c98ecb201c246/README.md):
@@ -52,14 +52,12 @@ The following is the simple description of the aforementioned folders, detailed 
 1. API part
 
 - `lophine-api` : Modifications to the new API
-- `luminol-api` : Modifications to Luminol API should be carried out in this folder
 - `folia-api` : Modifications to Folia API should be carried out in this folder
 - `paper-api` : Modifications to Paper API/Spigot API/Bukkit API should be carried out in this folder
 
 2. Server part
 
 - `lophine-server` : Changes and new files to the Minecraft vanilla server should be made in this folder
-- `luminol-server` : Changes to luminol-server should be made in this folder
 - `folia-server` : Changes to folia-server should be made in this folder
 - `paper-server` : Modifications to the server logic for paper should be made in this folder
 
@@ -67,7 +65,7 @@ BTW, `*-api` and `*-server` and are not normal git repositories.
 
 - Before applying patches, the base will point to unmodified source code.
 - Every commit after the base is a patch.
-- Only commits after the last commit of Luminol will be considered as Lophine patches.
+- Only commits after the last commit of Folia will be considered as Lophine patches.
 
 ## Adding new patches
 
