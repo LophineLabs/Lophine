@@ -5,16 +5,17 @@ Subject: [PATCH] Luminol Config System
 
 
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index fb5ca3ab0ddba433a39e65572beeb955b50d6f72..42335e351e0cb4f82f46501503a15349f8a82e1b 100644
+index fb5ca3ab0ddba433a39e65572beeb955b50d6f72..a139182704a5f147661816d08907be8a7f8f7dde 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -2776,6 +2776,11 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+@@ -2776,6 +2776,12 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
       */
      void allowPausing(@NotNull org.bukkit.plugin.Plugin plugin, boolean value);
      // Paper end - API to check if the server is sleeping
 +
 +    // Luminol start - Luminol Config API
 +    me.earthme.luminol.api.config.LuminolConfigsInstance getLuminolConfigs(String name);
++    me.earthme.luminol.api.config.LuminolConfigBuilder getLuminolConfigBuilder();
 +    // Luminol end - Luminol Config API
 +
      // Folia start - region TPS API

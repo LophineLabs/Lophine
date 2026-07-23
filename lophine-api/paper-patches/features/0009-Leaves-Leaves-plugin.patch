@@ -23,11 +23,11 @@ index 8a24b84db656da4cec59e9bccac306467c8155b0..0ac1e049fad85de8365380b03e60d915
 +    // Leaves end - Feature API
  }
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 42335e351e0cb4f82f46501503a15349f8a82e1b..cd5f47f6d7fa15c1533724673b8bc2c75394795b 100644
+index a139182704a5f147661816d08907be8a7f8f7dde..a8c262064e4058f786c62c333130c4cac0ce4b66 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -2781,6 +2781,10 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
-     me.earthme.luminol.api.config.LuminolConfigsInstance getLuminolConfigs(String name);
+@@ -2782,6 +2782,10 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+     me.earthme.luminol.api.config.LuminolConfigBuilder getLuminolConfigBuilder();
      // Luminol end - Luminol Config API
  
 +    // Leaves start - Feature API

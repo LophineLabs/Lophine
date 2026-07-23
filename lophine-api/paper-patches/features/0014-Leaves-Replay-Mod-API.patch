@@ -23,10 +23,10 @@ index a747fbe107dcc134558ca8ecfbe30e81245a5742..b09a90f8187a15ddaa15f231f46f51f2
 +    // Leaves end - Photographer API
  }
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index f4f64538d13f3dba5a1cd8f0d24d1fd2e8b75749..2f4cc1115170557389f577f995f1bfaed1ec2f71 100644
+index c8fc95a85b162cc71aa8dada8f87f4fe6f5dad12..5e4da280f7bed1084ebc2814d23901ad072e116d 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -2835,4 +2835,8 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+@@ -2836,4 +2836,8 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
       */
      @NotNull org.leavesmc.leaves.entity.bot.BotManager getBotManager();
      // Leaves end - Bot API

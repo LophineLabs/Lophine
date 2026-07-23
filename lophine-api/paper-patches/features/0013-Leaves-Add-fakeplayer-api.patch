@@ -28,10 +28,10 @@ index 0ac1e049fad85de8365380b03e60d915ee643f16..a747fbe107dcc134558ca8ecfbe30e81
 +    // Leaves end - Bot API
  }
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 48e53223ba7edeca5256244480441a56a6657075..f4f64538d13f3dba5a1cd8f0d24d1fd2e8b75749 100644
+index 3c92440fbef6e6970cd800e0038a625a775eda9a..c8fc95a85b162cc71aa8dada8f87f4fe6f5dad12 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -2826,4 +2826,13 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+@@ -2827,4 +2827,13 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
       */
      double @Nullable [] getRegionTPS(@NotNull World world, int chunkX, int chunkZ);
      // Folia end - region TPS API

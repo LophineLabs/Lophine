@@ -5,7 +5,7 @@ Subject: [PATCH] World load/unload APIs
 
 
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index cd5f47f6d7fa15c1533724673b8bc2c75394795b..48e53223ba7edeca5256244480441a56a6657075 100644
+index a8c262064e4058f786c62c333130c4cac0ce4b66..3c92440fbef6e6970cd800e0038a625a775eda9a 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
 @@ -775,6 +775,17 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
