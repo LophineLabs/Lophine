@@ -91,3 +91,13 @@ You can modify an existing patch by following the steps below:
 4. Run Gradle's task `fixupPaperApiFilePatches` to regenerate lophine-created files to patches (PS: do not commit again before you run this task)
 5. Run Gradle's task `rebuildAllServerPatches` to modify existing patches
 6. Push and PR again
+
+## Providing localized comment support for configuration entries
+
+1. Create or modify the corresponding language file under the `lophine-server/src/main/resources/assets/lophine/lang` directory to add localized comments;
+    - The file name should follow the format listed on the `https://minecraft.wiki/w/Language` page, such as `en_us`, `zh_cn`, `zh_hk`, `zh_tw`. The file format is `json`;
+2. Run the Gradle task `sortLangKeys` to re-sort the keys in your language file;
+3. Commit your changes using `git commit -m <Commit Message>`;
+4. Push your generated patch files to your repository.
+
+After pushing, you can open a PR to submit your patches.

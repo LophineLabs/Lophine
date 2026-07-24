@@ -88,3 +88,13 @@ Lophine 使用和 Folia 一样的补丁系统，并为了针对不同部分的�
 4. 运行 Gradle 任务 `fixupPaperApiFilePatches` 来修改已被修改的在lophine新建文件的补丁（注意不要提交）；
 5. 运行 Gradle 任务 `rebuildAllServerPatches` 来修改已被修改的补丁；
 6. 将修改后的补丁 PR 发回储存库。
+
+## 为配置项提供本地化的注释支持
+
+1. 在 `lophine-server/src/main/resources/assets/lophine/lang` 目录下创建或修改相应的语言文件，添加本地化的注释；
+    - 文件的名字应当符合 `https://minecraft.wiki/w/Language` 页面下的格式，如 `en_us` `zh_cn` `zh_hk` `zh_tw`，文件以 `json` 为格式类型；
+2. 运行 Gradle 任务 `sortLangKeys` 来对你的语言文件内容进行重排序；
+3. 使用 `git commit -m <提交信息>` 进行提交；
+4. 将你生成的补丁文件进行推送。
+
+这样做以后，你就可以将你的补丁文件进行 PR 提交。
