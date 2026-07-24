@@ -1,3 +1,5 @@
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
@@ -103,5 +105,39 @@ subprojects {
                 addStringOption("Xdoclint:none", "-quiet")
             }
         }
+    }
+}
+
+// Sort all JSON language files under the lang directory by key in ASCII order
+val langDir = layout.projectDirectory.dir("lophine-server/src/main/resources/assets/lophine/lang")
+tasks.register("sortLangKeys") {
+    group = "lophine"
+    description = "Sort all JSON language files by key in ASCII (ordinal) order"
+    notCompatibleWithConfigurationCache("Inline task action references build script class")
+    inputs.dir(langDir).optional()
+    outputs.dir(langDir)
+    doLast {
+        val dir = langDir.asFile
+        if (!dir.isDirectory) {
+            logger.warn("Lang directory not found: $dir")
+            return@doLast
+        }
+        val jsonFiles = dir.listFiles { f -> f.extension == "json" }?.sortedBy { it.name } ?: emptyList()
+        if (jsonFiles.isEmpty()) {
+            logger.lifecycle("No .json files found in: $dir")
+            return@doLast
+        }
+        val slurper = JsonSlurper()
+        for (file in jsonFiles) {
+            @Suppress("UNCHECKED_CAST")
+            val data = slurper.parse(file) as Map<String, Any?>
+            val sorted = data.toSortedMap()
+            val json = JsonOutput.toJson(sorted)
+            // Pretty print with 2-space indent
+            val pretty = JsonOutput.prettyPrint(json)
+            file.writeText(pretty + "\n", charset = Charsets.UTF_8)
+            logger.lifecycle("Processed: ${file.name}  (${sorted.size} keys)")
+        }
+        logger.lifecycle("Done.")
     }
 }
