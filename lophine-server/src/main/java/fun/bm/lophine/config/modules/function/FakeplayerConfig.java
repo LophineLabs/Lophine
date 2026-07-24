@@ -16,69 +16,52 @@ import java.util.Set;
 
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "fakeplayer")
 public class FakeplayerConfig implements IConfigModule {
-    @ConfigInfo(name = "enable", comments = """
-            Enable fakeplayer functionality (/bot command)""")
+    @ConfigInfo(name = "enable")
     public static boolean enable = true;
 
-    @ConfigInfo(name = "unable-fakeplayer-names", comments = """
-            List of names that cannot be used for fakeplayers""")
+    @ConfigInfo(name = "unable-fakeplayer-names")
     public static List<String> unableNames = List.of("player-name");
 
-    @ConfigInfo(name = "limit", comments = """
-            Maximum number of fakeplayers allowed""")
+    @ConfigInfo(name = "limit")
     public static int limit = 10;
 
-    @ConfigInfo(name = "prefix", comments = """
-            Prefix for fakeplayer names""")
+    @ConfigInfo(name = "prefix")
     public static String prefix = "";
 
-    @ConfigInfo(name = "suffix", comments = """
-            Suffix for fakeplayer names""")
+    @ConfigInfo(name = "suffix")
     public static String suffix = "";
 
-    @ConfigInfo(name = "regen-amount", comments = """
-            Regeneration amount for fakeplayers""")
+    @ConfigInfo(name = "regen-amount")
     public static double regenAmount = 0.0;
 
-    @ConfigInfo(name = "open-action-gui", comments = """
-            Allow opening fakeplayer action gui,
-            need sneak to open if you enabled inventory open gui""")
+    @ConfigInfo(name = "open-action-gui")
     public static boolean canOpenActionGui = false;
 
-    @ConfigInfo(name = "use-action", comments = """
-            Allow fakeplayers to use actions""")
+    @ConfigInfo(name = "use-action")
     public static boolean canUseAction = true;
 
-    @ConfigInfo(name = "modify-config", comments = """
-            Allow modifying fakeplayer config""")
+    @ConfigInfo(name = "modify-config")
     public static boolean canModifyConfig = false;
 
-    @ConfigInfo(name = "manual-save-and-load", comments = """
-            Allow manual save and load of fakeplayers""")
+    @ConfigInfo(name = "manual-save-and-load")
     public static boolean canManualSaveAndLoad = false;
 
-    @ConfigInfo(name = "cache-skin", comments = """
-            Use skin cache for fakeplayers""")
+    @ConfigInfo(name = "cache-skin")
     public static boolean useSkinCache = false;
 
-    @ConfigInfo(name = "always-send-data", comments = """
-            Always send data for fakeplayers""")
+    @ConfigInfo(name = "always-send-data")
     public static boolean canSendDataAlways = true;
 
-    @ConfigInfo(name = "skip-sleep-check", comments = """
-            Skip sleep check for fakeplayers""")
+    @ConfigInfo(name = "skip-sleep-check")
     public static boolean canSkipSleep = false;
 
-    @ConfigInfo(name = "spawn-phantom", comments = """
-            Allow phantoms to spawn for fakeplayers""")
+    @ConfigInfo(name = "spawn-phantom")
     public static boolean canSpawnPhantom = false;
 
-    @ConfigInfo(name = "simulation-distance", comments = """
-            Simulation distance for fakeplayers (-1 for default)""")
+    @ConfigInfo(name = "simulation-distance")
     public static int simulationDistance = -1;
 
-    @ConfigInfo(name = "enable-locator-bar", comments = """
-            Enable locator bar for fakeplayers""")
+    @ConfigInfo(name = "enable-locator-bar")
     public static boolean enableLocatorBar = false;
 
     @DoNotLoad

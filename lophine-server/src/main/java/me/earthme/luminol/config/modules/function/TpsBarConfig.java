@@ -32,11 +32,11 @@ public class TpsBarConfig implements IConfigModule {
     public static List<String> chunkHotColors = List.of("<gradient:#55ff55:#00aa00><text></gradient>", "<gradient:#ffff55:#ffaa00><text></gradient>", "<gradient:#ff5555:#aa0000><text></gradient>", "<gradient:#55ff55:#00aa00><text></gradient>");
     @ConfigInfo(name = "update_interval_ticks")
     public static int updateInterval = 15;
-    @ConfigInfo(name = "precision_of_tps_value", comments = "Example(if tps is 20.00000000)(value -> result): 2 -> 20.00, 1 -> 20.0")
+    @ConfigInfo(name = "precision_of_tps_value")
     public static int precisionOfTPS = 2;
-    @ConfigInfo(name = "precision_of_mspt_value", comments = "Example(if mspt is 20.00000000)(value -> result): 2 -> 20.00, 1 -> 20.0")
+    @ConfigInfo(name = "precision_of_mspt_value")
     public static int precisionOfMSPT = 2;
-    @ConfigInfo(name = "display", comments = "Available displays: BOSS_BAR, ACTION_BAR, TAB_LIST")
+    @ConfigInfo(name = "display")
     public static EnumStatusBarDisplay display = EnumStatusBarDisplay.BOSS_BAR;
 
     @DoNotLoad

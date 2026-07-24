@@ -28,7 +28,7 @@ public class RegionBarConfig implements IConfigModule {
     public static List<String> utilColors = List.of("<gradient:#55ff55:#00aa00><text></gradient>", "<gradient:#ffff55:#ffaa00><text></gradient>", "<gradient:#ff5555:#aa0000><text></gradient>", "<gradient:#55ff55:#00aa00><text></gradient>");
     @ConfigInfo(name = "update_interval_ticks")
     public static int updateInterval = 15;
-    @ConfigInfo(name = "display", comments = "Available displays: BOSS_BAR, ACTION_BAR, TAB_LIST")
+    @ConfigInfo(name = "display")
     public static EnumStatusBarDisplay display = EnumStatusBarDisplay.BOSS_BAR;
 
     @DoNotLoad

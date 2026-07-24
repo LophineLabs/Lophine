@@ -11,16 +11,9 @@ public class CommandConfig implements IConfigModule {
     @ConfigInfo(name = "enable_data_command")
     @HotReloadUnsupported
     public static boolean data = false;
-    @ConfigInfo(name = "enable_command_block", comments = """
-            Force to enable command blocks.
-            ATTENTION: WOULD CAUSE SERVER CRASHING AS SOME THREADING ISSUE!!!
-            DO NOT ENABLE UNLESS YOU KNOW WHAT YOU ARE DOING!!!
-            """)
+    @ConfigInfo(name = "enable_command_block")
     public static boolean commandBlock = false;
-    @ConfigInfo(name = "enable_waypoints_and_waypoint_command", comments = """
-            Enable waypoint and waypoint command.
-            WARN: Still under testing
-            """)
+    @ConfigInfo(name = "enable_waypoints_and_waypoint_command")
     @HotReloadUnsupported
     public static boolean waypointsAndWaypointCommand = false;
 }

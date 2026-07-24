@@ -7,10 +7,8 @@ import me.earthme.luminol.enums.EnumConfigCategory;
 
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "appleskin", directory = {"protocol"})
 public class AppleSkinProtocolConfig implements IConfigModule {
-    @ConfigInfo(name = "enabled", comments = """
-            Enable AppleSkin protocol support""")
+    @ConfigInfo(name = "enabled")
     public static boolean enabled = false;
-    @ConfigInfo(name = "sync-tick-interval", comments = """
-            Set AppleSkin Synchronization Frequency (Unit: Game Ticks)""")
+    @ConfigInfo(name = "sync-tick-interval")
     public static int syncTickInterval = 20;
 }

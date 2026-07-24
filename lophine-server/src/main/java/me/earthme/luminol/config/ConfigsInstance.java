@@ -3,6 +3,7 @@ package me.earthme.luminol.config;
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.mojang.logging.LogUtils;
+import fun.bm.lophine.utils.ServerI18nUtil;
 import io.papermc.paper.threadedregions.RegionizedServer;
 import me.earthme.luminol.api.config.ConfigDataPair;
 import me.earthme.luminol.api.config.LuminolConfigsInstance;
@@ -343,7 +344,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     private void handleClassLevelComments(ConfigClassInfo configClassInfo, String fullConfigBasePath) {
         final String comment = configFileInstance.getComment(fullConfigBasePath);
         if (comment == null || comment.isBlank()) {
-            String comments0 = configClassInfo.comments();
+            String comments0 = ServerI18nUtil.getLocalizedComment(name + "." + fullConfigBasePath + ".comment");
             if (!comments0.isBlank()) {
                 configFileInstance.setComment(fullConfigBasePath, comments0);
             }
@@ -440,7 +441,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         }
 
         // Add default value with comments
-        final String comments = configInfo.comments();
+        final String comments = ServerI18nUtil.getLocalizedComment(name + "." + fullConfigKeyName + ".comment");
         if (!comments.isBlank()) {
             configFileInstance.setComment(fullConfigKeyName, comments);
         }
@@ -485,7 +486,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                         removeConfig(oldConfigKeyName, transformedConfig.directory());
                     }
 
-                    final String comments = configInfo.comments();
+                    final String comments = ServerI18nUtil.getLocalizedComment(name + "." + fullConfigKeyName + ".comment");
                     if (!comments.isBlank()) {
                         configFileInstance.setComment(fullConfigKeyName, comments);
                     }
@@ -526,7 +527,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
 
         // Handle comments
         if (!keepComments) {
-            final String comments = configInfo.comments();
+            final String comments = ServerI18nUtil.getLocalizedComment(name + "." + fullConfigKeyName + ".comment");
             configFileInstance.setComment(fullConfigKeyName, comments);
         }
 

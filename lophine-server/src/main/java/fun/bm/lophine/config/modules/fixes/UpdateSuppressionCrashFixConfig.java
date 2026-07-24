@@ -7,7 +7,6 @@ import me.earthme.luminol.enums.EnumConfigCategory;
 
 @ConfigClassInfo(category = EnumConfigCategory.FIXES, name = "update-suppression-crash-fix")
 public class UpdateSuppressionCrashFixConfig implements IConfigModule {
-    @ConfigInfo(name = "enabled", comments = """
-            Should crash caused by update suppression be prevented?""")
+    @ConfigInfo(name = "enabled")
     public static boolean enabled = true;
 }

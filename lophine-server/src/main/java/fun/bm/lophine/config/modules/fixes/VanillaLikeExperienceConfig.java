@@ -7,7 +7,6 @@ import me.earthme.luminol.enums.EnumConfigCategory;
 
 @ConfigClassInfo(category = EnumConfigCategory.FIXES, name = "vanilla-like-experience")
 public class VanillaLikeExperienceConfig implements IConfigModule {
-    @ConfigInfo(name = "enabled", comments = """
-            Restore a more vanilla-like technical gameplay experience by bypassing some Paper safety and behavior changes.""")
+    @ConfigInfo(name = "enabled")
     public static boolean enabled = false;
 }

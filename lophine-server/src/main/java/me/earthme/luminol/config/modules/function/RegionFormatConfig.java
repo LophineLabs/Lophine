@@ -19,25 +19,25 @@ import java.util.Set;
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "region_format")
 public class RegionFormatConfig implements IConfigModule {
     @HotReloadUnsupported
-    @ConfigInfo(name = "format", allowAutoReset = false, comments = "Available choices: MCA, B_LINEAR, LINEAR_V2")
+    @ConfigInfo(name = "format", allowAutoReset = false)
     public static EnumRegionFormat regionFormat = EnumRegionFormat.MCA;
     @HotReloadUnsupported
-    @ConfigInfo(name = "linear_compression_level", comments = "Decides the compression level of the region file(Only works for LINEAR_V2 and B_LINEAR)")
+    @ConfigInfo(name = "linear_compression_level")
     public static int linearCompressionLevel = 1;
     @HotReloadUnsupported
-    @ConfigInfo(name = "linear_io_thread_count", comments = "Decides the worker thread count of linear(Only works for LINEAR_V2)")
+    @ConfigInfo(name = "linear_io_thread_count")
     public static int linearIoThreadCount = 6;
     @HotReloadUnsupported
-    @ConfigInfo(name = "linear_io_flush_delay_ms", comments = "Decides when it will be flushed to the region file when it has been marked to save for n(default is 100) milliseconds(Only works for LINEAR_V2)")
+    @ConfigInfo(name = "linear_io_flush_delay_ms")
     public static int linearIoFlushDelayMs = 100;
     @HotReloadUnsupported
-    @ConfigInfo(name = "blinear_io_flush_delay_ms", comments = "Decides when it will be flushed to the region file when there has been no write operations for n(default is 3000) milliseconds(Only works for B_LINEAR)")
+    @ConfigInfo(name = "blinear_io_flush_delay_ms")
     public static int blinearIoFlushDelayMs = 3000;
     @HotReloadUnsupported
-    @ConfigInfo(name = "blinear_io_thread_count", comments = "Decides the worker thread count of buffered linear(Only works for B_LINEAR)")
+    @ConfigInfo(name = "blinear_io_thread_count")
     public static int blinearIoThreadCount = 6;
     @HotReloadUnsupported
-    @ConfigInfo(name = "linear_use_virtual_thread", comments = "Decides if it could use virtual threads for linear format(Only works for LINEAR_V2)")
+    @ConfigInfo(name = "linear_use_virtual_thread")
     public static boolean linearUseVirtualThread = true;
 
     @DoNotLoad

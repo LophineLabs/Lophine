@@ -12,27 +12,15 @@ import org.jetbrains.annotations.Nullable;
 
 @ConfigClassInfo(name = "portal_rate_limit", category = EnumConfigCategory.FUNCTION)
 public class PortalRateLimiterConfig implements IConfigModule {
-    @ConfigInfo(name = "enable", comments = "Whether or not to limit the portal rate when entity goes into portals")
+    @ConfigInfo(name = "enable")
     @HotReloadUnsupported
     public static boolean enabled = false;
 
-    @ConfigInfo(name = "maximum_portal_teleports_per_tick", comments = """
-            Decides how much portal teleportation should be handled within a tick in a single tick region,when exceed,
-            the portal teleportation will be pushed into the next tick
-            
-            Note: set to -1 to use custom expressions""")
+    @ConfigInfo(name = "maximum_portal_teleports_per_tick")
     @HotReloadUnsupported
     public static int maxPortalTeleportsPerTick = 200;
 
-    @ConfigInfo(name = "maximum_portal_teleports_per_tick_expression", comments = """
-            If the fixed limit is not enough for use, you could define your own expression to dynamically limit the
-            portal rate.
-            
-            Available variables(all is of current tickregion): e (ticking_entity_count)
-                                 c (ticking_chunk_count)
-                                 p (player_count)
-            Example: 50 * (1 + sqrt(x/1000) + c/200 + p/5)
-            """)
+    @ConfigInfo(name = "maximum_portal_teleports_per_tick_expression")
     @HotReloadUnsupported
     public static String maxPortalTeleportsExpression = "50 * (1 + sqrt(e/1000) + c/200 + p/5)";
 

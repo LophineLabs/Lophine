@@ -7,6 +7,6 @@ import me.earthme.luminol.enums.EnumConfigCategory;
 
 @ConfigClassInfo(category = EnumConfigCategory.MISC, name = "folia_watchdog")
 public class FoliaWatchogConfig implements IConfigModule {
-    @ConfigInfo(name = "tick_region_time_out_ms", comments = "Decides the interval of the watchdog prints the threads dumps of tickregions in stuck")
+    @ConfigInfo(name = "tick_region_time_out_ms")
     public static int tickRegionTimeOutMs = 5000;
 }

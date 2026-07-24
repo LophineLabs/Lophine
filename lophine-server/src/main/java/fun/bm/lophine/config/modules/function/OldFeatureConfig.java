@@ -22,8 +22,6 @@ public class OldFeatureConfig implements IConfigModule {
     @ConfigInfo(name = "old_raid_behavior")
     public static boolean oldRaidBehavior = false;
 
-    @ConfigInfo(name = "villager-void-trade", comments =
-            """
-                    Allow villager void trade.""")
+    @ConfigInfo(name = "villager-void-trade")
     public static boolean villagerVoidTrade = false;
 }

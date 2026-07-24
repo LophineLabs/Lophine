@@ -5,7 +5,7 @@ Subject: [PATCH] Add config to enable save-all command
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedServer.java b/io/papermc/paper/threadedregions/RegionizedServer.java
-index 276349d778c2e6f0b1081eec4851bad5d25db237..79ef1e69ec364beec69b37c6850c038cdba73b4c 100644
+index a2db29aa47a4b7213d4956f02f6e83122ccfdbd1..6fb3c88463ff69bddb7d8dcde0e5339567d3e1c6 100644
 --- a/io/papermc/paper/threadedregions/RegionizedServer.java
 +++ b/io/papermc/paper/threadedregions/RegionizedServer.java
 @@ -265,6 +265,8 @@ public final class RegionizedServer {

@@ -5,10 +5,7 @@ import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
 import me.earthme.luminol.enums.EnumConfigCategory;
 
-@ConfigClassInfo(category = EnumConfigCategory.OPTIMIZATIONS, name = "throttle_goal_selector_tick_in_inactive_tick", comments =
-        "Throttles the AI goal selector in entity inactive ticks. \n" +
-                "This can improve performance by a few percent, but has minor gameplay implications."
-)
+@ConfigClassInfo(category = EnumConfigCategory.OPTIMIZATIONS, name = "throttle_goal_selector_tick_in_inactive_tick")
 public class EntityGoalSelectorInactiveTickConfig implements IConfigModule {
     @ConfigInfo(name = "enabled")
     public static boolean enabled = false;

@@ -13,13 +13,7 @@ import me.earthme.luminol.enums.EnumConfigCategory;
 @ConfigClassInfo(name = "global_entities_counter", category = EnumConfigCategory.EXPERIMENT)
 public class GlobalEntitiesCounter implements IConfigModule {
     @HotReloadUnsupported
-    @ConfigInfo(name = "version", comments = """
-            DISABLED
-            DEFAULT_SYNC: Enable global entities counter origin version with sync counter module.
-            DEFAULT_ASYNC: Enable global entities counter origin version with async counter module.
-            PRECISE: Enable precise mob cap calculation with incremental counting. Replaces the periodic full-scan with event-driven real-time updates.
-            
-            You need to set per-player-mob-spawns to false on paper-world-defaults.yml or paper-world.yml""")
+    @ConfigInfo(name = "version")
     public static GlobalEntitiesCounterType type = GlobalEntitiesCounterType.DISABLED;
 
     @DoNotLoad

@@ -12,29 +12,18 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Set;
 
-@ConfigClassInfo(
-        category = EnumConfigCategory.MISC,
-        name = "auto_update",
-        comments = """
-                Checks GitHub Releases for newer version's jars on a schedule.
-                Downloads are staged under auto_update/lophine and written to auto_update/core.path,
-                which Hyacinthusclip can consume on the next restart.
-                If target_jar_path is set, server will also try to replace that launcher jar directly."""
-)
+@ConfigClassInfo(category = EnumConfigCategory.MISC, name = "auto_update")
 public class AutoUpdateConfig implements IConfigModule {
-    @ConfigInfo(name = "enabled", comments = "Whether the server should check for updates automatically.")
+    @ConfigInfo(name = "enabled")
     public static boolean enabled = false;
 
-    @ConfigInfo(name = "check_times", comments = "List of daily check times in HH:mm, based on the server's local time zone.")
+    @ConfigInfo(name = "check_times")
     public static List<String> checkTimes = List.of("06:00");
 
-    @ConfigInfo(name = "allow_prerelease", comments = "Whether prerelease GitHub releases are allowed when selecting an update.")
+    @ConfigInfo(name = "allow_prerelease")
     public static boolean allowPrerelease = false;
 
-    @ConfigInfo(name = "target_jar_path", comments = """
-            Optional launcher jar path to replace after a successful download.
-            Leave this blank to keep the downloaded jar staged in auto_update/lophine
-            and let Hyacinthusclip switch to it through auto_update/core.path on restart.""")
+    @ConfigInfo(name = "target_jar_path")
     public static String targetJarPath = "";
 
     @DoNotLoad

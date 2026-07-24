@@ -7,8 +7,6 @@ import me.earthme.luminol.enums.EnumConfigCategory;
 
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "redstone")
 public class RedStoneConfig implements IConfigModule {
-    @ConfigInfo(name = "shears_rotate", comments =
-            """
-                    Allows you to use the Shears to right-click to rotate the block.""")
+    @ConfigInfo(name = "shears_rotate")
     public static boolean shears = false;
 }

@@ -7,12 +7,10 @@ import me.earthme.luminol.enums.EnumConfigCategory;
 
 @ConfigClassInfo(category = EnumConfigCategory.MISC, name = "disable_warning")
 public class DisableWarningConfig implements IConfigModule {
-    @ConfigInfo(name = "disable_heightmap_warning", comments =
-            """
-                    Disable heightmap-check's warning""")
+    @ConfigInfo(name = "disable_heightmap_warning")
     public static boolean disableHeightmapWarning = false;
-    @ConfigInfo(name = "disable_offline_mode_warning", comments = "Disable offline warns popped in the log when starting the server")
+    @ConfigInfo(name = "disable_offline_mode_warning")
     public static boolean disableOfflineModeWarning = false;
-    @ConfigInfo(name = "disable_moved_wrongly_threshold_warning", comments = "Disable wrongly move warns and checks")
+    @ConfigInfo(name = "disable_moved_wrongly_threshold_warning")
     public static boolean disableMovedWronglyThresholdWarning = false;
 }

@@ -152,4 +152,13 @@ public class ConfigManager {
         toReload.forEach(ConfigsInstance::saveConfigs);
         needTransformedConfigs.clear(); // free space when all done
     }
+
+    public static void reloadComments() {
+        CompletableFuture<?>[] futures = configfiles.values().stream()
+                .map(config -> CompletableFuture.runAsync(() -> {
+                    config.reload(false, false);
+                }))
+                .toArray(CompletableFuture[]::new);
+        CompletableFuture.allOf(futures).join();
+    }
 }

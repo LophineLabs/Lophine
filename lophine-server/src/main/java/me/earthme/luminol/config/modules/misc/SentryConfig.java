@@ -15,16 +15,14 @@ import java.util.Set;
 @ConfigClassInfo(category = EnumConfigCategory.MISC, name = "sentry")
 public class SentryConfig implements IConfigModule {
 
-    @ConfigInfo(name = "dsn", comments =
-            " Sentry DSN for improved error logging, leave blank to disable,\n" +
-                    " Obtain from https://sentry.io/")
+    @ConfigInfo(name = "dsn")
     public static String sentryDsn = "";
 
     @CommandSuggestions(suggest = {"OFF", "FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE", "ALL"})
-    @ConfigInfo(name = "log_level", comments = " Logs with a level higher than or equal to this level will be recorded.")
+    @ConfigInfo(name = "log_level")
     public static String logLevel = "WARN";
 
-    @ConfigInfo(name = "only_log_thrown", comments = " Only log with a Throwable will be recorded after enabling this.")
+    @ConfigInfo(name = "only_log_thrown")
     public static boolean onlyLogThrown = true;
 
     @Override

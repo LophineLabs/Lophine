@@ -18,13 +18,11 @@ public class ReplayAPIConfig implements IConfigModule {
     public static boolean enableCache = true;
 
     @HotReloadUnsupported
-    @ConfigInfo(name = "cache-photographer-time", comments = """
-            Time to cache photographer profile(in seconds)""")
+    @ConfigInfo(name = "cache-photographer-time")
     public static int cachePhotographerTime = 3600;
 
     @HotReloadUnsupported
-    @ConfigInfo(name = "cache-photographer-size", comments = """
-            Maximum size of cache photographer profile""")
+    @ConfigInfo(name = "cache-photographer-size")
     public static int cachePhotographerSize = 100;
 
     @Override

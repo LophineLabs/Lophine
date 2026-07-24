@@ -7,7 +7,6 @@ import me.earthme.luminol.enums.EnumConfigCategory;
 
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "jade", directory = {"protocol"})
 public class JadeProtocolConfig implements IConfigModule {
-    @ConfigInfo(name = "enabled", comments = """
-            Enable Jade protocol support""")
+    @ConfigInfo(name = "enabled")
     public static boolean enabled = false;
 }

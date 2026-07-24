@@ -9,8 +9,7 @@ import java.util.Random;
 
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "xaero-map", directory = {"protocol"})
 public class XaeroMapProtocolConfig implements IConfigModule {
-    @ConfigInfo(name = "enabled", comments = """
-            Enable Xaero World Map Protocol Support""")
+    @ConfigInfo(name = "enabled")
     public static boolean enabled = false;
     @ConfigInfo(name = "xaeroMapServerID")
     public static int xaeroMapServerID = new Random().nextInt();

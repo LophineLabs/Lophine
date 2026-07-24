@@ -39,6 +39,6 @@ public class ServuxProtocolConfig implements IConfigModule {
     public static int litematicsMaxNbtSize = 2097152;
 
     @CommandSuggestions(suggest = {"-1", "1200"})
-    @ConfigInfo(name = "litematics-print-max-delay-ticks", directory = {"litematics"}, comments = "The max delay ticks for printing litematics, -1 to disable")
+    @ConfigInfo(name = "litematics-print-max-delay-ticks", directory = {"litematics"})
     public static int maxDelay = 1200;
 }

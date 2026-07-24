@@ -7,6 +7,6 @@ import me.earthme.luminol.enums.EnumConfigCategory;
 
 @ConfigClassInfo(category = EnumConfigCategory.FIXES, name = "use_vanilla_random_source")
 public class VanillaRandomSourceConfig implements IConfigModule {
-    @ConfigInfo(name = "enable_for_player_entity", comments = "Related with RNG cracks")
+    @ConfigInfo(name = "enable_for_player_entity")
     public static boolean useLegacyRandomSourceForPlayers = false;
 }

@@ -11,21 +11,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 
-@ConfigClassInfo(
-        category = EnumConfigCategory.ROOT,
-        name = "hopper_counter",
-        directory = {"carpet"},
-        comments = """
-                Hopper counter functions."""
-)
+@ConfigClassInfo(category = EnumConfigCategory.ROOT, name = "hopper_counter", directory = {"carpet"})
 public class WoolHopperCounterConfig implements IConfigModule {
-    @ConfigInfo(name = "hopperCounters", comments = """
-            Enable the existing wool hopper counter implementation.""")
+    @ConfigInfo(name = "hopperCounters")
     public static boolean hopperCounters = false;
 
-    @ConfigInfo(name = "hopperCountersUnlimitedSpeed", comments = """
-            Remove the hopper transfer speed limit for counters.
-            Only effective when hopperCounters is enabled.""")
+    @ConfigInfo(name = "hopperCountersUnlimitedSpeed")
     public static boolean hopperCountersUnlimitedSpeed = false;
 
     @DoNotLoad

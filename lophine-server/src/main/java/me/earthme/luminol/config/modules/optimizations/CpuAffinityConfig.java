@@ -21,8 +21,7 @@ import java.util.Set;
 @ConfigClassInfo(category = EnumConfigCategory.OPTIMIZATIONS, name = "cpu_affinity")
 public class CpuAffinityConfig implements IConfigModule {
     @HotReloadUnsupported
-    @ConfigInfo(name = "enabled_for_tickregion", comments = "Using this you could pin the threads of tick region scheduler(Following are the same) to cpu cores listed in the config 'tickregion_affinity' following, \n" +
-            "which is useful for those CPU with P and E cores (such as 12/13/14 gen Intel Core CPUs and so on.)")
+    @ConfigInfo(name = "enabled_for_tickregion")
     public static boolean enabledForTickRegion = false;
     @HotReloadUnsupported
     @ConfigInfo(name = "enable_for_chunksystem_worker")
@@ -32,7 +31,7 @@ public class CpuAffinityConfig implements IConfigModule {
     public static boolean enabledForChunkSystemIo = false;
 
     @HotReloadUnsupported
-    @ConfigInfo(name = "tickregion_affinity", comments = "The core number you want the tick region threads to bind on")
+    @ConfigInfo(name = "tickregion_affinity")
     public static List<String> tickRegionAffinity = Affinity.getAffinity()
             .stream()
             .mapToObj(String::valueOf)

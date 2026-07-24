@@ -11,22 +11,16 @@ import me.earthme.luminol.enums.EnumConfigCategory;
 public class ContainerExpansionConfig implements IConfigModule {
     @HotReloadUnsupported
     @CommandSuggestions(suggest = {"1", "2", "3", "4", "5", "6"})
-    @ConfigInfo(name = "barrel_rows", comments =
-            """
-                    range: 1~6""")
+    @ConfigInfo(name = "barrel_rows")
     public static int barrelRows = 3;
 
     @HotReloadUnsupported
     @CommandSuggestions(suggest = {"1", "2", "3", "4", "5", "6"})
-    @ConfigInfo(name = "enderchest_rows", comments =
-            """
-                    range: 1~6""")
+    @ConfigInfo(name = "enderchest_rows")
     public static int enderchestRows = 3;
 
     @CommandSuggestions(suggest = {"1", "2", "32", "64"})
-    @ConfigInfo(name = "shulker_stackable_count", directory = {"shulker_box"}, comments =
-            """
-                    range: 1~64""")
+    @ConfigInfo(name = "shulker_stackable_count", directory = {"shulker_box"})
     public static int shulkerCount = 1;
 
     @ConfigInfo(name = "same_nbt_shulker_stackable", directory = {"shulker_box"})

@@ -271,6 +271,7 @@ public class ServerI18nUtil {
     private static void loadLophineI18n(BiConsumer<String, String> bi) {
         if (Language.class.getResource(lophineLangPath) != null) {
             Language.parseTranslations(bi, lophineLangPath);
+            if (LanguageConfig.allowAutoResetComments) ConfigManager.reloadComments();
         } else {
             loadLophineI18nDefault(bi);
         }
@@ -295,6 +296,12 @@ public class ServerI18nUtil {
             logger.warn("Failed to load language from filesystem {}", filePath);
             throw e;
         }
+    }
+
+    public static String getLocalizedComment(String key) {
+        String current = Language.getInstance().getOrDefault(key, "");
+        if (!current.isBlank()) return current;
+        return Language.DEFAULT_INSTANCE.getOrDefault(key, "");
     }
 
     private static class UnsupportedLanguageException extends Exception {

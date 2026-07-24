@@ -12,14 +12,11 @@ import java.util.Set;
 
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "syncmatica", directory = {"protocol"})
 public class SyncmaticaProtocolConfig implements IConfigModule {
-    @ConfigInfo(name = "enabled", comments = """
-            Enable Syncmatica protocol support""")
+    @ConfigInfo(name = "enabled")
     public static boolean enabled = false;
-    @ConfigInfo(name = "useQuota", comments = """
-            Is there a limit on the size of projection files?""")
+    @ConfigInfo(name = "useQuota")
     public static boolean useQuota = false;
-    @ConfigInfo(name = "quota-Limit", comments = """
-            Maximum Projection File Size (in bytes)""")
+    @ConfigInfo(name = "quota-Limit")
     public static int quotaLimit = 40000000;
 
     public void onLoaded(CommentedFileConfig configInstance, @Nullable Set<Exception> e) {

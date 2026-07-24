@@ -18,25 +18,18 @@ public class UsernameCheckConfig implements IConfigModule {
     @DoNotLoad
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    @ConfigInfo(name = "enabled", comments = "Decide whether the username checks are enabled, \n" +
-            " you could disable it if your players are using Chinese username but also notification any security impacts caused by disabling it")
+    @ConfigInfo(name = "enabled")
     public static boolean enabled = true;
-    @ConfigInfo(name = "enforce_skull_validation", comments = """
-            Enforce skull validation, preventing skulls with invalid names from disconnecting the client.
-            """)
+
+    @ConfigInfo(name = "enforce_skull_validation")
     public static boolean enforceSkullValidation = true;
-    @ConfigInfo(name = "allow_old_player_join", comments = """
-            Allow old players to join the server after the username regex is changed,
-            even if their names don't meet the new requirements.
-            """)
+
+    @ConfigInfo(name = "allow_old_player_join")
     public static boolean allowOldPlayersJoin = false;
 
     @DoNotLoad
     private static final String defaultUsernameCheckRegex = "^[a-zA-Z0-9_.]*$";
-    @ConfigInfo(name = "username_check_regex", comments = """
-             Use username regex to validate usernames,
-             allowing only characters specified in the regex.
-            """)
+    @ConfigInfo(name = "username_check_regex")
     public static final String usernameCheckRegex = defaultUsernameCheckRegex;
 
     @DoNotLoad

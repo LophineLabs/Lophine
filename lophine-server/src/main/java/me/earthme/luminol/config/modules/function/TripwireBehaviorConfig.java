@@ -11,11 +11,6 @@ public class TripwireBehaviorConfig implements IConfigModule {
     @ConfigInfo(name = "enabled")
     public static boolean enabled = false;
 
-    @ConfigInfo(name = "behavior_mode", comments =
-            """
-                    Available Value:
-                    VANILLA20
-                    VANILLA21
-                    MIXED""")
+    @ConfigInfo(name = "behavior_mode")
     public static EnumTripwireBehavior behaviorMode = EnumTripwireBehavior.VANILLA21;
 }
