@@ -41,6 +41,7 @@ import net.minecraft.network.protocol.game.*;
 import net.minecraft.network.protocol.login.ClientboundLoginFinishedPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.RegistryLayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.tags.TagNetworkSerialization;
 import net.minecraft.world.entity.EntityTypes;
@@ -93,6 +94,11 @@ public class Recorder extends Connection {
         this.replayFile = new ReplayFile(replayFile, saveService);
         this.channel = new LocalChannel();
     }
+
+    public void bind(ServerGamePacketListenerImpl listener) {
+        this.packetListener = listener;
+    }
+
 
     public void start() {
         startTime = System.currentTimeMillis();

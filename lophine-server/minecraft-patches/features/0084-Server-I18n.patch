@@ -5,7 +5,7 @@ Subject: [PATCH] Server I18n
 
 
 diff --git a/net/minecraft/locale/Language.java b/net/minecraft/locale/Language.java
-index 47cd33bce908744e64356b585853d6a8ecf82443..9e6f89ac7cf730bfc3c15d5a4f648c550cf72e22 100644
+index 47cd33bce908744e64356b585853d6a8ecf82443..bb4011d3c6a1d2a5aa66e68fe719cd5eea2c0dd2 100644
 --- a/net/minecraft/locale/Language.java
 +++ b/net/minecraft/locale/Language.java
 @@ -37,6 +37,7 @@ public abstract class Language {
