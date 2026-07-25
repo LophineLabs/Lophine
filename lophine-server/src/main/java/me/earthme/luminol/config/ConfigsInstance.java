@@ -151,6 +151,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         // if the config load with exceptions but allowed, remove exceptions from the map
         allInstanced.replaceAll((_, _) -> null);
         setupLatch();
+        saveConfigs();
     }
 
     /**
@@ -257,28 +258,12 @@ public class ConfigsInstance implements LuminolConfigsInstance {
             }
         }
 
-        loadCategoryComments(); // load base key comment
-
         allInstanced.putAll(stagedMap);
     }
 
     /**
      * Load config category comments
      */
-    private void loadCategoryComments() {
-        for (EnumConfigCategory category : EnumConfigCategory.values()) {
-            String key = category.getBaseKeyName();
-            if (key == null) continue;
-            String comment = category.getKeyComment();
-            if (comment == null) continue;
-            if (!completeConfigPath(key).isEmpty()) {
-                String comment0 = configFileInstance.getComment(key);
-                if (comment0 == null) {
-                    configFileInstance.setComment(key, comment);
-                }
-            }
-        }
-    }
 
     /**
      * Instantiate all configuration modules
@@ -304,7 +289,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         // Build configuration path and handle class comments
         final List<String> category = buildConfigCategoryPath(configClassInfo);
         final String fullConfigBasePath = String.join(".", category);
-        handleClassLevelComments(configClassInfo, fullConfigBasePath);
+        handleClassLevelComments(fullConfigBasePath, keepComments);
 
         // Process each field in the module
         Field[] fields = singleConfigModule.getClass().getDeclaredFields();
@@ -341,12 +326,18 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     /**
      * Handle class-level comments for configuration
      */
-    private void handleClassLevelComments(ConfigClassInfo configClassInfo, String fullConfigBasePath) {
-        final String comment = configFileInstance.getComment(fullConfigBasePath);
-        if (comment == null || comment.isBlank()) {
-            String comments0 = ServerI18nUtil.getLocalizedComment(name + "." + fullConfigBasePath + ".comment");
-            if (!comments0.isBlank()) {
-                configFileInstance.setComment(fullConfigBasePath, comments0);
+    private void handleClassLevelComments(String fullConfigBasePath, boolean keepComments) {
+        final String existingComment = configFileInstance.getComment(fullConfigBasePath);
+        final String localizedComment = ServerI18nUtil.getLocalizedComment(name + "." + fullConfigBasePath + ".comment");
+        if (!keepComments) {
+            // Force reset to localized default
+            if (!localizedComment.isBlank()) {
+                configFileInstance.setComment(fullConfigBasePath, localizedComment);
+            }
+        } else if (existingComment == null || existingComment.isBlank()) {
+            // Only fill in when blank
+            if (!localizedComment.isBlank()) {
+                configFileInstance.setComment(fullConfigBasePath, localizedComment);
             }
         }
     }
@@ -406,7 +397,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     private void handleMissingOrRemovedConfig(Field field, String fullConfigKeyName,
                                               ConfigInfo configInfo, boolean removed) throws IllegalAccessException {
         // Process transformed configurations
-        processTransformedConfigs(field, fullConfigKeyName, configInfo, removed);
+        processTransformedConfigs(field, fullConfigKeyName, removed);
 
         // Handle removed configurations
         if (removed) {
@@ -452,8 +443,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     /**
      * Process transformed configurations
      */
-    private void processTransformedConfigs(Field field, String fullConfigKeyName,
-                                           ConfigInfo configInfo, boolean removed) {
+    private void processTransformedConfigs(Field field, String fullConfigKeyName, boolean removed) {
         for (TransformedConfig transformedConfig : field.getAnnotationsByType(TransformedConfig.class)) {
             final String oldConfigKeyName = String.join(".", transformedConfig.directory()) + "." + transformedConfig.name();
 

@@ -109,6 +109,11 @@ public class ServerI18nUtil {
             }
             Language.inject(createLangInstance());
             logger.info("Successfully loaded language: {}", lang);
+            if (LanguageConfig.allowAutoResetComments) {
+                logger.info("Start trying to load localized comments.");
+                ConfigManager.reloadComments();
+                logger.info("Loaded all comments.");
+            }
         } catch (Exception e) {
             if (e instanceof MalformedJsonException malformedJson) {
                 malformedJson.clean();
@@ -271,7 +276,6 @@ public class ServerI18nUtil {
     private static void loadLophineI18n(BiConsumer<String, String> bi) {
         if (Language.class.getResource(lophineLangPath) != null) {
             Language.parseTranslations(bi, lophineLangPath);
-            if (LanguageConfig.allowAutoResetComments) ConfigManager.reloadComments();
         } else {
             loadLophineI18nDefault(bi);
         }
