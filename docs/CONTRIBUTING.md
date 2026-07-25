@@ -95,6 +95,6 @@ Lophine 使用和 Folia 一样的补丁系统，并为了针对不同部分的�
     - 文件的名字应当符合 `https://minecraft.wiki/w/Language` 页面下的格式，如 `en_us` `zh_cn` `zh_hk` `zh_tw`，文件以 `json` 为格式类型；
 2. 运行 Gradle 任务 `sortLangKeys` 来对你的语言文件内容进行重排序；
 3. 使用 `git commit -m <提交信息>` 进行提交；
-4. 将你生成的补丁文件进行推送。
+4. 将你修改的文件进行推送。
 
-这样做以后，你就可以将你的补丁文件进行 PR 提交。
+这样做以后，你就可以将你的修改进行 PR 提交。

@@ -98,6 +98,6 @@ You can modify an existing patch by following the steps below:
     - The file name should follow the format listed on the `https://minecraft.wiki/w/Language` page, such as `en_us`, `zh_cn`, `zh_hk`, `zh_tw`. The file format is `json`;
 2. Run the Gradle task `sortLangKeys` to re-sort the keys in your language file;
 3. Commit your changes using `git commit -m <Commit Message>`;
-4. Push your generated patch files to your repository.
+4. Push your modified files to your repository.
 
-After pushing, you can open a PR to submit your patches.
+After pushing, you can open a PR to submit your changes.
