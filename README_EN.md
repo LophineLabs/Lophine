@@ -29,6 +29,11 @@
 - 🔬 **Redstone Enhancement** - More redstone functionality on Folia (use Fabric for complete redstone features)
 - 🛠️ **More Useful Functions** - Continuously adding useful server features
 
+### Additional Launch Parameters
+
+ - morninggloryclip.useMojangSource - Use Mojang's source for Minecraft Server
+ - morninggloryclip.enable.mixin - Enable mixin support for Leaves Plugin
+
 ## 📥 Download
 
 ### Stable Releases
@@ -79,7 +84,7 @@ dependencies {
 <dependencies>
     <dependency>
         <groupId>fun.bm.lophine</groupId>
-        <artifactId>luminol-api</artifactId>
+        <artifactId>lophine-api</artifactId>
         <version>$VERSION</version>
         <scope>provided</scope>
     </dependency>

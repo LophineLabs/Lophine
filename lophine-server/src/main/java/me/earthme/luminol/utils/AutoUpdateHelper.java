@@ -163,7 +163,7 @@ public final class AutoUpdateHelper {
 
         if (finalJarPath.equals(stagedJar)) {
             LOGGER.info(
-                    "Downloaded the latest Lophine jar to {} and refreshed auto_update/core.path for Hyacinthusclip. Please restart your server.",
+                    "Downloaded the latest Lophine jar to {} and refreshed auto_update/core.path for Clip. Please restart your server.",
                     finalJarPath.toAbsolutePath()
             );
         } else {

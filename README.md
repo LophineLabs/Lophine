@@ -29,6 +29,12 @@
 - 🔬 **生电功能增强** - 在 Folia 上实现更多生电内容（完整生电请使用 Fabric）
 - 🛠️ **更多实用功能** - 持续添加有用的服务器功能
 
+### 额外启动参数
+
+ - morninggloryclip.useMojangSource 强制服务端使用mojang源下载文件
+ - morninggloryclip.enable.mixin 启用服务器插件的mixin支持
+
+
 ## 📥 下载
 
 ### 稳定版本
@@ -79,7 +85,7 @@ dependencies {
 <dependencies>
     <dependency>
         <groupId>fun.bm.lophine</groupId>
-        <artifactId>luminol-api</artifactId>
+        <artifactId>lophine-api</artifactId>
         <version>$VERSION</version>
     </dependency>
 </dependencies>

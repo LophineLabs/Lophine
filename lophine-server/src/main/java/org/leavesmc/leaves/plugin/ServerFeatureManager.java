@@ -14,7 +14,7 @@ public class ServerFeatureManager implements FeatureManager {
         availableFeatures.add(FAKEPLAYER); // Lophine - fakeplayer support
         availableFeatures.add(PHOTOGRAPHER); // Lophine - Replay Mod API support
         availableFeatures.add(UPDATE_SUPPRESSION_EVENT); // Lophine - update suppression event support
-        if (Boolean.getBoolean("leavesclip.enable.mixin") || Boolean.getBoolean("hyacinthusclip.enable.mixin")) {
+        if (Boolean.getBoolean("morninggloryclip.enable.mixin")) {
             availableFeatures.add(MIXIN);
         }
     }
