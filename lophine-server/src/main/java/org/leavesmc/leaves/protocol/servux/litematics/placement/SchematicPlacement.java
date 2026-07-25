@@ -20,7 +20,6 @@ package org.leavesmc.leaves.protocol.servux.litematics.placement;
 import com.google.common.collect.ImmutableMap;
 import fun.bm.lophine.config.modules.function.protocol.ServuxProtocolConfig;
 import io.papermc.paper.threadedregions.RegionizedServer;
-import me.earthme.luminol.utils.NullPlugin;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.core.BlockBox;
@@ -36,6 +35,7 @@ import net.minecraft.world.phys.AABB;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 import org.leavesmc.leaves.protocol.servux.ServuxProtocol;
 import org.leavesmc.leaves.protocol.servux.litematics.LitematicaSchematic;
 import org.leavesmc.leaves.protocol.servux.litematics.selection.Box;
@@ -342,13 +342,13 @@ public class SchematicPlacement {
                 }
         );
 
-        final NullPlugin nullPlugin = new NullPlugin();
+        final MinecraftInternalPlugin nullPlugin = MinecraftInternalPlugin.INSTANCE;
         scheduleTask(nullPlugin, serverWorld, count, count_full, player, timeStart, ServuxProtocolConfig.maxDelay);
     }
 
     private void scheduleTask(Plugin plugin, ServerLevel serverWorld, AtomicInteger count1, AtomicInteger count2, ServerPlayer player, long timeStart, int retryCount) {
         Bukkit.getGlobalRegionScheduler().runDelayed(plugin,
-                (unused) -> {
+                (_) -> {
                     if (count1.get() >= count2.get()) {
                         long timeElapsed = System.currentTimeMillis() - timeStart;
                         player.getBukkitEntity().sendActionBar(

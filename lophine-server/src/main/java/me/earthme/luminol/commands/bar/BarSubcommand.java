@@ -13,7 +13,7 @@ import java.util.List;
 
 public class BarSubcommand extends LiteralNode {
     public BarSubcommand(EnumBarType barType) {
-        super(barType.getCommandName());
+        super(barType.getName());
         children(
                 new ToggleCommand(barType),
                 new ConfigEditCommand(barType)

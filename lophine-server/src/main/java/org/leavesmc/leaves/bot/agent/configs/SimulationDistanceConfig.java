@@ -21,11 +21,11 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import fun.bm.lophine.LophineLogger;
 import fun.bm.lophine.config.modules.function.FakeplayerConfig;
-import me.earthme.luminol.utils.NullPlugin;
 import net.minecraft.nbt.CompoundTag;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.command.CommandContext;
+import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 
 import static net.minecraft.network.chat.Component.literal;
 
@@ -80,7 +80,7 @@ public class SimulationDistanceConfig extends AbstractBotConfig<Integer, Simulat
         if (this.bot != null) {
             this.setValue(nbt.getIntOr(getName(), FakeplayerConfig.getSimulationDistance(this.bot)));
         } else {
-            Bukkit.getGlobalRegionScheduler().runDelayed(new NullPlugin(), (task0) -> load(nbt, count + 1), 20);
+            Bukkit.getGlobalRegionScheduler().runDelayed(MinecraftInternalPlugin.INSTANCE, (_) -> load(nbt, count + 1), 20);
         }
     }
 }
