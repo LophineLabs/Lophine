@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Wed, 17 Dec 2025 00:20:57 +0800
+Subject: [PATCH] Add null check in RegionizedWorldData >> conections
+
+some of our function patches will crash because of get null in conn.getPlayer(), then when we process player.chunkPosition() will get NPE, so we need to fix it.
+
+diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
+index 491d108cc8e440653746f20fc5b5bca3b791eb88..5c6f40f82370b5a6f329dad6109bd4b7209c2e4c 100644
+--- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
++++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
+@@ -231,14 +231,17 @@ public final class RegionizedWorldData {
+                 regionToData.get(CoordinateUtils.getChunkKey(pos.x() >> chunkToRegionShift, pos.z() >> chunkToRegionShift)).itemEntityMovementTrackerMap.put(key, tracker);
+             }
+             // Luminol end
++            Set<Connection> cons = new java.util.HashSet<>(from.connections.size()); // Lophine - save all connections we have processed in connection process
+             // connections
+             for (final Connection conn : from.connections) {
+                 final ServerPlayer player = conn.getPlayer();
++                if (player == null) continue; // Lophine - skip null player connections
+                 final ChunkPos pos = player.chunkPosition();
+                 // Note: It is impossible for an entity in the world to _not_ be in an entity chunk, which means
+                 // the chunk holder must _exist_, and so the region section exists.
+                 regionToData.get(CoordinateUtils.getChunkKey(pos.x() >> chunkToRegionShift, pos.z() >> chunkToRegionShift))
+                     .connections.add(conn);
++                cons.add(conn); // Lophine - save all connections we have processed in connection process
+             }
+             // entities
+             for (final ServerPlayer player : from.localPlayers) {
+@@ -249,6 +252,13 @@ public final class RegionizedWorldData {
+                 into.localPlayers.add(player);
+                 player.getBukkitEntity().updateRegion(into);
+                 into.nearbyPlayers.addPlayer(player);
++                // Lophine start - we need to process the connection if player's connection is not processed, if connection.player is null, next tick will clean up it
++                final Connection conn = player.connection.connection;
++                if (!cons.contains(conn)) {
++                    regionToData.get(CoordinateUtils.getChunkKey(pos.x() >> chunkToRegionShift, pos.z() >> chunkToRegionShift))
++                            .connections.add(conn);
++                }
++                // Lophine end
+             }
+             for (final Entity entity : from.allEntities) {
+                 final ChunkPos pos = entity.chunkPosition();
+@@ -622,6 +632,7 @@ public final class RegionizedWorldData {
+     private static void cleanUpConnection(final Connection conn) {
+         // note: ALL connections HERE have a player
+         final ServerPlayer player = conn.getPlayer();
++        if (player == null) return; // Lophine - skip null player connections
+         // now that the connection is removed, we can allow this region to die
+         player.level().moonrise$getChunkTaskScheduler().chunkHolderManager.removeTicketAtLevel(
+             ServerGamePacketListenerImpl.DISCONNECT_TICKET, player.connection.disconnectPos,
