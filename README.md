@@ -90,7 +90,7 @@ java {
     <dependency>
         <groupId>fun.bm.lophine</groupId>
         <artifactId>lophine-api</artifactId>
-        <version>[26.1.2.build,)</version>
+        <version>[26.2.build,)</version>
     </dependency>
 </dependencies>
 ```
