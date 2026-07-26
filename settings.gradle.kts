@@ -9,8 +9,8 @@ pluginManagement {
     }
 
     plugins {
-        id("moe.luminolmc.hyacinthusweight.patcher") version weightVersion
-        id("moe.luminolmc.hyacinthusweight.core") version weightVersion
+        id("fun.bm.comfreyweight.patcher") version weightVersion
+        id("fun.bm.comfreyweight.core") version weightVersion
     }
 }
 
