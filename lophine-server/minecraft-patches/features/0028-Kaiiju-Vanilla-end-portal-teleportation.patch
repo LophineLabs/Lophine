@@ -8,10 +8,10 @@ As part of: Kaiiju (https://github.com/KaiijuMC/Kaiiju/blob/c2b7aec8f7b418a39a2e
 Licensed under: GPL-3.0 (https://github.com/KaiijuMC/Kaiiju/blob/c2b7aec8f7b418a39a2ec408e6411e6f752379da/LICENSE)
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 1dd0ce3f8af52f5ba0da1d6617489a0de2c971b2..cf70a8e2fe2fe70bcdf71f8112479031d80d8b75 100644
+index 66ddbdb130867a508ba161a570d101dbe6353246..df82f900580ad1b71960eab890a7a6215f578421 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -4676,14 +4676,18 @@ public abstract class Entity
+@@ -4676,15 +4676,19 @@ public abstract class Entity
                          targetPos, 16, // load 16 blocks to be safe from block physics
                          ca.spottedleaf.concurrentutil.util.Priority.HIGH,
                          (chunks) -> {
@@ -28,13 +28,14 @@ index 1dd0ce3f8af52f5ba0da1d6617489a0de2c971b2..cf70a8e2fe2fe70bcdf71f8112479031
                              portalInfoCompletable.complete(
                                  new net.minecraft.world.level.portal.TeleportTransition(
 -                                    destination, Vec3.atBottomCenterOf(targetPos.below()), Vec3.ZERO, Direction.WEST.toYRot(), 0.0f,
--                                    Relative.union(Relative.DELTA, Set.of(Relative.X_ROT)),
 +                                    destination, finalPos, this.getDeltaMovement(), Direction.WEST.toYRot(), 0.0f, // Kaiiju - Vanilla end teleportation
+                                     false, false,
+-                                    Relative.union(Relative.DELTA, Set.of(Relative.X_ROT)),
 +                                    /*Relative.union(Relative.DELTA, Set.of(Relative.X_ROT))*/Set.of(), // Kaiiju - Vanilla end teleportation
                                      TeleportTransition.PLAY_PORTAL_SOUND.then(TeleportTransition.PLACE_PORTAL_TICKET),
-                                     org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.END_PORTAL
-                                 )
-@@ -4698,11 +4702,15 @@ public abstract class Entity
+                                     org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.END_PORTAL,
+                                     TeleportTransition.PassengerTeleportationMode.POSITION_RIDER
+@@ -4700,11 +4704,15 @@ public abstract class Entity
                          ca.spottedleaf.concurrentutil.util.Priority.HIGH,
                          (chunks) -> {
                              BlockPos adjustedSpawn = destination.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, spawnPos);
@@ -49,10 +50,10 @@ index 1dd0ce3f8af52f5ba0da1d6617489a0de2c971b2..cf70a8e2fe2fe70bcdf71f8112479031
                                  new net.minecraft.world.level.portal.TeleportTransition(
 -                                    destination, Vec3.atBottomCenterOf(adjustedSpawn), Vec3.ZERO, 0.0f, 0.0f,
 +                                    destination, finalPos, this.getDeltaMovement(), 0.0f, 0.0f, // Kaiiju - Vanilla end teleportation
+                                     false, false,
                                      Relative.union(Relative.DELTA, Relative.ROTATION),
                                      TeleportTransition.PLAY_PORTAL_SOUND.then(TeleportTransition.PLACE_PORTAL_TICKET),
-                                     org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.END_PORTAL
-@@ -4881,6 +4889,10 @@ public abstract class Entity
+@@ -4885,6 +4893,10 @@ public abstract class Entity
              return false;
          }
  
@@ -63,7 +64,7 @@ index 1dd0ce3f8af52f5ba0da1d6617489a0de2c971b2..cf70a8e2fe2fe70bcdf71f8112479031
          Vec3 initialPosition = this.position();
          ChunkPos initialPositionChunk = new ChunkPos(
              ca.spottedleaf.moonrise.common.util.CoordinateUtils.getChunkX(initialPosition),
-@@ -4955,9 +4967,14 @@ public abstract class Entity
+@@ -4959,9 +4971,14 @@ public abstract class Entity
                      destination.levelUnloadStateLock.releaseRead();
                      // Luminol end
  

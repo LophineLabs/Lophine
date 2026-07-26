@@ -68,7 +68,11 @@ repositories {
 }
 
 dependencies {
-    compileOnly("fun.bm.lophine:lophine-api:$VERSION")
+    compileOnly("fun.bm.lophine:lophine-api:26.2.build.+")
+}
+
+java {
+  toolchain.languageVersion.set(JavaLanguageVersion.of(25))
 }
 ```
 
@@ -86,7 +90,7 @@ dependencies {
     <dependency>
         <groupId>fun.bm.lophine</groupId>
         <artifactId>lophine-api</artifactId>
-        <version>$VERSION</version>
+        <version>[26.1.2.build,)</version>
     </dependency>
 </dependencies>
 ```

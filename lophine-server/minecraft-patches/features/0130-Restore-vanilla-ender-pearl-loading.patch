@@ -5,7 +5,7 @@ Subject: [PATCH] Restore vanilla ender pearl loading
 
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index cef9c7887332b91e2466a97a5250db81f7af0dcf..a17212c1910ce9490fe8df8c4ef507e25b89c545 100644
+index b43bbe461500782a75a49c9238bd4d4d81448d09..68e36ad03325cd6348dc4bbab37409b70bee6023 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -277,7 +277,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -51,7 +51,7 @@ index cef9c7887332b91e2466a97a5250db81f7af0dcf..a17212c1910ce9490fe8df8c4ef507e2
          }
      }
  
-@@ -3568,11 +3570,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3547,11 +3549,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      }
  
      public void registerEnderPearl(final ThrownEnderpearl enderPearl) {
@@ -89,7 +89,7 @@ index 516561a25d28f2c7bcc3e71c5f2f9da99c2899c3..eb652157ef25e83b897f52aff3c49c09
  
          level.removePlayerImmediately(player, Entity.RemovalReason.UNLOADED_WITH_PLAYER);
 diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
-index 790c1bcf11150d31bf90c32345e4eb40de9a6a41..7409b452567608dbdb36ac686791e604a267fb6a 100644
+index 4df9a3356cfdee52761db47694e59779976840db..3e6844a468d8e6c9cf3b0bd23e21a3cabc9b7f51 100644
 --- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 +++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 @@ -31,7 +31,11 @@ import net.minecraft.world.phys.Vec3;

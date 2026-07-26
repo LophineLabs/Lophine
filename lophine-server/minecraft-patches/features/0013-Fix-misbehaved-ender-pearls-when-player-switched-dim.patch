@@ -9,7 +9,7 @@ Almost the same bug as:
 https://github.com/PaperMC/Folia/pull/418 and https://github.com/PaperMC/Folia/issues/393
 
 diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
-index 501a0e89cc7bcfce6793f059b080b38666e0fb64..ad35eafa457f706879ba8a9c92b3a34e620ee2d6 100644
+index d0dba5cc351903fb762e231a95f302479794185f..fb00f70505a6c548cd1311d7ea55c6a501e814e3 100644
 --- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 +++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 @@ -264,7 +264,8 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {

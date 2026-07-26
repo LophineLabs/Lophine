@@ -275,10 +275,10 @@ index 534f103234eb92571c664cbcfea4ce4e990d3ea8..c4d9d890db784d376b876d70f0468df6
      // CraftBukkit start
      private final ResourceKey<LevelStem> typeKey;
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 264de9099b19779f20ad23c41d0967670759ae12..ab6229ee412cf2aa5affc87510230c587765080b 100644
+index 5668906866917f7bb6088ae16146d917d2b840b0..4efbd0f840d74a3d96b28d38e48cba72d5c6fb9b 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
-@@ -1705,7 +1705,30 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1694,7 +1694,30 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
          ServerLevel origin = this.level();
          ServerPlayer.RespawnConfig respawnConfig = this.getRespawnConfig();
@@ -310,7 +310,7 @@ index 264de9099b19779f20ad23c41d0967670759ae12..ab6229ee412cf2aa5affc87510230c58
  
          // modified based off PlayerList#respawn
  
-@@ -1756,8 +1779,8 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1745,8 +1768,8 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
                      // now the respawn logic is complete
  
                      // last, call the function callback
@@ -429,7 +429,7 @@ index 48f51b0f94df3e59c9410129489c63a4287bc0bc..2682f8702785b1e501748a308c5e394b
          private final Vec2 spawnAngle;
  
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 8c909108a0c468f353837787188c12f907369b9b..1dd0ce3f8af52f5ba0da1d6617489a0de2c971b2 100644
+index 9270b887448023b6ace2e7fae6b632755ce90600..66ddbdb130867a508ba161a570d101dbe6353246 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -392,6 +392,9 @@ public abstract class Entity
@@ -495,7 +495,7 @@ index 8c909108a0c468f353837787188c12f907369b9b..1dd0ce3f8af52f5ba0da1d6617489a0d
  
          return true;
      }
-@@ -4864,6 +4886,13 @@ public abstract class Entity
+@@ -4868,6 +4890,13 @@ public abstract class Entity
              ca.spottedleaf.moonrise.common.util.CoordinateUtils.getChunkX(initialPosition),
              ca.spottedleaf.moonrise.common.util.CoordinateUtils.getChunkZ(initialPosition)
          );
@@ -509,7 +509,7 @@ index 8c909108a0c468f353837787188c12f907369b9b..1dd0ce3f8af52f5ba0da1d6617489a0d
  
          // first, remove entity/passengers from world
          EntityTreeNode passengerTree = this.detachPassengers();
-@@ -4921,6 +4950,10 @@ public abstract class Entity
+@@ -4925,6 +4954,10 @@ public abstract class Entity
                      if (info.postTeleportTransition() != null) {
                          info.postTeleportTransition().onTransition(teleported);
                      }

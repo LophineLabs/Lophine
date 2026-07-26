@@ -5,7 +5,7 @@ Subject: [PATCH] Add config for waypoint restoration
 
 
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index 0fa14f60310b063f419620539fd40898627b46b9..9800ae1d3c49800b0c7342d43d696109b5b72cf4 100644
+index aa7931c9b6dc3bba2c8dfecff8df2db302ad905b..c67ea715f02086e5a39cc5832ccdc0b32199db93 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -267,7 +267,7 @@ public class Commands {
@@ -47,7 +47,7 @@ index 402e2f01f2b3a8e9ce5c818f07581b4dab38fc26..a1c3f3e5c7c3f32e0bdead33ebd72c76
          //this.updateSkyBrightness(); // Folia - region threading - delay until first tick
          // Paper start - rewrite chunk system
 diff --git a/net/minecraft/world/waypoints/WaypointTransmitter.java b/net/minecraft/world/waypoints/WaypointTransmitter.java
-index 2866b750a28cc32c2913d3c1afee95f05956982c..f0b62f49382eb808dcd6b6b654b99b9f7763c342 100644
+index 07af92310ee5c8bba04e6175b6faac629632e4de..79561456c3b0877974ae1519443ebf8bd07533da 100644
 --- a/net/minecraft/world/waypoints/WaypointTransmitter.java
 +++ b/net/minecraft/world/waypoints/WaypointTransmitter.java
 @@ -76,7 +76,8 @@ public interface WaypointTransmitter extends Waypoint {

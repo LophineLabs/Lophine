@@ -5,7 +5,7 @@ Subject: [PATCH] Add force the data command to be enabled config
 
 
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index bc9f6cc286536b87513de81855ad0b61cf787c84..afbaf2116930d72ebb0c77745d02115abab14dc4 100644
+index 4ddb5e7ce3529466c3930caa9aa6b18158e9a63d..9b1dcfadd6d5ae868b087a18983d03e8bb86b56a 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -202,7 +202,9 @@ public class Commands {

@@ -148,10 +148,10 @@ index f5373786032b3f1db8e6c0c928c781998b2fe194..ca6be9faab3f93da7e91bf73997111b7
                  CraftParticle.createParticleParam(particle, data), // Particle
                  force,
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index efcb8b97cd685e1243c770bf3e8daf03615abb1d..4722e027ed5869516adddf696ac030fd84df834d 100644
+index 00749be3b16fd09c6b952c93631c808ff5657f20..0f6378ca80bea5d4d7f1cb7d788a57390bc27c59 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -128,6 +128,8 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+@@ -130,6 +130,8 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
              return new CraftHumanEntity(server, (net.minecraft.world.entity.player.Player) entity);
          }
  

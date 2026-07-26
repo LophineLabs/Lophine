@@ -27,7 +27,7 @@ index 480b6b2405706fd4d7158d0e160adafd84099887..137389f7ee97fc3a15c8f5f87c058065
      }
  }
 diff --git a/net/minecraft/world/level/block/EndPortalBlock.java b/net/minecraft/world/level/block/EndPortalBlock.java
-index d42bb2a1721e4ab8c9956e18c3ca418b8d648c59..4f06daf619596d4116140b0710ea92c2c8552fc0 100644
+index 123df098fa987030fe3789f36ff95aeee2979834..35b0632faf2709f65f731cd42e575ee967937254 100644
 --- a/net/minecraft/world/level/block/EndPortalBlock.java
 +++ b/net/minecraft/world/level/block/EndPortalBlock.java
 @@ -76,6 +76,12 @@ public class EndPortalBlock extends BaseEntityBlock implements Portal {

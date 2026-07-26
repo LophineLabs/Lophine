@@ -128,7 +128,7 @@ index 8cc4fe9feb57902a4b9a6a26e6175ac00a2cef65..9ab1a812e43145120859734075e2ac99
          // Paper start - fix converting txt to json file; moved from constructor
      }
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 4034b4b9bd5e567b882169b5b1e17f75b64ba8db..4c53b688ed6b26ca7231841f3235f9a824416bba 100644
+index 70f7cb6b38a90ca337bd52c18fa7bfd4016b552c..9a6f18fd0eb7e2aef174b25d14cfd0f5a3ade6af 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -260,6 +260,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -139,7 +139,7 @@ index 4034b4b9bd5e567b882169b5b1e17f75b64ba8db..4c53b688ed6b26ca7231841f3235f9a8
      private @Nullable Vec3 startingToFallPosition;
      private @Nullable Vec3 enteredNetherPosition;
      private @Nullable Vec3 enteredLavaOnVehiclePosition;
-@@ -2168,7 +2169,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2147,7 +2148,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.lastSentFood = -1;
          this.teleportSpectators(transition, oldLevel);
          // Leaves start - bot support
@@ -148,7 +148,7 @@ index 4034b4b9bd5e567b882169b5b1e17f75b64ba8db..4c53b688ed6b26ca7231841f3235f9a8
              this.server.getBotList().bots.forEach(bot -> bot.sendFakeDataIfNeed(this, true)); // Leaves - render bot
          }
          // Leaves end - bot support
-@@ -2805,6 +2806,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2784,6 +2785,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.setShoulderEntityRight(oldPlayer.getShoulderEntityRight());
          this.setLastDeathLocation(oldPlayer.getLastDeathLocation());
          this.waypointIcon().copyFrom(oldPlayer.waypointIcon());
@@ -160,7 +160,7 @@ index 4034b4b9bd5e567b882169b5b1e17f75b64ba8db..4c53b688ed6b26ca7231841f3235f9a8
      }
  
      private void transferInventoryXpAndScore(final Player oldPlayer) {
-@@ -3084,6 +3090,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3063,6 +3069,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.particleStatus = information.particleStatus();
          this.getEntityData().set(DATA_PLAYER_MODE_CUSTOMISATION, (byte)information.modelCustomisation());
          this.getEntityData().set(DATA_PLAYER_MAIN_HAND, information.mainHand());

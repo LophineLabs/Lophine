@@ -344,7 +344,7 @@ index cb11830c2f399c9706b20f8104686dc0d9b686f9..1c4c67410849f844946e4883585910fc
                  ServerLevel.this.updateSleepingPlayerList();
              }
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 2985d5e2dde049a999a39f6edbb6696332f6d822..64943c193ae73795ddf8222a6f71ea5eb1705fe2 100644
+index e64db3045ebf08600283a47960005827c1920f94..a3d3a602ab86e27ae0c6e6207384dc0043279d47 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -232,7 +232,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -377,7 +377,7 @@ index 2985d5e2dde049a999a39f6edbb6696332f6d822..64943c193ae73795ddf8222a6f71ea5e
          AABB aabb = new AABB(this.blockPosition()).inflate(32.0, 10.0, 32.0);
          this.level()
              .getEntitiesOfClass(Mob.class, aabb, EntitySelector.NO_SPECTATORS)
-@@ -2161,6 +2161,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2140,6 +2140,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.lastSentHealth = -1.0F;
          this.lastSentFood = -1;
          this.teleportSpectators(transition, oldLevel);
@@ -542,7 +542,7 @@ index ca1e635b0fdf3d0d17447b43a558fe030536d297..ed50484ca24ef24b1e5bef9f6369dfa4
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index db7281fcf1f4dc878a87ef9b8f24f2f9da12238a..b11637543c3ef8650ad5c65c2cab8a1cb6e95158 100644
+index cddf44f5da5cba5603dcff4913b4658dcfcc48db..9eaed81a330a22e7fd6585cd286ec61371e97272 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1263,7 +1263,7 @@ public abstract class Entity

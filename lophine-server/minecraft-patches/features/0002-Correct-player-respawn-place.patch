@@ -5,7 +5,7 @@ Subject: [PATCH] Correct player respawn place
 
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index fbe0ef19bfabfc42d9e0e08e17b08159321b3804..44b3dfbf529630d8cca9a4270ae2a7c94c5a077c 100644
+index 57f93d978fe48fdf6e77b7bfb9f1de060e1a8524..924d5f3236d9ba9836f39fc844392099df9cd25c 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -511,8 +511,10 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -43,7 +43,7 @@ index fbe0ef19bfabfc42d9e0e08e17b08159321b3804..44b3dfbf529630d8cca9a4270ae2a7c9
                  if (inChunk == null) {
                      continue;
                  }
-@@ -2018,7 +2030,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1997,7 +2009,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          }
  
          if (newLevel.dimension() == lastDimension) {

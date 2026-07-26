@@ -29,7 +29,7 @@ index c1faaf7d514c23d756aa626fa93aabd8bb503463..0c5fb17e7cce18eac68183cc3b5de6fc
                                          // If the event is cancelled we move the player back to their old location.
                                          if (event.isCancelled()) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index a52d5c0ba970d666fd57e075d14350ff07401bac..72f89eaba2ca8b66fa07a6378d93917dec83c688 100644
+index 7953b7ece0b5e3f41e85252cdfd8e400fab212ae..343e4bb41acfab4e50729aa5dbe2a071dac376a3 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -4476,12 +4476,25 @@ public abstract class Entity

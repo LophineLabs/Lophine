@@ -33,7 +33,7 @@ index 13d7965fd4f99f0848b080349df41f8b1c31a19b..5b83f2edd6afe94c28bf491afab737e9
                  nmsEntity.stopRiding();
                  nmsEntity.teleportAsync(
 diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
-index ad35eafa457f706879ba8a9c92b3a34e620ee2d6..790c1bcf11150d31bf90c32345e4eb40de9a6a41 100644
+index fb00f70505a6c548cd1311d7ea55c6a501e814e3..4df9a3356cfdee52761db47694e59779976840db 100644
 --- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 +++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 @@ -99,7 +99,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {

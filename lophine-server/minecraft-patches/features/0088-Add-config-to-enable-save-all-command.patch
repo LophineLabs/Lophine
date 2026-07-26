@@ -31,7 +31,7 @@ index 97c514673a454b752ab86b944fd143725ca8090d..ba91d40d6d91588a4b39abfefcb17a36
          private final Reference2ReferenceOpenHashMap<RegionizedData<?>, Object> regionizedData = new Reference2ReferenceOpenHashMap<>();
  
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index 9800ae1d3c49800b0c7342d43d696109b5b72cf4..f9a8c79640ed6ca381e4482eaeab6b23db59419f 100644
+index c67ea715f02086e5a39cc5832ccdc0b32199db93..946094713bdb294d7d8beb03967b2a2488f5359b 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -299,7 +299,11 @@ public class Commands {

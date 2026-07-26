@@ -40,7 +40,7 @@ index 57a35d7a801621fc461e896eb2bba533d9d5bc1b..ae424c8931a2f82c6c8d4ddd8422a2c1
                  }
                  // Luminol end - Add a config to enable tick command
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index 03f3fe221b14f0317947d74e25049bcce2ebeb66..6882e85fb6413e5c346c189a82b69f3e408aafba 100644
+index 77d7d83cc781baf19593227d20b827bf0be6ed28..82af03649c7537274aa54ed942e4aae589b97888 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -268,7 +268,7 @@ public class Commands {

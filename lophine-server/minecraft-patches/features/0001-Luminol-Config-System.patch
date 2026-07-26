@@ -5,10 +5,10 @@ Subject: [PATCH] Luminol Config System
 
 
 diff --git a/net/minecraft/server/Main.java b/net/minecraft/server/Main.java
-index a4d608d64b7d3477c9144d93547fd3b4f39a1b02..2a75f8fbd2e5f41ca138740319d34683915e3b5b 100644
+index e2939cc39a8c103e4c4d7b01d39b5546486e4fbc..a557d488e4e289a61aeb9aed0cc133a0a7ce8f8c 100644
 --- a/net/minecraft/server/Main.java
 +++ b/net/minecraft/server/Main.java
-@@ -107,6 +107,7 @@ public class Main {
+@@ -110,6 +110,7 @@ public class Main {
                  JvmProfiler.INSTANCE.start(Environment.SERVER);
              }
  

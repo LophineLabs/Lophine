@@ -106,7 +106,7 @@ index 0641b98ef3298eb682ceae83f60b730f3bf90103..cea4bc7036dfd8777c151a0dd811fc13
      }
  
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index ab6229ee412cf2aa5affc87510230c587765080b..f0c574e039f80ff0227239356de8d61ef06a0936 100644
+index 4efbd0f840d74a3d96b28d38e48cba72d5c6fb9b..8e4bbb224d036cf9f33667aec57bbc339c9e8377 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -441,7 +441,9 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -183,10 +183,10 @@ index f03fa06c0ba56f7f5e1e45bc1568a490751efde3..eee1c14249addbf4714df733870da974
 +    // KioCG end
  }
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 17650e196f1e5b79765651bf302291873a4eb509..f218b7f6ce32d7ac959255e59c620d6fd420bf8e 100644
+index 39f2b44846c02796a3671a5dec75b7b34d8c488e..fe0208815dbf53855d47956925b817570f6ae5b0 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -6468,4 +6468,6 @@ public abstract class Entity
+@@ -6479,4 +6479,6 @@ public abstract class Entity
          return ((ServerLevel) this.level()).isPositionEntityTicking(this.blockPosition());
      }
      // Paper end
