@@ -9,8 +9,8 @@ import me.earthme.luminol.config.flags.ConfigInfo;
 import me.earthme.luminol.config.flags.DoNotLoad;
 import me.earthme.luminol.config.flags.HotReloadUnsupported;
 import me.earthme.luminol.enums.EnumConfigCategory;
-import me.earthme.luminol.enums.EnumRegionFormat;
-import me.earthme.luminol.utils.BufferedLinearRegionFileFlusher;
+import io.anonymous.anonymous.enums.EnumRegionFormat;
+import io.anonymous.anonymous.data.BufferedLinearRegionFileFlusher;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.Nullable;
 

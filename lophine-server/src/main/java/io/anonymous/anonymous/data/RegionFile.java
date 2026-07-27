@@ -1,4 +1,5 @@
-package abomination;
+package io.anonymous.anonymous.data;
+
 
 import ca.spottedleaf.moonrise.patches.chunk_system.storage.ChunkSystemRegionFile;
 import net.minecraft.nbt.CompoundTag;
@@ -10,7 +11,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
-public interface IRegionFile extends ChunkSystemRegionFile, AutoCloseable {
+public interface RegionFile extends ChunkSystemRegionFile, AutoCloseable {
     Path getPath();
 
     DataInputStream getChunkDataInputStream(ChunkPos pos) throws IOException;
@@ -39,5 +40,5 @@ public interface IRegionFile extends ChunkSystemRegionFile, AutoCloseable {
 
     default int getRecalculateCount() {
         return 0;
-    } // Luminol - Configurable region file format
+    } // Anonymous - Configurable region file format
 }

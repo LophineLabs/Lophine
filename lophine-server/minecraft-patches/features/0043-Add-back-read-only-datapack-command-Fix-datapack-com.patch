@@ -19,7 +19,7 @@ index 9b1dcfadd6d5ae868b087a18983d03e8bb86b56a..21f2b9866e1cf36421e10a945fb6fbaa
          DefaultGameModeCommands.register(this.dispatcher);
          //DialogCommand.register(this.dispatcher, context); // Folia - region threading - TODO
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index d4e31bb829451a687bf567fd0357f46fd7d46902..4f292468194baae343eeb077362e51dcfb6c0df1 100644
+index b2823c71ecb5e1f7a3c4c5b9f691d4cdb5419db3..a82cafadf2136d30ae7bca172062713a651373ac 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -2415,6 +2415,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa

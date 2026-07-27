@@ -4,6 +4,7 @@ import ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO;
 import com.github.luben.zstd.ZstdInputStream;
 import com.github.luben.zstd.ZstdOutputStream;
 import com.mojang.logging.LogUtils;
+import io.anonymous.anonymous.data.RegionFile;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;
@@ -26,7 +27,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 // LinearRegionFile_implementation_version_0_5byXymb
 // Just gonna use this string to inform other forks about updates ;-)
-public class LinearRegionFile implements IRegionFile {
+public class LinearRegionFile implements RegionFile {
     private static final long SUPERBLOCK = 0xc3ff13183cca9d9aL;
     private static final byte VERSION = 3;
     private static final int HEADER_SIZE = 27;
@@ -489,15 +490,15 @@ public class LinearRegionFile implements IRegionFile {
     public DataOutputStream getChunkDataOutputStream(ChunkPos pos) {
         openRegionFile();
         openBucket(pos.x(), pos.z());
-        return new DataOutputStream(new BufferedOutputStream(new LinearRegionFile.ChunkBuffer(pos)));
+        return new DataOutputStream(new BufferedOutputStream(new ChunkBuffer(pos)));
     }
 
     @Override
     public MoonriseRegionFileIO.RegionDataController.WriteData moonrise$startWrite(CompoundTag data, ChunkPos pos) throws IOException {
         final DataOutputStream out = this.getChunkDataOutputStream(pos);
 
-        return new ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO.RegionDataController.WriteData(
-                data, ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO.RegionDataController.WriteData.WriteResult.WRITE,
+        return new MoonriseRegionFileIO.RegionDataController.WriteData(
+                data, MoonriseRegionFileIO.RegionDataController.WriteData.WriteResult.WRITE,
                 out, regionFile -> out.close()
         );
     }

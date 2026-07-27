@@ -228,7 +228,7 @@ index 5a72fa0d72bfdb927293abe921c57f6ae964a6ec..f8344f640f119e3865f2718d1abd0ede
  
      private void uncaughtException(final Thread thread, final Throwable thr) {
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 7683c12d48d23dd43bce3d3b5633029c596930a5..ab61d18845827ac835edf92651d0b510358106ff 100644
+index cc8364891a5d2196e8809479db984b67b5bcb079..7c67a8a6cf83ab80d3a8b37c5ff03e7a56497bc9 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -236,7 +236,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa

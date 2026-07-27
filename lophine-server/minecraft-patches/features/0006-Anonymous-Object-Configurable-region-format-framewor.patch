@@ -1,11 +1,14 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Helvetica Volubi <suisuroru@blue-millennium.fun>
 Date: Sun, 28 Jun 2026 18:54:50 +0800
-Subject: [PATCH] Configurable region format framework
+Subject: [PATCH] Anonymous Object: Configurable region format framework
 
+As requested by the original author, this patch will be anonymous and hide the original commit address.
+This patch is used with permission from the original author.
+Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/io/ChunkSystemRegionFileStorage.java b/ca/spottedleaf/moonrise/patches/chunk_system/io/ChunkSystemRegionFileStorage.java
-index a814512fcfb85312474ae2c2c21443843bf57831..2e084a5b28cbe4737f48c25e10af589213525362 100644
+index a814512fcfb85312474ae2c2c21443843bf57831..9d69a022872e06b320bee46329cd8889f74fbbaa 100644
 --- a/ca/spottedleaf/moonrise/patches/chunk_system/io/ChunkSystemRegionFileStorage.java
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/io/ChunkSystemRegionFileStorage.java
 @@ -8,9 +8,9 @@ public interface ChunkSystemRegionFileStorage {
@@ -13,15 +16,15 @@ index a814512fcfb85312474ae2c2c21443843bf57831..2e084a5b28cbe4737f48c25e10af5892
      public boolean moonrise$doesRegionFileNotExistNoIO(final int chunkX, final int chunkZ);
  
 -    public RegionFile moonrise$getRegionFileIfLoaded(final int chunkX, final int chunkZ);
-+    public abomination.IRegionFile moonrise$getRegionFileIfLoaded(final int chunkX, final int chunkZ); // Luminol - Configurable region file format
++    public io.anonymous.anonymous.data.RegionFile moonrise$getRegionFileIfLoaded(final int chunkX, final int chunkZ); // Anonymous - Configurable region file format
  
 -    public RegionFile moonrise$getRegionFileIfExists(final int chunkX, final int chunkZ) throws IOException;
-+    public abomination.IRegionFile moonrise$getRegionFileIfExists(final int chunkX, final int chunkZ) throws IOException; // Luminol - Configurable region file format
++    public io.anonymous.anonymous.data.RegionFile moonrise$getRegionFileIfExists(final int chunkX, final int chunkZ) throws IOException; // Anonymous - Configurable region file format
  
      public MoonriseRegionFileIO.RegionDataController.WriteData moonrise$startWrite(
              final int chunkX, final int chunkZ, final CompoundTag compound
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java b/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java
-index 3bb9b58ee97464687e348e23b99159226415c267..fc264727141c3897e6c06819b9713d4f6395baf0 100644
+index 3bb9b58ee97464687e348e23b99159226415c267..4c3ad63f17bb4a04f982b36ad3f53d3c0f58bdb5 100644
 --- a/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java
 @@ -1273,7 +1273,7 @@ public final class MoonriseRegionFileIO {
@@ -29,7 +32,7 @@ index 3bb9b58ee97464687e348e23b99159226415c267..fc264727141c3897e6c06819b9713d4f
                  // Paper start - flush regionfiles on save
                  if (this.world.paperConfig().chunks.flushRegionsOnSave) {
 -                    final RegionFile regionFile = this.regionDataController.getCache().moonrise$getRegionFileIfLoaded(this.chunkX, this.chunkZ);
-+                    final abomination.IRegionFile regionFile = this.regionDataController.getCache().moonrise$getRegionFileIfLoaded(this.chunkX, this.chunkZ); // Luminol - Add configurable region file
++                    final io.anonymous.anonymous.data.RegionFile regionFile = this.regionDataController.getCache().moonrise$getRegionFileIfLoaded(this.chunkX, this.chunkZ); // Anonymous - Configurable region file format
                      if (regionFile != null) {
                          regionFile.flush();
                      } // else: evicted from cache, which should have called flush
@@ -38,12 +41,12 @@ index 3bb9b58ee97464687e348e23b99159226415c267..fc264727141c3897e6c06819b9713d4f
          public static interface IORunnable {
  
 -            public void run(final RegionFile regionFile) throws IOException;
-+            public void run(final abomination.IRegionFile regionFile) throws IOException; // Luminol - Configurable region file format
++            public void run(final io.anonymous.anonymous.data.RegionFile regionFile) throws IOException; // Anonymous - Configurable region file format
  
          }
      }
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/storage/ChunkSystemChunkBuffer.java b/ca/spottedleaf/moonrise/patches/chunk_system/storage/ChunkSystemChunkBuffer.java
-index 51c126735ace8fdde89ad97b5cab62f244212db0..c7d4d944eb198ac53a3eeae717a25c7d5815c8c1 100644
+index 51c126735ace8fdde89ad97b5cab62f244212db0..ea2f45964fb8c617f90938597c230b50d83744aa 100644
 --- a/ca/spottedleaf/moonrise/patches/chunk_system/storage/ChunkSystemChunkBuffer.java
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/storage/ChunkSystemChunkBuffer.java
 @@ -8,5 +8,5 @@ public interface ChunkSystemChunkBuffer {
@@ -51,10 +54,10 @@ index 51c126735ace8fdde89ad97b5cab62f244212db0..c7d4d944eb198ac53a3eeae717a25c7d
      public void moonrise$setWriteOnClose(final boolean value);
  
 -    public void moonrise$write(final RegionFile regionFile) throws IOException;
-+    public void moonrise$write(final abomination.IRegionFile regionFile) throws IOException; // Luminol - Configurable region file format
++    public void moonrise$write(final io.anonymous.anonymous.data.RegionFile regionFile) throws IOException; // Anonymous - Configurable region file format
  }
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index a49c46eb7df50fc3c5587a2c3668ab6edc887107..83b9aab16124ddcc416f7b4cd95084e1c64fe5b7 100644
+index a49c46eb7df50fc3c5587a2c3668ab6edc887107..c74f76b46259204b33b69ad08bb03c81b8b36961 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -986,10 +986,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -62,16 +65,16 @@ index a49c46eb7df50fc3c5587a2c3668ab6edc887107..83b9aab16124ddcc416f7b4cd95084e1
              for (ServerLevel level : this.getAllLevels()) {
                  String storageName = level.getChunkSource().chunkMap.getStorageName();
 -                LOGGER.info("ThreadedAnvilChunkStorage ({}): All chunks are saved", LEGACY_WORLD_NAMES_FOR_REALMS_LOG.getOrDefault(storageName, storageName));
-+                LOGGER.info("ThreadedChunkStorage ({}): All chunks are saved", LEGACY_WORLD_NAMES_FOR_REALMS_LOG.getOrDefault(storageName, storageName)); // Luminol - configurable region format
++                LOGGER.info("ThreadedChunkStorage ({}): All chunks are saved", LEGACY_WORLD_NAMES_FOR_REALMS_LOG.getOrDefault(storageName, storageName)); // Anonymous - Configurable region format
              }
  
 -            LOGGER.info("ThreadedAnvilChunkStorage: All dimensions are saved");
-+            LOGGER.info("ThreadedChunkStorage: All dimensions are saved"); // Luminol - configurable region format
++            LOGGER.info("ThreadedChunkStorage: All dimensions are saved"); // Anonymous - configurable region format
          }
  
          return result;
 diff --git a/net/minecraft/util/worldupdate/FileToUpgrade.java b/net/minecraft/util/worldupdate/FileToUpgrade.java
-index a7f2cfa9277c898038f6b9e0a3401db51012b64c..db4dba8849eb27f8f84acc3297e342da4700d839 100644
+index a7f2cfa9277c898038f6b9e0a3401db51012b64c..7b96f3ec2738875a3ed7aa34347c0f174b6579c5 100644
 --- a/net/minecraft/util/worldupdate/FileToUpgrade.java
 +++ b/net/minecraft/util/worldupdate/FileToUpgrade.java
 @@ -4,5 +4,5 @@ import java.util.List;
@@ -79,10 +82,10 @@ index a7f2cfa9277c898038f6b9e0a3401db51012b64c..db4dba8849eb27f8f84acc3297e342da
  import net.minecraft.world.level.chunk.storage.RegionFile;
  
 -public record FileToUpgrade(RegionFile file, List<ChunkPos> chunksToUpgrade) {
-+public record FileToUpgrade(abomination.IRegionFile file, List<ChunkPos> chunksToUpgrade) { // Luminol - Configurable region file format
++public record FileToUpgrade(io.anonymous.anonymous.data.RegionFile file, List<ChunkPos> chunksToUpgrade) { // Anonymous - Configurable region file format
  }
 diff --git a/net/minecraft/util/worldupdate/RegionStorageUpgrader.java b/net/minecraft/util/worldupdate/RegionStorageUpgrader.java
-index b228cd6c54e8c8998923ab332882d99092769c67..140ef4959fa2fe5b9cd251955c93683e8e69d5ba 100644
+index b228cd6c54e8c8998923ab332882d99092769c67..2dd3d0afd8f58e5e68a361dd38c95da06b4d133b 100644
 --- a/net/minecraft/util/worldupdate/RegionStorageUpgrader.java
 +++ b/net/minecraft/util/worldupdate/RegionStorageUpgrader.java
 @@ -36,7 +36,7 @@ import org.slf4j.Logger;
@@ -90,7 +93,7 @@ index b228cd6c54e8c8998923ab332882d99092769c67..140ef4959fa2fe5b9cd251955c93683e
      private static final Logger LOGGER = LogUtils.getLogger();
      private static final String NEW_DIRECTORY_PREFIX = "new_";
 -    private static final Pattern REGEX = Pattern.compile("^r\\.(-?[0-9]+)\\.(-?[0-9]+)\\.mca$");
-+    private static final Pattern REGEX = Pattern.compile("^r\\.(-?[0-9]+)\\.(-?[0-9]+)\\." + me.earthme.luminol.config.modules.function.RegionFormatConfig.regionFormat.getArgument() + "$"); // Luminol - Configurable region file format
++    private static final Pattern REGEX = Pattern.compile("^r\\.(-?[0-9]+)\\.(-?[0-9]+)\\." + me.earthme.luminol.config.modules.function.RegionFormatConfig.regionFormat.getArgument() + "$"); // Anonymous - Configurable region file format
      private final DataFixer dataFixer;
      private final UpgradeProgress upgradeProgress;
      private final String type;
@@ -99,8 +102,8 @@ index b228cd6c54e8c8998923ab332882d99092769c67..140ef4959fa2fe5b9cd251955c93683e
                  List<ChunkPos> chunkPositions = Lists.newArrayList();
  
 -                try (RegionFile regionSource = new RegionFile(info, regionFile.toPath(), regionFolder, true)) {
-+                var regionFileInfo = new me.earthme.luminol.utils.RegionCreatorInfo(info, regionFile.toPath(), regionFolder, true); // Luminol - Configurable region file format
-+                    try (abomination.IRegionFile regionSource = me.earthme.luminol.config.modules.function.RegionFormatConfig.regionFormat.getCreator().create(regionFileInfo)) { // Luminol - Configurable region file format
++                var regionFileInfo = new io.anonymous.anonymous.utils.RegionCreatorInfo(info, regionFile.toPath(), regionFolder, true); // Anonymous - Configurable region file format
++                try (io.anonymous.anonymous.data.RegionFile regionSource = me.earthme.luminol.config.modules.function.RegionFormatConfig.regionFormat.getCreator().newFile(regionFileInfo)) { // Anonymous - Configurable region file format
                      for (int x = 0; x < 32; x++) {
                          for (int z = 0; z < 32; z++) {
                              ChunkPos pos = new ChunkPos(x + xOffset, z + zOffset);
@@ -109,12 +112,12 @@ index b228cd6c54e8c8998923ab332882d99092769c67..140ef4959fa2fe5b9cd251955c93683e
      }
  
 -    private void onFileFinished(final RegionFile regionFile) {
-+    private void onFileFinished(final abomination.IRegionFile regionFile) { // Luminol - Configurable region file format
++    private void onFileFinished(final io.anonymous.anonymous.data.RegionFile regionFile) { // Anonymous - Configurable region file format
          if (this.recreateRegionFiles) {
              if (this.previousWriteFuture != null) {
                  this.previousWriteFuture.join();
 diff --git a/net/minecraft/world/level/chunk/storage/RegionFile.java b/net/minecraft/world/level/chunk/storage/RegionFile.java
-index 3de7fd2b084c38e72d7a6bc416880a881f514ad3..d3350dee1d6d5bc15dcdfba3611f93addb767392 100644
+index 3de7fd2b084c38e72d7a6bc416880a881f514ad3..821924f85a507589a039832be8657e1dc3c0ce0c 100644
 --- a/net/minecraft/world/level/chunk/storage/RegionFile.java
 +++ b/net/minecraft/world/level/chunk/storage/RegionFile.java
 @@ -22,7 +22,7 @@ import net.minecraft.world.level.ChunkPos;
@@ -122,7 +125,7 @@ index 3de7fd2b084c38e72d7a6bc416880a881f514ad3..d3350dee1d6d5bc15dcdfba3611f93ad
  import org.slf4j.Logger;
  
 -public class RegionFile implements AutoCloseable, ca.spottedleaf.moonrise.patches.chunk_system.storage.ChunkSystemRegionFile { // Paper - rewrite chunk system
-+public class RegionFile implements AutoCloseable, ca.spottedleaf.moonrise.patches.chunk_system.storage.ChunkSystemRegionFile , abomination.IRegionFile{ // Paper - rewrite chunk system // Luminol - Configurable region file format
++public class RegionFile implements AutoCloseable, ca.spottedleaf.moonrise.patches.chunk_system.storage.ChunkSystemRegionFile , io.anonymous.anonymous.data.RegionFile{ // Paper - rewrite chunk system // Anonymous - Configurable region file format
      private static final Logger LOGGER = LogUtils.getLogger();
      public static final int MAX_CHUNK_SIZE = 500 * 1024 * 1024; // Paper - don't write garbage data to disk if writing serialization fails
      private static final int SECTOR_BYTES = 4096;
@@ -131,7 +134,7 @@ index 3de7fd2b084c38e72d7a6bc416880a881f514ad3..d3350dee1d6d5bc15dcdfba3611f93ad
      }
  
 -    boolean recalculateHeader() throws IOException {
-+    public boolean recalculateHeader() throws IOException { // Luminol - Configurable region file format
++    public boolean recalculateHeader() throws IOException { // Anonymous - Configurable region file format
          if (!this.canRecalcHeader) {
              return false;
          }
@@ -140,7 +143,7 @@ index 3de7fd2b084c38e72d7a6bc416880a881f514ad3..d3350dee1d6d5bc15dcdfba3611f93ad
      }
  
 -    protected synchronized void write(final ChunkPos pos, final ByteBuffer data) throws IOException {
-+    public synchronized void write(final ChunkPos pos, final ByteBuffer data) throws IOException { // Luminol - Configurable region file format
++    public synchronized void write(final ChunkPos pos, final ByteBuffer data) throws IOException { // Anonymous - Configurable region file format
          int offsetIndex = getOffsetIndex(pos);
          int offset = this.offsets.get(offsetIndex);
          int sectorNumber = getSectorNumber(offset);
@@ -149,7 +152,7 @@ index 3de7fd2b084c38e72d7a6bc416880a881f514ad3..d3350dee1d6d5bc15dcdfba3611f93ad
  
          @Override
 -        public final void moonrise$write(final RegionFile regionFile) throws IOException {
-+        public final void moonrise$write(final abomination.IRegionFile regionFile) throws IOException { // Luminol - Configurable region file format
++        public final void moonrise$write(final io.anonymous.anonymous.data.RegionFile regionFile) throws IOException { // Anonymous - Configurable region file format
              regionFile.write(this.pos, ByteBuffer.wrap(this.buf, 0, this.count));
          }
          // Paper end - rewrite chunk system
@@ -158,12 +161,12 @@ index 3de7fd2b084c38e72d7a6bc416880a881f514ad3..d3350dee1d6d5bc15dcdfba3611f93ad
      }
  
 -    synchronized boolean isOversized(int x, int z) {
-+    public synchronized boolean isOversized(int x, int z) { // Luminol - Configurable region file format
++    public synchronized boolean isOversized(int x, int z) { // Anonymous - Configurable region file format
          return this.oversized[getChunkIndex(x, z)] == 1;
      }
  
 -    synchronized void setOversized(int x, int z, boolean oversized) throws IOException {
-+    public synchronized void setOversized(int x, int z, boolean oversized) throws IOException { // Luminol - Configurable region file format
++    public synchronized void setOversized(int x, int z, boolean oversized) throws IOException { // Anonymous - Configurable region file format
          final int offset = getChunkIndex(x, z);
          boolean previous = this.oversized[offset] == 1;
          this.oversized[offset] = (byte) (oversized ? 1 : 0);
@@ -172,12 +175,12 @@ index 3de7fd2b084c38e72d7a6bc416880a881f514ad3..d3350dee1d6d5bc15dcdfba3611f93ad
      }
  
 -    synchronized net.minecraft.nbt.CompoundTag getOversizedData(int x, int z) throws IOException {
-+    public synchronized net.minecraft.nbt.CompoundTag getOversizedData(int x, int z) throws IOException { // Luminol - Configurable region file format
++    public synchronized net.minecraft.nbt.CompoundTag getOversizedData(int x, int z) throws IOException { // Anonymous - Configurable region file format
          Path file = getOversizedFile(x, z);
          try (DataInputStream out = new DataInputStream(new java.io.BufferedInputStream(new java.util.zip.InflaterInputStream(Files.newInputStream(file))))) {
              return net.minecraft.nbt.NbtIo.read((java.io.DataInput) out);
 diff --git a/net/minecraft/world/level/chunk/storage/RegionFileStorage.java b/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
-index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977ebfb18517 100644
+index 63b40c420030d935bb81a219fb33defe0946e21f..e0e19f091f6b85d7788259cfcc53cc3db848b68e 100644
 --- a/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 +++ b/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 @@ -19,7 +19,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
@@ -185,7 +188,7 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
      public static final String ANVIL_EXTENSION = ".mca";
      private static final int MAX_CACHE_SIZE = 256;
 -    private final Long2ObjectLinkedOpenHashMap<RegionFile> regionCache = new Long2ObjectLinkedOpenHashMap<>();
-+    private final Long2ObjectLinkedOpenHashMap<abomination.IRegionFile> regionCache = new Long2ObjectLinkedOpenHashMap<>();  // Luminol - Configurable region file format
++    private final Long2ObjectLinkedOpenHashMap<io.anonymous.anonymous.data.RegionFile> regionCache = new Long2ObjectLinkedOpenHashMap<>();  // Anonymous - Configurable region file format
      private final RegionStorageInfo info;
      private final Path folder;
      private final boolean sync;
@@ -194,7 +197,7 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
      public static ChunkPos getRegionFileCoordinates(Path file) {
          String fileName = file.getFileName().toString();
 -        if (!fileName.startsWith("r.") || !fileName.endsWith(".mca")) {
-+        if (!fileName.startsWith("r.") || !fileName.endsWith(getExtensionName())) { // Luminol - Configurable region file format
++        if (!fileName.startsWith("r.") || !fileName.endsWith(getExtensionName())) { // Anonymous - Configurable region file format
              return null;
          }
  
@@ -203,32 +206,32 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
      private final it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet nonExistingRegionFiles = new it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet();
      private static String getRegionFileName(final int chunkX, final int chunkZ) {
 -        return "r." + (chunkX >> REGION_SHIFT) + "." + (chunkZ >> REGION_SHIFT) + ".mca";
-+        return "r." + (chunkX >> REGION_SHIFT) + "." + (chunkZ >> REGION_SHIFT) + getExtensionName(); // Luminol - Configurable region file format
++        return "r." + (chunkX >> REGION_SHIFT) + "." + (chunkZ >> REGION_SHIFT) + getExtensionName(); // Anonymous - Configurable region file format
      }
-+    // Luminol start - Configurable region file format
-+    public static abomination.IRegionFile createNew(RegionStorageInfo info, Path filePath, Path folder, boolean sync) throws IOException{
-+        final me.earthme.luminol.enums.EnumRegionFormat regionFormat = me.earthme.luminol.config.modules.function.RegionFormatConfig.regionFormat;
++    // Anonymous start - Configurable region file format
++    public static io.anonymous.anonymous.data.RegionFile createNew(RegionStorageInfo info, Path filePath, Path folder, boolean sync) throws IOException{
++        final io.anonymous.anonymous.enums.EnumRegionFormat regionFormat = me.earthme.luminol.config.modules.function.RegionFormatConfig.regionFormat;
 +        final String fullFileName = filePath.getFileName().toString();
 +        final String[] fullNameSplit = fullFileName.split("\\.");
 +        final String extensionName = fullNameSplit[fullNameSplit.length - 1];
 +
 +        if (!regionFormat.getArgument().equalsIgnoreCase(extensionName)) {
-+            // delayed crash
++            // raise a delayed crash
 +            io.papermc.paper.threadedregions.RegionizedServer.getInstance().addTask(() -> {
-+                new RuntimeException("Invalid region file format: " + extensionName + " expected " + regionFormat.getArgument());
++                throw new RuntimeException("Invalid region file format: " + extensionName + " expected " + regionFormat.getArgument());
 +            });
 +
 +
 +            throw new IOException("Invalid region file format: " + extensionName + " expected " + regionFormat.getArgument());
 +        }
 +
-+        return regionFormat.getCreator().create(new me.earthme.luminol.utils.RegionCreatorInfo(info, filePath, folder, sync));
++        return regionFormat.getCreator().newFile(new io.anonymous.anonymous.utils.RegionCreatorInfo(info, filePath, folder, sync));
 +    }
 +
 +    public static String getExtensionName() {
 +        return "." + me.earthme.luminol.config.modules.function.RegionFormatConfig.regionFormat.getArgument();
 +    }
-+    // Luminol end
++    // Anonymous end
  
      private boolean doesRegionFilePossiblyExist(final long position) {
          synchronized (this.nonExistingRegionFiles) {
@@ -237,17 +240,17 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
  
      @Override
 -    public synchronized final RegionFile moonrise$getRegionFileIfLoaded(final int chunkX, final int chunkZ) {
-+    public synchronized final abomination.IRegionFile moonrise$getRegionFileIfLoaded(final int chunkX, final int chunkZ) { // Luminol - Configurable region file format
++    public synchronized final io.anonymous.anonymous.data.RegionFile moonrise$getRegionFileIfLoaded(final int chunkX, final int chunkZ) { // Anonymous - Configurable region file format
          return this.regionCache.getAndMoveToFirst(ChunkPos.pack(chunkX >> REGION_SHIFT, chunkZ >> REGION_SHIFT));
      }
  
      @Override
 -    public synchronized final RegionFile moonrise$getRegionFileIfExists(final int chunkX, final int chunkZ) throws IOException {
-+    public synchronized final abomination.IRegionFile moonrise$getRegionFileIfExists(final int chunkX, final int chunkZ) throws IOException {  // Luminol - Configurable region file format
++    public synchronized final io.anonymous.anonymous.data.RegionFile moonrise$getRegionFileIfExists(final int chunkX, final int chunkZ) throws IOException {  // Anonymous - Configurable region file format
          final long key = ChunkPos.pack(chunkX >> REGION_SHIFT, chunkZ >> REGION_SHIFT);
  
 -        RegionFile ret = this.regionCache.getAndMoveToFirst(key);
-+        abomination.IRegionFile ret = this.regionCache.getAndMoveToFirst(key);  // Luminol - Configurable region file format
++        io.anonymous.anonymous.data.RegionFile ret = this.regionCache.getAndMoveToFirst(key);  // Anonymous - Configurable region file format
          if (ret != null) {
              return ret;
          }
@@ -256,7 +259,7 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
          FileUtil.createDirectoriesSafe(this.folder);
  
 -        ret = new RegionFile(this.info, regionPath, this.folder, this.sync);
-+        ret = this.createNew(this.info, regionPath, this.folder, this.sync);  // Luminol - Configurable region file format
++        ret = this.createNew(this.info, regionPath, this.folder, this.sync);  // Anonymous - Configurable region file format
  
          this.regionCache.putAndMoveToFirst(key, ret);
  
@@ -265,7 +268,7 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
  
          final ChunkPos pos = new ChunkPos(chunkX, chunkZ);
 -        final RegionFile regionFile = this.getRegionFile(pos);
-+        final abomination.IRegionFile regionFile = this.getRegionFile(pos);  // Luminol - Configurable region file format
++        final io.anonymous.anonymous.data.RegionFile regionFile = this.getRegionFile(pos);  // Anonymous - Configurable region file format
  
          // note: not required to keep regionfile loaded after this call, as the write param takes a regionfile as input
          // (and, the regionfile parameter is unused for writing until the write call)
@@ -274,7 +277,7 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
          final ChunkPos pos = new ChunkPos(chunkX, chunkZ);
          if (writeData.result() == ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO.RegionDataController.WriteData.WriteResult.DELETE) {
 -            final RegionFile regionFile = this.moonrise$getRegionFileIfExists(chunkX, chunkZ);
-+            final abomination.IRegionFile regionFile = this.moonrise$getRegionFileIfExists(chunkX, chunkZ);  // Luminol - Configurable region file format
++            final io.anonymous.anonymous.data.RegionFile regionFile = this.moonrise$getRegionFileIfExists(chunkX, chunkZ);  // Anonymous - Configurable region file format
              if (regionFile != null) {
                  regionFile.clear(pos);
              } // else: didn't exist
@@ -283,7 +286,7 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
          final int chunkX, final int chunkZ
      ) throws IOException {
 -        final RegionFile regionFile = this.moonrise$getRegionFileIfExists(chunkX, chunkZ);
-+        final abomination.IRegionFile regionFile = this.moonrise$getRegionFileIfExists(chunkX, chunkZ);  // Luminol - Configurable region file format
++        final io.anonymous.anonymous.data.RegionFile regionFile = this.moonrise$getRegionFileIfExists(chunkX, chunkZ);  // Anonymous - Configurable region file format
  
          final DataInputStream input = regionFile == null ? null : regionFile.getChunkDataInputStream(new ChunkPos(chunkX, chunkZ));
  
@@ -292,7 +295,7 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
              final ChunkPos pos = new ChunkPos(chunkX, chunkZ);
              final ChunkPos headerChunkPos = SerializableChunkData.getChunkCoordinate(ret);
 -            final RegionFile regionFile = this.getRegionFile(pos);
-+            final abomination.IRegionFile regionFile = this.getRegionFile(pos);  // Luminol - Configurable region file format
++            final io.anonymous.anonymous.data.RegionFile regionFile = this.getRegionFile(pos);  // Anonymous - Configurable region file format
  
              if (regionFile.getRecalculateCount() != readData.recalculateCount()) {
                  return null;
@@ -301,7 +304,7 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
      // Paper end - rewrite chunk system
      // Paper start - rewrite chunk system
 -    public RegionFile getRegionFile(ChunkPos pos) throws IOException {
-+    public abomination.IRegionFile getRegionFile(ChunkPos pos) throws IOException {  // Luminol - Configurable region file format
++    public io.anonymous.anonymous.data.RegionFile getRegionFile(ChunkPos pos) throws IOException {  // Anonymous - Configurable region file format
          return this.getRegionFile(pos, false);
      }
      // Paper end - rewrite chunk system
@@ -310,7 +313,7 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
      }
  
 -    @org.jetbrains.annotations.Contract("_, false -> !null") private @Nullable RegionFile getRegionFile(final ChunkPos pos, boolean existingOnly) throws IOException { // CraftBukkit
-+    @org.jetbrains.annotations.Contract("_, false -> !null") private abomination.@Nullable IRegionFile getRegionFile(final ChunkPos pos, boolean existingOnly) throws IOException { // CraftBukkit  // Luminol - Configurable region file format
++    @org.jetbrains.annotations.Contract("_, false -> !null") private io.anonymous.anonymous.data.RegionFile getRegionFile(final ChunkPos pos, boolean existingOnly) throws IOException { // CraftBukkit // Anonymous - Configurable region file format
          // Paper start - rewrite chunk system
          if (existingOnly) {
              return this.moonrise$getRegionFileIfExists(pos.x(), pos.z());
@@ -319,7 +322,7 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
              final long key = ChunkPos.pack(pos.x() >> REGION_SHIFT, pos.z() >> REGION_SHIFT);
  
 -            RegionFile ret = this.regionCache.getAndMoveToFirst(key);
-+            abomination.IRegionFile ret = this.regionCache.getAndMoveToFirst(key);  // Luminol - Configurable region file format
++            io.anonymous.anonymous.data.RegionFile ret = this.regionCache.getAndMoveToFirst(key);  // Anonymous - Configurable region file format
              if (ret != null) {
                  return ret;
              }
@@ -328,7 +331,7 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
              FileUtil.createDirectoriesSafe(this.folder);
  
 -            ret = new RegionFile(this.info, regionPath, this.folder, this.sync);
-+            ret = this.createNew(this.info, regionPath, this.folder, this.sync); // Luminol - Configurable region file format
++            ret = this.createNew(this.info, regionPath, this.folder, this.sync); // Anonymous - Configurable region file format
  
              this.regionCache.putAndMoveToFirst(key, ret);
  
@@ -337,7 +340,7 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
      }
  
 -    private static CompoundTag readOversizedChunk(RegionFile regionfile, ChunkPos chunkCoordinate) throws IOException {
-+    private static CompoundTag readOversizedChunk(abomination.IRegionFile regionfile, ChunkPos chunkCoordinate) throws IOException {  // Luminol - Configurable region file format
++    private static CompoundTag readOversizedChunk(io.anonymous.anonymous.data.RegionFile regionfile, ChunkPos chunkCoordinate) throws IOException {  // Anonymous - Configurable region file format
          synchronized (regionfile) {
              try (DataInputStream datainputstream = regionfile.getChunkDataInputStream(chunkCoordinate)) {
                  CompoundTag oversizedData = regionfile.getOversizedData(chunkCoordinate.x(), chunkCoordinate.z());
@@ -346,7 +349,7 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
      public @Nullable CompoundTag read(final ChunkPos pos) throws IOException {
          // CraftBukkit start - SPIGOT-5680: There's no good reason to preemptively create files on read, save that for writing
 -        RegionFile region = this.getRegionFile(pos, true);
-+        abomination.IRegionFile region = this.getRegionFile(pos, true); // Luminol - Configurable region file format
++        io.anonymous.anonymous.data.RegionFile region = this.getRegionFile(pos, true); // Anonymous - Configurable region file format
          if (region == null) {
              return null;
          }
@@ -355,7 +358,7 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
      public void scanChunk(final ChunkPos pos, final StreamTagVisitor scanner) throws IOException {
          // CraftBukkit start - SPIGOT-5680: There's no good reason to preemptively create files on read, save that for writing
 -        RegionFile region = this.getRegionFile(pos, true);
-+        abomination.IRegionFile region = this.getRegionFile(pos, true); // Luminol - Configurable region file format
++        io.anonymous.anonymous.data.RegionFile region = this.getRegionFile(pos, true); // Anonymous - Configurable region file format
          if (region == null) {
              return;
          }
@@ -364,7 +367,7 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
      public void write(final ChunkPos pos, final @Nullable CompoundTag value) throws IOException {
          if (!SharedConstants.DEBUG_DONT_SAVE_WORLD) {
 -            RegionFile region = this.getRegionFile(pos, value == null); // CraftBukkit // Paper - rewrite chunk system
-+            abomination.IRegionFile region = this.getRegionFile(pos, value == null); // CraftBukkit // Paper - rewrite chunk system // Luminol - Configurable region file format
++            io.anonymous.anonymous.data.RegionFile region = this.getRegionFile(pos, value == null); // CraftBukkit // Paper - rewrite chunk system // Anonymous - Configurable region file format
              // Paper start - rewrite chunk system
              if (region == null) {
                  // if the RegionFile doesn't exist, no point in deleting from it
@@ -373,7 +376,7 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
          synchronized (this) {
              final ExceptionCollector<IOException> exceptionCollector = new ExceptionCollector<>();
 -            for (final RegionFile regionFile : this.regionCache.values()) {
-+            for (final abomination.IRegionFile regionFile : this.regionCache.values()) { // Luminol - Configurable region file format
++            for (final io.anonymous.anonymous.data.RegionFile regionFile : this.regionCache.values()) { // Anonymous - Configurable region file format
                  try {
                      regionFile.close();
                  } catch (final IOException ex) {
@@ -382,7 +385,7 @@ index 63b40c420030d935bb81a219fb33defe0946e21f..2e67e69862cbf5d804de50193442977e
          synchronized (this) {
              final ExceptionCollector<IOException> exceptionCollector = new ExceptionCollector<>();
 -            for (final RegionFile regionFile : this.regionCache.values()) {
-+            for (final abomination.IRegionFile regionFile : this.regionCache.values()) { // Luminol - Configurable region file format
++            for (final io.anonymous.anonymous.data.RegionFile regionFile : this.regionCache.values()) { // Anonymous - Configurable region file format
                  try {
                      regionFile.flush();
                  } catch (final IOException ex) {

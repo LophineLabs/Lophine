@@ -1,9 +1,9 @@
-package me.earthme.luminol.enums;
+package io.anonymous.anonymous.enums;
 
 import abomination.LinearRegionFile;
 import me.earthme.luminol.config.modules.function.RegionFormatConfig;
-import me.earthme.luminol.data.BufferedLinearRegionFile;
-import me.earthme.luminol.utils.IRegionCreateFunction;
+import io.anonymous.anonymous.data.BufferedLinearRegionFile;
+import io.anonymous.anonymous.utils.RegionFileFactory;
 import net.minecraft.world.level.chunk.storage.RegionFile;
 
 public enum EnumRegionFormat {
@@ -12,14 +12,14 @@ public enum EnumRegionFormat {
     B_LINEAR("b_linear", (info) -> new BufferedLinearRegionFile(info.filePath(), RegionFormatConfig.linearCompressionLevel, RegionFormatConfig.blinearFlusher));
 
     private final String argument;
-    private final IRegionCreateFunction creator;
+    private final RegionFileFactory creator;
 
-    EnumRegionFormat(String argument, IRegionCreateFunction creator) {
+    EnumRegionFormat(String argument, RegionFileFactory creator) {
         this.argument = argument;
         this.creator = creator;
     }
 
-    public IRegionCreateFunction getCreator() {
+    public RegionFileFactory getCreator() {
         return this.creator;
     }
 

@@ -48,7 +48,7 @@ index c67ea715f02086e5a39cc5832ccdc0b32199db93..946094713bdb294d7d8beb03967b2a24
              SaveOnCommand.register(this.dispatcher);
              SetPlayerIdleTimeoutCommand.register(this.dispatcher);
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 4b6f961e695155db1d6cc86496491017bf3a6383..e7f7f7927fc1e2ce45ea5dbf7cc9ec19197c599f 100644
+index 1736816e26c255645d62696814cd539ee1ffed8d..a0c285d2cb666d0f9bd0e859e0dac414254325c3 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -1652,6 +1652,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
