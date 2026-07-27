@@ -26,10 +26,6 @@ public class SentryManager {
 
     private static final Logger logger = LogManager.getLogger(SentryManager.class);
 
-    private SentryManager() {
-
-    }
-
     private static boolean initialized = false;
 
     public static synchronized void init(Level logLevel) {

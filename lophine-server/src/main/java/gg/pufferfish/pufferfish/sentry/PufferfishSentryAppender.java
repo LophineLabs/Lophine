@@ -23,7 +23,6 @@ import io.sentry.Breadcrumb;
 import io.sentry.Sentry;
 import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
-import io.sentry.protocol.Message;
 import io.sentry.protocol.User;
 import me.earthme.luminol.config.modules.misc.SentryConfig;
 import org.apache.logging.log4j.Level;
@@ -66,9 +65,6 @@ public class PufferfishSentryAppender extends AbstractAppender {
 
     private void logException(LogEvent e) {
         SentryEvent event = new SentryEvent(e.getThrown());
-
-        Message sentryMessage = new Message();
-        sentryMessage.setMessage(e.getMessage().getFormattedMessage());
 
         event.setThrowable(e.getThrown());
         event.setLevel(getLevel(e.getLevel()));

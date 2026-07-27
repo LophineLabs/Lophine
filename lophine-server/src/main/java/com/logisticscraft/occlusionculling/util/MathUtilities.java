@@ -21,5 +21,4 @@ public final class MathUtilities {
         int i = (int) d;
         return d > (double) i ? i + 1 : i;
     }
-
 }
