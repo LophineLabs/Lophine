@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Tue, 28 Jul 2026 15:09:06 +0800
+Subject: [PATCH] Anonymous Object: Lithium optimized collections for
+ WeightedList
+
+As requested by the original author, this patch will be anonymous and hide the original commit address.
+This patch is used with permission from the original author.
+Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
+
+diff --git a/net/minecraft/util/random/WeightedList.java b/net/minecraft/util/random/WeightedList.java
+index a8481259e42aa116e29bccd1e30fdfd91f51a8cc..49a558d6021db2d57eb2596206ea459fd33485e0 100644
+--- a/net/minecraft/util/random/WeightedList.java
++++ b/net/minecraft/util/random/WeightedList.java
+@@ -23,7 +23,7 @@ public class WeightedList<E> { // Paper - non-final
+     private final WeightedList.@Nullable Selector<E> selector;
+ 
+     protected WeightedList(final List<? extends Weighted<E>> items) { // Paper - protected
+-        this.items = List.copyOf(items);
++        this.items = items.size() > 4 ? new net.caffeinemc.mods.lithium.common.util.collections.HashedReferenceList(items) : new it.unimi.dsi.fastutil.objects.ReferenceArrayList<>(items); // Anonymous - Lithium optimized collections for WeightedList
+         this.totalWeight = WeightedRandom.getTotalWeight(items, Weighted::weight);
+         if (this.totalWeight == 0) {
+             this.selector = null;

@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Tue, 28 Jul 2026 15:08:28 +0800
+Subject: [PATCH] Anonymous Object: Fix wrong variable passing in
+ ThreadedRegionizer
+
+As requested by the original author, this patch will be anonymous and hide the original commit address.
+This patch is used with permission from the original author.
+Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
+
+diff --git a/io/papermc/paper/threadedregions/ThreadedRegionizer.java b/io/papermc/paper/threadedregions/ThreadedRegionizer.java
+index a346b96500ae859e9469c80e2ff6b39c4d3d0b52..73e0aeb5a5e9bdd1f275dd64d1fffa32c389052d 100644
+--- a/io/papermc/paper/threadedregions/ThreadedRegionizer.java
++++ b/io/papermc/paper/threadedregions/ThreadedRegionizer.java
+@@ -755,8 +755,8 @@ public final class ThreadedRegionizer<R extends ThreadedRegionizer.ThreadedRegio
+                 final int x1 = CoordinateUtils.getChunkX(k1);
+                 final int x2 = CoordinateUtils.getChunkX(k2);
+ 
+-                final int z1 = CoordinateUtils.getChunkZ(x1);
+-                final int z2 = CoordinateUtils.getChunkZ(x2);
++                final int z1 = CoordinateUtils.getChunkZ(k1); // Anonymous - Fix wrong variable passing in ThreadedRegionizer
++                final int z2 = CoordinateUtils.getChunkZ(k2); // Anonymous - Fix wrong variable passing in ThreadedRegionizer
+ 
+                 final int zCompare = Integer.compare(z1, z2);
+                 if (zCompare != 0) {

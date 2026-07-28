@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Tue, 28 Jul 2026 15:08:10 +0800
+Subject: [PATCH] Anonymous Object: Fix wrong variable passing in
+ RegionizedWorldData
+
+As requested by the original author, this patch will be anonymous and hide the original commit address.
+This patch is used with permission from the original author.
+Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
+
+diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
+index 3a50e625160d0dad6bd8fa534b719087dae7881d..20439c632044ae9b4358bfba309b378b3de98601 100644
+--- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
++++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
+@@ -841,7 +841,7 @@ public final class RegionizedWorldData {
+     }
+ 
+     public void setTickingBlockEntities(final boolean to) {
+-        this.tickingBlockEntities = true;
++        this.tickingBlockEntities = to; // Anonymous - Fix wrong variable passing in RegionizedWorldData
+     }
+ 
+     public List<TickingBlockEntity> getBlockEntityTickers() {
