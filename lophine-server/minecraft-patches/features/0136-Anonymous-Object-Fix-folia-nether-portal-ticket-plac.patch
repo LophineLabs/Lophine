@@ -1,0 +1,69 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Tue, 28 Jul 2026 20:40:01 +0800
+Subject: [PATCH] Anonymous Object: Fix folia nether portal ticket placement
+
+As requested by the original author, this patch will be anonymous and hide the original commit address.
+This patch is used with permission from the original author.
+Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
+
+diff --git a/net/minecraft/util/BlockUtil.java b/net/minecraft/util/BlockUtil.java
+index ea93ac07ec6d4e83d1d0904daf721132e2bbecc3..4252672ad2aaf03d50e5ea6a681e9964fd9a6137 100644
+--- a/net/minecraft/util/BlockUtil.java
++++ b/net/minecraft/util/BlockUtil.java
+@@ -138,12 +138,20 @@ public class BlockUtil {
+         public final BlockPos minCorner;
+         public final int axis1Size;
+         public final int axis2Size;
++        public BlockPos foundOrigin; // Anonymous - Fix folia nether portal ticket placement
+ 
+         public FoundRectangle(final BlockPos minCorner, final int axis1Size, final int axis2Size) {
+             this.minCorner = minCorner;
+             this.axis1Size = axis1Size;
+             this.axis2Size = axis2Size;
++            this.foundOrigin = minCorner; // Anonymous - Fix folia nether portal ticket placement - prevent edge conditions(idk if someone would do this so just prevent it)
+         }
++        // Anonymous start - Fix folia nether portal ticket placement
++        public FoundRectangle withFoundOrigin(BlockPos origin) {
++            this.foundOrigin = origin;
++            return this;
++        }
++        // Anonymous end
+     }
+ 
+     public static class IntBounds {
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index acc9caf8559cd341ea17d3b58f13cdac7de18564..489011f9af49fa3407038bd2f00439443307d179 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -4851,7 +4851,7 @@ public abstract class Entity
+                             portalInfoCompletable.complete(
+                                 new TeleportTransition(destination, Vec3.atCenterOf(targetPos), Vec3.ZERO,
+                                     90.0f, 0.0f,
+-                                    TeleportTransition.PLAY_PORTAL_SOUND.then(TeleportTransition.PLACE_PORTAL_TICKET))
++                                    TeleportTransition.PLAY_PORTAL_SOUND.then(ent -> ent.placePortalTicket(targetPos))) // Anonymous - Fix folia nether portal ticket placement
+                             );
+                             return;
+                         }
+@@ -4863,7 +4863,7 @@ public abstract class Entity
+                         portalInfoCompletable.complete(
+                             net.minecraft.world.level.block.NetherPortalBlock.createDimensionTransition(
+                                 destination, portal, originalPortalDirection, relativePos,
+-                                Entity.this, TeleportTransition.PLAY_PORTAL_SOUND.then(TeleportTransition.PLACE_PORTAL_TICKET)
++                                Entity.this, TeleportTransition.PLAY_PORTAL_SOUND.then(ent -> ent.placePortalTicket(portal.foundOrigin)) // Anonymous - Fix folia nether portal ticket placement
+                             )
+                         );
+                     }
+diff --git a/net/minecraft/world/level/block/NetherPortalBlock.java b/net/minecraft/world/level/block/NetherPortalBlock.java
+index 29fc9521c2c8333c999647dd833899393a838064..e8d2b52a3948755c8d3912a4ad1204cea5f78674 100644
+--- a/net/minecraft/world/level/block/NetherPortalBlock.java
++++ b/net/minecraft/world/level/block/NetherPortalBlock.java
+@@ -204,7 +204,7 @@ public class NetherPortalBlock extends Block implements Portal {
+ 
+         return BlockUtil.getLargestRectangleAround(found, portalState.getValue(BlockStateProperties.HORIZONTAL_AXIS), 21, Direction.Axis.Y, 21, (pos) -> {
+             return world.getBlockStateFromEmptyChunk(pos) == portalState;
+-        });
++        }).withFoundOrigin(found); // Anonymous - Fix folia nether portal ticket placement
+     }
+     // Folia end - region threading
+ 
