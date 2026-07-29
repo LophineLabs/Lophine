@@ -93,7 +93,7 @@ public class ServerBot extends ServerPlayer {
     private static final int AUTO_FISH_ENTITY_DELAY = 20;
 
     private final List<AbstractBotAction<?>> actions;
-    private final Map<String, AbstractBotConfig<?, ?>> configs;
+    private final Map<String, AbstractBotConfig<?>> configs;
 
     public boolean resume = false;
     public BotCreateState createState;
@@ -116,9 +116,10 @@ public class ServerBot extends ServerPlayer {
         this.gameMode = new ServerBotGameMode(this);
 
         this.actions = new ArrayList<>();
-        ImmutableMap.Builder<String, AbstractBotConfig<?, ?>> configBuilder = ImmutableMap.builder();
-        for (AbstractBotConfig<?, ?> config : Configs.getConfigs()) {
-            configBuilder.put(config.getName(), config.create().setBot(this));
+
+        ImmutableMap.Builder<String, AbstractBotConfig<?>> configBuilder = ImmutableMap.builder();
+        for (Configs<?> config : Configs.getConfigs()) {
+            configBuilder.put(config.getName(), config.create(this));
         }
         this.configs = configBuilder.build();
 
@@ -147,7 +148,7 @@ public class ServerBot extends ServerPlayer {
             this.joining = false;
         }
 
-//        this.resetOperationCountPerTick(); // Leaves - player operation limiter
+        //this.resetOperationCountPerTick(); // Leaves - player operation limiter // Lophine
         this.wardenSpawnTracker.tick();
         if (this.invulnerableTime > 0) {
             this.invulnerableTime--;
@@ -303,19 +304,6 @@ public class ServerBot extends ServerPlayer {
             this.stopUsingItem();
             teleportTransition.postTeleportTransition().onTransition(this);
             this.isChangingDimension = false;
-
-            // Lophine - We don't have this
-/*            if (LeavesConfig.modify.netherPortalFix) {
-                final ResourceKey<Level> fromDim = fromLevel.dimension();
-                final ResourceKey<Level> toDim = level().dimension();
-                if (!((fromDim != Level.OVERWORLD || toDim != Level.NETHER) && (fromDim != Level.NETHER || toDim != Level.OVERWORLD))) {
-                    BlockPos fromPortal = org.leavesmc.leaves.util.ReturnPortalManager.findPortalAt(this, fromDim, lastPos);
-                    BlockPos toPos = this.blockPosition();
-                    if (fromPortal != null) {
-                        org.leavesmc.leaves.util.ReturnPortalManager.storeReturnPortal(this, toDim, toPos, fromPortal);
-                    }
-                }
-            }*/
             if (this.isBlocking()) {
                 this.stopUsingItem();
             }
@@ -348,10 +336,8 @@ public class ServerBot extends ServerPlayer {
         ItemStack item = this.getItemInHand(hand);
 
         if (!item.isEmpty()) {
-            if (FakePlayerCompatConfig.fakePlayerAutoReplenishment) {
-                BotUtil.replenishment(item, getInventory().getNonEquipmentItems());
-            }
-            if (FakePlayerCompatConfig.fakePlayerAutoReplaceTool && BotUtil.isDamage(item, 10)) {
+            BotUtil.replenishment(item, getInventory().getNonEquipmentItems());
+            if (BotUtil.isDamage(item, 10)) {
                 BotUtil.replaceTool(hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND, this);
             }
         }
@@ -421,7 +407,7 @@ public class ServerBot extends ServerPlayer {
 
         if (!this.configs.isEmpty()) {
             ValueOutput.TypedOutputList<CompoundTag> configNbt = nbt.list("configs", CompoundTag.CODEC);
-            for (AbstractBotConfig<?, ?> config : this.configs.values()) {
+            for (AbstractBotConfig<?> config : this.configs.values()) {
                 configNbt.add(config.save(new CompoundTag()));
             }
         }
@@ -432,31 +418,23 @@ public class ServerBot extends ServerPlayer {
         super.readAdditionalSaveData(nbt);
         this.setShiftKeyDown(nbt.getBooleanOr("isShiftKeyDown", false));
 
-        CompoundTag createNbt = nbt.read("createStatus", CompoundTag.CODEC)
-                .orElseThrow(() -> new IllegalArgumentException("Missing bot createStatus"));
-        String rawName = createNbt.getString("rawName")
-                .orElseGet(() -> createNbt.getString("realName")
-                        .orElseThrow(() -> new IllegalArgumentException("Missing bot rawName")));
-        String name = createNbt.getString("name")
-                .orElseThrow(() -> new IllegalArgumentException("Missing bot name"));
-        String skinName = createNbt.getStringOr("skinName", rawName);
+        CompoundTag createNbt = nbt.read("createStatus", CompoundTag.CODEC).orElseThrow();
         BotCreateState.Builder createBuilder = BotCreateState
-                .builder(rawName, null) // Convert from legacy version, consider to use ca.spottedleaf.dataconverter.minecraft.MCDataConverter instead for release version
-                .name(name);
+                .builder(createNbt.getString("rawName")
+                        .orElseGet(() -> createNbt.getString("realName")
+                                .orElseThrow()), null) // Convert from legacy version, consider to use ca.spottedleaf.dataconverter.minecraft.MCDataConverter instead for release version
+                .name(createNbt.getString("name").orElseThrow());
 
         String[] skin = null;
         if (createNbt.contains("skin")) {
-            ListTag skinTag = createNbt.getList("skin")
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid bot skin list"));
+            ListTag skinTag = createNbt.getList("skin").orElseThrow();
             skin = new String[skinTag.size()];
             for (int i = 0; i < skinTag.size(); i++) {
-                final int skinIndex = i;
-                skin[i] = skinTag.getString(i)
-                        .orElseThrow(() -> new IllegalArgumentException("Invalid bot skin entry at index " + skinIndex));
+                skin[i] = skinTag.getString(i).orElseThrow();
             }
         }
 
-        createBuilder.skinName(skinName).skin(skin);
+        createBuilder.skinName(createNbt.getString("skinName").orElseThrow()).skin(skin);
         createBuilder.createReason(BotCreateEvent.CreateReason.INTERNAL).creator(null);
 
         this.createState = createBuilder.build();
@@ -466,17 +444,11 @@ public class ServerBot extends ServerPlayer {
         if (FakePlayerCompatConfig.fakePlayerReloadAction && nbt.list("actions", CompoundTag.CODEC).isPresent()) {
             ValueInput.TypedInputList<CompoundTag> actionNbt = nbt.list("actions", CompoundTag.CODEC).orElseThrow();
             actionNbt.forEach(actionTag -> {
-                try {
-                    String actionName = actionTag.getString("actionName")
-                            .orElseThrow(() -> new IllegalArgumentException("Missing actionName"));
-                    AbstractBotAction<?> action = Actions.getForName(actionName);
-                    if (action != null) {
-                        AbstractBotAction<?> newAction = action.create();
-                        newAction.load(actionTag);
-                        this.actions.add(newAction);
-                    }
-                } catch (RuntimeException exception) {
-                    LophineLogger.LOGGER.warn("Skipped invalid saved action for bot {}", this.getScoreboardName(), exception);
+                Actions<?> holder = Actions.getByName(actionTag.getString("actionName").orElseThrow());
+                if (holder != null) {
+                    AbstractBotAction<?> newAction = holder.create();
+                    newAction.load(actionTag);
+                    this.actions.add(newAction);
                 }
             });
         }
@@ -484,17 +456,12 @@ public class ServerBot extends ServerPlayer {
         if (nbt.list("configs", CompoundTag.CODEC).isPresent()) {
             ValueInput.TypedInputList<CompoundTag> configNbt = nbt.list("configs", CompoundTag.CODEC).orElseThrow();
             for (CompoundTag configTag : configNbt) {
-                try {
-                    String configName = configTag.getString("configName")
-                            .orElseThrow(() -> new IllegalArgumentException("Missing configName"));
-                    AbstractBotConfig<?, ?> config = Configs.getConfig(configName);
-                    if (config != null) {
-                        config.setBot(this);
-                        config.load(configTag);
-                    }
-                } catch (RuntimeException exception) {
-                    LophineLogger.LOGGER.warn("Skipped invalid saved config for bot {}", this.getScoreboardName(), exception);
+                String key = configTag.getString("configName").orElseThrow();
+                if (!this.configs.containsKey(key)) {
+                    LophineLogger.LOGGER.warn("Trying to load a unknown config \"{}\", discard.", key);
+                    continue;
                 }
+                this.configs.get(key).load(configTag);
             }
         }
     }
@@ -523,7 +490,7 @@ public class ServerBot extends ServerPlayer {
 
         playerConnection.send(this.getAddEntityPacket(entityTracker.serverEntity));
         if (login) {
-            Bukkit.getGlobalRegionScheduler().runDelayed(MinecraftInternalPlugin.INSTANCE, (task) -> playerConnection.send(new ClientboundRotateHeadPacket(this, (byte) ((getYRot() * 256f) / 360f))), 10);
+            Bukkit.getGlobalRegionScheduler().runDelayed(MinecraftInternalPlugin.INSTANCE, (_) -> playerConnection.send(new ClientboundRotateHeadPacket(this, (byte) ((getYRot() * 256f) / 360f))), 10);
         } else {
             playerConnection.send(new ClientboundRotateHeadPacket(this, (byte) ((getYRot() * 256f) / 360f)));
         }
@@ -571,6 +538,11 @@ public class ServerBot extends ServerPlayer {
             this.tellNeutralMobsThatIDied();
         }
         getServer().getBotList().removeBot(this, BotRemoveEvent.RemoveReason.DEATH, null, false, false);
+    }
+
+    @Override
+    protected int getBaseExperienceReward(@NotNull ServerLevel level) {
+        return this.isSpectator() ? 0 : Math.min(this.experienceLevel * 7, 100);
     }
 
     @Override
@@ -764,15 +736,15 @@ public class ServerBot extends ServerPlayer {
     }
 
     @SuppressWarnings("unchecked")
-    public <T, E extends AbstractBotConfig<T, E>> AbstractBotConfig<T, E> getConfig(@NotNull AbstractBotConfig<T, E> config) {
-        return (AbstractBotConfig<T, E>) Objects.requireNonNull(this.configs.get(config.getName()));
+    public <T> AbstractBotConfig<T> getConfig(@NotNull Configs<? extends AbstractBotConfig<T>> config) {
+        return (AbstractBotConfig<T>) Objects.requireNonNull(this.configs.get(config.getName()));
     }
 
-    public Collection<AbstractBotConfig<?, ?>> getAllConfigs() {
+    public Collection<AbstractBotConfig<?>> getAllConfigs() {
         return configs.values();
     }
 
-    public <T, E extends AbstractBotConfig<T, E>> T getConfigValue(@NotNull AbstractBotConfig<T, E> config) {
+    public <T> T getConfigValue(@NotNull Configs<? extends AbstractBotConfig<T>> config) {
         return this.getConfig(config).getValue();
     }
 

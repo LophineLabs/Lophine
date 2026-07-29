@@ -22,6 +22,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.Tag;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.storage.LevelResource;
@@ -34,7 +35,10 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 public class BotDataStorage {
 
@@ -42,7 +46,7 @@ public class BotDataStorage {
     private final File botDir;
     private final File botListFile;
 
-    private CompoundTag savedBotList;
+    private final CompoundTag savedBotList;
 
     public BotDataStorage(LevelStorageSource.@NotNull LevelStorageAccess session, String dataDir, String listFileName) {
         this.botDir = session.getLevelPath(new LevelResource(dataDir)).toFile();
@@ -52,7 +56,11 @@ public class BotDataStorage {
         this.savedBotList = new CompoundTag();
         if (this.botListFile.exists() && this.botListFile.isFile()) {
             try {
-                Optional.of(NbtIo.readCompressed(this.botListFile.toPath(), NbtAccounter.unlimitedHeap())).ifPresent(tag -> this.savedBotList = tag);
+                Optional.of(NbtIo.readCompressed(this.botListFile.toPath(), NbtAccounter.unlimitedHeap())).ifPresent(tag -> {
+                    for (Map.Entry<String, Tag> entry : tag.entrySet()) {
+                        savedBotList.put(entry.getKey().toLowerCase(Locale.ROOT), entry.getValue());
+                    }
+                });
             } catch (Exception exception) {
                 BotDataStorage.LOGGER.warn("Failed to load player data list");
             }
@@ -60,7 +68,6 @@ public class BotDataStorage {
     }
 
     public void save(Player player) {
-        boolean flag = true;
         try {
             CompoundTag nbt = TagUtil.saveEntityWithoutId(player);
             File file = new File(this.botDir, player.getStringUUID() + ".dat");
@@ -76,19 +83,18 @@ public class BotDataStorage {
             NbtIo.writeCompressed(nbt, file.toPath());
         } catch (Exception exception) {
             BotDataStorage.LOGGER.warn("Failed to save fakeplayer data for {}", player.getScoreboardName(), exception);
-            flag = false;
+            return;
         }
 
-        if (flag && player instanceof ServerBot bot) {
+        if (player instanceof ServerBot bot) {
             CompoundTag nbt = new CompoundTag();
             nbt.putString("name", bot.createState.fullName());
             nbt.store("uuid", UUIDUtil.CODEC, bot.getUUID());
             nbt.putBoolean("resume", bot.resume);
-            this.savedBotList.put(bot.createState.fullName(), nbt);
+            this.savedBotList.put(bot.createState.fullName().toLowerCase(Locale.ROOT), nbt);
             this.saveBotList();
         }
     }
-
 
     public Optional<ValueInput> load(@NotNull ServerBot bot, ProblemReporter reporter) {
         return this.load(bot.nameAndId().name(), bot.nameAndId().id().toString()).map(nbt -> {
@@ -98,27 +104,27 @@ public class BotDataStorage {
         });
     }
 
-    public void removeSavedData(@NotNull ServerBot bot) {
-        this.load(bot.nameAndId().name(), bot.nameAndId().id().toString());
+    public void removeSavedData(String name) {
+        this.savedBotList.remove(name.toLowerCase(Locale.ROOT));
+        this.saveBotList();
     }
 
     private Optional<CompoundTag> load(String name, String uuid) {
         File file = new File(this.botDir, uuid + ".dat");
-
-        if (file.exists() && file.isFile()) {
-            try {
-                Optional<CompoundTag> optional = Optional.of(NbtIo.readCompressed(file.toPath(), NbtAccounter.unlimitedHeap()));
-                if (!file.delete()) {
-                    throw new IOException("Failed to delete fakeplayer data");
-                }
-                this.savedBotList.remove(name);
-                this.saveBotList();
-                return optional;
-            } catch (Exception exception) {
-                BotDataStorage.LOGGER.warn("Failed to load fakeplayer data for {}", name);
-            }
+        if (!file.exists() || !file.isFile()) {
+            LOGGER.warn("Failed to load bot {}, the file {} DOES NOT EXIST!", name, file);
+            return Optional.empty();
         }
-
+        try {
+            Optional<CompoundTag> optional = Optional.of(NbtIo.readCompressed(file.toPath(), NbtAccounter.unlimitedHeap()));
+            if (!file.delete()) {
+                throw new IOException("Failed to delete fakeplayer data");
+            }
+            this.removeSavedData(name);
+            return optional;
+        } catch (Exception exception) {
+            BotDataStorage.LOGGER.warn("Failed to load fakeplayer data for {}", name);
+        }
         return Optional.empty();
     }
 
@@ -152,5 +158,13 @@ public class BotDataStorage {
 
     public CompoundTag getSavedBotList() {
         return savedBotList;
+    }
+
+    public UUID getUUIDFromLower(String lowerName) {
+        return savedBotList.getCompoundOrEmpty(lowerName).read("uuid", UUIDUtil.CODEC).orElseThrow();
+    }
+
+    public String getNameFromLower(String lowerName) {
+        return savedBotList.getCompoundOrEmpty(lowerName).getString("name").orElseThrow();
     }
 }

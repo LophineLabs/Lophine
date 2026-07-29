@@ -34,7 +34,7 @@ public class NonPOISearchDistances {
             return getVanillaSortOrderInt(getRing(dX, dZ), dX, dZ);
         }
 
-        public static int getRing(final int dX, final int dZ){
+        public static int getRing(final int dX, final int dZ) {
             return Math.max(Math.abs(dX), Math.abs(dZ));
         }
 
@@ -58,8 +58,8 @@ public class NonPOISearchDistances {
          * You can convert to longs if you somehow exceed that, but also seriously consider POIs instead.
          *
          * @param ring Which square ring the block is at relative to the center
-         * @param dX Relative x position of the block to the center
-         * @param dZ Relative z position of the block to the center
+         * @param dX   Relative x position of the block to the center
+         * @param dZ   Relative z position of the block to the center
          */
         public static int getVanillaSortOrderInt(final int ring, final int dX, final int dZ) {
             return (ring << 16 | Math.abs(dX) << 9 | Math.abs(dZ) << 1) - ((dX > 0 ? 1 : 0) << 8 | (dZ > 0 ? 1 : 0));

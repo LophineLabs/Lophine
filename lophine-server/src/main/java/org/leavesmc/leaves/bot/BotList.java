@@ -28,11 +28,11 @@ import fun.bm.lophine.config.modules.function.OldFeatureConfig;
 import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.profile.MutablePropertyMap;
 import io.papermc.paper.threadedregions.RegionizedServer;
-import io.papermc.paper.threadedregions.scheduler.FoliaGlobalRegionScheduler;
 import io.papermc.paper.util.MCUtil;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.resources.ResourceKey;
@@ -76,7 +76,7 @@ public class BotList {
     private final BotDataStorage resumeDataStorage;
 
     private final Map<UUID, ServerBot> botsByUUID = Maps.newHashMap();
-    private final Map<String, ServerBot> botsByName = Maps.newHashMap();
+    private final Map<String, ServerBot> botsByLowerName = Maps.newHashMap();
     private final Map<String, Set<String>> botsNameByWorldUuid = Maps.newHashMap();
     private final Map<String, Set<String>> legacyBotsNameByWorldUuid = Maps.newHashMap();
 
@@ -141,20 +141,24 @@ public class BotList {
         return this.loadNewBot(fullName, this.resumeDataStorage);
     }
 
-    public ServerBot loadNewBot(String fullName, BotDataStorage storage) {
-        if (botsByName.containsKey(fullName)) {
+    public ServerBot loadNewBot(String inputName, BotDataStorage storage) {
+        String lowerName = inputName.toLowerCase(Locale.ROOT);
+        if (botsByLowerName.containsKey(lowerName)) {
             return null;
         }
         try {
-            UUID uuid = BotUtil.getBotUUID(fullName);
-
-            BotLoadEvent event = new BotLoadEvent(fullName, uuid);
+            if (!storage.getSavedBotList().contains(lowerName)) {
+                return null;
+            }
+            String name = storage.getNameFromLower(lowerName);
+            UUID uuid = storage.getUUIDFromLower(lowerName);
+            BotLoadEvent event = new BotLoadEvent(name, uuid);
             this.server.server.getPluginManager().callEvent(event);
             if (event.isCancelled()) {
                 return null;
             }
 
-            ServerBot bot = new ServerBot(this.server, this.server.getLevel(Level.OVERWORLD), new GameProfile(uuid, fullName));
+            ServerBot bot = new ServerBot(this.server, this.server.getLevel(Level.OVERWORLD), new GameProfile(uuid, name));
             bot.connection = new ServerBotPacketListenerImpl(this.server, bot);
             Optional<ValueInput> optional;
             try (ProblemReporter.ScopedCollector scopedCollector = new ProblemReporter.ScopedCollector(bot.problemPath(), LOGGER)) {
@@ -182,7 +186,7 @@ public class BotList {
             ServerLevel world = this.server.getLevel(resourcekey);
             return this.placeNewBot(bot, world, bot.getLocation(), nbt);
         } catch (Exception e) {
-            LOGGER.error("Failed to load bot {}", fullName, e);
+            LOGGER.error("Failed to load bot {}", inputName, e);
             return null;
         }
     }
@@ -213,18 +217,20 @@ public class BotList {
         bot.connection.teleport(bot.getX(), bot.getY(), bot.getZ(), bot.getYRot(), bot.getXRot());
 
         this.bots.add(bot);
-        this.botsByName.put(bot.getScoreboardName().toLowerCase(Locale.ROOT), bot);
+        this.botsByLowerName.put(bot.getScoreboardName().toLowerCase(Locale.ROOT), bot);
         this.botsByUUID.put(bot.getUUID(), bot);
 
         bot.suppressTrackerForLogin = true;
 
         Runnable task = () -> {
+            world.addNewPlayer(bot);
             optional.ifPresent(nbt -> {
                 bot.loadAndSpawnEnderPearls(nbt);
                 bot.loadAndSpawnParentVehicle(nbt);
             });
+
             world.getCurrentWorldData().connections.add(bot.connection.connection);
-            world.addNewPlayer(bot);
+
             BotJoinEvent event1 = new BotJoinEvent(bot.getBukkitEntity(), PaperAdventure.asAdventure(Component.translatable("multiplayer.player.joined", bot.getDisplayName())).style(Style.style(NamedTextColor.YELLOW)));
             this.server.server.getPluginManager().callEvent(event1);
 
@@ -255,22 +261,7 @@ public class BotList {
         return bot;
     }
 
-    /*
-     * return true if async
-     */
-    public boolean removeBot(@NotNull ServerBot bot, @NotNull BotRemoveEvent.RemoveReason reason, @Nullable CommandSender remover, boolean save, boolean resume, boolean async) {
-        if (async && !TickThread.isTickThreadFor(bot.level(), bot.getX(), bot.getZ())) {
-            bot.getBukkitEntity().taskScheduler.schedule((Entity unused) -> this.removeBot(bot, reason, remover, save, resume), null, 1L);
-            return true; // async always return true
-        }
-        return this.removeBot(bot, remover, reason, save, resume);
-    }
-
     public boolean removeBot(@NotNull ServerBot bot, @NotNull BotRemoveEvent.RemoveReason reason, @Nullable CommandSender remover, boolean save, boolean resume) {
-        return this.removeBot(bot, reason, remover, save, resume, true);
-    }
-
-    public boolean removeBot(@NotNull ServerBot bot, @Nullable CommandSender remover, @NotNull BotRemoveEvent.RemoveReason reason, boolean save, boolean resume) {
         BotRemoveEvent event = new BotRemoveEvent(bot.getBukkitEntity(), reason, remover, PaperAdventure.asAdventure(Component.translatable("multiplayer.player.left", bot.getDisplayName())).style(Style.style(NamedTextColor.YELLOW)), save);
         this.server.server.getPluginManager().callEvent(event);
 
@@ -279,13 +270,13 @@ public class BotList {
         }
 
         if (bot.removeTaskId != -1) {
-            ((FoliaGlobalRegionScheduler) Bukkit.getGlobalRegionScheduler()).cancelTask(bot.removeTaskId);
+            Bukkit.getScheduler().cancelTask(bot.removeTaskId);
             bot.removeTaskId = -1;
         }
 
         bot.disconnect();
 
-        this.resumeDataStorage.removeSavedData(bot);
+        this.resumeDataStorage.removeSavedData(bot.nameAndId().name());
         if (event.shouldSave()) {
             if (resume) {
                 this.resumeDataStorage.save(bot);
@@ -293,6 +284,7 @@ public class BotList {
                 this.manualSaveDataStorage.save(bot);
             }
         } else {
+            bot.dropExperience(bot.level(), null);
             bot.dropAll(true);
             botsNameByWorldUuid.getOrDefault(bot.level().uuid.toString(), new HashSet<>()).remove(bot.getBukkitEntity().getName());
         }
@@ -327,7 +319,7 @@ public class BotList {
         bot.retireScheduler();
 
         this.bots.remove(bot);
-        this.botsByName.remove(bot.getScoreboardName().toLowerCase(Locale.ROOT));
+        this.botsByLowerName.remove(bot.getScoreboardName().toLowerCase(Locale.ROOT));
 
         UUID uuid = bot.getUUID();
         ServerBot bot1 = this.botsByUUID.get(uuid);
@@ -400,7 +392,9 @@ public class BotList {
             return;
         }
         CompoundTag savedBotList = this.getResumeBotList().copy();
-        for (String fullName : savedBotList.keySet()) {
+        for (Map.Entry<String, Tag> entry : savedBotList.entrySet()) {
+            String lowerName = entry.getKey();
+            String fullName = ((CompoundTag) entry.getValue()).getStringOr("name", lowerName);
             UUID levelUuid = BotUtil.getBotLevel(fullName, this.resumeDataStorage);
             if (levelUuid == null) {
                 LOGGER.warn("Bot {} has no world UUID, skipping loading.", fullName);
@@ -416,6 +410,7 @@ public class BotList {
     private void loadLegacyResumeBotInfo() {
         CompoundTag savedBotList = this.getManualSavedBotList().copy();
         for (String fullName : savedBotList.keySet()) {
+            // Legacy format saved fullName as the key
             CompoundTag nbt = savedBotList.getCompound(fullName).orElseThrow();
             if (!nbt.getBoolean("resume").orElse(false)) {
                 continue;
@@ -461,7 +456,7 @@ public class BotList {
 
     @Nullable
     public ServerBot getBotByName(@NotNull String name) {
-        return this.botsByName.get(name.toLowerCase(Locale.ROOT));
+        return this.botsByLowerName.get(name.toLowerCase(Locale.ROOT));
     }
 
     public CompoundTag getManualSavedBotList() {

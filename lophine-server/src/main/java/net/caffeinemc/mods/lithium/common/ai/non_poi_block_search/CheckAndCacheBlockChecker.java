@@ -96,11 +96,11 @@ public class CheckAndCacheBlockChecker {
         }
     }
 
-    public int getChunkSize(){
+    public int getChunkSize() {
         return this.chunkSections2MaybeContainsMatchingBlock.numChunks;
     }
 
-    public boolean hasUnloadedPossibleChunks(){
+    public boolean hasUnloadedPossibleChunks() {
         return this.unloadedPossibleChunkSections > 0;
     }
 
@@ -129,14 +129,14 @@ public class CheckAndCacheBlockChecker {
         return this.chunkSections2MaybeContainsMatchingBlock.getChunkAccess(blockPos);
     }
 
-    public boolean shouldStop(){
+    public boolean shouldStop() {
         return this.chunkSections2MaybeContainsMatchingBlock.hasNoTrueChunkSections();
     }
 
     public boolean checkPosition(BlockPos blockPos) {
-        if(!this.chunkSections2MaybeContainsMatchingBlock.getChunkSectionBit(blockPos)) return false;
+        if (!this.chunkSections2MaybeContainsMatchingBlock.getChunkSectionBit(blockPos)) return false;
         ChunkAccess chunkAccess = this.chunkSections2MaybeContainsMatchingBlock.getChunkAccess(blockPos);
-        if(chunkAccess == null) {
+        if (chunkAccess == null) {
             if (!this.shouldChunkLoad) {
                 return false;
             }

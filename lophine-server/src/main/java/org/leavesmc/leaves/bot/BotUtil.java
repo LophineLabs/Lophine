@@ -18,15 +18,11 @@
 package org.leavesmc.leaves.bot;
 
 import com.google.common.base.Charsets;
-import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
 import fun.bm.lophine.config.modules.function.FakeplayerConfig;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ItemContainerContents;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,66 +34,23 @@ public class BotUtil {
     public static void replenishment(@NotNull ItemStack itemStack, NonNullList<ItemStack> itemStackList) {
         int count = itemStack.getMaxStackSize() / 2;
         if (itemStack.getCount() <= 8 && count > 8) {
-            if (pullMatchingStack(itemStack, itemStackList, count)) {
-                return;
-            }
-            if (FakePlayerCompatConfig.fakePlayerAutoReplenishmentFormShulkerBox) {
-                pullMatchingStackFromShulkerBox(itemStack, itemStackList, count);
-            }
-        }
-    }
-
-    private static boolean pullMatchingStack(@NotNull ItemStack targetStack, NonNullList<ItemStack> itemStackList, int transferLimit) {
-        for (ItemStack inventoryStack : itemStackList) {
-            if (inventoryStack == ItemStack.EMPTY || inventoryStack == targetStack) {
-                continue;
-            }
-
-            if (ItemStack.isSameItemSameComponents(inventoryStack, targetStack)) {
-                if (inventoryStack.getCount() > transferLimit) {
-                    targetStack.setCount(targetStack.getCount() + transferLimit);
-                    inventoryStack.setCount(inventoryStack.getCount() - transferLimit);
-                } else {
-                    targetStack.setCount(targetStack.getCount() + inventoryStack.getCount());
-                    inventoryStack.setCount(0);
-                }
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static boolean pullMatchingStackFromShulkerBox(@NotNull ItemStack targetStack, NonNullList<ItemStack> itemStackList, int transferLimit) {
-        for (ItemStack containerStack : itemStackList) {
-            if (containerStack == ItemStack.EMPTY || !containerStack.is(ItemTags.SHULKER_BOXES)) {
-                continue;
-            }
-
-            ItemContainerContents contents = containerStack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
-            NonNullList<ItemStack> shulkerItems = NonNullList.withSize(contents.items.size(), ItemStack.EMPTY);
-            contents.copyInto(shulkerItems);
-
-            for (int slot = 0; slot < shulkerItems.size(); slot++) {
-                ItemStack shulkerStack = shulkerItems.get(slot);
-                if (shulkerStack.isEmpty() || !ItemStack.isSameItemSameComponents(shulkerStack, targetStack)) {
+            for (ItemStack itemStack1 : itemStackList) {
+                if (itemStack1 == ItemStack.EMPTY || itemStack1 == itemStack) {
                     continue;
                 }
 
-                int moved = Math.min(Math.min(transferLimit, shulkerStack.getCount()), targetStack.getMaxStackSize() - targetStack.getCount());
-                if (moved <= 0) {
-                    return false;
+                if (ItemStack.isSameItemSameComponents(itemStack1, itemStack)) {
+                    if (itemStack1.getCount() > count) {
+                        itemStack.setCount(itemStack.getCount() + count);
+                        itemStack1.setCount(itemStack1.getCount() - count);
+                    } else {
+                        itemStack.setCount(itemStack.getCount() + itemStack1.getCount());
+                        itemStack1.setCount(0);
+                    }
+                    break;
                 }
-
-                targetStack.grow(moved);
-                shulkerStack.shrink(moved);
-                shulkerItems.set(slot, shulkerStack.isEmpty() ? ItemStack.EMPTY : shulkerStack);
-                containerStack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(shulkerItems));
-                return true;
             }
         }
-
-        return false;
     }
 
     public static void replaceTool(@NotNull EquipmentSlot slot, @NotNull ServerBot bot) {

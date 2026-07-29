@@ -35,12 +35,12 @@ public class CommonBlockSearchesCheckAndCache {
     public static Optional<BlockPos> blockPosFindClosestMatch(LevelReader levelReader, LivingEntity livingEntity,
                                                               int horizontalRange, int verticalRange,
                                                               Predicate<BlockState> blockStatePredicate,
-                                                              boolean shouldChunkLoad){
+                                                              boolean shouldChunkLoad) {
         BlockPos mobPos = livingEntity.blockPosition();
         CheckAndCacheBlockChecker checker = new CheckAndCacheBlockChecker(
                 mobPos, horizontalRange, verticalRange, levelReader, blockStatePredicate, shouldChunkLoad);
         checker.initializeChunks();
-        if(checker.shouldStop()) {
+        if (checker.shouldStop()) {
             return Optional.empty();
         }
         return BlockPos.findClosestMatch(mobPos, horizontalRange, verticalRange, checker::checkPosition);

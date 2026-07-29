@@ -26,13 +26,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.bot.ServerBot;
+import org.leavesmc.leaves.entity.bot.actions.CraftBotAction;
 import org.leavesmc.leaves.entity.bot.actions.CraftFishAction;
 
 public class ServerFishAction extends AbstractTimerBotAction<ServerFishAction> {
 
     public ServerFishAction() {
         GuiRootNode guiRootNode = new GuiRootNode("Fish", "Fish", Items.FISHING_ROD, "fish");
-        super("fish", ServerFishAction::new, guiRootNode);
+        super("fish", guiRootNode);
     }
 
     private static final int CATCH_ENTITY_DELAY = 20;
@@ -94,7 +95,7 @@ public class ServerFishAction extends AbstractTimerBotAction<ServerFishAction> {
     }
 
     @Override
-    public Object asCraft() {
+    public CraftBotAction<?, ServerFishAction> asCraft() {
         return new CraftFishAction(this);
     }
 }

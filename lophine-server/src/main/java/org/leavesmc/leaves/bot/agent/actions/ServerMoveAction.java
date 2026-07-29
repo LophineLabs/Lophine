@@ -25,6 +25,7 @@ import org.leavesmc.leaves.bot.agent.ExtraData;
 import org.leavesmc.leaves.command.CommandContext;
 import org.leavesmc.leaves.command.arguments.EnumArgumentType;
 import org.leavesmc.leaves.entity.bot.action.MoveAction.MoveDirection;
+import org.leavesmc.leaves.entity.bot.actions.CraftBotAction;
 import org.leavesmc.leaves.entity.bot.actions.CraftMoveAction;
 import org.leavesmc.leaves.event.bot.BotActionStopEvent;
 
@@ -32,7 +33,7 @@ public class ServerMoveAction extends AbstractStateBotAction<ServerMoveAction> {
     private MoveDirection direction = MoveDirection.FORWARD;
 
     public ServerMoveAction() {
-        super("move", ServerMoveAction::new);
+        super("move");
         this.addArgument("direction", EnumArgumentType.fromEnum(MoveDirection.class));
 
         this.guiData = new GuiRootNode("Move", "Move", null, "move", false);
@@ -83,7 +84,7 @@ public class ServerMoveAction extends AbstractStateBotAction<ServerMoveAction> {
     }
 
     @Override
-    public Object asCraft() {
+    public CraftBotAction<?, ServerMoveAction> asCraft() {
         return new CraftMoveAction(this);
     }
 }

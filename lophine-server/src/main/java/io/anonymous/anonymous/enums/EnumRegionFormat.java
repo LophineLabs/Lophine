@@ -1,9 +1,9 @@
 package io.anonymous.anonymous.enums;
 
 import abomination.LinearRegionFile;
-import me.earthme.luminol.config.modules.function.RegionFormatConfig;
 import io.anonymous.anonymous.data.BufferedLinearRegionFile;
 import io.anonymous.anonymous.utils.RegionFileFactory;
+import me.earthme.luminol.config.modules.function.RegionFormatConfig;
 import net.minecraft.world.level.chunk.storage.RegionFile;
 
 public enum EnumRegionFormat {

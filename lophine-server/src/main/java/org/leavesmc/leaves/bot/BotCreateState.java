@@ -116,7 +116,7 @@ public record BotCreateState(String rawName, String fullName, String skinName, S
         }
 
         public void spawnWithSkin(Consumer<Bot> consumer) {
-            Bukkit.getAsyncScheduler().runNow(MinecraftInternalPlugin.INSTANCE, (task0) -> {
+            Bukkit.getAsyncScheduler().runNow(MinecraftInternalPlugin.INSTANCE, (_) -> {
                 this.mojangAPISkin();
                 Bukkit.getRegionScheduler().execute(
                         MinecraftInternalPlugin.INSTANCE,

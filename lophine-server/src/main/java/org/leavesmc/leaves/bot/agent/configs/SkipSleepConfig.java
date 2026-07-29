@@ -26,10 +26,10 @@ import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.command.CommandContext;
 import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 
-public class SkipSleepConfig extends AbstractBotConfig<Boolean, SkipSleepConfig> {
+public class SkipSleepConfig extends AbstractBotConfig<Boolean> {
 
     public SkipSleepConfig() {
-        super("skip_sleep", BoolArgumentType.bool(), SkipSleepConfig::new);
+        super("skip_sleep", BoolArgumentType.bool());
     }
 
     @Override
@@ -55,7 +55,7 @@ public class SkipSleepConfig extends AbstractBotConfig<Boolean, SkipSleepConfig>
     }
 
     @Override
-    public Boolean loadFromCommand(@NotNull CommandContext context) {
+    public Boolean parseFromCommand(@NotNull CommandContext context) {
         return context.getBoolean(getName());
     }
 

@@ -20,7 +20,6 @@ package org.leavesmc.leaves.command.bot.subcommands;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.papermc.paper.adventure.PaperAdventure;
-import io.papermc.paper.threadedregions.scheduler.FoliaGlobalRegionScheduler;
 import net.minecraft.world.entity.LivingEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -57,7 +56,7 @@ public class RemoveCommand extends BotSubcommand {
 
     private static boolean removeBot(@NotNull ServerBot bot, @Nullable CommandSender sender, boolean taskQueue) {
         if (taskQueue) {
-            bot.getBukkitEntity().taskScheduler.schedule((LivingEntity nmsEntity) -> removeBotOrigin(bot, sender), null, 1L);
+            bot.getBukkitEntity().taskScheduler.schedule((LivingEntity _) -> removeBotOrigin(bot, sender), null, 1L);
         } else {
             return removeBotOrigin(bot, sender);
         }
@@ -102,12 +101,12 @@ public class RemoveCommand extends BotSubcommand {
             boolean isReschedule = bot.removeTaskId != -1;
 
             if (isReschedule) {
-                ((FoliaGlobalRegionScheduler) Bukkit.getGlobalRegionScheduler()).cancelTask(bot.removeTaskId);
+                Bukkit.getScheduler().cancelTask(bot.removeTaskId);
             }
-            bot.removeTaskId = ((FoliaGlobalRegionScheduler.GlobalScheduledTask) Bukkit.getGlobalRegionScheduler().runDelayed(MinecraftInternalPlugin.INSTANCE, (unused) -> {
+            bot.removeTaskId = Bukkit.getScheduler().runTaskLater(MinecraftInternalPlugin.INSTANCE, () -> {
                 bot.removeTaskId = -1;
                 removeBot(bot, sender);
-            }, removeTimeSeconds * 20L)).getTaskId();
+            }, removeTimeSeconds * 20L).getTaskId();
 
             sender.sendMessage(join(spaces(),
                     text("Bot", GRAY),

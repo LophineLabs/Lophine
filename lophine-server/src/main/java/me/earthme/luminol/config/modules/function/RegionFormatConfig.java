@@ -2,6 +2,8 @@ package me.earthme.luminol.config.modules.function;
 
 import abomination.LinearRegionFile;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import io.anonymous.anonymous.data.BufferedLinearRegionFileFlusher;
+import io.anonymous.anonymous.enums.EnumRegionFormat;
 import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.IllegalFormatConversionExceptionWithOrigin;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
@@ -9,8 +11,6 @@ import me.earthme.luminol.config.flags.ConfigInfo;
 import me.earthme.luminol.config.flags.DoNotLoad;
 import me.earthme.luminol.config.flags.HotReloadUnsupported;
 import me.earthme.luminol.enums.EnumConfigCategory;
-import io.anonymous.anonymous.enums.EnumRegionFormat;
-import io.anonymous.anonymous.data.BufferedLinearRegionFileFlusher;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.Nullable;
 

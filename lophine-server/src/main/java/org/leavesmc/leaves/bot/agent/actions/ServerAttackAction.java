@@ -23,12 +23,13 @@ import net.minecraft.world.phys.EntityHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.bot.ServerBot;
 import org.leavesmc.leaves.entity.bot.actions.CraftAttackAction;
+import org.leavesmc.leaves.entity.bot.actions.CraftBotAction;
 
 public class ServerAttackAction extends AbstractTimerBotAction<ServerAttackAction> {
 
     public ServerAttackAction() {
         GuiRootNode guiData = new GuiRootNode("Attack", "Attack an entity", Items.DIAMOND_SWORD, "attack");
-        super("attack", ServerAttackAction::new, guiData);
+        super("attack", guiData);
     }
 
     @Override
@@ -43,7 +44,7 @@ public class ServerAttackAction extends AbstractTimerBotAction<ServerAttackActio
     }
 
     @Override
-    public Object asCraft() {
+    public CraftBotAction<?, ServerAttackAction> asCraft() {
         return new CraftAttackAction(this);
     }
 }

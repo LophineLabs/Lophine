@@ -24,15 +24,13 @@ import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.bot.agent.ExtraData;
 import org.leavesmc.leaves.command.CommandContext;
 
-import java.util.function.Supplier;
-
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static org.leavesmc.leaves.command.ArgumentNode.ArgumentSuggestions.strings;
 
 public abstract class AbstractTimerBotAction<E extends AbstractTimerBotAction<E>> extends AbstractBotAction<E> {
 
-    public AbstractTimerBotAction(String name, Supplier<E> creator, GuiRootNode guiData) {
-        super(name, creator);
+    public AbstractTimerBotAction(String name, GuiRootNode guiData) {
+        super(name);
         String[] delaySuggestions = {"0", "5", "10", "20"};
         String[] intervalSuggestions = {"20", "0", "5", "10"};
         this.addArgument("delay", integer(0)).suggests(strings(delaySuggestions)).setOptional(true);

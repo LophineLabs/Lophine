@@ -24,7 +24,6 @@ import net.minecraft.stats.ServerStatsCounter;
 import net.minecraft.stats.Stat;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jspecify.annotations.NonNull;
 
 import java.io.File;
 
@@ -45,7 +44,7 @@ public class BotStatsCounter extends ServerStatsCounter {
     }
 
     @Override
-    public void parse(@NonNull DataFixer fixerUpper, @NonNull JsonElement json) {
+    public void parse(DataFixer fixerUpper, JsonElement json) {
     }
 
     @Override

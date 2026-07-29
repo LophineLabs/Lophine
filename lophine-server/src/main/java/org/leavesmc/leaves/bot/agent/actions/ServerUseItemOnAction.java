@@ -21,14 +21,16 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.bot.ServerBot;
+import org.leavesmc.leaves.entity.bot.actions.CraftBotAction;
 import org.leavesmc.leaves.entity.bot.actions.CraftUseItemOnAction;
 
 public class ServerUseItemOnAction extends AbstractUseBotAction<ServerUseItemOnAction> {
 
     public ServerUseItemOnAction() {
-        super("use_on", ServerUseItemOnAction::new, null);
+        super("use_on", null);
     }
 
     @Override
@@ -38,7 +40,7 @@ public class ServerUseItemOnAction extends AbstractUseBotAction<ServerUseItemOnA
     }
 
     public static InteractionResult useItemOn(ServerBot bot, BlockHitResult hitResult, InteractionHand hand) {
-        if (hitResult == null) {
+        if (hitResult == null || hitResult.getType() == HitResult.Type.MISS) {
             return InteractionResult.FAIL;
         }
 
@@ -57,7 +59,7 @@ public class ServerUseItemOnAction extends AbstractUseBotAction<ServerUseItemOnA
     }
 
     @Override
-    public Object asCraft() {
+    public CraftBotAction<?, ServerUseItemOnAction> asCraft() {
         return new CraftUseItemOnAction(this);
     }
 }

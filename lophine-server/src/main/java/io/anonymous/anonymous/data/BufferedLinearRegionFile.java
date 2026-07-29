@@ -464,7 +464,8 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
                 // acquired after the region lock is fully released, never inside it (lock hierarchy)
                 this.masterFileParser.close();
             } catch (IOException e) {
-                if (failure == null) failure = e; else failure.addSuppressed(e);
+                if (failure == null) failure = e;
+                else failure.addSuppressed(e);
             }
 
             if (failure != null) {

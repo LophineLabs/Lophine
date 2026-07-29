@@ -27,12 +27,13 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.bot.ServerBot;
+import org.leavesmc.leaves.entity.bot.actions.CraftBotAction;
 import org.leavesmc.leaves.entity.bot.actions.CraftUseItemToAction;
 
 public class ServerUseItemToAction extends AbstractUseBotAction<ServerUseItemToAction> {
 
     public ServerUseItemToAction() {
-        super("use_to", ServerUseItemToAction::new, null);
+        super("use_to", null);
     }
 
     @Override
@@ -73,7 +74,7 @@ public class ServerUseItemToAction extends AbstractUseBotAction<ServerUseItemToA
     }
 
     @Override
-    public Object asCraft() {
+    public CraftBotAction<?, ServerUseItemToAction> asCraft() {
         return new CraftUseItemToAction(this);
     }
 }

@@ -23,11 +23,11 @@ import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.command.CommandContext;
 
-public class AlwaysSendDataConfig extends AbstractBotConfig<Boolean, AlwaysSendDataConfig> {
+public class AlwaysSendDataConfig extends AbstractBotConfig<Boolean> {
     private boolean value;
 
     public AlwaysSendDataConfig() {
-        super("always_send_data", BoolArgumentType.bool(), AlwaysSendDataConfig::new);
+        super("always_send_data", BoolArgumentType.bool());
         this.value = FakeplayerConfig.canSendDataAlways;
     }
 
@@ -42,7 +42,7 @@ public class AlwaysSendDataConfig extends AbstractBotConfig<Boolean, AlwaysSendD
     }
 
     @Override
-    public Boolean loadFromCommand(@NotNull CommandContext context) {
+    public Boolean parseFromCommand(@NotNull CommandContext context) {
         return context.getBoolean(getName());
     }
 

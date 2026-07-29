@@ -240,7 +240,7 @@ index 3021b70b941ed09c5c58b98d30830a2279b8339c..d289f59475b617ae527d123239297f69
      }
  }
 diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
-index 2dae0f4249eade60ac55c9fa289dd146dc3675e1..239cad02f85f0d14d4abfa746ecdc4dd82b04657 100644
+index 2dae0f4249eade60ac55c9fa289dd146dc3675e1..f70f6501254b40cf76dc7f9bcd621a1f68e39ea9 100644
 --- a/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -230,6 +230,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
@@ -251,16 +251,17 @@ index 2dae0f4249eade60ac55c9fa289dd146dc3675e1..239cad02f85f0d14d4abfa746ecdc4dd
          this.setPlayerList(new DedicatedPlayerList(this, this.registries(), this.playerDataStorage));
          org.spigotmc.SpigotConfig.init((java.io.File) this.options.valueOf("spigot-settings"));
          org.spigotmc.SpigotConfig.registerCommands();
-@@ -251,6 +252,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
-         consoleThread.start(); // Paper - Enhance console tab completions for brigadier commands; start console thread after MinecraftServer.console & PaperConfig are initialized
-         io.papermc.paper.command.PaperCommands.registerCommands(this); // Paper - setup /paper command
-         if (false) this.server.spark.registerCommandBeforePlugins(this.server); // Paper - spark // Luminol - Force disable builtin spark
-+        this.getBotList().loadResumeBotInfo(); // Leaves - load resident bot info
+@@ -254,6 +255,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
          com.destroystokyo.paper.Metrics.PaperMetrics.startMetrics(); // Paper - start metrics
          com.destroystokyo.paper.VersionHistoryManager.INSTANCE.getClass(); // Paper - load version history now
  
++        this.getBotList().loadResumeBotInfo(); // Leaves - load resident bot info
++
+         // this.worldData.setGameType(properties.gameMode.get()); // CraftBukkit - moved to world loading
+         LOGGER.info("Default game type: {}", properties.gameMode.get());
+         // Paper start - Unix domain socket support
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
-index 5196431f52e81608a5575f8a262cd5c855b06182..6d43ca34f38192faf5bb4254d849c5ac51197f48 100644
+index 5196431f52e81608a5575f8a262cd5c855b06182..84c047ed0242778a9e6bca5e41561bd1bdcf633c 100644
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
 @@ -972,7 +972,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
@@ -272,7 +273,21 @@ index 5196431f52e81608a5575f8a262cd5c855b06182..6d43ca34f38192faf5bb4254d849c5ac
          org.spigotmc.AsyncCatcher.catchOp("entity track"); // Spigot
          // Paper start - ignore and warn about illegal addEntity calls instead of crashing server
          if (!entity.valid || entity.level() != this.level || entity.moonrise$getTrackedEntity() != null) { // Folia - region threading
-@@ -1389,6 +1389,13 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
+@@ -1258,6 +1258,13 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
+                 ServerPlayer player = conn.getPlayer();
+                 if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(player)) {
+                     this.removePlayer(player);
++                    // Leaves start - render bot
++                    if (entity instanceof org.leavesmc.leaves.bot.ServerBot bot) {
++                        if (bot.needSendFakeData(player)) {
++                            bot.sendFakeData(player.connection, false);
++                        }
++                    }
++                    // Leaves end - render bot
+                 }
+             }
+         }
+@@ -1389,6 +1396,13 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
                      }
                  } else {
                      this.removePlayer(player);
@@ -564,9 +579,18 @@ index cddf44f5da5cba5603dcff4913b4658dcfcc48db..9eaed81a330a22e7fd6585cd286ec613
          final boolean xZero = movement.x == 0.0;
          final boolean yZero = movement.y == 0.0;
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index cb1589e3aa663ca058fb5c3a24da700d4482cf35..d64c68651b7142869a06ce0200fb625cd45ae235 100644
+index cb1589e3aa663ca058fb5c3a24da700d4482cf35..1de8eac336e2dd6335c433b7708ce6b6684553c9 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
+@@ -2001,7 +2001,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+         return 0; // CraftBukkit
+     }
+ 
+-    protected void dropExperience(ServerLevel level, @Nullable Entity entity) {
++    public void dropExperience(ServerLevel level, @Nullable Entity entity) {
+         // CraftBukkit start - Update getExpReward() above if the removed if() changes!
+         if (!(this instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon)) { // CraftBukkit - SPIGOT-2420: Special case ender dragon will drop the xp over time
+             ExperienceOrb.awardWithDirection(level, this.position(), Vec3.ZERO, this.expToDrop, this instanceof ServerPlayer ? org.bukkit.entity.ExperienceOrb.SpawnReason.PLAYER_DEATH : org.bukkit.entity.ExperienceOrb.SpawnReason.ENTITY_DEATH, entity, this); // Paper
 @@ -3348,7 +3348,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      private void travelRidden(final Player controller, final Vec3 selfInput) {
          Vec3 riddenInput = this.getRiddenInput(controller, selfInput);

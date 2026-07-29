@@ -29,8 +29,6 @@ import org.leavesmc.leaves.bot.agent.ExtraData;
 import org.leavesmc.leaves.command.CommandContext;
 import org.leavesmc.leaves.event.bot.BotActionStopEvent;
 
-import java.util.function.Supplier;
-
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 
 public abstract class AbstractUseBotAction<T extends AbstractUseBotAction<T>> extends AbstractTimerBotAction<T> {
@@ -38,8 +36,8 @@ public abstract class AbstractUseBotAction<T extends AbstractUseBotAction<T>> ex
     private int alreadyUsedTick = 0;
     private int useItemRemainingTicks = 0;
 
-    public AbstractUseBotAction(String name, Supplier<T> supplier, GuiRootNode guiData) {
-        super(name, supplier, guiData);
+    public AbstractUseBotAction(String name, GuiRootNode guiData) {
+        super(name, guiData);
         this.addArgument("use_timeout", integer(-1))
                 .suggests((context, builder) -> {
                     builder.suggest("-1", Component.literal("no use timeout"));
@@ -47,7 +45,6 @@ public abstract class AbstractUseBotAction<T extends AbstractUseBotAction<T>> ex
                     builder.suggest("10", Component.literal("minimum trident shoot time"));
                 })
                 .setOptional(true);
-
         if (guiData == null) return;
 
         for (GuiNode node : guiData.getAllFurthestChildren()) {
