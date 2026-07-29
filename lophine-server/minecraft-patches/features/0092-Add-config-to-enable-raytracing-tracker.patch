@@ -80,10 +80,10 @@ index 43e07a3c98e80f874f55411beac39e215ffdc3cf..cddf44f5da5cba5603dcff4913b4658d
 +    // Lophine end - Add config to enable raytracing tracker
  }
 diff --git a/net/minecraft/world/entity/EntityType.java b/net/minecraft/world/entity/EntityType.java
-index 6efaa78faca15c7a48bdffb24480d1bac29f3ba8..8a328a41673a3d720f0b1a5de8ce049e360fac1b 100644
+index 31619890f1bd4f458b6f9a31fac8cefaafe09e8e..50643bd0b546a1ff70031ea39e2610f219ef8a79 100644
 --- a/net/minecraft/world/entity/EntityType.java
 +++ b/net/minecraft/world/entity/EntityType.java
-@@ -84,6 +84,11 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>,
+@@ -85,6 +85,11 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>,
      public final int passengerTickTimerId;
      public final int passengerInactiveTickTimerId;
      // Folia end - profiler

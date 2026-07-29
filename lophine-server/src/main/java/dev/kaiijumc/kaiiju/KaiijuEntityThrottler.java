@@ -45,7 +45,8 @@ public class KaiijuEntityThrottler {
     public EntityThrottlerReturn tickLimiterShouldSkip(Entity entity) {
         EntityThrottlerReturn retVal = new EntityThrottlerReturn();
         if (entity.isRemoved()) return retVal;
-        KaiijuEntityLimits.EntityLimit entityLimit = KaiijuEntityLimits.getEntityLimit(entity);
+
+        KaiijuEntityLimits.EntityLimit entityLimit = entity.getType().entityLimit;
 
         if (entityLimit != null) {
             TickInfo tickInfo = entityLimitTickInfoMap.computeIfAbsent(entityLimit, el -> {
