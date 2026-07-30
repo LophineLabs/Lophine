@@ -261,7 +261,22 @@ public class BotList {
         return bot;
     }
 
+    /*
+     * return true if async
+     */
+    public boolean removeBot(@NotNull ServerBot bot, @NotNull BotRemoveEvent.RemoveReason reason, @Nullable CommandSender remover, boolean save, boolean resume, boolean async) {
+        if (async && !TickThread.isTickThreadFor(bot.level(), bot.getX(), bot.getZ())) {
+            bot.getBukkitEntity().taskScheduler.schedule((Entity unused) -> this.removeBot(bot, reason, remover, save, resume), null, 1L);
+            return true; // async always return true
+        }
+        return this.removeBot(bot, remover, reason, save, resume);
+    }
+
     public boolean removeBot(@NotNull ServerBot bot, @NotNull BotRemoveEvent.RemoveReason reason, @Nullable CommandSender remover, boolean save, boolean resume) {
+        return this.removeBot(bot, reason, remover, save, resume, true);
+    }
+
+    public boolean removeBot(@NotNull ServerBot bot, @Nullable CommandSender remover, @NotNull BotRemoveEvent.RemoveReason reason, boolean save, boolean resume) {
         BotRemoveEvent event = new BotRemoveEvent(bot.getBukkitEntity(), reason, remover, PaperAdventure.asAdventure(Component.translatable("multiplayer.player.left", bot.getDisplayName())).style(Style.style(NamedTextColor.YELLOW)), save);
         this.server.server.getPluginManager().callEvent(event);
 
@@ -270,7 +285,7 @@ public class BotList {
         }
 
         if (bot.removeTaskId != -1) {
-            Bukkit.getScheduler().cancelTask(bot.removeTaskId);
+            Bukkit.getGlobalRegionScheduler().cancelTask(bot.removeTaskId);
             bot.removeTaskId = -1;
         }
 
