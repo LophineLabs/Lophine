@@ -1,0 +1,146 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sat, 1 Aug 2026 16:30:53 +0800
+Subject: [PATCH] Anonymous Object: RegionizedTaskQueue queue TTL optimization
+
+As requested by the original author, this patch will be anonymous and hide the original commit address.
+This patch is used with permission from the original author.
+Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
+
+diff --git a/io/papermc/paper/threadedregions/RegionizedTaskQueue.java b/io/papermc/paper/threadedregions/RegionizedTaskQueue.java
+index fe0a6bd90cba4869a0ee11723832f2dee5039f62..53579b6faa9d55485088d59ec2fd1e4251c2fb01 100644
+--- a/io/papermc/paper/threadedregions/RegionizedTaskQueue.java
++++ b/io/papermc/paper/threadedregions/RegionizedTaskQueue.java
+@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicLong;
+ public final class RegionizedTaskQueue {
+ 
+     private static final TicketType<Long> TASK_QUEUE_TICKET = ChunkSystemTicketType.create("task_queue_ticket", Long::compareTo);
++    private static final long QUEUE_MAX_TTL_TICKS = 5L; // Anonymous - RegionizedTaskQueue queue TTL optimization
+ 
+     public PrioritisedExecutor.PrioritisedTask createChunkTask(final ServerLevel world, final int chunkX, final int chunkZ,
+                                                                final Runnable run) {
+@@ -155,6 +156,58 @@ public final class RegionizedTaskQueue {
+             }
+         }
+ 
++        // Anonymous start - RegionizedTaskQueue queue TTL optimization
++        public void tickQueueReferenceTTL() {
++            final ThreadedRegionizer.ThreadedRegion<TickRegions.TickRegionData, TickRegions.TickRegionSectionData> currentRegion
++                    = io.papermc.paper.threadedregions.TickRegionScheduler.getCurrentRegion();
++            if (currentRegion == null) {
++                return;
++            }
++
++            final ReferenceCountData[] toRemoveTicket = new ReferenceCountData[1];
++
++            for (ConcurrentChainedLong2ReferenceHashTable.TableEntry<ReferenceCountData> counterEntry : this.referenceCounters.entrySet()) {
++                final long coord = counterEntry.getKey();
++                final ReferenceCountData counterData = counterEntry.getValue();
++
++                // only tick for our region
++                if (currentRegion == this.world.regioniser.getRegionAtUnsynchronised(CoordinateUtils.getChunkX(coord), CoordinateUtils.getChunkZ(coord))) {
++                    long curr = counterData.referenceTTL.get();
++                    // successfully decreased ttl
++                    if (curr == (curr = counterData.referenceTTL.compareAndExchange(curr, curr - 1))) {
++                        if (counterData.referenceCount.get() != 0L) {
++                            // still has reference, pump back
++                            counterData.referenceTTL.set(QUEUE_MAX_TTL_TICKS);
++                            continue;
++                        }
++
++                        // dead
++                        if (curr <= 0) {
++                            // parsed from decrementReference
++                            this.referenceCounters.computeIfPresent(coord, (final long keyInMap, final ReferenceCountData valueInMap) -> {
++                                // might be increased again
++                                if (valueInMap.referenceCount.get() != 0L) {
++                                    valueInMap.referenceTTL.set(QUEUE_MAX_TTL_TICKS); // still has reference, pump back
++                                    return valueInMap; // directly, the ttl was already charged in add logic
++                                }
++
++                                // note: valueInMap may not be referenceCountData
++                                toRemoveTicket[0] = valueInMap;
++
++                                return null;
++                            });
++
++                            if (toRemoveTicket[0] != null) {
++                                this.removeTicket(coord, toRemoveTicket[0].id);
++                                toRemoveTicket[0] = null;
++                            }
++                        }
++                    }
++                }
++            }
++        }
++        // Anonymous end - RegionizedTaskQueue queue TTL optimization
++
+         private void decrementReference(final ReferenceCountData referenceCountData, final long coord) {
+             if (!referenceCountData.decreaseReferenceCount()) {
+                 return;
+@@ -212,9 +265,10 @@ public final class RegionizedTaskQueue {
+         private final long id = ID_GENERATOR.getAndIncrement();
+ 
+         public final AtomicLong referenceCount = new AtomicLong(1L);
++        public final AtomicLong referenceTTL = new AtomicLong(QUEUE_MAX_TTL_TICKS); // Anonymous - RegionizedTaskQueue queue TTL optimization
+         public volatile boolean addedTicket;
+ 
+-        // returns false if reference count is 0, otherwise increments ref count
++        // returns false if reference count or ttl is 0, otherwise increments ref count // Anonymous - RegionizedTaskQueue queue TTL optimization
+         public boolean addCount() {
+             int failures = 0;
+             for (long curr = this.referenceCount.get();;) {
+@@ -227,6 +281,27 @@ public final class RegionizedTaskQueue {
+                 }
+ 
+                 if (curr == (curr = this.referenceCount.compareAndExchange(curr, curr + 1L))) {
++                    // Anonymous start - RegionizedTaskQueue queue TTL optimization
++                    // now force charge back the ttl to max
++                    int ttlFailures = 0;
++                    for (long currTTL = this.referenceTTL.get();;) {
++                        for (int i = 0; i < ttlFailures; i++) {
++                            Thread.onSpinWait();
++                        }
++
++                        // add failed, rollback (ttl reached)
++                        if (currTTL <= 0) {
++                            this.referenceCount.decrementAndGet(); // revert the addition
++                            return false;
++                        }
++
++                        if (currTTL == (currTTL = this.referenceTTL.compareAndExchange(currTTL, QUEUE_MAX_TTL_TICKS))) {
++                            break;
++                        }
++
++                        ++ttlFailures;
++                    }
++                    // Anonymous end - RegionizedTaskQueue queue TTL optimization
+                     return true;
+                 }
+ 
+@@ -234,11 +309,11 @@ public final class RegionizedTaskQueue {
+             }
+         }
+ 
+-        // returns true if new reference count is 0
++        // returns true if new reference count and ttl is 0 // Anonymous - RegionizedTaskQueue queue TTL optimization
+         public boolean decreaseReferenceCount() {
+             final long res = this.referenceCount.decrementAndGet();
+             if (res >= 0L) {
+-                return res == 0L;
++                return res == 0L && this.referenceTTL.get() <= 0L; // Anonymous - RegionizedTaskQueue queue TTL optimization
+             } else {
+                 throw new IllegalStateException("Negative reference count");
+             }
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index 6c5cdfebb3a362c51b3b940397e10536dc67afc8..4a00b2399a190b609f7b0944e407f3b087e617b5 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -1756,6 +1756,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+                 foliaProfiler.stopTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.PASSENGER_DESYNC_CHECK);
+             }
+             // Folia end - fix passenger desync
++            region.world.taskQueueRegionData.tickQueueReferenceTTL(); // Anonymous - RegionizedTaskQueue queue TTL optimization
+         }
+         // Folia end - region threading
+         //this.tickCount++; // Folia - region threading

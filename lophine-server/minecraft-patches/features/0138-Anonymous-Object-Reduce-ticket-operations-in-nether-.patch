@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sat, 1 Aug 2026 16:31:57 +0800
+Subject: [PATCH] Anonymous Object: Reduce ticket operations in nether portal
+ searching
+
+As requested by the original author, this patch will be anonymous and hide the original commit address.
+This patch is used with permission from the original author.
+Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
+
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index 132122f23a697109696852cf383fa1b0186e0210..619521d8ff74c92a822bde9c160931cdfdb7da43 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -221,6 +221,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+     private final StructureCheck structureCheck;
+     public final boolean tickTime; // Folia - region threading
+     private final LevelDebugSynchronizers debugSynchronizers = new LevelDebugSynchronizers(this);
++    public final io.anonymous.anonymous.utils.ReferenceCountingChunkLoader portalSearchingChunkLoader = new io.anonymous.anonymous.utils.ReferenceCountingChunkLoader(this, net.minecraft.world.level.chunk.status.ChunkStatus.EMPTY); // Anonymous - Reduce ticket operations in nether portal searching
+     // Luminol start - Level schedulers
+     private static final java.util.concurrent.atomic.AtomicInteger UNLOADER_ID_GEN = new java.util.concurrent.atomic.AtomicInteger(0);
+     public final me.earthme.luminol.utils.thread.LevelAwareRegionScheduler levelScheduler = new me.earthme.luminol.utils.thread.LevelAwareRegionScheduler(io.papermc.paper.threadedregions.TickRegions.getScheduler().scheduler);
+@@ -1004,6 +1005,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+ 
+         this.debugSynchronizers.tick(this.server.debugSubscribers());
+         profiler.pop();
++        this.portalSearchingChunkLoader.tickChunkReferenceTTL(); // Anonymous - Reduce ticket operations in nether portal searching
+     }
+ 
+     // Folia start - region threading
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index 489011f9af49fa3407038bd2f00439443307d179..340e6ad83ba93f3927a08a107e3c8dbafa546112 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -4870,10 +4870,10 @@ public abstract class Entity
+                 );
+ 
+                 // kick off search for existing portal or creation
+-                destination.moonrise$loadChunksAsync(
++                destination.portalSearchingChunkLoader.loadChunksAsync( // Anonymous - Reduce ticket operations in nether portal searching
+                     // add 32 so that the final search for a portal frame doesn't load any chunks
+                     targetPos, portalSearchRadius + 32,
+-                    net.minecraft.world.level.chunk.status.ChunkStatus.EMPTY,
++                    //net.minecraft.world.level.chunk.status.ChunkStatus.EMPTY, // Anonymous - Reduce ticket operations in nether portal searching
+                     ca.spottedleaf.concurrentutil.util.Priority.HIGH,
+                     (chunks) -> {
+                         BlockUtil.FoundRectangle portal =
