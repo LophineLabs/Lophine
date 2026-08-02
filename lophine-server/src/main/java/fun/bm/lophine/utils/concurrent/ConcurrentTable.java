@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class ConcurrentTable<X, Y, Z> implements AbstractConcurrentTable<X, Y, Z> {
@@ -150,7 +151,7 @@ public class ConcurrentTable<X, Y, Z> implements AbstractConcurrentTable<X, Y, Z
     }
 
     private <T> List<T> filterAndCollect(Predicate<TableEntry<X, Y, Z>> filter,
-                                         java.util.function.Function<TableEntry<X, Y, Z>, T> mapper) {
+                                         Function<TableEntry<X, Y, Z>, T> mapper) {
         List<T> result = new ArrayList<>();
         for (TableEntry<X, Y, Z> entry : data) {
             if (filter.test(entry)) {
@@ -161,8 +162,8 @@ public class ConcurrentTable<X, Y, Z> implements AbstractConcurrentTable<X, Y, Z
     }
 
     private <K, V> Map<K, V> filterAndMap(Predicate<TableEntry<X, Y, Z>> filter,
-                                          java.util.function.Function<TableEntry<X, Y, Z>, K> keyMapper,
-                                          java.util.function.Function<TableEntry<X, Y, Z>, V> valueMapper) {
+                                          Function<TableEntry<X, Y, Z>, K> keyMapper,
+                                          Function<TableEntry<X, Y, Z>, V> valueMapper) {
         Map<K, V> map = new HashMap<>();
         for (TableEntry<X, Y, Z> entry : data) {
             if (filter.test(entry)) {
@@ -172,7 +173,7 @@ public class ConcurrentTable<X, Y, Z> implements AbstractConcurrentTable<X, Y, Z
         return map;
     }
 
-    private <T> List<T> collectAll(java.util.function.Function<TableEntry<X, Y, Z>, T> mapper) {
+    private <T> List<T> collectAll(Function<TableEntry<X, Y, Z>, T> mapper) {
         List<T> result = new ArrayList<>();
         for (TableEntry<X, Y, Z> entry : data) {
             result.add(mapper.apply(entry));

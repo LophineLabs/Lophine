@@ -173,7 +173,7 @@ public class OptimizedConcurrentTable<X, Y, Z> extends ConcurrentTable<X, Y, Z> 
     }
 
 
-    private <K, V, R, S> Map<R, S> buildMapFromIndex(ConcurrentHashMap<K, Set<V>> indexMap, java.util.function.Function<K, R> keyMapper, java.util.function.Function<V, S> valueMapper) {
+    private <K, V, R, S> Map<R, S> buildMapFromIndex(ConcurrentHashMap<K, Set<V>> indexMap, Function<K, R> keyMapper, Function<V, S> valueMapper) {
         Map<R, S> result = new HashMap<>();
         if (indexMap != null) {
             for (Map.Entry<K, Set<V>> entry : indexMap.entrySet()) {
