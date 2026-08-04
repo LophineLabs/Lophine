@@ -5,7 +5,7 @@ Subject: [PATCH] Correct player respawn place
 
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 57f93d978fe48fdf6e77b7bfb9f1de060e1a8524..924d5f3236d9ba9836f39fc844392099df9cd25c 100644
+index 57f93d978fe48fdf6e77b7bfb9f1de060e1a8524..c0e4ddbcf2b1f61fd4a5a6f10882fc1fb4176960 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -511,8 +511,10 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -43,12 +43,3 @@ index 57f93d978fe48fdf6e77b7bfb9f1de060e1a8524..924d5f3236d9ba9836f39fc844392099
                  if (inChunk == null) {
                      continue;
                  }
-@@ -1997,7 +2009,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
-         }
- 
-         if (newLevel.dimension() == lastDimension) {
--            this.connection.internalTeleport(PositionMoveRotation.of(transition), transition.relatives()); // CraftBukkit  
-+            this.connection.internalTeleport(PositionMoveRotation.of(transition), transition.relatives()); // CraftBukkit // Luminol - Correct player respawn place
-             this.connection.resetPosition();
-             transition.postTeleportTransition().onTransition(this);
-             return this;

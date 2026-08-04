@@ -5,7 +5,7 @@ Subject: [PATCH] Add config to enable save-all command
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedServer.java b/io/papermc/paper/threadedregions/RegionizedServer.java
-index a2db29aa47a4b7213d4956f02f6e83122ccfdbd1..6fb3c88463ff69bddb7d8dcde0e5339567d3e1c6 100644
+index a96da8ab0d8ca8241df79fbfca33f3e6072db367..f881d10d63a665a73aefe03ba1305ca9ae956513 100644
 --- a/io/papermc/paper/threadedregions/RegionizedServer.java
 +++ b/io/papermc/paper/threadedregions/RegionizedServer.java
 @@ -265,6 +265,8 @@ public final class RegionizedServer {
@@ -31,7 +31,7 @@ index 97c514673a454b752ab86b944fd143725ca8090d..ba91d40d6d91588a4b39abfefcb17a36
          private final Reference2ReferenceOpenHashMap<RegionizedData<?>, Object> regionizedData = new Reference2ReferenceOpenHashMap<>();
  
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index c67ea715f02086e5a39cc5832ccdc0b32199db93..946094713bdb294d7d8beb03967b2a2488f5359b 100644
+index 5a5f7f7fefacaa0d77ec389d6eb332eff519496a..f0f6175569100589102d9d76b3ff8f5546030060 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -299,7 +299,11 @@ public class Commands {

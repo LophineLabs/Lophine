@@ -8,7 +8,7 @@ As part of: Leaves (https://github.com/LeavesMC/Leaves/blob/4ade1001e4dd19c47d95
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/net/minecraft/world/level/dimension/end/EnderDragonFight.java b/net/minecraft/world/level/dimension/end/EnderDragonFight.java
-index 824ef3f458505569fe5b8efb2055ecea7ba6cc56..3388bf5d2cff00b397af1dd7b9ab93669985b35c 100644
+index 824ef3f458505569fe5b8efb2055ecea7ba6cc56..7c68effb78bcb17ca64e043f87d6449f90b1b0a7 100644
 --- a/net/minecraft/world/level/dimension/end/EnderDragonFight.java
 +++ b/net/minecraft/world/level/dimension/end/EnderDragonFight.java
 @@ -317,7 +317,67 @@ public class EnderDragonFight extends SavedData {
@@ -21,7 +21,7 @@ index 824ef3f458505569fe5b8efb2055ecea7ba6cc56..3388bf5d2cff00b397af1dd7b9ab9366
 +    private int cachePortalOriginIteratorY = -1;
 +
      public BlockPattern.@Nullable BlockPatternMatch findExitPortal() {
-+        if (me.earthme.luminol.config.modules.optimizations.OptimizedDragonRespawnConfig.optimizedRespawn) {
++        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.optimizedDragonRespawn) { // Lophine - redirect
 +            int i, j;
 +            for (i = cachePortalChunkIteratorX; i <= 8; ++i) {
 +                for (j = cachePortalChunkIteratorZ; j <= 8; ++j) {

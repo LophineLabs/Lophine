@@ -6,7 +6,7 @@ Subject: [PATCH] Add config to enable tick command
 only freeze/unfreeze/step/query/rate can run when enabled
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedServer.java b/io/papermc/paper/threadedregions/RegionizedServer.java
-index ff90abb47203c03636d3175f2b3efcf43517b3b0..a2db29aa47a4b7213d4956f02f6e83122ccfdbd1 100644
+index ff90abb47203c03636d3175f2b3efcf43517b3b0..a96da8ab0d8ca8241df79fbfca33f3e6072db367 100644
 --- a/io/papermc/paper/threadedregions/RegionizedServer.java
 +++ b/io/papermc/paper/threadedregions/RegionizedServer.java
 @@ -239,6 +239,11 @@ public final class RegionizedServer {
@@ -14,7 +14,7 @@ index ff90abb47203c03636d3175f2b3efcf43517b3b0..a2db29aa47a4b7213d4956f02f6e8312
      private void globalTick(final long tickCount) {
          ++this.tickCount;
 +        // Luminol start - Add a config to enable tick command
-+        if (me.earthme.luminol.config.modules.experiment.CommandConfig.tick) {
++        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandTick) { // Lophine - redirect
 +            MinecraftServer.getServer().tickRateManager().tick();
 +        }
 +        // Luminol end - Add a config to enable tick command
@@ -41,12 +41,12 @@ index ff90abb47203c03636d3175f2b3efcf43517b3b0..a2db29aa47a4b7213d4956f02f6e8312
  
      private void tickTime(final ServerLevel world, final long tickCount) {
 -        if (world.tickTime) {
-+        if ((!me.earthme.luminol.config.modules.experiment.CommandConfig.tick || world.tickRateManager().runsNormally()) && world.tickTime) { // Luminol - Add a config to enable tick command
++        if ((!fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandTick || world.tickRateManager().runsNormally()) && world.tickTime) { // Luminol - Add a config to enable tick command // Lophine - redirect
              world.serverLevelData.setGameTime(world.serverLevelData.getGameTime() + tickCount);
          }
      }
 diff --git a/io/papermc/paper/threadedregions/TickRegionScheduler.java b/io/papermc/paper/threadedregions/TickRegionScheduler.java
-index 58e557923dfe6cee39ec45e7f5aa43a5ded9f107..57a35d7a801621fc461e896eb2bba533d9d5bc1b 100644
+index 58e557923dfe6cee39ec45e7f5aa43a5ded9f107..ae424c8931a2f82c6c8d4ddd8422a2c142a77a95 100644
 --- a/io/papermc/paper/threadedregions/TickRegionScheduler.java
 +++ b/io/papermc/paper/threadedregions/TickRegionScheduler.java
 @@ -40,8 +40,8 @@ public final class TickRegionScheduler {
@@ -92,7 +92,7 @@ index 58e557923dfe6cee39ec45e7f5aa43a5ded9f107..57a35d7a801621fc461e896eb2bba533
                  // next start isn't updated until the end of this tick
                  this.tickRegion(tickCount, tickStart, scheduledEnd);
 +                // Luminol start - Add a config to enable tick command
-+                if (me.earthme.luminol.config.modules.experiment.CommandConfig.tick) {
++                if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandTick) { // Lophine - redirect
 +                    MinecraftServer.getServer().tickRateManager().endTickWork();
 +                }
 +                // Luminol end - Add a config to enable tick command
@@ -100,7 +100,7 @@ index 58e557923dfe6cee39ec45e7f5aa43a5ded9f107..57a35d7a801621fc461e896eb2bba533
                  this.scheduler.regionFailed(this, false, thr);
                  // regionFailed will schedule a shutdown, so we should avoid letting this region tick further
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index 21f2b9866e1cf36421e10a945fb6fbaa251009ed..aa7931c9b6dc3bba2c8dfecff8df2db302ad905b 100644
+index 21f2b9866e1cf36421e10a945fb6fbaa251009ed..409fcc5e95ca453fee7d3bd0375c910d79b507e6 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -259,7 +259,11 @@ public class Commands {
@@ -109,7 +109,7 @@ index 21f2b9866e1cf36421e10a945fb6fbaa251009ed..aa7931c9b6dc3bba2c8dfecff8df2db3
          //TestCommand.register(this.dispatcher, context); // Folia - region threading
 -        //TickCommand.register(this.dispatcher); // Folia - region threading - TODO later
 +        // Luminol start - Add a config to enable tick command
-+        if (me.earthme.luminol.config.modules.experiment.CommandConfig.tick) {
++        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandTick) { // Lophine - redirect
 +            TickCommand.register(this.dispatcher); // Folia - region threading - TODO later
 +        }
 +        // Luminol end - Add a config to enable tick command

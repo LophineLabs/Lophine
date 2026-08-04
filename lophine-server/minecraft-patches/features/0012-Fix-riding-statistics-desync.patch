@@ -6,7 +6,7 @@ Subject: [PATCH] Fix riding statistics desync
 Referred to: https://github.com/CraftCanvasMC/Canvas/commit/057175b0c10d5a4d1d9059fd9d077750c32633b2
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index fe34f2e648df9fd1174522baa5913976104b8d04..fee4749c7938779f63155297bf9c7aeb0ca21709 100644
+index 4e1346777c0664547f73f8672ed02918392b591f..bc390caff901a3b37a5a4ca3619dd9339fa4cb07 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -2516,7 +2516,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc

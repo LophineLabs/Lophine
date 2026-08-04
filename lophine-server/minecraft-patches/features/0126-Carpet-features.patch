@@ -5,7 +5,7 @@ Subject: [PATCH] Carpet features
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedServer.java b/io/papermc/paper/threadedregions/RegionizedServer.java
-index 6fb3c88463ff69bddb7d8dcde0e5339567d3e1c6..7ee9eb8439330724c537f9b1451be78dd3a107ad 100644
+index f881d10d63a665a73aefe03ba1305ca9ae956513..7577533f82688304f06c445fd5a1c3fa3c4575fc 100644
 --- a/io/papermc/paper/threadedregions/RegionizedServer.java
 +++ b/io/papermc/paper/threadedregions/RegionizedServer.java
 @@ -238,6 +238,7 @@ public final class RegionizedServer {
@@ -15,7 +15,7 @@ index 6fb3c88463ff69bddb7d8dcde0e5339567d3e1c6..7ee9eb8439330724c537f9b1451be78d
 +        final long tickStartNanos = System.nanoTime(); // Lophine - Carpet features
          ++this.tickCount;
          // Luminol start - Add a config to enable tick command
-         if (me.earthme.luminol.config.modules.experiment.CommandConfig.tick) {
+         if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandTick) { // Lophine - redirect
 @@ -280,6 +281,10 @@ public final class RegionizedServer {
          }
          // Lophine end - Add a config to enable tick command
@@ -128,7 +128,7 @@ index 8cc4fe9feb57902a4b9a6a26e6175ac00a2cef65..9ab1a812e43145120859734075e2ac99
          // Paper start - fix converting txt to json file; moved from constructor
      }
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 70f7cb6b38a90ca337bd52c18fa7bfd4016b552c..9a6f18fd0eb7e2aef174b25d14cfd0f5a3ade6af 100644
+index 2c15275066923cb488be8e1d7777785466768332..9e8157e6a6df32d00fd1f689a6005ce0f7e0dfbd 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -260,6 +260,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
