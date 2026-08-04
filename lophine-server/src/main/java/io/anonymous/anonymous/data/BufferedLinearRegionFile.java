@@ -81,7 +81,7 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
     private static final int SECTOR_META_SIZE = Integer.BYTES + Long.BYTES + Integer.BYTES;
 
     // all three are stateless and thread-safe
-    private static final LZ4Compressor LZ4_COMPRESSOR = LZ4Factory.fastestInstance().fastCompressor();
+    private static final LZ4Compressor LZ4_COMPRESSOR = LZ4Factory.fastestInstance().highCompressor();
     private static final LZ4FastDecompressor LZ4_DECOMPRESSOR = LZ4Factory.fastestInstance().fastDecompressor();
     private static final XXHash32 XX_HASH_32 = XXHashFactory.fastestInstance().hash32();
 
