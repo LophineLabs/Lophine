@@ -99,7 +99,7 @@ index 6130c477349096d5912dce859b616661e2f43b36..c8c433dcfef3442ff8385c9fc1f1ea47
                          return true;
                          } // Paper - Add phantom creative and insomniac controls
 diff --git a/net/minecraft/world/level/NaturalSpawner.java b/net/minecraft/world/level/NaturalSpawner.java
-index 717cd4b18da2c637fc070c738741f926649b097f..dfb85696affef368d85f93cb0b465abb88267aa1 100644
+index 6da302e1dd755217b82dbc10051324bc8b5d10c1..e333abe5bcdd0c571682550d43c7e88d9f6f3296 100644
 --- a/net/minecraft/world/level/NaturalSpawner.java
 +++ b/net/minecraft/world/level/NaturalSpawner.java
 @@ -90,7 +90,8 @@ public final class NaturalSpawner {

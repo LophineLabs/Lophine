@@ -28,7 +28,7 @@ index f881d10d63a665a73aefe03ba1305ca9ae956513..7577533f82688304f06c445fd5a1c3fa
          this.tickConnections();
  
 diff --git a/net/minecraft/commands/arguments/blocks/BlockInput.java b/net/minecraft/commands/arguments/blocks/BlockInput.java
-index 29dcaa5b33e4f6c649b0918721cfaafe9c74eb01..c7e4f2345c8d48b263eeb537d5fcce3ac43bb59e 100644
+index 29dcaa5b33e4f6c649b0918721cfaafe9c74eb01..804f7d9d5b71ccff3c16f4c743081c38b658dd3c 100644
 --- a/net/minecraft/commands/arguments/blocks/BlockInput.java
 +++ b/net/minecraft/commands/arguments/blocks/BlockInput.java
 @@ -65,7 +65,11 @@ public class BlockInput implements Predicate<BlockInWorld> {
@@ -37,7 +37,7 @@ index 29dcaa5b33e4f6c649b0918721cfaafe9c74eb01..c7e4f2345c8d48b263eeb537d5fcce3a
      public boolean place(final ServerLevel level, final BlockPos pos, final @Block.UpdateFlags int update) {
 -        BlockState state = (update & Block.UPDATE_KNOWN_SHAPE) != 0 ? this.state : Block.updateFromNeighbourShapes(this.state, level, pos);
 +        // Lophine start - Carpet features
-+        BlockState state = (update & Block.UPDATE_KNOWN_SHAPE) != 0 || fun.bm.lophine.carpet.InteractionUpdateCompatHelper.shouldSkipUpdates()
++        BlockState state = (update & Block.UPDATE_KNOWN_SHAPE) != 0 || fun.bm.lophine.carpet.InteractionUpdateHelper.shouldSkipUpdates()
 +            ? this.state
 +            : Block.updateFromNeighbourShapes(this.state, level, pos);
 +        // Lophine end - Carpet features
@@ -173,7 +173,7 @@ index 2c15275066923cb488be8e1d7777785466768332..9e8157e6a6df32d00fd1f689a6005ce0
  
      public ClientInformation clientInformation() {
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 77b9cd3d14eddc735d9131597916405fde4230ec..b23a47380fb1178696dc49e35d2c3d7dacb4fd1e 100644
+index 77b9cd3d14eddc735d9131597916405fde4230ec..52187fe9d2c907e31cf961a93f599231a70ac08c 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -2091,7 +2091,15 @@ public class ServerGamePacketListenerImpl
@@ -185,7 +185,7 @@ index 77b9cd3d14eddc735d9131597916405fde4230ec..b23a47380fb1178696dc49e35d2c3d7d
 +                    if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.interactionUpdates) {
 +                        this.player.gameMode.handleBlockBreakAction(pos, action, packet.getDirection(), this.player.level().getMaxY(), packet.getSequence());
 +                    } else {
-+                        fun.bm.lophine.carpet.InteractionUpdateCompatHelper.runWithSuppressedUpdates(
++                        fun.bm.lophine.carpet.InteractionUpdateHelper.runWithSuppressedUpdates(
 +                            () -> this.player.gameMode.handleBlockBreakAction(pos, action, packet.getDirection(), this.player.level().getMaxY(), packet.getSequence())
 +                        );
 +                    }
@@ -226,7 +226,7 @@ index 77b9cd3d14eddc735d9131597916405fde4230ec..b23a47380fb1178696dc49e35d2c3d7d
 +            return action.get();
 +        }
 +
-+        return fun.bm.lophine.carpet.InteractionUpdateCompatHelper.supplyWithSuppressedUpdates(action);
++        return fun.bm.lophine.carpet.InteractionUpdateHelper.supplyWithSuppressedUpdates(action);
 +    }
 +
 +    // Lophine end - Carpet features
@@ -238,7 +238,7 @@ index 77b9cd3d14eddc735d9131597916405fde4230ec..b23a47380fb1178696dc49e35d2c3d7d
              final String conversationInput = rawMessage;
              this.server.processQueue.add(() -> ServerGamePacketListenerImpl.this.getCraftPlayer().acceptConversationInput(conversationInput));
 +        // Lophine start - Carpet features
-+        } else if (fun.bm.lophine.carpet.CarpetCalculatorCompatHelper.handleChat(this.player, rawMessage)) {
++        } else if (fun.bm.lophine.carpet.CarpetCalculatorHelper.handleChat(this.player, rawMessage)) {
 +            return;
 +        // Lophine end - Carpet features
          } else if (this.player.getChatVisibility() == ChatVisiblity.SYSTEM) { // Re-add "Command Only" flag check
@@ -716,7 +716,7 @@ index 6812ade4d9de26d507234b8357b109ec7e5cbb50..071d2cd7e0c2e5bba0732590ba804a5c
      public void addRecipe(RecipeHolder<?> holder) {
          org.spigotmc.AsyncCatcher.catchOp("Recipe Add"); // Spigot
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index 000e4924e8e338728715a3946002903a3118a98a..55d83a1a97077033191f0f0c220e99095f2a314d 100644
+index 000e4924e8e338728715a3946002903a3118a98a..ca92bb3a8b739c0da3f48a2dd16c5fb4fa7e8453 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -1179,7 +1179,13 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
@@ -725,7 +725,7 @@ index 000e4924e8e338728715a3946002903a3118a98a..55d83a1a97077033191f0f0c220e9909
          if (newState == blockState) {
 -            if (oldState != newState) {
 +            // Lophine start - Carpet features
-+        boolean skipInteractionUpdates = fun.bm.lophine.carpet.InteractionUpdateCompatHelper.shouldSkipUpdates();
++        boolean skipInteractionUpdates = fun.bm.lophine.carpet.InteractionUpdateHelper.shouldSkipUpdates();
 +        if (skipInteractionUpdates) {
 +            updateFlags &= ~Block.UPDATE_NEIGHBORS;
 +        }
@@ -744,7 +744,7 @@ index 000e4924e8e338728715a3946002903a3118a98a..55d83a1a97077033191f0f0c220e9909
  
                  // CraftBukkit start
 diff --git a/net/minecraft/world/level/NaturalSpawner.java b/net/minecraft/world/level/NaturalSpawner.java
-index 0d8d2459457167d78a9a9ea43765980240416947..717cd4b18da2c637fc070c738741f926649b097f 100644
+index 0d8d2459457167d78a9a9ea43765980240416947..6da302e1dd755217b82dbc10051324bc8b5d10c1 100644
 --- a/net/minecraft/world/level/NaturalSpawner.java
 +++ b/net/minecraft/world/level/NaturalSpawner.java
 @@ -289,6 +289,12 @@ public final class NaturalSpawner {
@@ -753,7 +753,7 @@ index 0d8d2459457167d78a9a9ea43765980240416947..717cd4b18da2c637fc070c738741f926
                          double nearestPlayerDistanceSqr = nearestPlayer.distanceToSqr(xx, yStart, zz);
 +                        // Lophine start - Carpet features
 +                        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.lagFreeSpawning) {
-+                            nearestPlayerDistanceSqr = fun.bm.lophine.carpet.LagFreeSpawningCompatHelper.limitDistanceSq(mobCategory, nearestPlayerDistanceSqr);
++                            nearestPlayerDistanceSqr = fun.bm.lophine.carpet.LagFreeSpawningHelper.limitDistanceSq(mobCategory, nearestPlayerDistanceSqr);
 +                        }
 +
 +                        // Lophine end - Carpet features
@@ -766,7 +766,7 @@ index 0d8d2459457167d78a9a9ea43765980240416947..717cd4b18da2c637fc070c738741f926
                                      if (!mob.isRemoved()) {
 +                                        // Lophine start - Carpet features
 +                                        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.lagFreeSpawning) {
-+                                            fun.bm.lophine.carpet.LagFreeSpawningCompatHelper.markSpawned(level, mob.getType());
++                                            fun.bm.lophine.carpet.LagFreeSpawningHelper.markSpawned(level, mob.getType());
 +                                        }
 +
 +                                        // Lophine end - Carpet features
@@ -780,7 +780,7 @@ index 0d8d2459457167d78a9a9ea43765980240416947..717cd4b18da2c637fc070c738741f926
 -            && level.noCollision(type.getSpawnAABB(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5));
 +            // Lophine start - Carpet features
 +            && (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.lagFreeSpawning
-+                ? fun.bm.lophine.carpet.LagFreeSpawningCompatHelper.hasNoCollision(level, type.getSpawnAABB(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5))
++                ? fun.bm.lophine.carpet.LagFreeSpawningHelper.hasNoCollision(level, type.getSpawnAABB(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5))
 +                : level.noCollision(type.getSpawnAABB(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5)));
 +            // Lophine end - Carpet features
          return success ? PreSpawnStatus.SUCCESS : PreSpawnStatus.FAIL; // Paper - PreCreatureSpawnEvent
@@ -789,7 +789,7 @@ index 0d8d2459457167d78a9a9ea43765980240416947..717cd4b18da2c637fc070c738741f926
      private static @Nullable Mob getMobForSpawn(final ServerLevel level, final EntityType<?> type) {
 +        // Lophine start - Carpet features
 +        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.lagFreeSpawning) {
-+            Mob cachedMob = fun.bm.lophine.carpet.LagFreeSpawningCompatHelper.getOrCreateMob(level, type);
++            Mob cachedMob = fun.bm.lophine.carpet.LagFreeSpawningHelper.getOrCreateMob(level, type);
 +            if (cachedMob != null) {
 +                return cachedMob;
 +            }
@@ -806,7 +806,7 @@ index 0d8d2459457167d78a9a9ea43765980240416947..717cd4b18da2c637fc070c738741f926
 -                                if (!level.noCollision(spawnerData.type().getSpawnAABB(fx, pos.getY(), fz))
 +                                // Lophine start - Carpet features
 +                                if (!(fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.lagFreeSpawning
-+                                        ? fun.bm.lophine.carpet.LagFreeSpawningCompatHelper.hasNoCollision(level.getLevel(), spawnerData.type().getSpawnAABB(fx, pos.getY(), fz))
++                                        ? fun.bm.lophine.carpet.LagFreeSpawningHelper.hasNoCollision(level.getLevel(), spawnerData.type().getSpawnAABB(fx, pos.getY(), fz))
 +                                        : level.noCollision(spawnerData.type().getSpawnAABB(fx, pos.getY(), fz)))
 +                                // Lophine end - Carpet features
                                      || !SpawnPlacements.checkSpawnRules(
@@ -818,7 +818,7 @@ index 0d8d2459457167d78a9a9ea43765980240416947..717cd4b18da2c637fc070c738741f926
                                      level.addFreshEntityWithPassengers(mob, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CHUNK_GEN); // CraftBukkit
 +                                    // Lophine start - Carpet features
 +                                    if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.lagFreeSpawning) {
-+                                        fun.bm.lophine.carpet.LagFreeSpawningCompatHelper.markSpawned(level.getLevel(), mob.getType());
++                                        fun.bm.lophine.carpet.LagFreeSpawningHelper.markSpawned(level.getLevel(), mob.getType());
 +                                    }
 +                                    // Lophine end - Carpet features
                                      success = true;
@@ -1182,7 +1182,7 @@ index 972b953a579120c1c05f2dc9bfc2b408d6071d26..a60bb8af6b6aa356193befa9d7e9cdfc
              return function != null ? function.evaluate(this.asState(), pos) : Vec3.ZERO;
          }
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index a4d5bf1773a9ce8184a940384696f0d38690a421..cd8ccc6de723bc01390b0439382ea69c775640ba 100644
+index a4d5bf1773a9ce8184a940384696f0d38690a421..5b306cc2d4a3cdc3ce08595dc63975c87fca9d3f 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -425,10 +425,10 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
@@ -1190,7 +1190,7 @@ index a4d5bf1773a9ce8184a940384696f0d38690a421..cd8ccc6de723bc01390b0439382ea69c
          boolean movedByPiston = (flags & Block.UPDATE_MOVE_BY_PISTON) != 0;
          boolean sideEffects = (flags & Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS) == 0;
 -        // Leaves start - behaviour 1.21.1-
-+        boolean skipInteractionUpdates = fun.bm.lophine.carpet.InteractionUpdateCompatHelper.shouldSkipUpdates(); // Lophine - Carpet features// Leaves start - behaviour 1.21.1-
++        boolean skipInteractionUpdates = fun.bm.lophine.carpet.InteractionUpdateHelper.shouldSkipUpdates(); // Lophine - Carpet features// Leaves start - behaviour 1.21.1-
          if (!fun.bm.lophine.config.modules.experiment.RedStoneConfig.oldBlockRemoveBehaviour) {
          if (blockChanged && oldState.hasBlockEntity() && !state.shouldChangedStateKeepBlockEntity(oldState)) {
 -            if (!this.level.isClientSide() && sideEffects) {

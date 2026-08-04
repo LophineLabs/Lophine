@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-public final class LagFreeSpawningCompatHelper {
+public final class LagFreeSpawningHelper {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Map<RegionizedWorldData, Map<EntityType<?>, Mob>> PRECOOKED_MOBS = new WeakHashMap<>();
 

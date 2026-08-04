@@ -10,8 +10,7 @@ import org.leavesmc.leaves.protocol.CarpetServerProtocol;
 
 import java.util.List;
 
-// WARNING: THIS FILE NEED TO FULLY REWRITTEN
-public final class CarpetCompatSync {
+public final class CarpetProtocalDataBase {
     private static boolean init = false;
 
     public static void apply() {
@@ -24,6 +23,7 @@ public final class CarpetCompatSync {
         return configuredLoggers == null ? List.of() : List.copyOf(configuredLoggers);
     }
 
+    // Rules may be need update because we redirected many config path & the carpet version updated
     private static void registerProtocolRules() {
         CarpetServerProtocol.CarpetRules.beginBatch();
         try {

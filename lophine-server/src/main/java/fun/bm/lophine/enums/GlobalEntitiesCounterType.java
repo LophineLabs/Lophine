@@ -6,9 +6,9 @@ public enum GlobalEntitiesCounterType {
     DEFAULT_ASYNC(true, true, true),
     PRECISE(true, false, false);
 
-    private boolean enabled;
-    private boolean async;
-    private boolean defaultModule;
+    private final boolean enabled;
+    private final boolean async;
+    private final boolean defaultModule;
 
     private GlobalEntitiesCounterType(boolean enabled, boolean async, boolean defaultModule) {
         this.enabled = enabled;

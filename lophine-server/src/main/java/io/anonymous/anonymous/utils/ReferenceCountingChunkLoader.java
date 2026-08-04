@@ -23,10 +23,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 /**
- *  一个简单的基于folia的RegionizedTaskQueue引用计数的轻量ticket区块加载器
- *  用于在folia传送门搜索的高频率scheduleChunkLoad的调用下减少ticket操作从而减轻锁负载
- *  大部分内容物均取自folia的RegionizedTaskQueue(引用计数), ttl机制取自我的优化
- *  
+ * 一个简单的基于folia的RegionizedTaskQueue引用计数的轻量ticket区块加载器
+ * 用于在folia传送门搜索的高频率scheduleChunkLoad的调用下减少ticket操作从而减轻锁负载
+ * 大部分内容物均取自folia的RegionizedTaskQueue(引用计数), ttl机制取自我的优化
+ *
  * @see io.papermc.paper.threadedregions.RegionizedTaskQueue
  * @see Entity#findOrCreatePortalAsync(ServerLevel, BlockPos, ServerLevel, Entity.PortalType, CallbackCompletable)
  */
@@ -164,7 +164,7 @@ public class ReferenceCountingChunkLoader {
             RegionizedServer.getInstance().taskQueue.queueChunkTask(this.world, chunkX, chunkZ, () -> {
                 try {
                     callback.accept(cached);
-                }finally {
+                } finally {
                     this.decrementReference(increased, coord);
                 }
             }, priority);
@@ -179,7 +179,7 @@ public class ReferenceCountingChunkLoader {
                         increased.cached = chunk;
 
                         callback.accept(chunk);
-                    }finally {
+                    } finally {
                         this.decrementReference(increased, coord);
                     }
                 }
@@ -266,7 +266,7 @@ public class ReferenceCountingChunkLoader {
 
         public boolean addCount() {
             int failures = 0;
-            for (long curr = this.referenceCount.get();;) {
+            for (long curr = this.referenceCount.get(); ; ) {
                 for (int i = 0; i < failures; ++i) {
                     Thread.onSpinWait();
                 }
@@ -277,7 +277,7 @@ public class ReferenceCountingChunkLoader {
 
                 if (curr == (curr = this.referenceCount.compareAndExchange(curr, curr + 1L))) {
                     int ttlFailures = 0;
-                    for (long currTTL = this.referenceTTL.get();;) {
+                    for (long currTTL = this.referenceTTL.get(); ; ) {
                         for (int i = 0; i < ttlFailures; i++) {
                             Thread.onSpinWait();
                         }

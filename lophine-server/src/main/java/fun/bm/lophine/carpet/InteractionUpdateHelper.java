@@ -2,7 +2,7 @@ package fun.bm.lophine.carpet;
 
 import java.util.function.Supplier;
 
-public final class InteractionUpdateCompatHelper {
+public final class InteractionUpdateHelper {
     private static final ThreadLocal<Integer> SUPPRESSED_DEPTH = ThreadLocal.withInitial(() -> 0);
 
     public static boolean shouldSkipUpdates() {
