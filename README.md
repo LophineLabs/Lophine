@@ -34,7 +34,6 @@
  - morninggloryclip.useMojangSource 强制服务端使用mojang源下载文件
  - morninggloryclip.enable.mixin 启用服务器插件的mixin支持
 
-
 ## 📥 下载
 
 ### 稳定版本
