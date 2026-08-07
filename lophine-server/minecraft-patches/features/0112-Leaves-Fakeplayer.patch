@@ -7,6 +7,19 @@ Co-authored by: violetc <58360096+s-yh-china@users.noreply.github.com>
 As a part of : Leaves (https://github.com/LeavesMC/Leaves)
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
+diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
+index 9820d2e18cbcb5fbc07fe57dd93101809ed2727d..b7df2edf243448cc6342db9360e0458f58769a12 100644
+--- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
++++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
+@@ -408,7 +408,7 @@ public final class RegionizedWorldData {
+     // Luminol end
+     // connections
+     private static final Connection[] EMPTY_CONNECTION_ARRAY = new Connection[0];
+-    private final ReferenceList<Connection> connections = new ReferenceList<>(EMPTY_CONNECTION_ARRAY);
++    public final ReferenceList<Connection> connections = new ReferenceList<>(EMPTY_CONNECTION_ARRAY); // Lophine - BotList Public
+ 
+     // misc. fields
+     private boolean isHandlingTick;
 diff --git a/net/minecraft/advancements/triggers/SimpleCriterionTrigger.java b/net/minecraft/advancements/triggers/SimpleCriterionTrigger.java
 index d76a338ab4f326e6105adc451eee3d4601403c98..b827d51d23ceaebef2191a9f349bbd346e73f1af 100644
 --- a/net/minecraft/advancements/triggers/SimpleCriterionTrigger.java

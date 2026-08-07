@@ -5,7 +5,7 @@ Subject: [PATCH] Global Entities Counter
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 9820d2e18cbcb5fbc07fe57dd93101809ed2727d..822d49d6a8da0855f0f80c4499cae0d16ee544a4 100644
+index b7df2edf243448cc6342db9360e0458f58769a12..6040a28aad7419d343feeb5aa97551591399dfd9 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -558,6 +558,9 @@ public final class RegionizedWorldData {
