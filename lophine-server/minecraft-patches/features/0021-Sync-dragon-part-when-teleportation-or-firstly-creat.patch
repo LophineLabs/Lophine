@@ -5,10 +5,10 @@ Subject: [PATCH] Sync dragon part when teleportation or firstly created
 
 
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/server/ServerEntityLookup.java b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/server/ServerEntityLookup.java
-index b31b55f00e2ce1bd6c1011fe852bd1dbb37de524..75c36cbf86e56d4993169688a13f22ccef555d92 100644
+index aa53138b3670a8337b639472a6ab5ce46702ff76..ed27b73e787782f328906b2a061feeca25d42a24 100644
 --- a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/server/ServerEntityLookup.java
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/server/ServerEntityLookup.java
-@@ -97,6 +97,7 @@ public final class ServerEntityLookup extends EntityLookup {
+@@ -93,6 +93,7 @@ public final class ServerEntityLookup extends EntityLookup {
          if (entity instanceof ThrownEnderpearl enderpearl) {
              this.addEnderPearl(CoordinateUtils.getChunkKey(enderpearl.chunkPosition()), enderpearl.getId()); // Folia - region threading
          }
@@ -17,10 +17,10 @@ index b31b55f00e2ce1bd6c1011fe852bd1dbb37de524..75c36cbf86e56d4993169688a13f22cc
      }
  
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 343e4bb41acfab4e50729aa5dbe2a071dac376a3..c04917f31585d9d670cc98cda8eb36187f4261d7 100644
+index 51dacbe395c85aba9b81831e511a413b303ca675..e2e1b101de8afbec7d853593c527e35111c94319 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -4460,6 +4460,7 @@ public abstract class Entity
+@@ -4456,6 +4456,7 @@ public abstract class Entity
          Entity copy = this.getType().create(destination, EntitySpawnReason.DIMENSION_TRAVEL);
          copy.restoreFrom(this);
          copy.transform(pos, yaw, pitch, velocity);

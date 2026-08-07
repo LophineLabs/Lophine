@@ -33,7 +33,7 @@ index d2e9d46bbd9ee4ce45419b11499d7a7bc50f0219..848967dbe41694411603ef369cfdc3a0
      private final java.util.concurrent.atomic.AtomicBoolean disconnectionHandled = new java.util.concurrent.atomic.AtomicBoolean(false); // Folia - region threading - may be called concurrently during configuration stage
      private int receivedPackets;
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 9614a22c4b67e5e3a46e46fa69d22c136d4beb4b..5bc6baf2a13b78f65e5851a22ca79dbcaed957b2 100644
+index 22ad0846be08292b07b363b6b96f7431f87a4f3d..07add4a7a350ac61b7fa7797874ab24d5289b9b1 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -296,6 +296,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -45,7 +45,7 @@ index 9614a22c4b67e5e3a46e46fa69d22c136d4beb4b..5bc6baf2a13b78f65e5851a22ca79dbc
      public static <S extends MinecraftServer> S spin(final Function<Thread, S> factory) {
          ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry.init(); // Paper - rewrite data converter system
          AtomicReference<S> serverReference = new AtomicReference<>();
-@@ -1195,6 +1197,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1194,6 +1196,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.halt(wait, false);
      }
      public void halt(final boolean wait, final boolean isRestarting) {
@@ -62,7 +62,7 @@ index 9614a22c4b67e5e3a46e46fa69d22c136d4beb4b..5bc6baf2a13b78f65e5851a22ca79dbc
          this.isRestarting = isRestarting;
          this.hasLoggedStop = true; // Paper - Debugging
          if (this.isDebugging()) io.papermc.paper.util.TraceUtil.dumpTraceForThread("Server stopped"); // Paper - Debugging
-@@ -1664,7 +1676,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1663,7 +1675,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          int emptyTickThreshold = this.pauseWhenEmptySeconds() * 20;
          this.removeDisabledPluginsBlockingSleep(); // Paper - API to allow/disallow tick sleeping
          if (false && emptyTickThreshold > 0) { // Folia - region threading - this is complicated to implement, and even if done correctly is messy
@@ -71,7 +71,7 @@ index 9614a22c4b67e5e3a46e46fa69d22c136d4beb4b..5bc6baf2a13b78f65e5851a22ca79dbc
                  this.emptyTicks++;
              } else {
                  this.emptyTicks = 0;
-@@ -1806,6 +1818,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1805,6 +1817,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              this.isSaving = true;
              if (playerSaveInterval > 0) {
                  this.playerList.saveAll(playerSaveInterval);
@@ -79,7 +79,7 @@ index 9614a22c4b67e5e3a46e46fa69d22c136d4beb4b..5bc6baf2a13b78f65e5851a22ca79dbc
              }
              if (region == null && fullSave) { // Folia - region threading - don't auto save level data
                  this.saveGlobalData(false);
-@@ -2044,6 +2057,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -2057,6 +2070,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
  
      protected void tickConnection() {
          this.getConnection().tick();
@@ -87,7 +87,7 @@ index 9614a22c4b67e5e3a46e46fa69d22c136d4beb4b..5bc6baf2a13b78f65e5851a22ca79dbc
      }
  
      public void forceGameTimeSynchronization() {
-@@ -3253,6 +3267,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -3266,6 +3280,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          return this.debugSubscribers;
      }
  
@@ -261,7 +261,7 @@ index 2dae0f4249eade60ac55c9fa289dd146dc3675e1..f70f6501254b40cf76dc7f9bcd621a1f
          LOGGER.info("Default game type: {}", properties.gameMode.get());
          // Paper start - Unix domain socket support
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
-index 5196431f52e81608a5575f8a262cd5c855b06182..84c047ed0242778a9e6bca5e41561bd1bdcf633c 100644
+index 6bca982627cf6a865820df75be2814a7289f98dc..b6f752a134ac7192375053d8bf93e39caf5f0c6f 100644
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
 @@ -972,7 +972,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
@@ -273,7 +273,7 @@ index 5196431f52e81608a5575f8a262cd5c855b06182..84c047ed0242778a9e6bca5e41561bd1
          org.spigotmc.AsyncCatcher.catchOp("entity track"); // Spigot
          // Paper start - ignore and warn about illegal addEntity calls instead of crashing server
          if (!entity.valid || entity.level() != this.level || entity.moonrise$getTrackedEntity() != null) { // Folia - region threading
-@@ -1258,6 +1258,13 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
+@@ -1282,6 +1282,13 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
                  ServerPlayer player = conn.getPlayer();
                  if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(player)) {
                      this.removePlayer(player);
@@ -287,7 +287,7 @@ index 5196431f52e81608a5575f8a262cd5c855b06182..84c047ed0242778a9e6bca5e41561bd1
                  }
              }
          }
-@@ -1389,6 +1396,13 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
+@@ -1413,6 +1420,13 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
                      }
                  } else {
                      this.removePlayer(player);
@@ -302,7 +302,7 @@ index 5196431f52e81608a5575f8a262cd5c855b06182..84c047ed0242778a9e6bca5e41561bd1
              }
          }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index cb11830c2f399c9706b20f8104686dc0d9b686f9..1c4c67410849f844946e4883585910fc8fe97048 100644
+index f1cf0deebe8a0df6509d647e7590126ee02444b8..3e4b2f1fbe6864e40f1978c70d41773cde09fd17 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -243,6 +243,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -359,7 +359,7 @@ index cb11830c2f399c9706b20f8104686dc0d9b686f9..1c4c67410849f844946e4883585910fc
                  ServerLevel.this.updateSleepingPlayerList();
              }
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 729fc979fb313ddf2a5c6a04a9a0790440d15830..a2e83ca70606a00f36f5b5cbac9f08baf8c5494a 100644
+index 14eaa25d67e9dbaad5ae4c6d6be4ae640b2fc015..624f637e7a4fb8297d42e9944011e3c83245949e 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -232,7 +232,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -470,7 +470,7 @@ index 12190f2a2856b0d0cf95144d0b1622f1b9600bf6..be01f06d4ee02854345842c97382e8b6
  
      // Paper start - utility method for common conversion back to the game profile
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index ca1e635b0fdf3d0d17447b43a558fe030536d297..ed50484ca24ef24b1e5bef9f6369dfa4b30c359c 100644
+index 71988e11c512fcb391f845a1905411ea240479fa..a7a687c7a90bce1ad20d32241f0b4316fefc8f9d 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -320,6 +320,19 @@ public abstract class PlayerList {
@@ -557,7 +557,7 @@ index ca1e635b0fdf3d0d17447b43a558fe030536d297..ed50484ca24ef24b1e5bef9f6369dfa4
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index cddf44f5da5cba5603dcff4913b4658dcfcc48db..9eaed81a330a22e7fd6585cd286ec61371e97272 100644
+index b9f9dd85d259306db9eb9daf0a9ec36f27dfddb7..c3df068144c3af4b3700b104588970154837018d 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1263,7 +1263,7 @@ public abstract class Entity
@@ -634,7 +634,7 @@ index cb1589e3aa663ca058fb5c3a24da700d4482cf35..1de8eac336e2dd6335c433b7708ce6b6
          if (!this.level().isClientSide()) {
              boolean wasUsingItem = this.isUsingItem();
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index c6fa9dff800b1491b1e0fc5d7e1dc16b99b8c7db..f063e9b7601480d0e66da22ea8e5bec2e8619fee 100644
+index 449a2904fb1190f68de72bc47eb8220f50002577..3f4cf6e0ddce45ca169a5fdfc54b25f609eba44b 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -156,7 +156,7 @@ public abstract class Player extends Avatar implements ContainerUser {

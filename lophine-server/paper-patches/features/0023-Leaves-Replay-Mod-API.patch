@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Helvetica Volubi <suisuroru@blue-millennium.fun>
-Date: Sun, 16 Nov 2025 15:55:47 +0800
+From: Bacteriawa <A3167717663@hotmail.com>
+Date: Sat, 8 Aug 2026 01:49:35 +0800
 Subject: [PATCH] Leaves: Replay Mod API
 
 Co-authored by: violetc <58360096+s-yh-china@users.noreply.github.com>
@@ -21,7 +21,7 @@ index 14fa5421107a571739f868eecb00d71dd3d29fef..0fce6dc8bffc341da2e7242422b4153b
          }
          // Leaves end - skip bot
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 7fd08dac549261c50cf5723ef380ba90ea0da56f..7cfa9a5a1629c3af1e1105b137cbfc4c0aabe86e 100644
+index 7247666a8baee283f4d99a489e7a14fa9543f803..e8359235c5fa0681c2d0d12cf66d6abbc0fe4d97 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -305,6 +305,7 @@ public final class CraftServer implements Server {
@@ -41,23 +41,25 @@ index 7fd08dac549261c50cf5723ef380ba90ea0da56f..7cfa9a5a1629c3af1e1105b137cbfc4c
          this.serverVersion = io.papermc.paper.ServerBuildInfo.buildInfo().asString(io.papermc.paper.ServerBuildInfo.StringRepresentation.VERSION_SIMPLE); // Paper - improve version
          this.structureManager = new CraftStructureManager(console.getStructureManager(), console.registryAccess());
          this.serverTickManager = new CraftServerTickManager(console.tickRateManager());
-@@ -3192,4 +3193,11 @@ public final class CraftServer implements Server {
-         }
+@@ -3127,6 +3128,13 @@ public final class CraftServer implements Server {
      }
-     // Folia end - region TPS API
-+
+     // Leaves end - Bot API
+ 
 +    // Leaves start - replay mod api
 +    @Override
 +    public org.leavesmc.leaves.entity.photographer.CraftPhotographerManager getPhotographerManager() {
 +        return photographerManager;
 +    }
 +    // Leaves end - replay mod api
- }
++
+     // Folia start - region TPS API
+     /**
+      * Gets the TPS from the region which owns the specified location, or {@code null} if no region owns
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index 0f6378ca80bea5d4d7f1cb7d788a57390bc27c59..610e19b82919f05b0ebf20854e0f9b4a77a2b063 100644
+index a812186b84ee188c6b2276f173bdded37791f593..d51660ecccf8f1425ea1462ae7e1d455fd795451 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -131,6 +131,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+@@ -132,6 +132,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
          }
  
          if (entity instanceof org.leavesmc.leaves.bot.ServerBot bot) { return new org.leavesmc.leaves.entity.bot.CraftBot(server, bot); }
@@ -66,10 +68,10 @@ index 0f6378ca80bea5d4d7f1cb7d788a57390bc27c59..610e19b82919f05b0ebf20854e0f9b4a
          // Special case complex part, since there is no extra entity type for them
          if (entity instanceof EnderDragonPart complexPart) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index d47c1b8cc17eb13669fbe21670c3a6eaaa995844..0f522b90f300431f1d5daa62c9a3fd6d260e1feb 100644
+index 7bbadcab57d3a2dbba0a4c48de043966454a1d50..9135327aacf818d3b80ec1102e2b11f40ac93261 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -2084,7 +2084,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+@@ -2092,7 +2092,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
  
      @Override
      public boolean canSee(Player player) {
@@ -78,19 +80,6 @@ index d47c1b8cc17eb13669fbe21670c3a6eaaa995844..0f522b90f300431f1d5daa62c9a3fd6d
      }
  
      @Override
-diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
-index c189f583598f94fc7944afcabe130c5ee9504c0d..2e56d20d50d8a5d5630816b822b10a43ce3fa6c7 100644
---- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
-+++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
-@@ -294,7 +294,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
-                     Bukkit.getLogger().log(Level.SEVERE, "Error saving advancement " + key, ex);
-                 }
- 
--                MinecraftServer.getServer().getPlayerList().getPlayers().forEach(player -> {
-+                net.minecraft.server.MinecraftServer.getServer().getPlayerList().realPlayers.forEach(player -> { // Leaves - only real players
-                     player.getAdvancements().reload(MinecraftServer.getServer().getAdvancements());
-                     player.getAdvancements().flushDirty(player, false);
-                 });
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/LazyPlayerSet.java b/src/main/java/org/bukkit/craftbukkit/util/LazyPlayerSet.java
 index 15261d2e96347584e4baf65f12b336b73a68cd37..83af50de50a03e164d572f3c3466b6d0b42ed138 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/LazyPlayerSet.java

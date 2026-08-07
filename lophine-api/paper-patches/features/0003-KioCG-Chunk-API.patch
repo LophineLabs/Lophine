@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Helvetica Volubi <suisuroru@blue-millennium.fun>
-Date: Sun, 28 Jun 2026 16:40:49 +0800
+From: Bacteriawa <A3167717663@hotmail.com>
+Date: Sat, 8 Aug 2026 01:25:33 +0800
 Subject: [PATCH] KioCG Chunk API
 
 
@@ -16,13 +16,13 @@ index d873b78f6935a23ff8f6092b80968267b182cc0f..b4323370859dd4d9e86614484cdb9d2e
 +    long getChunkHotAvg(); // KioCG
  }
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index 7a719d31fbc7633a9bb87ea97338190ee3a6047a..b79b9a2ad108c0488d3cc3862f72985059bb4988 100644
+index 65e83e171ab4c514662b9344e08f7065fa9efaa1..274af6397b5f7c0b6787e2669de80e54858950a2 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
-@@ -4020,4 +4020,6 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
-     default ObjectContents asObjectContents() {
-         return this.getPlayerProfile().asObjectContents();
-     }
+@@ -4050,4 +4050,6 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      * clearing any fixed pose in the process.
+      */
+     void unsetFixedPose();
 +
 +    long getNearbyChunkHot(); // KioCG
  }

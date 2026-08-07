@@ -8,7 +8,7 @@ As part of: Leaves (https://github.com/LeavesMC/Leaves/blob/f553c53e4230aa032e54
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 31c6defd8941a2c9e55eca3c8ca5623111e98e51..164e2101688a9f29ecfa83f62141d8cb9df22ed1 100644
+index 1bd8ae7e1250a56cff636b010c371144adbb7ad0..6b0856e836f041aa8bfe274d0444d6ce3165b1ce 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -644,7 +644,7 @@ public class ServerGamePacketListenerImpl
@@ -29,7 +29,7 @@ index 31c6defd8941a2c9e55eca3c8ca5623111e98e51..164e2101688a9f29ecfa83f62141d8cb
                      fail = true;
                      LOGGER.warn("{} (vehicle of {}) moved wrongly! {}", vehicle.getPlainTextName(), this.player.getPlainTextName(), Math.sqrt(movedDist));
                  }
-@@ -1614,7 +1614,7 @@ public class ServerGamePacketListenerImpl
+@@ -1615,7 +1615,7 @@ public class ServerGamePacketListenerImpl
  
                                      if (this.shouldCheckPlayerMovement(isFallFlying)) {
                                          float metersPerTick = isFallFlying ? 300.0F : 100.0F;
@@ -38,7 +38,7 @@ index 31c6defd8941a2c9e55eca3c8ca5623111e98e51..164e2101688a9f29ecfa83f62141d8cb
                                              // CraftBukkit end
                                              // Paper start - Add fail move event
                                              io.papermc.paper.event.player.PlayerFailMoveEvent event = fireFailMove(io.papermc.paper.event.player.PlayerFailMoveEvent.FailReason.MOVED_TOO_QUICKLY,
-@@ -1675,7 +1675,8 @@ public class ServerGamePacketListenerImpl
+@@ -1676,7 +1676,8 @@ public class ServerGamePacketListenerImpl
                                  zDist = targetZ - this.player.getZ();
                                  movedDist = xDist * xDist + yDist * yDist + zDist * zDist;
                                  boolean movedWrongly = false; // Paper - Add fail move event; rename

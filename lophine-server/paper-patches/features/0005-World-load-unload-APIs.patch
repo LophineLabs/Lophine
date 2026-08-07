@@ -13,7 +13,7 @@ Content-Transfer-Encoding: 8bit
 由于世界卸载可能发生在玩家登录或者传送的过程中,所以我使用了引用计数器来避免这个竟态条件的发生
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 407191ad9a7f31cc3317a7747ec3489804807b8e..606235c9af5afce55be8bbc963e8af7291a050c5 100644
+index e412b654df3f452ef21f9c68ef3c7c5643ed1d7b..9e40ea5f161eef4d74084c081d4df912cbe65548 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -276,7 +276,7 @@ public final class CraftServer implements Server {
@@ -25,7 +25,7 @@ index 407191ad9a7f31cc3317a7747ec3489804807b8e..606235c9af5afce55be8bbc963e8af72
      private YamlConfiguration configuration;
      private YamlConfiguration commandsConfiguration;
      private final Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
-@@ -1198,7 +1198,8 @@ public final class CraftServer implements Server {
+@@ -1197,7 +1197,8 @@ public final class CraftServer implements Server {
  
      @Override
      public World createWorld(WorldCreator creator) {
@@ -35,7 +35,7 @@ index 407191ad9a7f31cc3317a7747ec3489804807b8e..606235c9af5afce55be8bbc963e8af72
          Preconditions.checkState(this.console.getAllLevels().iterator().hasNext(), "Cannot create additional worlds on STARTUP");
          //Preconditions.checkState(!this.console.isIteratingOverLevels, "Cannot create a world while worlds are being ticked"); // Paper - Cat - Temp disable. We'll see how this goes.
          Preconditions.checkArgument(creator != null, "WorldCreator cannot be null");
-@@ -1356,7 +1357,8 @@ public final class CraftServer implements Server {
+@@ -1355,7 +1356,8 @@ public final class CraftServer implements Server {
  
      @Override
      public boolean unloadWorld(World world, boolean save) {
@@ -45,7 +45,7 @@ index 407191ad9a7f31cc3317a7747ec3489804807b8e..606235c9af5afce55be8bbc963e8af72
          //Preconditions.checkState(!this.console.isIteratingOverLevels, "Cannot unload a world while worlds are being ticked"); // Paper - Cat - Temp disable. We'll see how this goes.
          if (world == null) {
              return false;
-@@ -1381,7 +1383,7 @@ public final class CraftServer implements Server {
+@@ -1380,7 +1382,7 @@ public final class CraftServer implements Server {
              return false;
          }
  
@@ -54,7 +54,7 @@ index 407191ad9a7f31cc3317a7747ec3489804807b8e..606235c9af5afce55be8bbc963e8af72
              if (save) {
                  handle.save(null, true, false); // Paper - Fix saving in unloadWorld
              }
-@@ -1393,10 +1395,70 @@ public final class CraftServer implements Server {
+@@ -1392,10 +1394,70 @@ public final class CraftServer implements Server {
          }
  
          this.worlds.remove(world.getName().toLowerCase(Locale.ROOT));

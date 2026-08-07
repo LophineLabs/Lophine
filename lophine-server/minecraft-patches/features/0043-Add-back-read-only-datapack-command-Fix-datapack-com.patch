@@ -19,10 +19,10 @@ index 9b1dcfadd6d5ae868b087a18983d03e8bb86b56a..21f2b9866e1cf36421e10a945fb6fbaa
          DefaultGameModeCommands.register(this.dispatcher);
          //DialogCommand.register(this.dispatcher, context); // Folia - region threading - TODO
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index b2823c71ecb5e1f7a3c4c5b9f691d4cdb5419db3..a82cafadf2136d30ae7bca172062713a651373ac 100644
+index daf45761bdc88848ba81b7595b5abd5635dfd607..b9ff4628421ba0c5bdaec13c9dc1b35e8d194d92 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -2415,6 +2415,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -2428,6 +2428,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          return this.reloadResources(packsToEnable, io.papermc.paper.event.server.ServerResourcesReloadedEvent.Cause.PLUGIN);
      }
  

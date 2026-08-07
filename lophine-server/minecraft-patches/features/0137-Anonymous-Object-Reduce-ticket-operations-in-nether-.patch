@@ -9,7 +9,7 @@ This patch is used with permission from the original author.
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 132122f23a697109696852cf383fa1b0186e0210..619521d8ff74c92a822bde9c160931cdfdb7da43 100644
+index 8eca4b0a82d738f873f9e01a7424aaf7ee3735a2..e94ea890c83e65d987519379ebe3b5134bb14b42 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -221,6 +221,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -29,10 +29,10 @@ index 132122f23a697109696852cf383fa1b0186e0210..619521d8ff74c92a822bde9c160931cd
  
      // Folia start - region threading
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 489011f9af49fa3407038bd2f00439443307d179..340e6ad83ba93f3927a08a107e3c8dbafa546112 100644
+index 6d6b1024ef7467bc7f72693a655a25eeede1b0f8..363dcad09e441ea8b4fd79fcb94432536783676c 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -4870,10 +4870,10 @@ public abstract class Entity
+@@ -4866,10 +4866,10 @@ public abstract class Entity
                  );
  
                  // kick off search for existing portal or creation

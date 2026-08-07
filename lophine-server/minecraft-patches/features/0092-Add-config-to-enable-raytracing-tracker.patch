@@ -5,10 +5,10 @@ Subject: [PATCH] Add config to enable raytracing tracker
 
 
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
-index 163999d50213e0167eb09f0eae883388849f28fa..5196431f52e81608a5575f8a262cd5c855b06182 100644
+index e9307ef10502856378d7831fb7800dd77230130c..6bca982627cf6a865820df75be2814a7289f98dc 100644
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
-@@ -1351,7 +1351,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
+@@ -1375,7 +1375,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
                  double distanceSquared = deltaToPlayerX * deltaToPlayerX + deltaToPlayerZ * deltaToPlayerZ; // Paper
                  double rangeSquared = visibleRange * visibleRange;
                  // Paper start - Configurable entity tracking range by Y
@@ -18,7 +18,7 @@ index 163999d50213e0167eb09f0eae883388849f28fa..5196431f52e81608a5575f8a262cd5c8
                      double rangeY = level.paperConfig().entities.trackingRangeY.get(this.entity, -1);
                      if (rangeY != -1) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 43e07a3c98e80f874f55411beac39e215ffdc3cf..cddf44f5da5cba5603dcff4913b4658dcfcc48db 100644
+index 0868c067c5a455d1984d59b22426c2f019b25c9f..b9f9dd85d259306db9eb9daf0a9ec36f27dfddb7 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -164,7 +164,7 @@ public abstract class Entity
@@ -30,7 +30,7 @@ index 43e07a3c98e80f874f55411beac39e215ffdc3cf..cddf44f5da5cba5603dcff4913b4658d
      // CraftBukkit start
      private static final int CURRENT_LEVEL = 2;
      static boolean isLevelAtLeast(ValueInput input, int level) {
-@@ -6590,4 +6590,48 @@ public abstract class Entity
+@@ -6586,4 +6586,48 @@ public abstract class Entity
      // Paper end
  
      public boolean shouldTickHot() { return this.tickCount > 20 * 10 && this.isAlive(); } // KioCG
@@ -96,7 +96,7 @@ index 31619890f1bd4f458b6f9a31fac8cefaafe09e8e..50643bd0b546a1ff70031ea39e2610f2
      public EntityType(
          final EntityType.EntityFactory<T> factory,
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index 9fdc8134fdde2cdd7724a459a29e51f4ad943403..c6fa9dff800b1491b1e0fc5d7e1dc16b99b8c7db 100644
+index e7b6c83a4e7bd83f6c5a1d772c42c51bf1d1bed1..449a2904fb1190f68de72bc47eb8220f50002577 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -186,6 +186,25 @@ public abstract class Player extends Avatar implements ContainerUser {

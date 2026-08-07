@@ -5,10 +5,10 @@ Subject: [PATCH] Add Portal rate limiter
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index f32d118e1e925b2155cef3fcdcb1e194c541e242..2d5d4170e1f45ae9113c37623b4066861dc79d64 100644
+index 981458f6697a79dbc9fc8cf41c088c98e556c6dd..4dbbe03d949811bf6140a35faa5e8cee8f7e28f0 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-@@ -157,6 +157,10 @@ public final class RegionizedWorldData {
+@@ -154,6 +154,10 @@ public final class RegionizedWorldData {
              for (final ChunkHolder chunkHolder : from.chunkHoldersToBroadcast) {
                  into.chunkHoldersToBroadcast.add(chunkHolder);
              }
@@ -19,7 +19,7 @@ index f32d118e1e925b2155cef3fcdcb1e194c541e242..2d5d4170e1f45ae9113c37623b406686
          }
  
          @Override
-@@ -322,6 +326,12 @@ public final class RegionizedWorldData {
+@@ -316,6 +320,12 @@ public final class RegionizedWorldData {
                      into.chunkHoldersToBroadcast.add(chunkHolder);
                  }
              }
@@ -32,7 +32,7 @@ index f32d118e1e925b2155cef3fcdcb1e194c541e242..2d5d4170e1f45ae9113c37623b406686
          }
      };
  
-@@ -343,6 +353,35 @@ public final class RegionizedWorldData {
+@@ -338,6 +348,35 @@ public final class RegionizedWorldData {
          return this.isHandlingTick;
      }
  
@@ -69,10 +69,10 @@ index f32d118e1e925b2155cef3fcdcb1e194c541e242..2d5d4170e1f45ae9113c37623b406686
      // this is copy on write to allow packet processing to iterate safely
      private final CopyOnWriteArrayList<ServerPlayer> localPlayers = new CopyOnWriteArrayList<>();
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index e43aa6daa8d4465764348be5b82be5f163ef0819..f4274e844018992bba7c32d2146198efc034631e 100644
+index ff6809944c2dd8a2cc7c11a8b05b0f7c17b5fb4c..fe1b70edb24e2ded42f8ca1f5ddfbae7151b147a 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1973,6 +1973,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1978,6 +1978,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              //net.minecraft.world.level.block.entity.HopperBlockEntity.skipHopperEvents = level.paperConfig().hopper.disableMoveEvent || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0; // Paper - Perf: Optimize Hoppers // Folia - region threading
              profiler.push(() -> level + " " + level.dimension().identifier());
              profiler.push("tick");
@@ -82,7 +82,7 @@ index e43aa6daa8d4465764348be5b82be5f163ef0819..f4274e844018992bba7c32d2146198ef
  
              try {
                  foliaProfiler.startTimer(level.tickTimerId); try { // Folia - profiler
-@@ -1987,6 +1990,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1992,6 +1995,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              profiler.pop();
              profiler.pop();
              regionizedWorldData.explosionDensityCache.clear(); // Paper - Optimize explosions // Folia - region threading
@@ -93,7 +93,7 @@ index e43aa6daa8d4465764348be5b82be5f163ef0819..f4274e844018992bba7c32d2146198ef
          //this.isIteratingOverLevels = false; // Paper - Throw exception on world create while being ticked // Folia - region threading
  
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index cea4bc7036dfd8777c151a0dd811fc13579d6501..402e2f01f2b3a8e9ce5c818f07581b4dab38fc26 100644
+index 015f0521aa65201fab990177867d10e0ea0611d4..adde187ad84ad75047096736de6e51ef81897d61 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -1536,8 +1536,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet

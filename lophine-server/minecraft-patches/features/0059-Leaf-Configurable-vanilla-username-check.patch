@@ -8,7 +8,7 @@ A part of Leaf(https://github.com/Winds-Studio/Leaf/blob/edb0504069139beaa6f39ef
 License: https://github.com/Winds-Studio/Leaf/blob/edb0504069139beaa6f39efa4702370c2576b3fc/LICENSE.md
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 42ee15c813761702031d5a63f0d080b135be2e0f..1736816e26c255645d62696814cd539ee1ffed8d 100644
+index 35aa8df4aecd91387997f01c258f0d549dfba0f8..908cff4caa1457e07d809fb793d00d367ae42320 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -217,7 +217,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -86,7 +86,7 @@ index 7443744e3f256983e52a1cefcaf66082e4a46a7b..b7553611723f7120c66e1f3e51d89df2
          }
  
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index a8f051e6aff31a723a3ba59842fac3a43f4911fe..2939aa1ecd68504424198dd7c90c71c6c1aa4c80 100644
+index d1683d4853f0d0190d9eae31706c99001229c026..a98c9b287885e2c353cf75dbb7f004cf67c0d802 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -134,6 +134,7 @@ public abstract class PlayerList {

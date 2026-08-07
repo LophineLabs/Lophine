@@ -20,7 +20,7 @@ As part of: Akarin (https://github.com/Akarin-project/Akarin)
 Licensed under: GPL-3.0-only (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index ae0504263666103a588b6855cb27304582c38938..92cb0b1722bd5bcf9996c3f6b9b62c980b70e229 100644
+index 3c3420c51d70eb9afb80db43635246a546d1562c..f38ce49165b6c46d039e82d676e24832e93a402e 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -2441,8 +2441,8 @@ public abstract class Entity

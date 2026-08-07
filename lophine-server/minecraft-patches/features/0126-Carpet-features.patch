@@ -128,7 +128,7 @@ index 8cc4fe9feb57902a4b9a6a26e6175ac00a2cef65..9ab1a812e43145120859734075e2ac99
          // Paper start - fix converting txt to json file; moved from constructor
      }
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 2c15275066923cb488be8e1d7777785466768332..9e8157e6a6df32d00fd1f689a6005ce0f7e0dfbd 100644
+index ac6561a1552f7a2f724fefe0aa1507dbd9a703ef..d393f485965ddd960b4a3cb26ad7eb48deccb4ab 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -260,6 +260,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -173,10 +173,10 @@ index 2c15275066923cb488be8e1d7777785466768332..9e8157e6a6df32d00fd1f689a6005ce0
  
      public ClientInformation clientInformation() {
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 77b9cd3d14eddc735d9131597916405fde4230ec..52187fe9d2c907e31cf961a93f599231a70ac08c 100644
+index 11d177e486958727f880f073550ae5db7e233dcd..e489da1acbb77c003951b608856ea706570cbed6 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -2091,7 +2091,15 @@ public class ServerGamePacketListenerImpl
+@@ -2092,7 +2092,15 @@ public class ServerGamePacketListenerImpl
                      this.player.gameMode.capturedBlockEntity = false;
                      this.player.gameMode.captureSentBlockEntities = true;
                      // Paper end - Send block entities after destroy prediction
@@ -193,7 +193,7 @@ index 77b9cd3d14eddc735d9131597916405fde4230ec..52187fe9d2c907e31cf961a93f599231
                      this.ackBlockChangesUpTo(packet.getSequence());
                      // Paper start - Send block entities after destroy prediction
                      this.player.gameMode.captureSentBlockEntities = false;
-@@ -2194,7 +2202,9 @@ public class ServerGamePacketListenerImpl
+@@ -2195,7 +2203,9 @@ public class ServerGamePacketListenerImpl
                                   if (!me.earthme.luminol.config.modules.fixes.ItemMultitaskConfig.enabled) { // Luminol - Add item multitask config
                                  this.player.stopUsingItem(); // CraftBukkit - SPIGOT-4706
                                  } // Luminol - Add item multitask config
@@ -204,7 +204,7 @@ index 77b9cd3d14eddc735d9131597916405fde4230ec..52187fe9d2c907e31cf961a93f599231
                                  if (interactionResult.consumesAction()) {
                                      CriteriaTriggers.ANY_BLOCK_USE.trigger(this.player, blockHit.getBlockPos(), itemStack);
                                  }
-@@ -2299,7 +2309,10 @@ public class ServerGamePacketListenerImpl
+@@ -2300,7 +2310,10 @@ public class ServerGamePacketListenerImpl
                  }
                  // CraftBukkit end
  
@@ -216,7 +216,7 @@ index 77b9cd3d14eddc735d9131597916405fde4230ec..52187fe9d2c907e31cf961a93f599231
                      && success.swingSource() == InteractionResult.SwingSource.SERVER) {
                      this.player.swing(hand, true);
                  }
-@@ -2307,6 +2320,16 @@ public class ServerGamePacketListenerImpl
+@@ -2308,6 +2321,16 @@ public class ServerGamePacketListenerImpl
          }
      }
  
@@ -233,7 +233,7 @@ index 77b9cd3d14eddc735d9131597916405fde4230ec..52187fe9d2c907e31cf961a93f599231
      @Override
      public void handleTeleportToEntityPacket(final ServerboundTeleportToEntityPacket packet) {
          PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());
-@@ -2687,6 +2710,10 @@ public class ServerGamePacketListenerImpl
+@@ -2688,6 +2711,10 @@ public class ServerGamePacketListenerImpl
              if (true) throw new UnsupportedOperationException(); // Folia - region threading
              final String conversationInput = rawMessage;
              this.server.processQueue.add(() -> ServerGamePacketListenerImpl.this.getCraftPlayer().acceptConversationInput(conversationInput));
@@ -244,7 +244,7 @@ index 77b9cd3d14eddc735d9131597916405fde4230ec..52187fe9d2c907e31cf961a93f599231
          } else if (this.player.getChatVisibility() == ChatVisiblity.SYSTEM) { // Re-add "Command Only" flag check
              this.send(new ClientboundSystemChatPacket(Component.translatable("chat.cannotSend").withStyle(ChatFormatting.RED), false));
          } else {
-@@ -2699,6 +2726,9 @@ public class ServerGamePacketListenerImpl
+@@ -2700,6 +2727,9 @@ public class ServerGamePacketListenerImpl
  
      // Spigot start - spam exclusions
      private void detectRateSpam(final TickThrottler throttler, final String message) {
@@ -254,7 +254,7 @@ index 77b9cd3d14eddc735d9131597916405fde4230ec..52187fe9d2c907e31cf961a93f599231
          if (me.earthme.luminol.config.modules.misc.PaperPacketLimiterConfig.forceDisable) return; // Leaves - disable
          // CraftBukkit start - replaced with thread safe throttle
          if (org.spigotmc.SpigotConfig.enableSpamExclusions) {
-@@ -3645,8 +3675,10 @@ public class ServerGamePacketListenerImpl
+@@ -3646,8 +3676,10 @@ public class ServerGamePacketListenerImpl
                  if (org.leavesmc.leaves.util.ItemOverstackUtils.hasOverstackingItem()) this.player.containerMenu.sendSingleSlot(packet.slotNum(), itemStack); // Leaves - item over-stack util - force send carried item
                  if (io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.updateEquipmentOnPlayerActions) this.player.detectEquipmentUpdates(); // Paper - Force update attributes.
              } else if (drop && validData) {
@@ -268,7 +268,7 @@ index 77b9cd3d14eddc735d9131597916405fde4230ec..52187fe9d2c907e31cf961a93f599231
                  } else {
                      LOGGER.warn("Player {} was dropping items too fast in creative mode, ignoring.", this.player.getPlainTextName());
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 575b4eabcaac48ae87b69dd037493ebfe0a1212c..516561a25d28f2c7bcc3e71c5f2f9da99c2899c3 100644
+index 7f3492a909536ca14577c3ec3aa511e98ca5551f..2d6500eb0a01f455de8d7a627cabcc06bb60ca61 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -280,7 +280,7 @@ public abstract class PlayerList {
@@ -521,7 +521,7 @@ index d2ac2a0c5bb18c2bca18e5166ed65afd01166e04..6b3adf1af870c3d710494d34d2f25850
      }
  }
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index d46abbea2153cac2d939416fafeac7f905fe0e02..e224c1b8977cd97f2868f7db56c1df22a6820918 100644
+index 8709dabd6d3574e53210543321ca88c778594afc..76af5d1aa163e399cd4b5ed1ffd0a03757e31555 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -560,7 +560,15 @@ public abstract class Player extends Avatar implements ContainerUser {
@@ -842,7 +842,7 @@ index b90077b44ce81d5d60f9d0ad2414f0b7c6b1e720..4f4512d30717e5e41bd98703574485c0
          final ObjectArrayList<BlockPos> ret = new ObjectArrayList<>();
  
 diff --git a/net/minecraft/world/level/block/CarvedPumpkinBlock.java b/net/minecraft/world/level/block/CarvedPumpkinBlock.java
-index 4ed03c9bb81a903c6ec68efe72845f20b083f3ac..003c19d8cad2ae5af770923a76735e4944b24c28 100644
+index 5a316fedee1992efd4a21c4678b659c4589d57ec..f0a46c30b3c446cdc52a8198608d7f60441b7d1b 100644
 --- a/net/minecraft/world/level/block/CarvedPumpkinBlock.java
 +++ b/net/minecraft/world/level/block/CarvedPumpkinBlock.java
 @@ -59,7 +59,10 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
@@ -868,7 +868,7 @@ index 4ed03c9bb81a903c6ec68efe72845f20b083f3ac..003c19d8cad2ae5af770923a76735e49
      }
  
      private WeatheringCopper.WeatherState getWeatherStateFromPattern(final BlockPattern.BlockPatternMatch copperGolemMatch) {
-@@ -159,6 +166,44 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
+@@ -162,6 +169,44 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
          builder.add(FACING);
      }
  

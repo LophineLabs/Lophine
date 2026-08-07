@@ -5,7 +5,7 @@ Subject: [PATCH] Rebrand to Lophine
 
 
 diff --git a/src/main/java/io/papermc/paper/ServerBuildInfo.java b/src/main/java/io/papermc/paper/ServerBuildInfo.java
-index 652ff54e7c50412503725d628bfe72ed03059790..1727ea0b873ee4f9a86cca62eac6dc3a5063b4e6 100644
+index 56a5877181e8d37518b178c95155e892c442e96d..ebe0290bf0235af2ba353ac1f74b29080daebba4 100644
 --- a/src/main/java/io/papermc/paper/ServerBuildInfo.java
 +++ b/src/main/java/io/papermc/paper/ServerBuildInfo.java
 @@ -19,6 +19,17 @@ public interface ServerBuildInfo {

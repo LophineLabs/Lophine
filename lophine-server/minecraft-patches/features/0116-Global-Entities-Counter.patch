@@ -5,10 +5,10 @@ Subject: [PATCH] Global Entities Counter
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 24e186d05aa0333885178f444fade3b9c930ac97..5724a276cf4fdd41f239c47e4352ec05736a5e49 100644
+index 9820d2e18cbcb5fbc07fe57dd93101809ed2727d..822d49d6a8da0855f0f80c4499cae0d16ee544a4 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-@@ -563,6 +563,9 @@ public final class RegionizedWorldData {
+@@ -558,6 +558,9 @@ public final class RegionizedWorldData {
      public final Map<Long, ChunkSectionItemEntityMovementTracker> itemEntityMovementTrackerMap = new it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap<>();
      // Luminol end
  
@@ -18,7 +18,7 @@ index 24e186d05aa0333885178f444fade3b9c930ac97..5724a276cf4fdd41f239c47e4352ec05
      public final TickRegions.TickRegionData regionData;
  
      public RegionizedWorldData(final ServerLevel world, final TickRegions.TickRegionData regionData) {
-@@ -575,6 +578,15 @@ public final class RegionizedWorldData {
+@@ -570,6 +573,15 @@ public final class RegionizedWorldData {
          this.turbo = new io.papermc.paper.redstone.RedstoneWireTurbo((RedStoneWireBlock)Blocks.REDSTONE_WIRE);
          this.regionData = regionData;
  
@@ -99,7 +99,7 @@ index 414c21345879f589fb61130180d0ca606e37a454..98284b695cec2fcd968b594d7944c635
                  NaturalSpawner.spawnForChunk(this.level, chunk, spawnCookie, spawningCategories);
              }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 08a6fc0e58d61b1765e704c500b3aec635e69560..ae88e57974f631ff2494c35d6e02049ba5d38014 100644
+index 1dda86db63f47a6cccb8e144ae2c6d3b11043cb1..68db8f0b571778f9a1c3cb7b6faf1e271fedd304 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -823,6 +823,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet

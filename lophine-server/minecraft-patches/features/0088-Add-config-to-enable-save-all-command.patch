@@ -48,10 +48,10 @@ index 5a5f7f7fefacaa0d77ec389d6eb332eff519496a..f0f6175569100589102d9d76b3ff8f55
              SaveOnCommand.register(this.dispatcher);
              SetPlayerIdleTimeoutCommand.register(this.dispatcher);
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 1736816e26c255645d62696814cd539ee1ffed8d..a0c285d2cb666d0f9bd0e859e0dac414254325c3 100644
+index 908cff4caa1457e07d809fb793d00d367ae42320..143b7a167dcbf015a7318f2fe5e0798418fa2572 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1652,6 +1652,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1651,6 +1651,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      // Folia start - region threading
      public void tickServer(final long startTime, final long scheduledEnd, final long targetBuffer,
                             final io.papermc.paper.threadedregions.TickRegions.TickRegionData region) {

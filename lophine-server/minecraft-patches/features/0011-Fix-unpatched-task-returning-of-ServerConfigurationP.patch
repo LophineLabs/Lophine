@@ -8,10 +8,10 @@ Inspired by https://github.com/CraftCanvasMC/Canvas/blob/ver/1.21.8/canvas-serve
 but Canvas loses its main thread checks so fixed that btw
 
 diff --git a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
-index 40b4eeb561a91264b9ab6ddc49cb8a93daae84a4..97f4c546663fb19558246366a3d8d77f2b9327ef 100644
+index 77c4670868a95dc7b13461dfa67af34b0a3c329a..111789b4aca281dd1899dfbcc4e7e0ca36d74b51 100644
 --- a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
-@@ -290,13 +290,14 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
+@@ -299,13 +299,14 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
      // Paper start
      @Override
      public void disconnectAsync(final net.minecraft.network.DisconnectionDetails disconnectionInfo) {

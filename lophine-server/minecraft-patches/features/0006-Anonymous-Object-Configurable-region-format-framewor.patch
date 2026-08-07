@@ -57,7 +57,7 @@ index 51c126735ace8fdde89ad97b5cab62f244212db0..ea2f45964fb8c617f90938597c230b50
 +    public void moonrise$write(final io.anonymous.anonymous.data.RegionFile regionFile) throws IOException; // Anonymous - Configurable region file format
  }
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index a49c46eb7df50fc3c5587a2c3668ab6edc887107..c74f76b46259204b33b69ad08bb03c81b8b36961 100644
+index 56d26866cb8f413684e62558e5609b273efb8552..dd63f14cf6b857202146348b2242673af1883cb7 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -986,10 +986,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa

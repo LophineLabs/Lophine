@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Helvetica Volubi <suisuroru@blue-millennium.fun>
-Date: Sun, 28 Jun 2026 19:58:46 +0800
+From: Bacteriawa <A3167717663@hotmail.com>
+Date: Sat, 8 Aug 2026 01:29:57 +0800
 Subject: [PATCH] Async protocol switching optimization
 
 
@@ -137,10 +137,10 @@ index 40f54536422fa38bd84017fc634808016b4de58b..ecaa296f576c5c90fda89e0406d65526
 +
  }
 diff --git a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
-index e5304e9d1ea57c01a1147621a42a9b584878f765..af337f77545df94760b12a2b2f5eaf43d18e3774 100644
+index 2d3b0243f061aeaa979ddfc89c0361ecc29edcde..e074fe9eb6a1e6cb30b7de522fcac673dcb81960 100644
 --- a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
-@@ -188,8 +188,9 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
+@@ -197,8 +197,9 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
      public void handleConfigurationFinished(final ServerboundFinishConfigurationPacket packet) {
          PacketUtils.ensureRunningOnSameThread(packet, this, this.server.packetProcessor());
          this.finishCurrentTask(JoinWorldTask.TYPE);
@@ -151,7 +151,7 @@ index e5304e9d1ea57c01a1147621a42a9b584878f765..af337f77545df94760b12a2b2f5eaf43
          try {
              PlayerList playerList = this.server.getPlayerList();
              if (playerList.getPlayer(this.gameProfile.id()) != null) {
-@@ -256,6 +257,18 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
+@@ -265,6 +266,18 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
              LOGGER.error("Couldn't place player in world", e);
              this.disconnect(DISCONNECT_REASON_INVALID_DATA);
          }
@@ -171,10 +171,10 @@ index e5304e9d1ea57c01a1147621a42a9b584878f765..af337f77545df94760b12a2b2f5eaf43
  
      @Override
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 0c5fb17e7cce18eac68183cc3b5de6fc6451dc50..1ea8e03a4dc39486505d21bff1d15cb2339cafc2 100644
+index 9be6d486082d344fb91fd74207eee83ca2f8e869..40b409ad07eaa03473712ba83bc4ccd9a5c0f932 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -2901,7 +2901,13 @@ public class ServerGamePacketListenerImpl
+@@ -2902,7 +2902,13 @@ public class ServerGamePacketListenerImpl
          } // Folia end - rewrite login process - move connection ownership to global region
          this.waitingForSwitchToConfig = true; // Folia - rewrite login process - fix bad ordering of this field write - moved down
          this.send(ClientboundStartConfigurationPacket.INSTANCE);
@@ -188,7 +188,7 @@ index 0c5fb17e7cce18eac68183cc3b5de6fc6451dc50..1ea8e03a4dc39486505d21bff1d15cb2
      }
  
      @Override
-@@ -3786,12 +3792,26 @@ public class ServerGamePacketListenerImpl
+@@ -3787,12 +3793,26 @@ public class ServerGamePacketListenerImpl
          }
  
          final ServerConfigurationPacketListenerImpl listener = new ServerConfigurationPacketListenerImpl(this.server, this.connection, this.createCookie(this.player.clientInformation())); // Paper
@@ -253,12 +253,12 @@ index f2329d1a9d9d4bf4c9d771e25e54f2f9ef65a76c..deee051c103f9797f4612e06c12f293e
  
      @Override
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index e7579a9873362317dd82b63306cf650af9472574..53449af103c1774f68cb0c296d47e7032e4e3843 100644
+index 259eb7574841b1b885093b534440f8a40db4e8e2..2975a879320faed5f6591489f86d3f909072cbaa 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -237,9 +237,11 @@ public abstract class PlayerList {
          // only after setting the connection listener to game type, add the connection to this regions list
-         level.getCurrentWorldData().connections.add(connection);
+         level.getCurrentWorldData().addConnection(player);
          // Folia end - rewrite login process
 +        if (!me.earthme.luminol.config.modules.optimizations.AsyncProtocolChangeConfig.enabled) { // Luminol - Async protocol switch // we will run async switch once these main thread logics became done
          connection.setupInboundProtocol(

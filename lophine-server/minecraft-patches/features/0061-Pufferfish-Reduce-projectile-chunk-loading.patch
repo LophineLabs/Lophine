@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: MrHua269 <mrhua269@gmail.com>
-Date: Fri, 1 May 2026 21:47:48 +0800
+From: Bacteriawa <A3167717663@hotmail.com>
+Date: Sat, 8 Aug 2026 01:31:30 +0800
 Subject: [PATCH] Pufferfish: Reduce projectile chunk loading
 
 A part of Pufferfish(https://github.com/Pufferfish-gg/Pufferfish)
@@ -9,10 +9,10 @@ Original patch: https://github.com/pufferfish-gg/Pufferfish/blob/ver/1.21/puffer
 Original license(GPL-3.0): https://github.com/pufferfish-gg/Pufferfish/blob/ver/1.21/PATCH-LICENSE
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 48fea9051efe038a823d7c2c9ae3bf28078f2fcc..c9f2d54be6f0699c2bf922c66ba0bafc7fb83ccc 100644
+index ab607bcc767068c89bf034013652102c232d35a9..0bf23b7ceacf7d962270cb513abce050670c172e 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-@@ -339,6 +339,10 @@ public final class RegionizedWorldData {
+@@ -333,6 +333,10 @@ public final class RegionizedWorldData {
  
      private RegionizedServer.WorldLevelData tickData;
  
@@ -21,8 +21,8 @@ index 48fea9051efe038a823d7c2c9ae3bf28078f2fcc..c9f2d54be6f0699c2bf922c66ba0bafc
 +    public long pufferfish$loadedTick = 0L;
 +    // Luminol end
      // connections
-     public final List<Connection> connections = new ArrayList<>();
- 
+     private static final Connection[] EMPTY_CONNECTION_ARRAY = new Connection[0];
+     private final ReferenceList<Connection> connections = new ReferenceList<>(EMPTY_CONNECTION_ARRAY);
 diff --git a/net/minecraft/world/entity/projectile/Projectile.java b/net/minecraft/world/entity/projectile/Projectile.java
 index 721e3b083846fd363a31311196bc4c681969215c..81aafd64cc80038eaafba059373db3682afb8c2c 100644
 --- a/net/minecraft/world/entity/projectile/Projectile.java

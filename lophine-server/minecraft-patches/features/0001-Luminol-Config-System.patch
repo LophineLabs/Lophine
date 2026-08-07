@@ -5,7 +5,7 @@ Subject: [PATCH] Luminol Config System
 
 
 diff --git a/net/minecraft/server/Main.java b/net/minecraft/server/Main.java
-index e2939cc39a8c103e4c4d7b01d39b5546486e4fbc..a557d488e4e289a61aeb9aed0cc133a0a7ce8f8c 100644
+index 693ce1c23c7be6406eda22da57aa4a1b86a08f5f..4385488983a7544eb6d9193d913dc55294f4620d 100644
 --- a/net/minecraft/server/Main.java
 +++ b/net/minecraft/server/Main.java
 @@ -110,6 +110,7 @@ public class Main {
@@ -17,10 +17,10 @@ index e2939cc39a8c103e4c4d7b01d39b5546486e4fbc..a557d488e4e289a61aeb9aed0cc133a0
              Bootstrap.bootStrap();
              Bootstrap.validate();
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 6f13870a1b463049dd37cf1c65d0bdecfc35b5c4..a49c46eb7df50fc3c5587a2c3668ab6edc887107 100644
+index be15a671e0b39b455cd5983f4b90f8f3022a2ebc..56d26866cb8f413684e62558e5609b273efb8552 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1169,6 +1169,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1168,6 +1168,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              ca.spottedleaf.moonrise.common.util.MoonriseCommon.haltExecutors();
          }
          // Paper end - rewrite chunk system

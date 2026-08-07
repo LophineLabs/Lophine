@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Bacteriawa <A3167717663@hotmail.com>
-Date: Wed, 6 May 2026 18:27:15 +0800
+Date: Sat, 8 Aug 2026 01:32:35 +0800
 Subject: [PATCH] Add tpsbar with chunkhot membar and region bar
 
 
@@ -22,12 +22,12 @@ index f020f310c4bca49a23de91bea72ccd9941c0b03c..10b351d8bd6b0e117ecbe961ae2f1016
 +    // KioCG end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index a3f2e97c1e0c9c2add3c5efd5a5cebe84ace78bf..d47c1b8cc17eb13669fbe21670c3a6eaaa995844 100644
+index e20a66e56f2e4520b2708d6ebc377392e4362816..7bbadcab57d3a2dbba0a4c48de043966454a1d50 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -3396,4 +3396,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
-         super.knockback(strength, directionX, directionZ);
-         this.entity.hurtMarked = true;
+@@ -3420,4 +3420,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+         this.getHandle().fixedPose = false;
+         this.getHandle().updatePlayerPose();
      }
 +
 +    // KioCG start - ChunkHot

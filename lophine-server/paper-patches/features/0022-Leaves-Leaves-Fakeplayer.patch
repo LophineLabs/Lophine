@@ -53,7 +53,7 @@ index 3a47e4c633ee016d5deeb6a5ee9e2e26769d5193..efb47f914fd0c0e966c6921ed1b26c41
          if (nmsEntity.level() != this.getHandle().getLevel()) {
              throw new IllegalArgumentException(entity + " wasn't created with this world, you must create the entity with the world you want to add it to.");
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 14a8a00d9c1fc7d49d6f870bf10b9a5e178b1189..7fd08dac549261c50cf5723ef380ba90ea0da56f 100644
+index be308fcc90df58993be31473f907dab4478290ad..7247666a8baee283f4d99a489e7a14fa9543f803 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -304,6 +304,7 @@ public final class CraftServer implements Server {
@@ -72,7 +72,7 @@ index 14a8a00d9c1fc7d49d6f870bf10b9a5e178b1189..7fd08dac549261c50cf5723ef380ba90
      }
  
      public boolean getCommandBlockOverride(String command) {
-@@ -1380,7 +1382,7 @@ public final class CraftServer implements Server {
+@@ -1379,7 +1381,7 @@ public final class CraftServer implements Server {
              return false;
          }
  
@@ -81,7 +81,7 @@ index 14a8a00d9c1fc7d49d6f870bf10b9a5e178b1189..7fd08dac549261c50cf5723ef380ba90
              return false;
          }
  
-@@ -3119,6 +3121,13 @@ public final class CraftServer implements Server {
+@@ -3118,6 +3120,13 @@ public final class CraftServer implements Server {
      }
      // Leaves end - Feature API
  
@@ -148,10 +148,10 @@ index f5373786032b3f1db8e6c0c928c781998b2fe194..ca6be9faab3f93da7e91bf73997111b7
                  CraftParticle.createParticleParam(particle, data), // Particle
                  force,
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index 00749be3b16fd09c6b952c93631c808ff5657f20..0f6378ca80bea5d4d7f1cb7d788a57390bc27c59 100644
+index 555f15b3abbd5ba2f4e6558a7c29cde109098a07..a812186b84ee188c6b2276f173bdded37791f593 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -130,6 +130,8 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+@@ -131,6 +131,8 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
              return new CraftHumanEntity(server, (net.minecraft.world.entity.player.Player) entity);
          }
  

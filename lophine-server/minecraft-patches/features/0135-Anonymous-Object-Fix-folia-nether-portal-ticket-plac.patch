@@ -33,10 +33,10 @@ index ea93ac07ec6d4e83d1d0904daf721132e2bbecc3..4252672ad2aaf03d50e5ea6a681e9964
  
      public static class IntBounds {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index acc9caf8559cd341ea17d3b58f13cdac7de18564..489011f9af49fa3407038bd2f00439443307d179 100644
+index f15f0ca83ff2313d2e025db984c4fa1d492c5a70..6d6b1024ef7467bc7f72693a655a25eeede1b0f8 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -4851,7 +4851,7 @@ public abstract class Entity
+@@ -4847,7 +4847,7 @@ public abstract class Entity
                              portalInfoCompletable.complete(
                                  new TeleportTransition(destination, Vec3.atCenterOf(targetPos), Vec3.ZERO,
                                      90.0f, 0.0f,
@@ -45,7 +45,7 @@ index acc9caf8559cd341ea17d3b58f13cdac7de18564..489011f9af49fa3407038bd2f0043944
                              );
                              return;
                          }
-@@ -4863,7 +4863,7 @@ public abstract class Entity
+@@ -4859,7 +4859,7 @@ public abstract class Entity
                          portalInfoCompletable.complete(
                              net.minecraft.world.level.block.NetherPortalBlock.createDimensionTransition(
                                  destination, portal, originalPortalDirection, relativePos,
