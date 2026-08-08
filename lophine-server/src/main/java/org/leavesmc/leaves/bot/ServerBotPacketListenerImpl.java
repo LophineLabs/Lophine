@@ -76,6 +76,10 @@ public class ServerBotPacketListenerImpl extends ServerGamePacketListenerImpl {
         }
 
         @Override
+        public void flushChannel() {
+        }
+
+        @Override
         public boolean isConnected() {
             return true;
         }
