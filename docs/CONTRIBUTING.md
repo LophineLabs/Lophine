@@ -1,7 +1,7 @@
 为Lophine贡献代码
 ===============
 
-[English](./CONTRIBUTING_EN.md) | **中文**
+[English](./CONTRIBUTING_EN.md) | **中文（简体）** | [中文（繁體）](./CONTRIBUTING_ZH_TW.md) | [日本語](./CONTRIBUTING_JP.md)
 
 我们很开心您想为我们的项目做出贡献！一般来说，我们对PR的审核是十分宽松的；
 但是如果您可以遵守下列的规则，我们可以更快地完成审核。

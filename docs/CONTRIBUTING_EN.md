@@ -1,7 +1,7 @@
 Contributing to Lophine
 =======================
 
-**English** | [中文](./CONTRIBUTING.md)
+**English** | [中文（简体）](./CONTRIBUTING.md) | [中文（繁體）](./CONTRIBUTING_ZH_TW.md) | [日本語](./CONTRIBUTING_JP.md)
 
 We're glad that you want to contribute to our project!  
 In general, our review of pull requests is very lenient.  
