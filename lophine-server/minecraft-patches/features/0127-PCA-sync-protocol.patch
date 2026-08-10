@@ -8,16 +8,18 @@ As a part of : Leaves (https://github.com/LeavesMC/Leaves/blob/252a16955f6e1e31a
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/net/minecraft/world/SimpleContainer.java b/net/minecraft/world/SimpleContainer.java
-index 0f412551685a8ea76be3b389e0782e57d22bb87c..6da0fd10e1a4a346dc1b073563e9bd8cf9b3c76d 100644
+index 0f412551685a8ea76be3b389e0782e57d22bb87c..b6154f677943e22ecb6dfdd6f9b8f867f1c7f09a 100644
 --- a/net/minecraft/world/SimpleContainer.java
 +++ b/net/minecraft/world/SimpleContainer.java
-@@ -199,6 +199,11 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
+@@ -199,6 +199,13 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
  
      @Override
      public void setChanged() {
 +        // Leaves start - PCA sync protocol
 +        if (fun.bm.lophine.config.modules.function.protocol.PcaSyncProtocolConfig.enabled && this.getOwner() instanceof org.bukkit.craftbukkit.entity.CraftEntity entity) {
-+            org.leavesmc.leaves.protocol.PcaSyncProtocol.syncEntityToClient(entity.getHandle());
++            // The owner can be a destination-world clone while it is being restored during an async portal transfer.
++            // syncEntityToClient() performs the ownership check and must receive the raw handle to reach it.
++            org.leavesmc.leaves.protocol.PcaSyncProtocol.syncEntityToClient(entity.getHandleRaw());
 +        }
 +        // Leaves end - PCA sync protocol
      }
