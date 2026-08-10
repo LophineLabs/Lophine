@@ -9,10 +9,10 @@ Origin patch link: https://github.com/LeavesMC/Leaves/blob/master/leaves-server/
 Origin license: https://github.com/LeavesMC/Leaves/blob/master/LICENSE.md
 
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index a858cb658af70f07614fa1f4d9e8a3435d5c161f..4c9d0bcd8820b250b51c06fff4531021ab57d408 100644
+index a858cb658af70f07614fa1f4d9e8a3435d5c161f..95f0b3276137cb9d1fc296e97cc25a08a5200c95 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-@@ -281,36 +281,55 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -281,36 +281,67 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
          ItemStack movedItem = origItemStack;
          final int originalItemCount = origItemStack.getCount();
          final int movedItemCount = Math.min(level.spigotConfig.hopperAmount, originalItemCount);
@@ -32,21 +32,19 @@ index a858cb658af70f07614fa1f4d9e8a3435d5c161f..4c9d0bcd8820b250b51c06fff4531021
 +                movedItem = callPullMoveEvent(hopper, container, movedItem);
 +                if (movedItem == null) { // cancelled
 +                    origItemStack.setCount(originalItemCount);
++                    container.setChanged(); // keep parity with vanilla: source inv always marked changed
 +                    return true;
 +                }
 +            }
-+            movedItem = origItemStack.copy();
-+            final ItemStack remainingItem = addItem(container, hopper, container.removeItem(i, movedItemCount), null);
++            final int toRemove = Math.min(movedItem.getCount(), container.getItem(i).getCount());
++            final ItemStack remainingItem = addItem(container, hopper, container.removeItem(i, toRemove), null);
++            final int remainingItemCount = remainingItem.getCount();
 +            if (remainingItem.isEmpty()) {
 +                container.setChanged();
                  return true;
              }
 -        }
-+            container.setItem(i, movedItem);
-+        } else {
-+            container.setChanged(); // original logic always marks source inv as changed even if no move happens.
-+            movedItem.setCount(movedItemCount);
- 
+-
 -        final ItemStack remainingItem = addItem(container, hopper, movedItem, null);
 -        final int remainingItemCount = remainingItem.getCount();
 -        if (remainingItemCount != movedItemCount) {
@@ -54,6 +52,24 @@ index a858cb658af70f07614fa1f4d9e8a3435d5c161f..4c9d0bcd8820b250b51c06fff4531021
 -            origItemStack.setCount(originalItemCount);
 -            if (!origItemStack.isEmpty()) {
 -                origItemStack.setCount(originalItemCount - movedItemCount + remainingItemCount);
++            if (remainingItemCount != toRemove) {
++                IGNORE_TILE_UPDATES.set(true); // Folia - region threading
++                container.setItem(i, remainingItem);
++                IGNORE_TILE_UPDATES.set(false); // Folia - region threading
++                container.setChanged();
++                return true;
+             }
+-
+             IGNORE_TILE_UPDATES.set(true); // Folia - region threading
+-            container.setItem(i, origItemStack);
++            container.setItem(i, remainingItem);
+             IGNORE_TILE_UPDATES.set(false); // Folia - region threading
+             container.setChanged();
+-            return true;
++        } else {
++            container.setChanged(); // original logic always marks source inv as changed even if no move happens.
++            movedItem.setCount(movedItemCount);
++
 +            if (!worldData.skipPullModeEventFire) {
 +                movedItem = callPullMoveEvent(hopper, container, movedItem);
 +                if (movedItem == null) { // cancelled
@@ -63,13 +79,8 @@ index a858cb658af70f07614fa1f4d9e8a3435d5c161f..4c9d0bcd8820b250b51c06fff4531021
 +                    // site for IMIE did not exhibit the same behavior
 +                    return true;
 +                }
-             }
- 
--            IGNORE_TILE_UPDATES.set(true); // Folia - region threading
--            container.setItem(i, origItemStack);
--            IGNORE_TILE_UPDATES.set(false); // Folia - region threading
--            container.setChanged();
--            return true;
++            }
++
 +            final ItemStack remainingItem = addItem(container, hopper, movedItem, null);
 +            final int remainingItemCount = remainingItem.getCount();
 +            if (remainingItemCount != movedItemCount) {

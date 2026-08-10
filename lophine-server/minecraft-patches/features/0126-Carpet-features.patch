@@ -1094,7 +1094,7 @@ index c27fc92d6ff9dd7e07a61513601ef73ff16cf842..e5915893a06e332992c34b8ac5115955
 +    // Lophine end - Carpet features
  }
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index 569f96a1b0b8a03b6a70775f4b7f58a66feed939..df57ae93f91daf8daed2fef48b685c72f0615763 100644
+index 9f538bfb64b62d4953b435a14174723099f2202b..ce4c862ba67af49d06093e59e770a93b9768f3cb 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -241,7 +241,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
@@ -1142,7 +1142,7 @@ index 569f96a1b0b8a03b6a70775f4b7f58a66feed939..df57ae93f91daf8daed2fef48b685c72
                      origItemStack = origItemStack.copy(true);
                      origItemStack.setCount(originalItemCount);
                      if (!origItemStack.isEmpty()) {
-@@ -655,7 +668,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -667,7 +680,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public static boolean addItem(final Container container, final ItemEntity entity) {

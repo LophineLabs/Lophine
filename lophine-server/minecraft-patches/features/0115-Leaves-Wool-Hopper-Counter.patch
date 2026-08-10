@@ -10,7 +10,7 @@ Licensed under: MIT
 This patch is Powered by fabric-carpet(https://github.com/gnembon/fabric-carpet)
 
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index 7d35b299533640338aeea6e5617942e89269d048..569f96a1b0b8a03b6a70775f4b7f58a66feed939 100644
+index f154fbd18c306b284ef0b0dd882b31196633d0ba..9f538bfb64b62d4953b435a14174723099f2202b 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -240,8 +240,30 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
@@ -44,7 +44,7 @@ index 7d35b299533640338aeea6e5617942e89269d048..569f96a1b0b8a03b6a70775f4b7f58a6
                  setChanged(level, pos, state);
                  // Leaves start - Lithium Sleeping Block Entity
                  if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled
-@@ -491,6 +513,13 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -503,6 +525,13 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      // Paper end - Perf: Optimize Hoppers
  
      private static boolean ejectItems(final Level level, final BlockPos blockPos, final HopperBlockEntity self) {
@@ -58,7 +58,7 @@ index 7d35b299533640338aeea6e5617942e89269d048..569f96a1b0b8a03b6a70775f4b7f58a6
          Container container = me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled ? self.getInsertInventory(level) : getAttachedContainer(level, blockPos, self); // Leaves - Lithium Sleeping Block Entity
          if (container == null) {
              return false;
-@@ -512,6 +541,26 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -524,6 +553,26 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
          return hopperPush(level, container, direction, self); // Paper - Perf: Optimize Hoppers
      }
  
@@ -85,7 +85,7 @@ index 7d35b299533640338aeea6e5617942e89269d048..569f96a1b0b8a03b6a70775f4b7f58a6
      private static int[] getSlots(final Container container, final Direction direction) {
          if (container instanceof WorldlyContainer worldlyContainer) {
              return worldlyContainer.getSlotsForFace(direction);
-@@ -606,6 +655,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -618,6 +667,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public static boolean addItem(final Container container, final ItemEntity entity) {
