@@ -29,10 +29,10 @@ index 8eca4b0a82d738f873f9e01a7424aaf7ee3735a2..e94ea890c83e65d987519379ebe3b513
  
      // Folia start - region threading
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 6d6b1024ef7467bc7f72693a655a25eeede1b0f8..363dcad09e441ea8b4fd79fcb94432536783676c 100644
+index 3b73f1800c92a0f6a2fc515dc63aec20f62b96af..ef8f41f05255de25b5f831275bd1e5e1340f6141 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -4866,10 +4866,10 @@ public abstract class Entity
+@@ -4872,10 +4872,10 @@ public abstract class Entity
                  );
  
                  // kick off search for existing portal or creation

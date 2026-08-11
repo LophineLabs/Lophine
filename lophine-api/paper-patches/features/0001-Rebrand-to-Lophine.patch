@@ -5,10 +5,10 @@ Subject: [PATCH] Rebrand to Lophine
 
 
 diff --git a/src/main/java/io/papermc/paper/ServerBuildInfo.java b/src/main/java/io/papermc/paper/ServerBuildInfo.java
-index 56a5877181e8d37518b178c95155e892c442e96d..ebe0290bf0235af2ba353ac1f74b29080daebba4 100644
+index 4e099b584c3435ba1ebce492011d35ae1ac0cdf8..ed558bea1f939ab902d3c45417573fba83307abc 100644
 --- a/src/main/java/io/papermc/paper/ServerBuildInfo.java
 +++ b/src/main/java/io/papermc/paper/ServerBuildInfo.java
-@@ -19,6 +19,17 @@ public interface ServerBuildInfo {
+@@ -17,6 +17,17 @@ public interface ServerBuildInfo {
       */
      Key BRAND_PAPER_ID = Key.key("papermc", "paper");
  

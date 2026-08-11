@@ -64,7 +64,7 @@
  
 @@ -103,10 +_,14 @@
      main {
-         java { srcDir("../paper-server/src/main/java"); srcDir("../paper-server/src/generated/java") }
+         java { srcDir("../paper-server/src/main/java") }
          resources { srcDir("../paper-server/src/main/resources") }
 +        java { srcDir("../folia-server/src/main/java") }
 +        resources { srcDir("../folia-server/src/main/resources") }

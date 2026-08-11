@@ -1,6 +1,6 @@
 --- a/folia-api/build.gradle.kts
 +++ b/folia-api/build.gradle.kts
-@@ -53,6 +_,7 @@
+@@ -68,6 +_,7 @@
      api("org.apache.logging.log4j:log4j-api:$log4jVersion")
      api("org.slf4j:slf4j-api:$slf4jVersion")
      api("com.mojang:brigadier:1.3.10")
@@ -8,7 +8,16 @@
  
      // Deprecate bungeecord-chat in favor of adventure
      api("net.md-5:bungeecord-chat:$bungeeCordChatVersion") {
-@@ -105,17 +_,21 @@
+@@ -109,7 +_,7 @@
+     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.3")
+ 
+     // checkstyle
+-    checkstyle(project(":folia-checkstyle"))
++    //checkstyle(project(":folia-checkstyle"))
+ }
+ 
+ val generatedDir: java.nio.file.Path = rootProject.layout.projectDirectory.dir("paper-api/src/generated/java").asFile.toPath()
+@@ -123,17 +_,21 @@
          java {
              srcDir(generatedDir)
              srcDir(file("../paper-api/src/main/java"))
@@ -30,7 +39,7 @@
          }
      }
  }
-@@ -259,3 +_,19 @@
+@@ -277,3 +_,19 @@
  tasks.check {
      dependsOn(scanJarForBadCalls)
  }

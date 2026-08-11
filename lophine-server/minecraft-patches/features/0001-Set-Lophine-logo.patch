@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Wed, 12 Aug 2026 03:44:13 +0800
+Subject: [PATCH] Set Lophine logo
+
+
+diff --git a/net/minecraft/server/gui/MinecraftServerGui.java b/net/minecraft/server/gui/MinecraftServerGui.java
+index 79518cbca7760f710130509d93d27fb017d67159..05d17e35803adacb6efb594ad90d6254f4a1b09c 100644
+--- a/net/minecraft/server/gui/MinecraftServerGui.java
++++ b/net/minecraft/server/gui/MinecraftServerGui.java
+@@ -58,7 +58,7 @@ public class MinecraftServerGui extends JComponent {
+         // Paper start - Improve ServerGUI
+         frame.setName("Minecraft server");
+         try {
+-            frame.setIconImage(javax.imageio.ImageIO.read(java.util.Objects.requireNonNull(MinecraftServerGui.class.getClassLoader().getResourceAsStream("folia-logo.png"))));
++            frame.setIconImage(javax.imageio.ImageIO.read(java.util.Objects.requireNonNull(MinecraftServerGui.class.getClassLoader().getResourceAsStream("lophine-logo.png"))));
+         } catch (java.io.IOException ignore) {
+         }
+         // Paper end - Improve ServerGUI

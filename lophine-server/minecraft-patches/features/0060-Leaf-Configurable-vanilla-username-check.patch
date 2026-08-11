@@ -21,7 +21,7 @@ index 35aa8df4aecd91387997f01c258f0d549dfba0f8..908cff4caa1457e07d809fb793d00d36
      private final List<Runnable> tickables = Lists.newArrayList();
      // Paper - per-level GameRules
 diff --git a/net/minecraft/server/network/ServerLoginPacketListenerImpl.java b/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
-index deee051c103f9797f4612e06c12f293ec54724ac..911fb0912c7bc6ab0e29c03a21c6bddb248bbc0a 100644
+index 841acc9fb6f0ca219c908812d20831aba0630126..74f79cf51c4ff2dcda53054863a26725953d2b09 100644
 --- a/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 @@ -167,11 +167,20 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
@@ -63,7 +63,7 @@ index deee051c103f9797f4612e06c12f293ec54724ac..911fb0912c7bc6ab0e29c03a21c6bddb
  
                          gameprofile = ServerLoginPacketListenerImpl.this.callPlayerPreLoginEvents(gameprofile); // Paper - Add more fields to AsyncPlayerPreLoginEvent
                          ServerLoginPacketListenerImpl.LOGGER.info("UUID of player {} is {}", gameprofile.name(), gameprofile.id());
-@@ -341,7 +359,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
+@@ -345,7 +363,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
          server.getPluginManager().callEvent(asyncEvent);
          profile = asyncEvent.getPlayerProfile();
          profile.complete(true); // Paper - setPlayerProfileAPI

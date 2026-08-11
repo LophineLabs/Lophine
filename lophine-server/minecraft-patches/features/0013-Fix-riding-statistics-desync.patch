@@ -19,10 +19,10 @@ index 216c9263999f05c36fb4c5598b41ff70e5759f5e..6c2196726a0669bddda456a089aeec0d
              int distance = Math.round((float)Math.sqrt(dx * dx + dy * dy + dz * dz) * 100.0F);
              Entity vehicle = this.getVehicle();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 18b9e630442fd31a14e131bb9043be46e10881e3..b475a8fe259848749ee05ff6cf10e46f52f955d3 100644
+index 75dabd3e7b6077b5ae8ee30048786442742b93f9..6fa3ac9a37dafa166d8e70aaf4ec369db0792200 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -4194,7 +4194,13 @@ public abstract class Entity
+@@ -4200,7 +4200,13 @@ public abstract class Entity
              }
          }
  
@@ -36,7 +36,7 @@ index 18b9e630442fd31a14e131bb9043be46e10881e3..b475a8fe259848749ee05ff6cf10e46f
              java.util.ArrayDeque<EntityTreeNode> queue = new java.util.ArrayDeque<>();
              queue.add(this);
  
-@@ -4207,14 +4213,24 @@ public abstract class Entity
+@@ -4213,14 +4219,24 @@ public abstract class Entity
  
                  for (EntityTreeNode passenger : passengers) {
                      queue.add(passenger);

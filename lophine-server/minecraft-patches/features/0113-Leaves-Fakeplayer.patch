@@ -33,7 +33,7 @@ index d76a338ab4f326e6105adc451eee3d4601403c98..b827d51d23ceaebef2191a9f349bbd34
          Map<PlayerAdvancements.TriggerInstanceKey, T> listenersForType = advancements.getTriggerMapForType(this);
          if (listenersForType != null && !listenersForType.isEmpty()) {
 diff --git a/net/minecraft/network/Connection.java b/net/minecraft/network/Connection.java
-index d2e9d46bbd9ee4ce45419b11499d7a7bc50f0219..848967dbe41694411603ef369cfdc3a0b00240d3 100644
+index 63c78d8dbfdcfb908100052e36d75ffce8c9d613..6a57cf05044ffab0d6dc280e583613fc9fc403c4 100644
 --- a/net/minecraft/network/Connection.java
 +++ b/net/minecraft/network/Connection.java
 @@ -74,7 +74,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
@@ -570,10 +570,10 @@ index 71988e11c512fcb391f845a1905411ea240479fa..a7a687c7a90bce1ad20d32241f0b4316
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index b9f9dd85d259306db9eb9daf0a9ec36f27dfddb7..c3df068144c3af4b3700b104588970154837018d 100644
+index 939ad903434aa3766a6bf647743086693b8c3d19..6530baa206a2f2f9b8ca378a2c72928d79f23601 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -1263,7 +1263,7 @@ public abstract class Entity
+@@ -1264,7 +1264,7 @@ public abstract class Entity
  
              BlockPos effectPos = this.getOnPosLegacy();
              BlockState effectState = this.level().getBlockState(effectPos);
@@ -582,7 +582,7 @@ index b9f9dd85d259306db9eb9daf0a9ec36f27dfddb7..c3df068144c3af4b3700b10458897015
                  this.checkFallDamage(movement.y, this.onGround(), effectState, effectPos);
              }
  
-@@ -1664,7 +1664,7 @@ public abstract class Entity
+@@ -1665,7 +1665,7 @@ public abstract class Entity
          return colliders.isEmpty() ? maxDistance : -Shapes.collide(Direction.Axis.Y, aabb, colliders, -maxDistance);
      }
  

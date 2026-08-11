@@ -115,10 +115,10 @@ index 624f637e7a4fb8297d42e9944011e3c83245949e..ac6561a1552f7a2f724fefe0aa1507db
              CrashReport report = CrashReport.forThrowable(t, "Ticking player");
              CrashReportCategory category = report.addCategory("Player being ticked");
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index c3df068144c3af4b3700b104588970154837018d..f15f0ca83ff2313d2e025db984c4fa1d492c5a70 100644
+index 6530baa206a2f2f9b8ca378a2c72928d79f23601..455a5e973c2840e1440b6cff529179b173d81023 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -1522,8 +1522,18 @@ public abstract class Entity
+@@ -1523,8 +1523,18 @@ public abstract class Entity
              }
  
              if (shouldVibrate) {

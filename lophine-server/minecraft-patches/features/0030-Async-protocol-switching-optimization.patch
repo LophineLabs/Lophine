@@ -5,10 +5,10 @@ Subject: [PATCH] Async protocol switching optimization
 
 
 diff --git a/net/minecraft/network/Connection.java b/net/minecraft/network/Connection.java
-index 40f54536422fa38bd84017fc634808016b4de58b..ecaa296f576c5c90fda89e0406d6552628ef5de3 100644
+index c3922310ef1fce26eca60793b75bcb480683778a..8144de362b03ce63334765791701cec724776f42 100644
 --- a/net/minecraft/network/Connection.java
 +++ b/net/minecraft/network/Connection.java
-@@ -1067,4 +1067,127 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -1108,4 +1108,127 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
          }
      }
      // Paper end - Optimize network
@@ -216,10 +216,10 @@ index 9be6d486082d344fb91fd74207eee83ca2f8e869..40b409ad07eaa03473712ba83bc4ccd9
  
      @Override
 diff --git a/net/minecraft/server/network/ServerLoginPacketListenerImpl.java b/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
-index f2329d1a9d9d4bf4c9d771e25e54f2f9ef65a76c..deee051c103f9797f4612e06c12f293ec54724ac 100644
+index 95787d6d29ddb8dca78506bb2a115fa612fdaa29..841acc9fb6f0ca219c908812d20831aba0630126 100644
 --- a/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
-@@ -435,12 +435,30 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
+@@ -439,12 +439,30 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
      public void handleLoginAcknowledgement(final ServerboundLoginAcknowledgedPacket packet) {
          net.minecraft.network.protocol.PacketUtils.ensureRunningOnSameThread(packet, this, this.server.packetProcessor()); // CraftBukkit
          Validate.validState(this.state == ServerLoginPacketListenerImpl.State.PROTOCOL_SWITCHING, "Unexpected login acknowledgement packet");

@@ -183,10 +183,10 @@ index f03fa06c0ba56f7f5e1e45bc1568a490751efde3..eee1c14249addbf4714df733870da974
 +    // KioCG end
  }
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index a7f4a9f8bca00fda1b57e2245c57726bb1ce41ed..84fe83f25e72e8ce257421f62e532d4203438d2b 100644
+index 708bd774bdf535be82358bd6f4c7f8b0538285e3..dc2a7aa39f6aa9ec6b5cfbce3bfec71e9c458dcb 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -6475,4 +6475,6 @@ public abstract class Entity
+@@ -6486,4 +6486,6 @@ public abstract class Entity
          return ((ServerLevel) this.level()).isPositionEntityTicking(this.blockPosition());
      }
      // Paper end

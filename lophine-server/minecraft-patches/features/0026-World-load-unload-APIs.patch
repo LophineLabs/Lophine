@@ -429,10 +429,10 @@ index 9fad06eda81b4c2c1889a9cfa7a6948e7ee01862..854f8954ccfd8c34c9f9c91fd1805260
          private final Vec2 spawnAngle;
  
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 33c9692a59c58c44a77b1077553e2bda88cb8305..e8047a06a2df17fde9965508c1ebcf1fc4d25989 100644
+index 3ea74b0ee3527c109b3491a5fa3b5bdd26214292..ccbd1760c66c86971cec7a89442a647267f4a2f6 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -392,6 +392,9 @@ public abstract class Entity
+@@ -393,6 +393,9 @@ public abstract class Entity
      public void inactiveTick() {
      }
      // Paper end - EAR 2
@@ -442,7 +442,7 @@ index 33c9692a59c58c44a77b1077553e2bda88cb8305..e8047a06a2df17fde9965508c1ebcf1f
      // CraftBukkit end
  
      // Paper start
-@@ -4534,6 +4537,17 @@ public abstract class Entity
+@@ -4540,6 +4543,17 @@ public abstract class Entity
              }
          }
  
@@ -460,7 +460,7 @@ index 33c9692a59c58c44a77b1077553e2bda88cb8305..e8047a06a2df17fde9965508c1ebcf1f
          // TODO any events that can modify go HERE
  
          // check for same region
-@@ -4552,6 +4566,14 @@ public abstract class Entity
+@@ -4558,6 +4572,14 @@ public abstract class Entity
              }
  
              for (EntityTreeNode entity : passengerTree.getFullTree()) {
@@ -475,7 +475,7 @@ index 33c9692a59c58c44a77b1077553e2bda88cb8305..e8047a06a2df17fde9965508c1ebcf1f
                  entity.root.teleportSyncSameRegion(pos, yaw, pitch, velocity);
              }
  
-@@ -4567,8 +4589,8 @@ public abstract class Entity
+@@ -4573,8 +4595,8 @@ public abstract class Entity
                  // performs add/remove from world logic which will also perform add/remove tracker logic
              }
  
@@ -486,7 +486,7 @@ index 33c9692a59c58c44a77b1077553e2bda88cb8305..e8047a06a2df17fde9965508c1ebcf1f
              }
              return true;
          }
-@@ -4585,7 +4607,7 @@ public abstract class Entity
+@@ -4591,7 +4613,7 @@ public abstract class Entity
              node.root = node.root.transformForAsyncTeleport(destination, pos, yaw, pitch, velocity);
          }
  
@@ -495,7 +495,7 @@ index 33c9692a59c58c44a77b1077553e2bda88cb8305..e8047a06a2df17fde9965508c1ebcf1f
  
          return true;
      }
-@@ -4864,6 +4886,13 @@ public abstract class Entity
+@@ -4870,6 +4892,13 @@ public abstract class Entity
              ca.spottedleaf.moonrise.common.util.CoordinateUtils.getChunkX(initialPosition),
              ca.spottedleaf.moonrise.common.util.CoordinateUtils.getChunkZ(initialPosition)
          );
@@ -509,7 +509,7 @@ index 33c9692a59c58c44a77b1077553e2bda88cb8305..e8047a06a2df17fde9965508c1ebcf1f
  
          // first, remove entity/passengers from world
          EntityTreeNode passengerTree = this.detachPassengers();
-@@ -4921,6 +4950,10 @@ public abstract class Entity
+@@ -4927,6 +4956,10 @@ public abstract class Entity
                      if (info.postTeleportTransition() != null) {
                          info.postTeleportTransition().onTransition(teleported);
                      }
