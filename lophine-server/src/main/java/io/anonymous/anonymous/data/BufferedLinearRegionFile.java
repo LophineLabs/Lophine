@@ -302,6 +302,12 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
         this.regionObjectLock.readLock().unlock();
     }
 
+    private void guardAgainstClosed() throws IOException {
+        if (this.isClosedRaw()) {
+            throw new IOException("Closed");
+        }
+    }
+
     public boolean isClosedRaw() {
         return (boolean) CLOSED_HANDLE.getVolatile(this);
     }
@@ -317,13 +323,15 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
 
     public void syncIfNeeded() throws IOException {
         try {
-            this.syncToMasterFile(false, false);
+            this.syncToMasterFile(false, false, false, false);
         } finally {
             BEING_SYNCED_HANDLE.setVolatile(this, false); // mark as not being synced
         }
     }
 
-    private void syncToMasterFile(boolean forceSync, boolean forceCompact) throws IOException {
+    // noSwapLock/noMasterLock: caller (closeInternal) must already hold
+    // regionObjectLock.write and masterFileLock.write respectively.
+    private void syncToMasterFile(boolean forceSync, boolean forceCompact, boolean noSwapLock, boolean noMasterLock) throws IOException {
         // serialized against close: the swap channel cannot go away under a running sync
         synchronized (this.syncLock) {
             // skip if closed already
@@ -338,7 +346,7 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
             }
 
             try {
-                this.masterFileParser.sync(this.masterFilePath, forceCompact);
+                this.masterFileParser.sync(this.masterFilePath, forceCompact, noSwapLock, noMasterLock);
             } catch (Throwable e) {
                 // set back
                 SYNCED_HANDLE.setVolatile(this, false);
@@ -421,55 +429,74 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
         // afterwards this is a single volatile read per chunk write.
         // prevent syncing after compact because it could be time costing sometimes
         if (!compactRequested && !this.masterFileParser.masterFileExists()) {
-            this.syncToMasterFile(false, false);
+            this.syncToMasterFile(false, false, false, false);
         }
     }
 
     private void closeInternal() throws IOException {
+        // note: any new sync attempt is blocked inside this block
         synchronized (this.syncLock) {
-            if (this.isClosedRaw()) {
-                // already closed (possibly by a compact disaster path): just make sure
-                // both channels are really gone — close is idempotent
+            this.masterFileParser.masterFileLock.writeLock().lock();
+            try {
+                // note: any read/write ops is blocked inside this block
                 this.regionObjectLock.writeLock().lock();
+
                 try {
-                    this.swapFileChannel.close();
-                } finally {
+                    if (this.isClosedRaw()) {
+                        boolean duplicateClosed = false;
+
+                        if (this.swapFileChannel.isOpen()) {
+                            this.swapFileChannel.close();
+
+                            duplicateClosed = true;
+                        }
+
+                        duplicateClosed &= this.masterFileParser.tryCloseNoLock();
+
+                        if (!duplicateClosed) {
+                            throw new IOException("Already closed");
+                        }
+                        return;
+                    }
+
+                    IOException failure = null;
+
+                    // final sync so no buffered data is lost; holding syncLock also guarantees no
+                    // concurrent flusher sync is still running when we tear down below.
+                    // if this throws we deliberately stay open: the flusher can retry the sync
+                    // later, and the not-yet-synced swap data is not dropped on the floor
+                    // since we hold the write lock and any read/write/sync ops is currently blocked all along the close logic, acquiring the locks inside sync is a disaster
+                    try {
+                        this.syncToMasterFile(true, true,  true, true);
+                    }catch (IOException ex) {
+                        failure = ex;
+                    }
+
+                    try {
+                        this.markClosed();
+
+                        this.swapFileChannel.close();
+                    } catch (IOException ex) {
+                        if (failure == null) failure = ex; else failure.addSuppressed(ex);
+                    }
+
+                    try {
+                        this.masterFileParser.closeNoLock();
+                    } catch (IOException e) {
+                        if (failure == null) failure = e; else failure.addSuppressed(e);
+                    }
+
+                    // finalize
+                    this.markClosed();
+
+                    if (failure != null) {
+                        throw failure;
+                    }
+                }finally {
                     this.regionObjectLock.writeLock().unlock();
                 }
-
-                this.masterFileParser.close();
-                return;
-            }
-
-            // final sync so no buffered data is lost; holding syncLock also guarantees no
-            // concurrent flusher sync is still running when we tear down below.
-            // if this throws we deliberately stay open: the flusher can retry the sync
-            // later, and the not-yet-synced swap data is not dropped on the floor
-            this.syncToMasterFile(true, true);
-
-            IOException failure = null;
-
-            this.regionObjectLock.writeLock().lock();
-            try {
-                this.markClosed();
-
-                this.swapFileChannel.close();
-            } catch (IOException e) {
-                failure = e;
-            } finally {
-                this.regionObjectLock.writeLock().unlock();
-            }
-
-            try {
-                // acquired after the region lock is fully released, never inside it (lock hierarchy)
-                this.masterFileParser.close();
-            } catch (IOException e) {
-                if (failure == null) failure = e;
-                else failure.addSuppressed(e);
-            }
-
-            if (failure != null) {
-                throw failure;
+            }finally {
+                this.masterFileParser.masterFileLock.writeLock().unlock();
             }
         }
     }
@@ -549,10 +576,6 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
         try {
             atomicReplace(targetTemp, this.swapFilePath);
         } catch (Throwable e) {
-            // recalculate counters
-            this.recalculateCounters();
-            // reopen closed channel
-            this.reopenSwapFileChannel();
             // fast-fail
             this.markClosed(); // prevent new writing & sync operations
             throw new IOException("Failed to replace original swap file!", e);
@@ -593,6 +616,8 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
     private void storeSector(int index, @NotNull ByteBuffer encoded, boolean skipSync) throws IOException {
         this.regionObjectLock.writeLock().lock();
         try {
+            this.guardAgainstClosed();
+
             this.sectors[index].store(encoded, this.swapFileChannel);
 
             if (!skipSync) {
@@ -632,10 +657,14 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
     }
 
     private void clearChunkData(int index) throws IOException {
+        this.guardAgainstClosed();
+
         this.ensureBucketLoaded(index);
 
         this.regionObjectLock.writeLock().lock();
         try {
+            this.guardAgainstClosed();
+
             this.sectors[index].clear();
             this.markBucketDirty(index);
         } finally {
@@ -655,10 +684,13 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
     }
 
     private boolean hasData(int index) throws IOException {
+        this.guardAgainstClosed();
         this.ensureBucketLoaded(index);
 
         this.regionObjectLock.readLock().lock();
         try {
+            this.guardAgainstClosed();
+
             return this.sectors[index].hasData();
         } finally {
             this.regionObjectLock.readLock().unlock();
@@ -666,6 +698,8 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
     }
 
     private void writeChunk(int x, int z, @NotNull ByteBuffer data) throws IOException {
+        this.guardAgainstClosed();
+
         final int chunkIndex = getChunkIndex(x, z);
 
         this.ensureBucketLoaded(chunkIndex);
@@ -693,6 +727,8 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
     }
 
     private @Nullable ByteBuffer readChunk(int x, int z) throws IOException {
+        this.guardAgainstClosed();
+
         final int chunkIndex = getChunkIndex(x, z);
 
         this.ensureBucketLoaded(chunkIndex);
@@ -701,6 +737,8 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
 
         this.regionObjectLock.readLock().lock();
         try {
+            this.guardAgainstClosed();
+
             final Sector sector = this.sectors[chunkIndex];
 
             if (!sector.hasData()) {
@@ -1034,21 +1072,21 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
         }
 
         // must be called under syncLock (see syncToMasterFile)
-        public void sync(@NotNull Path mainFile, boolean forceCompact) throws IOException {
-            this.masterFileLock.writeLock().lock();
+        public void sync(@NotNull Path mainFile, boolean forceCompact, boolean noSwapLock, boolean noMasterLock) throws IOException {
+            if (!noMasterLock) this.masterFileLock.writeLock().lock();
             try {
                 // full rewrite whenever no valid append state exists (fresh region /
                 // corrupted table / legacy migration), and afterwards whenever the
                 // appended garbage passed the auto-compact threshold: writes a tmp file,
                 // then atomically replaces the master file with it
                 if (this.appendChannel == null || this.shouldCompactMasterFile() || forceCompact) {
-                    this.rewriteFully(mainFile);
+                    this.rewriteFully(mainFile, noSwapLock);
                 } else {
                     // WAL-style otherwise: only append the dirty buckets
-                    this.appendDirtyBuckets();
+                    this.appendDirtyBuckets(noSwapLock);
                 }
             } finally {
-                this.masterFileLock.writeLock().unlock();
+                if (!noMasterLock) this.masterFileLock.writeLock().unlock();
             }
         }
 
@@ -1064,7 +1102,7 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
             return spareSize > MASTER_FILE_AUTO_COMPACT_SIZE && (double) spareSize > ((double) liveSize) * MASTER_FILE_AUTO_COMPACT_PERCENT;
         }
 
-        private void rewriteFully(@NotNull Path mainFile) throws IOException {
+        private void rewriteFully(@NotNull Path mainFile, boolean noSwapLock) throws IOException {
             final boolean wal = this.appendChannel != null;
             final Path tmpFilePath = Path.of(mainFile + ".tmp");
             final long[] syncedBucketEpochs = new long[BUCKET_COUNT];
@@ -1099,7 +1137,7 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
 
                     for (int bucketIndex = 0; bucketIndex < BUCKET_COUNT; bucketIndex++) {
                         if (BufferedLinearRegionFile.this.isBucketDirty(bucketIndex)) {
-                            final BucketRecord record = this.buildBucketRecord(bucketIndex);
+                            final BucketRecord record = this.buildBucketRecord(bucketIndex, noSwapLock);
 
                             if (record.payload() != null) {
                                 final int recordSize = record.payload().remaining();
@@ -1176,7 +1214,7 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
             this.markBucketsSynced(syncedBucketEpochs);
         }
 
-        private void appendDirtyBuckets() throws IOException {
+        private void appendDirtyBuckets(boolean noSwapLock) throws IOException {
             final FileChannel channel = this.appendChannel;
             final long[] syncedBucketEpochs = new long[BUCKET_COUNT];
             final long[] newPositionTable = this.positionTable.clone();
@@ -1191,7 +1229,7 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
                     continue;
                 }
 
-                final BucketRecord record = this.buildBucketRecord(bucketIndex);
+                final BucketRecord record = this.buildBucketRecord(bucketIndex, noSwapLock);
                 final ByteBuffer payload = record.payload();
 
                 if (payload != null) {
@@ -1244,7 +1282,7 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
         // sectors that sit back to back in the swap file coalesced into single preads);
         // LZ4 decompression and zstd compression both run outside any lock so writers
         // are only blocked while the raw bytes are copied
-        private @NotNull BucketRecord buildBucketRecord(int bucketIndex) throws IOException {
+        private @NotNull BucketRecord buildBucketRecord(int bucketIndex, final boolean noLock) throws IOException {
             final int baseChunkIndex = bucketIndex << BUCKET_SHIFT;
             final ByteBuffer[] rawSectors = new ByteBuffer[BUCKET_SIZE]; // slices into run buffers, null = no data
 
@@ -1255,7 +1293,7 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
 
             final long epoch;
 
-            BufferedLinearRegionFile.this.regionObjectLock.readLock().lock();
+            if (!noLock) BufferedLinearRegionFile.this.regionObjectLock.readLock().lock();
             try {
                 // the epoch is taken before the data: writes completing afterwards bump
                 // it further, so they simply get picked up by the next sync round
@@ -1300,7 +1338,7 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
                     i = j + 1;
                 }
             } finally {
-                BufferedLinearRegionFile.this.regionObjectLock.readLock().unlock();
+                if (!noLock) BufferedLinearRegionFile.this.regionObjectLock.readLock().unlock();
             }
 
             // exact size budget up front: 4 bytes size prefix per chunk slot plus
@@ -1449,15 +1487,20 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
             return lens.flip();
         }
 
-        public void close() throws IOException {
-            this.masterFileLock.writeLock().lock();
-            try {
-                if (this.appendChannel != null) {
-                    this.appendChannel.close();
-                    this.appendChannel = null;
-                }
-            } finally {
-                this.masterFileLock.writeLock().unlock();
+        public boolean tryCloseNoLock() throws IOException {
+            if (this.appendChannel != null && this.appendChannel.isOpen()) {
+                this.appendChannel.close();
+                this.appendChannel = null;
+                return true;
+            }
+
+            return false;
+        }
+
+        public void closeNoLock() throws IOException {
+            if (this.appendChannel != null) {
+                this.appendChannel.close();
+                this.appendChannel = null;
             }
         }
 
@@ -1466,6 +1509,8 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
 
             this.masterFileLock.readLock().lock();
             try {
+                BufferedLinearRegionFile.this.guardAgainstClosed();
+
                 final ByteBuffer decompressed;
 
                 if (this.appendChannel != null) {
@@ -1782,7 +1827,7 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
             // old parsed, remove the original file, and we will recreate it as we sync
             if (oldParsed) {
                 // immediately do sync operation
-                BufferedLinearRegionFile.this.syncToMasterFile(true, true);
+                BufferedLinearRegionFile.this.syncToMasterFile(true, true, false, false);
                 return;
             }
 
