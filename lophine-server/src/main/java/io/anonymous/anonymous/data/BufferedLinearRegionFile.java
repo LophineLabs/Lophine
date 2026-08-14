@@ -467,8 +467,8 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
                     // later, and the not-yet-synced swap data is not dropped on the floor
                     // since we hold the write lock and any read/write/sync ops is currently blocked all along the close logic, acquiring the locks inside sync is a disaster
                     try {
-                        this.syncToMasterFile(true, true,  true, true);
-                    }catch (IOException ex) {
+                        this.syncToMasterFile(true, true, true, true);
+                    } catch (IOException ex) {
                         failure = ex;
                     }
 
@@ -477,13 +477,15 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
 
                         this.swapFileChannel.close();
                     } catch (IOException ex) {
-                        if (failure == null) failure = ex; else failure.addSuppressed(ex);
+                        if (failure == null) failure = ex;
+                        else failure.addSuppressed(ex);
                     }
 
                     try {
                         this.masterFileParser.closeNoLock();
                     } catch (IOException e) {
-                        if (failure == null) failure = e; else failure.addSuppressed(e);
+                        if (failure == null) failure = e;
+                        else failure.addSuppressed(e);
                     }
 
                     // finalize
@@ -492,10 +494,10 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
                     if (failure != null) {
                         throw failure;
                     }
-                }finally {
+                } finally {
                     this.regionObjectLock.writeLock().unlock();
                 }
-            }finally {
+            } finally {
                 this.masterFileParser.masterFileLock.writeLock().unlock();
             }
         }

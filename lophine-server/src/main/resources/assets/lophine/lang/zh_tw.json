@@ -1,6 +1,7 @@
 {
   "lophine.experiment.command.function_command_enabled.comment": "允許使用 function 指令",
   "lophine.experiment.command.save_all_command.enabled.comment": "允許使用 save-all 指令",
+  "luminol.function.region_format.blinear_compression_level.comment": "決定區域檔案的壓縮等級（僅適用於 B_LINEAR）",
   "lophine.experiment.command.save_all_command.log_all_process.comment": "將 save-all 指令的完整過程記錄到主控台",
   "lophine.experiment.command.save_all_command.save_all_command_timeout.comment": "區塊回報保存逾時前，允許的最大保存秒數。",
   "lophine.experiment.command.scoreboard_command_enabled.comment": "允許使用 scoreboard 指令",
