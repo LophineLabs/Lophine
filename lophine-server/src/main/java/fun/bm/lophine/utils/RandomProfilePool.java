@@ -5,9 +5,9 @@ import com.google.common.cache.CacheBuilder;
 import com.mojang.authlib.GameProfile;
 import fun.bm.lophine.config.modules.function.ReplayAPIConfig;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 public class RandomProfilePool {
     private static int lastUsedId = 0;
@@ -19,7 +19,7 @@ public class RandomProfilePool {
         if (ReplayAPIConfig.enableCache) {
             cache = CacheBuilder.newBuilder()
                     .maximumSize(ReplayAPIConfig.cachePhotographerSize)
-                    .expireAfterWrite(ReplayAPIConfig.cachePhotographerTime, TimeUnit.SECONDS)
+                    .expireAfterWrite(Duration.ofSeconds(ReplayAPIConfig.cachePhotographerTime))
                     .build();
         }
     }

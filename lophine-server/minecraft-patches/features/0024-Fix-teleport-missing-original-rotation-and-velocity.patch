@@ -17,21 +17,6 @@ index 2a64a5b2cf049661fe3f5a22ddfa39979624f5ec..335e9775e0d9a61f0e9641aba691a3bd
                              cause, teleportFlags, onComplete
                          );
                      },
-diff --git a/net/minecraft/server/commands/TeleportCommand.java b/net/minecraft/server/commands/TeleportCommand.java
-index 13d7965fd4f99f0848b080349df41f8b1c31a19b..5b83f2edd6afe94c28bf491afab737e92fb89dc0 100644
---- a/net/minecraft/server/commands/TeleportCommand.java
-+++ b/net/minecraft/server/commands/TeleportCommand.java
-@@ -248,8 +248,8 @@ public class TeleportCommand {
-         // Folia start - region threading
-         if (true) {
-             Vec3 posFinal = new Vec3(x, y, z);
--            Float yawFinal = Float.valueOf(newYRot);
--            Float pitchFinal = Float.valueOf(newXRot);
-+            Float yawFinal = Float.valueOf(newYRot + victim.getYRot()); // Camellia - Fix teleport missing original rotation and velocity
-+            Float pitchFinal = Float.valueOf(newXRot + victim.getXRot()); // Camellia - Fix teleport missing original rotation and velocity
-             victim.getBukkitEntity().taskScheduler.schedule((Entity nmsEntity) -> {
-                 nmsEntity.stopRiding();
-                 nmsEntity.teleportAsync(
 diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 index fb00f70505a6c548cd1311d7ea55c6a501e814e3..4df9a3356cfdee52761db47694e59779976840db 100644
 --- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
