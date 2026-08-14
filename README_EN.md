@@ -25,7 +25,7 @@
 - 🔧 **Configurable Vanilla Features** - Flexibly adjust game mechanics to suit different server needs
 - 📊 **Tpsbar Support** - Real-time TPS status display
 - 🐛 **Folia Bug Fixes** - Targeted fixes for known Folia issues
-- 💾 **Multiple World Format Support** - Support for linear and b_linear (linear reimplementation) world formats
+- 💾 **Multiple World Format Support** - Support for b_linear (linear reimplementation) world formats
 - 🔬 **Redstone Enhancement** - More redstone functionality on Folia (use Fabric for complete redstone features)
 - 🛠️ **More Useful Functions** - Continuously adding useful server features
 
