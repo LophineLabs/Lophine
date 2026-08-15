@@ -123,10 +123,10 @@ java {
 
 我們歡迎社群貢獻！詳細的貢獻指南請參考：
 
-- 📖 [貢獻指南（English）](./docs/CONTRIBUTING_EN.md)
-- 📖 [貢獻指南（簡體中文）](./docs/CONTRIBUTING.md)
 - 📖 [貢獻指南（繁體中文）](./docs/CONTRIBUTING_ZH_TW.md)
-- 📖 [貢獻指南（日本語）](./docs/CONTRIBUTING_JP.md)
+- 📖 [Contributing Guide (English)](./docs/CONTRIBUTING_EN.md)
+- 📖 [贡献指南 (简体中文)](./docs/CONTRIBUTING.md)
+- 📖 [貢献ガイド（日本語）](./docs/CONTRIBUTING_JP.md)
 
 ## 📊 專案統計
 

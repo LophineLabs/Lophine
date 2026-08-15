@@ -122,8 +122,10 @@ java {
 
 我们欢迎社区贡献！详细的贡献指南请查看：
 
-- 📖 [贡献指南 (中文)](./docs/CONTRIBUTING.md)
+- 📖 [贡献指南 (简体中文)](./docs/CONTRIBUTING.md)
 - 📖 [Contributing Guide (English)](./docs/CONTRIBUTING_EN.md)
+- 📖 [貢獻指南（繁體中文）](./docs/CONTRIBUTING_ZH_TW.md)
+- 📖 [貢献ガイド（日本語）](./docs/CONTRIBUTING_JP.md)
 
 ## 📊 项目统计
 

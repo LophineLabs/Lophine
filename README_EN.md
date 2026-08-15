@@ -124,7 +124,9 @@ When you encounter any issues, please ask us and we'll do our best to resolve th
 We welcome community contributions! For detailed contribution guidelines, please see:
 
 - 📖 [Contributing Guide (English)](./docs/CONTRIBUTING_EN.md)
-- 📖 [贡献指南 (中文)](./docs/CONTRIBUTING.md)
+- 📖 [贡献指南 (简体中文)](./docs/CONTRIBUTING.md)
+- 📖 [貢獻指南（繁體中文）](./docs/CONTRIBUTING_ZH_TW.md)
+- 📖 [貢献ガイド（日本語）](./docs/CONTRIBUTING_JP.md)
 
 ## 📊 Project Statistics
 
