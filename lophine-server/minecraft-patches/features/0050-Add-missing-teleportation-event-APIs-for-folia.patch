@@ -19,10 +19,10 @@ index 21733beb07c0df3cf6872ce84a07e85dfe5ee3e9..055911982349bab23ba8d6c88f06c014
              );
          });
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index dc2a7aa39f6aa9ec6b5cfbce3bfec71e9c458dcb..23dc3a2c0c124d842cf23e35b4a5d079d5d523da 100644
+index de63892902a9d65e01cdabcb2e9e5e8881e160be..e6490dfafd047a579a883e6c987cf17b67aea14a 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -4555,6 +4555,31 @@ public abstract class Entity
+@@ -4556,6 +4556,31 @@ public abstract class Entity
          // Luminol end
  
          // TODO any events that can modify go HERE
@@ -54,7 +54,7 @@ index dc2a7aa39f6aa9ec6b5cfbce3bfec71e9c458dcb..23dc3a2c0c124d842cf23e35b4a5d079
  
          // check for same region
          if (destination == this.level()
-@@ -4673,6 +4698,17 @@ public abstract class Entity
+@@ -4675,6 +4700,17 @@ public abstract class Entity
              case END: {
                  if (destination.getTypeKey() == net.minecraft.world.level.dimension.LevelStem.END) {
                      BlockPos targetPos = ServerLevel.END_SPAWN_POINT;
@@ -72,7 +72,7 @@ index dc2a7aa39f6aa9ec6b5cfbce3bfec71e9c458dcb..23dc3a2c0c124d842cf23e35b4a5d079
                      // need to load chunks so we can create the platform
                      destination.moonrise$loadChunksAsync(
                          targetPos, 16, // load 16 blocks to be safe from block physics
-@@ -4700,6 +4736,17 @@ public abstract class Entity
+@@ -4702,6 +4738,17 @@ public abstract class Entity
                      );
                  } else {
                      BlockPos spawnPos = destination.getRespawnData().pos();
@@ -90,7 +90,7 @@ index dc2a7aa39f6aa9ec6b5cfbce3bfec71e9c458dcb..23dc3a2c0c124d842cf23e35b4a5d079
                      // need to load chunk for heightmap
                      destination.moonrise$loadChunksAsync(
                          spawnPos, 0,
-@@ -4757,7 +4804,17 @@ public abstract class Entity
+@@ -4759,7 +4806,17 @@ public abstract class Entity
                  WorldBorder destinationBorder = destination.getWorldBorder();
                  double dimensionScale = net.minecraft.world.level.dimension.DimensionType.getTeleportationScale(origin.dimensionType(), destination.dimensionType());
                  BlockPos targetPos = destination.getWorldBorder().clampToBounds(this.getX() * dimensionScale, this.getY(), this.getZ() * dimensionScale);
@@ -108,7 +108,7 @@ index dc2a7aa39f6aa9ec6b5cfbce3bfec71e9c458dcb..23dc3a2c0c124d842cf23e35b4a5d079
                  ca.spottedleaf.concurrentutil.completable.CallbackCompletable<BlockUtil.FoundRectangle> portalFound
                      = new ca.spottedleaf.concurrentutil.completable.CallbackCompletable<>();
  
-@@ -4894,6 +4951,15 @@ public abstract class Entity
+@@ -4896,6 +4953,15 @@ public abstract class Entity
          if (!this.canPortalAsync(destination, takePassengers)) {
              return false;
          }

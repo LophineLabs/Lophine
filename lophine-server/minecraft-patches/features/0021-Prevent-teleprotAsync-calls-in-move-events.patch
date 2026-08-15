@@ -29,10 +29,10 @@ index c86b1fd5e200c478d178be32791b6e8c960d47e2..9be6d486082d344fb91fd74207eee83c
                                          // If the event is cancelled we move the player back to their old location.
                                          if (event.isCancelled()) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index bb02a5d2e752c7a3f0aba9ff115f3df61b9e141a..33b6f6c0316af44e47370a55e3515df4e3b706b6 100644
+index 07b2d9ab0dd5bee9852fede2194dc4f3571d258e..5e5036ccc94160f45a0215a9191d5b980f87304c 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -4478,12 +4478,25 @@ public abstract class Entity
+@@ -4479,12 +4479,25 @@ public abstract class Entity
              teleportTarget.cause(), teleportFlags, teleportComplete
          );
      }

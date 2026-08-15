@@ -7,6 +7,8 @@
   "lophine.experiment.command.trigger_command_enabled.comment": "Allow to use trigger command",
   "lophine.experiment.entity_damage_source_trace.enabled.comment": "Allow trace damage source cross different Region Scheduler.",
   "lophine.experiment.global_entities_counter.version.comment": "DISABLED\nDEFAULT_SYNC: Enable global entities counter origin version with sync counter module.\nDEFAULT_ASYNC: Enable global entities counter origin version with async counter module.\nPRECISE: Enable precise mob cap calculation with incremental counting. Replaces the periodic full-scan with event-driven real-time updates.\n\nYou need to set per-player-mob-spawns to false on paper-world-defaults.yml or paper-world.yml",
+  "lophine.fixes.teleport.enable_delay_compensation.comment": "Whether to enable delay compensation after teleportation, as Folia's teleportation mechanism causes teleportation to be delayed by at least 1 tick",
+  "lophine.fixes.teleport.max_delay_compensation_ticks.comment": "Here you can adjust the maximum value of delay compensation, with the unit being ticks",
   "lophine.fixes.update-suppression-crash-fix.enabled.comment": "Should crash caused by update suppression be prevented?",
   "lophine.fixes.vanilla-like-experience.enabled.comment": "Restore a more vanilla-like technical gameplay experience by bypassing some Paper safety and behavior changes.",
   "lophine.function.container_expansion.barrel_rows.comment": "range: 1~6",

@@ -315,7 +315,7 @@ index 6bca982627cf6a865820df75be2814a7289f98dc..b6f752a134ac7192375053d8bf93e39c
              }
          }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index f1cf0deebe8a0df6509d647e7590126ee02444b8..3e4b2f1fbe6864e40f1978c70d41773cde09fd17 100644
+index 003c75486d64e36f4e4973c9ef6f0421eb5b87f6..64e728df21674de1773f39b3b1c857750e138a27 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -243,6 +243,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -334,7 +334,7 @@ index f1cf0deebe8a0df6509d647e7590126ee02444b8..3e4b2f1fbe6864e40f1978c70d41773c
          this.updateTickData(); // Folia - region threading - make sure it is initialised before ticked
      }
  
-@@ -2596,6 +2598,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2600,6 +2602,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          return this.players;
      }
  
@@ -347,7 +347,7 @@ index f1cf0deebe8a0df6509d647e7590126ee02444b8..3e4b2f1fbe6864e40f1978c70d41773c
      @Override
      public void updatePOIOnBlockStateChange(final BlockPos pos, final BlockState oldState, final BlockState newState) {
          Optional<Holder<PoiType>> oldType = PoiTypes.forState(oldState);
-@@ -3069,6 +3077,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3073,6 +3081,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              // ServerLevel.this.getChunkSource().addEntity(entity); // Paper - ignore and warn about illegal addEntity calls instead of crashing server; moved down below valid=true
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.add(player);
@@ -359,7 +359,7 @@ index f1cf0deebe8a0df6509d647e7590126ee02444b8..3e4b2f1fbe6864e40f1978c70d41773c
                  if (player.isReceivingWaypoints()) {
                      ServerLevel.this.getWaypointManager().addPlayer(player);
                  }
-@@ -3150,6 +3163,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3154,6 +3167,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              ServerLevel.this.getChunkSource().removeEntity(entity);
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.remove(player);
@@ -570,10 +570,10 @@ index 71988e11c512fcb391f845a1905411ea240479fa..a7a687c7a90bce1ad20d32241f0b4316
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 939ad903434aa3766a6bf647743086693b8c3d19..6530baa206a2f2f9b8ca378a2c72928d79f23601 100644
+index 5a4cf19363a7efee3f1719e871fe5cb774fe2121..3b499520af15f71a596ee4d1e988eb83f26824b0 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -1264,7 +1264,7 @@ public abstract class Entity
+@@ -1265,7 +1265,7 @@ public abstract class Entity
  
              BlockPos effectPos = this.getOnPosLegacy();
              BlockState effectState = this.level().getBlockState(effectPos);
@@ -582,7 +582,7 @@ index 939ad903434aa3766a6bf647743086693b8c3d19..6530baa206a2f2f9b8ca378a2c72928d
                  this.checkFallDamage(movement.y, this.onGround(), effectState, effectPos);
              }
  
-@@ -1665,7 +1665,7 @@ public abstract class Entity
+@@ -1666,7 +1666,7 @@ public abstract class Entity
          return colliders.isEmpty() ? maxDistance : -Shapes.collide(Direction.Axis.Y, aabb, colliders, -maxDistance);
      }
  
