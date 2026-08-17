@@ -56,11 +56,6 @@ $:
             - ls -lah lophine-server/build/libs/
             - find lophine-server/build/libs/ -maxdepth 1 -type f -name "*-paperclip-*.jar" -print
 
-        - name: Upload CI Artifact
-          image: cnbcool/attachments:latest
-          settings:
-            attachments:
-              - "lophine-server/build/libs/*-paperclip-*.jar"
 
   tag_push:
     - name: Lophine Release
@@ -71,7 +66,6 @@ $:
           - /root/.gradle:copy-on-write
 
       stages:
-
         - name: Prepare Build Environment
           script:
             - |
@@ -135,11 +129,15 @@ $:
           type: git:release
           options:
             overlying: false
+            tag: $CNB_BRANCH
             title: "Lophine $CNB_BRANCH - $CNB_COMMIT_SHORT"
             descriptionFromFile: CNB_RELEASE_NOTES.md
+            latest: true
 
         - name: Upload Paperclip Jar to CNB Release
           image: cnbcool/attachments:latest
           settings:
+            type: UPLOAD
+            tag: $CNB_BRANCH
             attachments:
               - "lophine-server/build/libs/*-paperclip-*.jar"
