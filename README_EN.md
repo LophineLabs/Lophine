@@ -1,43 +1,49 @@
 <div align="center">
   <img src="./public/image/lophine/lophine3.png" alt="Lophine Logo" width="300">
-  
-  # Lophine
-  
-  *Lophine is a Folia fork with many useful optimizations and configurable vanilla features, aims to provide more function for survival-usable circuit on folia (Please note that Fabric should be used for complete survival-usable)*
-  
-  ![Created At](https://img.shields.io/github/created-at/LophineLabs/Lophine?style=for-the-badge&color=blue)
-  [![License](https://img.shields.io/github/license/LophineLabs/Lophine?style=for-the-badge&color=green)](LICENSE.md)
-  [![Issues](https://img.shields.io/github/issues/LophineLabs/Lophine?style=for-the-badge&color=orange)](https://github.com/LophineLabs/Lophine/issues)
-  
-  ![Commit Activity](https://img.shields.io/github/commit-activity/w/LophineLabs/Lophine?style=for-the-badge&color=purple)
-  ![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/LophineLabs/Lophine?style=for-the-badge&color=yellow)
-  ![GitHub all releases](https://img.shields.io/github/downloads/LophineLabs/Lophine/total?style=for-the-badge&color=red)
-  
-  ![Repo contributors](https://img.shields.io/github/contributors/LophineLabs/Lophine?style=for-the-badge&color=brightgreen)
-  
-  **English** | [中文（简体）](./README.md) | [中文（繁體）](./README_ZH_TW.md)
+
+# Lophine
+
+*Lophine is a Folia fork with many useful optimizations and configurable vanilla features, aims to provide more function for survival-usable circuit on folia (Please note that Fabric should be used for complete survival-usable)*
+
+![Created At](https://img.shields.io/github/created-at/LophineLabs/Lophine?style=for-the-badge&color=blue)
+[![License](https://img.shields.io/github/license/LophineLabs/Lophine?style=for-the-badge&color=green)](LICENSE.md)
+[![Issues](https://img.shields.io/github/issues/LophineLabs/Lophine?style=for-the-badge&color=orange)](https://github.com/LophineLabs/Lophine/issues)
+
+![Commit Activity](https://img.shields.io/github/commit-activity/w/LophineLabs/Lophine?style=for-the-badge&color=purple)
+![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/LophineLabs/Lophine?style=for-the-badge&color=yellow)
+![GitHub all releases](https://img.shields.io/github/downloads/LophineLabs/Lophine/total?style=for-the-badge&color=red)
+
+![Repo contributors](https://img.shields.io/github/contributors/LophineLabs/Lophine?style=for-the-badge&color=brightgreen)
+
+**English** | [中文（简体）](./README.md) | [中文（繁體）](./README_ZH_TW.md)
 </div>
 
 ---
 
+> **Source of Truth & Mirror:** GitHub is Lophine's official upstream and sole authoritative source. [CNB](https://cnb.cool/LophineLabs/Lophine) automatically mirrors GitHub and independently builds and publishes CNB Releases from the corresponding commits for mainland China users. Issues, Pull Requests, and Discussions remain on GitHub.
+
 ## ✨ Core Features
 
-- 🔧 **Configurable Vanilla Features** - Flexibly adjust game mechanics to suit different server needs
-- 📊 **Tpsbar Support** - Real-time TPS status display
-- 🐛 **Folia Bug Fixes** - Targeted fixes for known Folia issues
-- 💾 **Multiple World Format Support** - Support for b_linear (linear reimplementation) world formats
-- 🔬 **Redstone Enhancement** - More redstone functionality on Folia (use Fabric for complete redstone features)
-- 🛠️ **More Useful Functions** - Continuously adding useful server features
+- **Configurable Vanilla Features** - Flexibly adjust game mechanics to suit different server needs
+- **Tpsbar Support** - Real-time TPS status display
+- **Folia Bug Fixes** - Targeted fixes for known Folia issues
+- **Multiple World Format Support** - Support for b_linear (linear reimplementation) world formats
+- **Redstone Enhancement** - More redstone functionality on Folia (use Fabric for complete redstone features)
+- 🛠**More Useful Functions** - Continuously adding useful server features
 
 ### Additional Launch Parameters
 
- - morninggloryclip.useMojangSource - Use Mojang's source for Minecraft Server
- - morninggloryclip.enable.mixin - Enable mixin support for Leaves Plugin
+- morninggloryclip.useMojangSource - Use Mojang's source for Minecraft Server
+- morninggloryclip.enable.mixin - Enable mixin support for Leaves Plugin
 
 ## 📥 Download
 
 ### Stable Releases
-All release versions can be found on the [Releases](https://github.com/LophineLabs/Lophine/releases) page.
+
+- Mainland China (CNB mirror): [CNB Releases](https://cnb.cool/LophineLabs/Lophine/-/releases) · [CNB mirror repository](https://cnb.cool/LophineLabs/Lophine)
+- Global / Official (GitHub): [GitHub Releases](https://github.com/LophineLabs/Lophine/releases) · [GitHub official repository](https://github.com/LophineLabs/Lophine)
+
+Corresponding CNB and GitHub versions are based on the same Git commit. Mainland China users may prefer CNB for downloads or cloning; code contributions and issue reports should go to GitHub.
 
 ### Development Builds
 If you want to experience the latest features, you can build it yourself following the steps below.
@@ -61,13 +67,13 @@ After building, you can find the generated JAR file in the `lophine-server/build
 
 ```kotlin
 repositories {
-    maven {
-        url = "https://repo.bacteriawa.com/repository/maven-public/"
-    }
+  maven {
+    url = "https://repo.bacteriawa.com/repository/maven-public/"
+  }
 }
 
 dependencies {
-    compileOnly("fun.bm.lophine:lophine-api:26.2.build.+")
+  compileOnly("fun.bm.lophine:lophine-api:26.2.build.+")
 }
 
 java {
@@ -79,19 +85,19 @@ java {
 
 ```xml
 <repositories>
-    <repository>
-        <id>repository</id>
-        <url>https://repo.bacteriawa.com/repository/maven-public/</url>
-    </repository>
+  <repository>
+    <id>repository</id>
+    <url>https://repo.bacteriawa.com/repository/maven-public/</url>
+  </repository>
 </repositories>
 
 <dependencies>
-    <dependency>
-        <groupId>fun.bm.lophine</groupId>
-        <artifactId>lophine-api</artifactId>
-        <version>[26.2.build,)</version>
-        <scope>provided</scope>
-    </dependency>
+<dependency>
+  <groupId>fun.bm.lophine</groupId>
+  <artifactId>lophine-api</artifactId>
+  <version>[26.2.build,)</version>
+  <scope>provided</scope>
+</dependency>
 </dependencies>
 ```
 
@@ -106,27 +112,27 @@ java {
 
 ### Get Help
 
-- 📋 [Submit Issues](https://github.com/LophineLabs/Lophine/issues)
-- 💬 [GitHub Discussions](https://github.com/LophineLabs/Lophine/discussions)
-- 📖 [Project Documentation](./docs/)
+- [Submit Issues](https://github.com/LophineLabs/Lophine/issues)
+- [GitHub Discussions](https://github.com/LophineLabs/Lophine/discussions)
+- [Project Documentation](./docs/)
 
 ## 🐛 Bug Reports
 
 When you encounter any issues, please ask us and we'll do our best to resolve them. Please remember to:
 
-- 📝 **Describe the problem clearly** - Provide detailed information about the specific issue
-- 📋 **Provide complete logs** - Include error logs and relevant configuration information
-- 🔍 **Environment details** - Specify server version, plugin list, and other environment details
-- 🔄 **Reproduction steps** - If possible, provide specific steps to reproduce the issue
+- **Describe the problem clearly** - Provide detailed information about the specific issue
+- **Provide complete logs** - Include error logs and relevant configuration information
+- **Environment details** - Specify server version, plugin list, and other environment details
+- **Reproduction steps** - If possible, provide specific steps to reproduce the issue
 
 ## 🤝 Contributing
 
 We welcome community contributions! For detailed contribution guidelines, please see:
 
-- 📖 [Contributing Guide (English)](./docs/CONTRIBUTING_EN.md)
-- 📖 [贡献指南 (简体中文)](./docs/CONTRIBUTING.md)
-- 📖 [貢獻指南（繁體中文）](./docs/CONTRIBUTING_ZH_TW.md)
-- 📖 [貢献ガイド（日本語）](./docs/CONTRIBUTING_JP.md)
+- [Contributing Guide (English)](./docs/CONTRIBUTING_EN.md)
+- [贡献指南 (简体中文)](./docs/CONTRIBUTING.md)
+- [貢獻指南（繁體中文）](./docs/CONTRIBUTING_ZH_TW.md)
+- [貢献ガイド（日本語）](./docs/CONTRIBUTING_JP.md)
 
 ## 📊 Project Statistics
 

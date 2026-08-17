@@ -10,7 +10,7 @@ mcversion=$(prop mcVersion)
 release=$(prop release)
 pushRepo=$(prop pushRepo)
 release_tag="$mcversion-$commitid"
-jarName="$project_id-$mcversion-paperclip.jar"
+jarName="$project_id-$mcversion.jar"
 jarName_dir="lophine-server/build/libs/$jarName"
 
 flag_push_repo=false
