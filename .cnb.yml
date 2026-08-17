@@ -1,0 +1,177 @@
+# ============================================================
+# Lophine CNB CI
+#
+# GitHub = Source of Truth
+# CNB    = China Mirror + Independent Build + China Release
+# ============================================================
+$:
+  push:
+    - name: Lophine CI
+
+      runner:
+        tags: cnb:arch:amd64
+        cpus: 16
+
+      docker:
+        image: azul/zulu-openjdk:25-latest
+        volumes:
+          - /root/.gradle:copy-on-write
+
+      stages:
+
+        - name: Prepare Build Environment
+          script:
+            - |
+              if ! command -v git >/dev/null 2>&1; then
+                apt-get update
+                apt-get install -y --no-install-recommends git ca-certificates
+                rm -rf /var/lib/apt/lists/*
+              fi
+            - chmod +x gradlew
+
+        # GitHub 使用 github.run_number。
+        # CNB 无法仅从 Git 镜像获得 GitHub run_number，
+        # 因此使用当前 Git 历史提交数量作为稳定的纯数字 BUILD_NUMBER。
+        - name: Set Build Number
+          script: echo -n "$(git rev-list --count HEAD)"
+          exports:
+            stdout: BUILD_NUMBER
+
+        - name: Environment Info
+          script:
+            - java -version
+            - ./gradlew --version
+            - echo "BUILD_NUMBER=$BUILD_NUMBER"
+            - echo "CNB Branch=$CNB_BRANCH"
+            - echo "CNB Commit=$CNB_COMMIT"
+            - git rev-parse HEAD
+            - git log -1 --oneline
+
+        - name: Configure Git User Details
+          script:
+            - git config --global user.email "ci@lophinelabs.com"
+            - git config --global user.name "LophinelabsCI"
+
+        - name: Apply All Patches
+          script:
+            - ./gradlew --refresh-dependencies applyAllPatches
+
+        - name: Build Paperclip Jar
+          script:
+            - ./gradlew --refresh-dependencies createPaperclipJar
+
+        - name: Show Build Artifacts
+          script:
+            - ls -lah lophine-server/build/libs/
+            - find lophine-server/build/libs/ -maxdepth 1 -type f -name "*-paperclip-*.jar" -print
+
+        # 相当于 GitHub actions/upload-artifact
+        # 普通 push 时作为当前 Commit 的附件。
+        - name: Upload CI Artifact
+          image: cnbcool/attachments:latest
+          settings:
+            attachments:
+              - "lophine-server/build/libs/*-paperclip-*.jar"
+
+  # ==========================================================
+  # Tag Push
+  #
+  # GitHub Actions:
+  #   Build -> GitHub Release -> 创建 Tag
+  #
+  # git-sync:
+  #   Tag -> CNB
+  #
+  # CNB:
+  #   Tag Build -> CNB Release -> JAR
+  # ==========================================================
+  tag_push:
+    - name: Lophine Release
+
+      runner:
+        tags: cnb:arch:amd64
+        cpus: 16
+
+      docker:
+        image: azul/zulu-openjdk:25-latest
+        volumes:
+          - /root/.gradle:copy-on-write
+
+      stages:
+
+        - name: Prepare Build Environment
+          script:
+            - |
+              if ! command -v git >/dev/null 2>&1; then
+                apt-get update
+                apt-get install -y --no-install-recommends git ca-certificates
+                rm -rf /var/lib/apt/lists/*
+              fi
+            - chmod +x gradlew
+
+        - name: Set Build Number
+          script: echo -n "$(git rev-list --count HEAD)"
+          exports:
+            stdout: BUILD_NUMBER
+
+        - name: Environment Info
+          script:
+            - java -version
+            - ./gradlew --version
+            - echo "BUILD_NUMBER=$BUILD_NUMBER"
+            - echo "CNB Tag=$CNB_BRANCH"
+            - echo "CNB Commit=$CNB_COMMIT"
+            - git rev-parse HEAD
+            - git log -1 --oneline
+
+        - name: Configure Git User Details
+          script:
+            - git config --global user.email "ci@lophinelabs.com"
+            - git config --global user.name "LophinelabsCI"
+
+        - name: Apply All Patches
+          script:
+            - ./gradlew --refresh-dependencies applyAllPatches
+
+        - name: Build Paperclip Jar
+          script:
+            - ./gradlew --refresh-dependencies createPaperclipJar
+
+        - name: Show Release Artifact
+          script:
+            - ls -lah lophine-server/build/libs/
+            - find lophine-server/build/libs/ -maxdepth 1 -type f -name "*-paperclip-*.jar" -print
+
+        - name: Generate Release Notes
+          script: |
+            cat > CNB_RELEASE_NOTES.md <<EOF
+            📦 Tag: \`$CNB_BRANCH\` | Commit: \`$CNB_COMMIT_SHORT\`
+
+            This release is automatically compiled by CNB.
+
+            ### Source
+
+            GitHub: LophineLabs/Lophine
+
+            ### Commit Message
+
+            $CNB_COMMIT_MESSAGE
+            EOF
+
+        # 创建 CNB Release
+        # tag_push 事件下无需指定 tag，
+        # CNB 自动采用触发此次流水线的 Tag。
+        - name: Create CNB Release
+          type: git:release
+          options:
+            overlying: false
+            title: "Lophine $CNB_BRANCH - $CNB_COMMIT_SHORT"
+            descriptionFromFile: CNB_RELEASE_NOTES.md
+
+        # tag_push 下 attachments 会自动操作
+        # 当前 Tag 对应的 CNB Release。
+        - name: Upload Paperclip Jar to CNB Release
+          image: cnbcool/attachments:latest
+          settings:
+            attachments:
+              - "lophine-server/build/libs/*-paperclip-*.jar"
