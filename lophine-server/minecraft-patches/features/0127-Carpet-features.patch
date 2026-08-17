@@ -1094,7 +1094,7 @@ index c27fc92d6ff9dd7e07a61513601ef73ff16cf842..e5915893a06e332992c34b8ac5115955
 +    // Lophine end - Carpet features
  }
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index 9f538bfb64b62d4953b435a14174723099f2202b..ce4c862ba67af49d06093e59e770a93b9768f3cb 100644
+index e36078c6cd89af980da8f7dd6961e8975f5a7035..feb24d6cb6fac68aa88296f899ff9541c34fb93e 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -241,7 +241,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
@@ -1182,7 +1182,7 @@ index 972b953a579120c1c05f2dc9bfc2b408d6071d26..a60bb8af6b6aa356193befa9d7e9cdfc
              return function != null ? function.evaluate(this.asState(), pos) : Vec3.ZERO;
          }
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index a4d5bf1773a9ce8184a940384696f0d38690a421..5b306cc2d4a3cdc3ce08595dc63975c87fca9d3f 100644
+index 2e98f6458132ccaea2da808793bbacd792b6cd68..0182073c19e0260c495b754ecfb719f746590529 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -425,10 +425,10 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot

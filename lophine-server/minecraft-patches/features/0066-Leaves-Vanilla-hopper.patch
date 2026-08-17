@@ -3,13 +3,15 @@ From: MrHua269 <mrhua269@gmail.com>
 Date: Sat, 18 Apr 2026 12:04:49 +0800
 Subject: [PATCH] Leaves Vanilla Hopper
 
-A part from leaves
+Co-Authored-By: Creeam <102713261+HaHaWTH@users.noreply.github.com>
 
-Origin patch link: https://github.com/LeavesMC/Leaves/blob/master/leaves-server/minecraft-patches/features/0092-Vanilla-hopper.patch
-Origin license: https://github.com/LeavesMC/Leaves/blob/master/LICENSE.md
+Original license: GPL-3.0-only
+Original project: https://github.com/LeavesMC/Leaves
+
+This is a temporary solution designed to attempt to restore the vanilla behavior of the funnel while preserving optimizations as much as possible. It should ultimately be replaced by the optimization solution provided by lithium.
 
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index a858cb658af70f07614fa1f4d9e8a3435d5c161f..95f0b3276137cb9d1fc296e97cc25a08a5200c95 100644
+index a858cb658af70f07614fa1f4d9e8a3435d5c161f..b418d11d5bff749c3eaf1b34c5727bfa8c295dbd 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -281,36 +281,67 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
@@ -18,7 +20,25 @@ index a858cb658af70f07614fa1f4d9e8a3435d5c161f..95f0b3276137cb9d1fc296e97cc25a08
          final int movedItemCount = Math.min(level.spigotConfig.hopperAmount, originalItemCount);
 -        container.setChanged(); // original logic always marks source inv as changed even if no move happens.
 -        movedItem.setCount(movedItemCount);
--
++        // Leaves start - Vanilla hopper
++        if (movedItemCount == 1) {
++            movedItem.setCount(movedItemCount);
++            container.setChanged();
++            if (!worldData.skipPullModeEventFire) {
++                movedItem = callPullMoveEvent(hopper, container, movedItem);
++                if (movedItem == null) { // cancelled
++                    origItemStack.setCount(originalItemCount);
++                    // Drastically improve performance by returning true.
++                    // No plugin could have relied on the behavior of false as the other call
++                    // site for IMIE did not exhibit the same behavior
++                    return true;
++                }
++            }
++            final boolean removeOriginalItem = movedItem == origItemStack;
++            if (removeOriginalItem) {
++                movedItem = container.removeItem(i, movedItemCount);
++            }
+ 
 -        if (!worldData.skipPullModeEventFire) { // Folia - region threading
 -            movedItem = callPullMoveEvent(hopper, container, movedItem);
 -            if (movedItem == null) { // cancelled
@@ -26,21 +46,11 @@ index a858cb658af70f07614fa1f4d9e8a3435d5c161f..95f0b3276137cb9d1fc296e97cc25a08
 -                // Drastically improve performance by returning true.
 -                // No plugin could have relied on the behavior of false as the other call
 -                // site for IMIE did not exhibit the same behavior
-+        // Leaves start - fix vanilla hopper
-+        if (movedItem.getCount() <= movedItemCount) {
-+            if (!worldData.skipPullModeEventFire) {
-+                movedItem = callPullMoveEvent(hopper, container, movedItem);
-+                if (movedItem == null) { // cancelled
-+                    origItemStack.setCount(originalItemCount);
-+                    container.setChanged(); // keep parity with vanilla: source inv always marked changed
-+                    return true;
-+                }
-+            }
-+            final int toRemove = Math.min(movedItem.getCount(), container.getItem(i).getCount());
-+            final ItemStack remainingItem = addItem(container, hopper, container.removeItem(i, toRemove), null);
-+            final int remainingItemCount = remainingItem.getCount();
-+            if (remainingItem.isEmpty()) {
-+                container.setChanged();
++            final int itemCountToMove = movedItem.getCount();
++            final ItemStack remainingItem = addItem(container, hopper, movedItem, null);
++            if (remainingItem.getCount() != itemCountToMove) {
++                origItemStack.setCount(removeOriginalItem ? originalItemCount - movedItemCount : originalItemCount);
++                container.setItem(i, origItemStack);
                  return true;
              }
 -        }
@@ -49,23 +59,10 @@ index a858cb658af70f07614fa1f4d9e8a3435d5c161f..95f0b3276137cb9d1fc296e97cc25a08
 -        final int remainingItemCount = remainingItem.getCount();
 -        if (remainingItemCount != movedItemCount) {
 -            origItemStack = origItemStack.copy(true);
--            origItemStack.setCount(originalItemCount);
+             origItemStack.setCount(originalItemCount);
 -            if (!origItemStack.isEmpty()) {
 -                origItemStack.setCount(originalItemCount - movedItemCount + remainingItemCount);
-+            if (remainingItemCount != toRemove) {
-+                IGNORE_TILE_UPDATES.set(true); // Folia - region threading
-+                container.setItem(i, remainingItem);
-+                IGNORE_TILE_UPDATES.set(false); // Folia - region threading
-+                container.setChanged();
-+                return true;
-             }
--
-             IGNORE_TILE_UPDATES.set(true); // Folia - region threading
--            container.setItem(i, origItemStack);
-+            container.setItem(i, remainingItem);
-             IGNORE_TILE_UPDATES.set(false); // Folia - region threading
-             container.setChanged();
--            return true;
++            container.setItem(i, origItemStack);
 +        } else {
 +            container.setChanged(); // original logic always marks source inv as changed even if no move happens.
 +            movedItem.setCount(movedItemCount);
@@ -79,8 +76,13 @@ index a858cb658af70f07614fa1f4d9e8a3435d5c161f..95f0b3276137cb9d1fc296e97cc25a08
 +                    // site for IMIE did not exhibit the same behavior
 +                    return true;
 +                }
-+            }
-+
+             }
+ 
+-            IGNORE_TILE_UPDATES.set(true); // Folia - region threading
+-            container.setItem(i, origItemStack);
+-            IGNORE_TILE_UPDATES.set(false); // Folia - region threading
+-            container.setChanged();
+-            return true;
 +            final ItemStack remainingItem = addItem(container, hopper, movedItem, null);
 +            final int remainingItemCount = remainingItem.getCount();
 +            if (remainingItemCount != movedItemCount) {
@@ -90,16 +92,16 @@ index a858cb658af70f07614fa1f4d9e8a3435d5c161f..95f0b3276137cb9d1fc296e97cc25a08
 +                    origItemStack.setCount(originalItemCount - movedItemCount + remainingItemCount);
 +                }
 +
-+                IGNORE_TILE_UPDATES.set(true);
++                IGNORE_TILE_UPDATES.set(true); // Folia - region threading
 +                container.setItem(i, origItemStack);
-+                IGNORE_TILE_UPDATES.set(false);
++                IGNORE_TILE_UPDATES.set(false); // Folia - region threading
 +                container.setChanged();
 +                return true;
 +            }
 +            origItemStack.setCount(originalItemCount);
          }
 -        origItemStack.setCount(originalItemCount);
-+        // Leaves end - fix vanilla hopper
++        // Leaves end - Vanilla hopper
  
          if (level.paperConfig().hopper.cooldownWhenFull) {
              applyCooldown(hopper);

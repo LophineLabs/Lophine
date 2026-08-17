@@ -18,7 +18,7 @@ index e9307ef10502856378d7831fb7800dd77230130c..6bca982627cf6a865820df75be2814a7
                      double rangeY = level.paperConfig().entities.trackingRangeY.get(this.entity, -1);
                      if (rangeY != -1) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index cd2cd22cfb0b99c221b1b65b3646a3c6921f0f52..5a4cf19363a7efee3f1719e871fe5cb774fe2121 100644
+index 397f1181424f1d025c58fa7cf3f1584640d1b962..924f10d6339604580652e46ff0a476ff21398d3a 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -164,7 +164,7 @@ public abstract class Entity

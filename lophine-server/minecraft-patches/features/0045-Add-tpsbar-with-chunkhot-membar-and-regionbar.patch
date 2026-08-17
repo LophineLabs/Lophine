@@ -68,7 +68,7 @@ index b9ff4628421ba0c5bdaec13c9dc1b35e8d194d92..ff6809944c2dd8a2cc7c11a8b05b0f7c
              this.lastServerStatus = nano;
              this.status = this.buildServerStatus();
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index d854e83fa23ccbd3902706bb9d3895baf767deac..4f7e11fec743950664c745a694e67b6913edf1d2 100644
+index 5973d32f58b4d25e12955adbd0da526ba664cb09..ad030c9076d9959def11fb4238e8ad8185957a8b 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -1491,6 +1491,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
