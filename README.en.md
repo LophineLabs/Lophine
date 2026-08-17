@@ -15,7 +15,7 @@
 
 ![Repo contributors](https://img.shields.io/github/contributors/LophineLabs/Lophine?style=for-the-badge&color=brightgreen)
 
-**English** | [中文（简体）](./README.md) | [中文（繁體）](./README_ZH_TW.md)
+**English** | [中文（简体）](./README.md) | [中文（繁體）](README.zh-TW.md)
 </div>
 
 ---
