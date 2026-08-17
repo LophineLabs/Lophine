@@ -29,7 +29,7 @@
 - **Folia Bug Fixes** - Targeted fixes for known Folia issues
 - **Multiple World Format Support** - Support for b_linear (linear reimplementation) world formats
 - **Redstone Enhancement** - More redstone functionality on Folia (use Fabric for complete redstone features)
-- 🛠**More Useful Functions** - Continuously adding useful server features
+- **More Useful Functions** - Continuously adding useful server features
 
 ### Additional Launch Parameters
 
