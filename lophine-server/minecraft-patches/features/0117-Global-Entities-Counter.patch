@@ -5,7 +5,7 @@ Subject: [PATCH] Global Entities Counter
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index b7df2edf243448cc6342db9360e0458f58769a12..6040a28aad7419d343feeb5aa97551591399dfd9 100644
+index 9e220c0116cd03efc756d8d2ee237945a7e4259a..22fd20b29e86be438fef0022e94569742815d478 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -558,6 +558,9 @@ public final class RegionizedWorldData {
@@ -99,7 +99,7 @@ index 414c21345879f589fb61130180d0ca606e37a454..98284b695cec2fcd968b594d7944c635
                  NaturalSpawner.spawnForChunk(this.level, chunk, spawnCookie, spawningCategories);
              }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 5f18ad7b88ab4ea0acf29e2d534420bef920d586..a195212e33490cded0f8bf8eaa6f872d6cf5d641 100644
+index 2933acfc26ca6d9b668a19ba24aa87450c0ec5f3..3a19a3e73180e82ed6a39acb1189cafb45c8c79a 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -823,6 +823,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet

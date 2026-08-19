@@ -9,7 +9,7 @@ This patch is used with permission from the original author.
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index f1234717c2626661a93f5a22358a41752c22df3d..a2187a61070a8dde2e457127394ce9eba44c0201 100644
+index 8df12b1fef5a6bf3f46b4ec32a6270ebec634074..f0fabd9fd39e1024837dbb8633c39eb495984e4d 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -855,7 +855,7 @@ public final class RegionizedWorldData {

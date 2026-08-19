@@ -9,7 +9,7 @@ This patch is used with permission from the original author.
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 1523a1b3af6d3da3f865be875a19c61223c52181..a7ec23490babfcadb989cf3cf3b3f55878149b99 100644
+index 65cc3bec3f4a0ec99ff00501421884a849f2eb03..09a148e759d0fcead0bfdb5a379ca6b515d5b8e5 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -221,6 +221,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -29,7 +29,7 @@ index 1523a1b3af6d3da3f865be875a19c61223c52181..a7ec23490babfcadb989cf3cf3b3f558
  
      // Folia start - region threading
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 4e6637c50516896c30d1cf45dec3b2890dbc1382..2f90ab21fd284dd18992644416b5fbef4719a56d 100644
+index d400fdb0fb5e3049c3f9558b6a99e8460e78c68a..a885de9b8a03016ecef9acef9c8cd50bbfb3f2d0 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -4874,10 +4874,10 @@ public abstract class Entity
