@@ -8,7 +8,7 @@ As a part of : Leaves (https://github.com/LeavesMC/Leaves)
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 9820d2e18cbcb5fbc07fe57dd93101809ed2727d..b7df2edf243448cc6342db9360e0458f58769a12 100644
+index 15e3c8c17d4bb6818895d8a90ba550cf49f310de..9e220c0116cd03efc756d8d2ee237945a7e4259a 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -408,7 +408,7 @@ public final class RegionizedWorldData {
@@ -315,7 +315,7 @@ index 6bca982627cf6a865820df75be2814a7289f98dc..b6f752a134ac7192375053d8bf93e39c
              }
          }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 003c75486d64e36f4e4973c9ef6f0421eb5b87f6..64e728df21674de1773f39b3b1c857750e138a27 100644
+index 62ad7616a9444c8504d432af02c6c558c600f493..a45c65678af08c94a88c81f847ef04d94f6331e4 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -243,6 +243,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -570,7 +570,7 @@ index 71988e11c512fcb391f845a1905411ea240479fa..a7a687c7a90bce1ad20d32241f0b4316
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 5a4cf19363a7efee3f1719e871fe5cb774fe2121..3b499520af15f71a596ee4d1e988eb83f26824b0 100644
+index 924f10d6339604580652e46ff0a476ff21398d3a..460f8b58e0c4030eed9de0134e35a6d19acf740a 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1265,7 +1265,7 @@ public abstract class Entity

@@ -10,7 +10,7 @@ Licensed under: MIT
 This patch is Powered by fabric-carpet(https://github.com/gnembon/fabric-carpet)
 
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index f154fbd18c306b284ef0b0dd882b31196633d0ba..9f538bfb64b62d4953b435a14174723099f2202b 100644
+index 83bebf9f29dda4e4a2b2d0c6b79e34c6d067c16c..e36078c6cd89af980da8f7dd6961e8975f5a7035 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -240,8 +240,30 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen

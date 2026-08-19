@@ -5,7 +5,7 @@ Subject: [PATCH] Instant Block Updater
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 6040a28aad7419d343feeb5aa97551591399dfd9..f1234717c2626661a93f5a22358a41752c22df3d 100644
+index 22fd20b29e86be438fef0022e94569742815d478..8df12b1fef5a6bf3f46b4ec32a6270ebec634074 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -504,7 +504,7 @@ public final class RegionizedWorldData {
@@ -38,7 +38,7 @@ index 6040a28aad7419d343feeb5aa97551591399dfd9..f1234717c2626661a93f5a22358a4175
 \ No newline at end of file
 +}
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 1051676124df52e8d09fe50d991a1b404183644c..1523a1b3af6d3da3f865be875a19c61223c52181 100644
+index e472667ddbe7180ee5de5ea1f7c61b7e3c6ae2db..65cc3bec3f4a0ec99ff00501421884a849f2eb03 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -991,11 +991,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet

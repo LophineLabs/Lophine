@@ -8,7 +8,7 @@ As a part of : Leaves (https://github.com/LeavesMC/Leaves)
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index 3a727763cfee696c9fc87dda90260558936043bf..f4f56ec250b72df03f7e049250606c0e8b0f2990 100644
+index 0bc53615760d8a352967b872fa67880ee291ebe9..46ddc47e3c760d1182165e34e31613730200c428 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -770,6 +770,11 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot

@@ -19,6 +19,7 @@ package org.leavesmc.leaves.protocol.core;
 
 import com.mojang.logging.LogUtils;
 import io.netty.buffer.ByteBuf;
+import me.earthme.luminol.utils.ClassLoadUtil;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -28,19 +29,12 @@ import net.minecraft.server.level.ServerPlayer;
 import org.leavesmc.leaves.protocol.core.invoker.*;
 import org.slf4j.Logger;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 public class LeavesProtocolManager {
 
@@ -71,130 +65,137 @@ public class LeavesProtocolManager {
 
     @SuppressWarnings("unchecked")
     public static void init() {
-        for (Class<?> clazz : getClasses("org.leavesmc.leaves.protocol")) {
-            if (LeavesCustomPayload.class.isAssignableFrom(clazz) && !clazz.equals(LeavesCustomPayload.class)) {
-                for (Field field : clazz.getDeclaredFields()) {
-                    field.setAccessible(true);
-                    if (!Modifier.isStatic(field.getModifiers())) {
+        String[] packages = {
+                "org.leavesmc.leaves.protocol",
+                "fun.bm.lophine.protocol"
+        };
+        for (String pkg : packages) {
+            Collection<Class<?>> classes = ClassLoadUtil.getClasses(pkg, MinecraftServer.class.getClassLoader());
+            for (Class<?> clazz : classes) {
+                if (LeavesCustomPayload.class.isAssignableFrom(clazz) && !clazz.equals(LeavesCustomPayload.class)) {
+                    for (Field field : clazz.getDeclaredFields()) {
+                        field.setAccessible(true);
+                        if (!Modifier.isStatic(field.getModifiers())) {
+                            continue;
+                        }
+                        try {
+                            final LeavesCustomPayload.ID id = field.getAnnotation(LeavesCustomPayload.ID.class);
+                            if (id != null && field.getType().equals(Identifier.class)) {
+                                IDS.put((Class<? extends LeavesCustomPayload>) clazz, (Identifier) field.get(null));
+                            }
+                            final LeavesCustomPayload.Codec codec = field.getAnnotation(LeavesCustomPayload.Codec.class);
+                            if (codec != null && field.getType().equals(StreamCodec.class)) {
+                                CODECS.put((Class<? extends LeavesCustomPayload>) clazz, (StreamCodec<? super RegistryFriendlyByteBuf, LeavesCustomPayload>) field.get(null));
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    continue;
+                }
+
+                final LeavesProtocol.Register register = clazz.getAnnotation(LeavesProtocol.Register.class);
+                if (register == null) {
+                    continue;
+                }
+                LeavesProtocol protocol;
+                try {
+                    Constructor<?> constructor = clazz.getDeclaredConstructor();
+                    constructor.setAccessible(true);
+                    protocol = (LeavesProtocol) constructor.newInstance();
+                } catch (Throwable throwable) {
+                    LOGGER.error("Failed to load class {}. {}", clazz.getName(), throwable);
+                    return;
+                }
+
+                for (final Method method : clazz.getDeclaredMethods()) {
+                    if (method.isBridge() || method.isSynthetic()) {
                         continue;
                     }
-                    try {
-                        final LeavesCustomPayload.ID id = field.getAnnotation(LeavesCustomPayload.ID.class);
-                        if (id != null && field.getType().equals(Identifier.class)) {
-                            IDS.put((Class<? extends LeavesCustomPayload>) clazz, (Identifier) field.get(null));
+                    method.setAccessible(true);
+
+                    final ProtocolHandler.Init init = method.getAnnotation(ProtocolHandler.Init.class);
+                    if (init != null) {
+                        InitInvokerHolder holder = new InitInvokerHolder(protocol, method, init);
+                        try {
+                            holder.invoke();
+                        } catch (RuntimeException exception) {
+                            LOGGER.error("Failed to invoke init method {} in {}, {}: {}", method.getName(), clazz.getName(), exception.getCause(), exception.getMessage());
                         }
-                        final LeavesCustomPayload.Codec codec = field.getAnnotation(LeavesCustomPayload.Codec.class);
-                        if (codec != null && field.getType().equals(StreamCodec.class)) {
-                            CODECS.put((Class<? extends LeavesCustomPayload>) clazz, (StreamCodec<? super RegistryFriendlyByteBuf, LeavesCustomPayload>) field.get(null));
-                        }
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        continue;
                     }
-                }
-                continue;
-            }
 
-            final LeavesProtocol.Register register = clazz.getAnnotation(LeavesProtocol.Register.class);
-            if (register == null) {
-                continue;
-            }
-            LeavesProtocol protocol;
-            try {
-                Constructor<?> constructor = clazz.getDeclaredConstructor();
-                constructor.setAccessible(true);
-                protocol = (LeavesProtocol) constructor.newInstance();
-            } catch (Throwable throwable) {
-                LOGGER.error("Failed to load class {}. {}", clazz.getName(), throwable);
-                return;
-            }
-
-            for (final Method method : clazz.getDeclaredMethods()) {
-                if (method.isBridge() || method.isSynthetic()) {
-                    continue;
-                }
-                method.setAccessible(true);
-
-                final ProtocolHandler.Init init = method.getAnnotation(ProtocolHandler.Init.class);
-                if (init != null) {
-                    InitInvokerHolder holder = new InitInvokerHolder(protocol, method, init);
-                    try {
-                        holder.invoke();
-                    } catch (RuntimeException exception) {
-                        LOGGER.error("Failed to invoke init method {} in {}, {}: {}", method.getName(), clazz.getName(), exception.getCause(), exception.getMessage());
+                    final ProtocolHandler.PayloadReceiver payloadReceiver = method.getAnnotation(ProtocolHandler.PayloadReceiver.class);
+                    if (payloadReceiver != null) {
+                        PAYLOAD_RECEIVERS.put(payloadReceiver.payload(), new PayloadReceiverInvokerHolder(protocol, method, payloadReceiver));
+                        continue;
                     }
-                    continue;
-                }
 
-                final ProtocolHandler.PayloadReceiver payloadReceiver = method.getAnnotation(ProtocolHandler.PayloadReceiver.class);
-                if (payloadReceiver != null) {
-                    PAYLOAD_RECEIVERS.put(payloadReceiver.payload(), new PayloadReceiverInvokerHolder(protocol, method, payloadReceiver));
-                    continue;
-                }
-
-                final ProtocolHandler.BytebufReceiver bytebufReceiver = method.getAnnotation(ProtocolHandler.BytebufReceiver.class);
-                if (bytebufReceiver != null) {
-                    String key = bytebufReceiver.key();
-                    BytebufReceiverInvokerHolder holder = new BytebufReceiverInvokerHolder(protocol, method, bytebufReceiver);
-                    if (bytebufReceiver.onlyNamespace()) {
-                        NAMESPACED_BYTEBUF_RECEIVERS.put(key.isEmpty() ? register.namespace() : key, holder);
-                    } else {
-                        if (key.isEmpty()) {
-                            GENERIC_BYTEBUF_RECEIVERS.add(holder);
+                    final ProtocolHandler.BytebufReceiver bytebufReceiver = method.getAnnotation(ProtocolHandler.BytebufReceiver.class);
+                    if (bytebufReceiver != null) {
+                        String key = bytebufReceiver.key();
+                        BytebufReceiverInvokerHolder holder = new BytebufReceiverInvokerHolder(protocol, method, bytebufReceiver);
+                        if (bytebufReceiver.onlyNamespace()) {
+                            NAMESPACED_BYTEBUF_RECEIVERS.put(key.isEmpty() ? register.namespace() : key, holder);
                         } else {
-                            if (key.contains(":")) {
-                                STRICT_BYTEBUF_RECEIVERS.put(key, holder);
+                            if (key.isEmpty()) {
+                                GENERIC_BYTEBUF_RECEIVERS.add(holder);
                             } else {
-                                STRICT_BYTEBUF_RECEIVERS.put(register.namespace() + ":" + key, holder);
+                                if (key.contains(":")) {
+                                    STRICT_BYTEBUF_RECEIVERS.put(key, holder);
+                                } else {
+                                    STRICT_BYTEBUF_RECEIVERS.put(register.namespace() + ":" + key, holder);
+                                }
                             }
                         }
+                        continue;
                     }
-                    continue;
-                }
 
-                final ProtocolHandler.Ticker ticker = method.getAnnotation(ProtocolHandler.Ticker.class);
-                if (ticker != null) {
-                    TICKERS.add(new EmptyInvokerHolder<>(protocol, method, ticker));
-                    continue;
-                }
+                    final ProtocolHandler.Ticker ticker = method.getAnnotation(ProtocolHandler.Ticker.class);
+                    if (ticker != null) {
+                        TICKERS.add(new EmptyInvokerHolder<>(protocol, method, ticker));
+                        continue;
+                    }
 
-                final ProtocolHandler.PlayerJoin playerJoin = method.getAnnotation(ProtocolHandler.PlayerJoin.class);
-                if (playerJoin != null) {
-                    PLAYER_JOIN.add(new PlayerInvokerHolder<>(protocol, method, playerJoin));
-                    continue;
-                }
+                    final ProtocolHandler.PlayerJoin playerJoin = method.getAnnotation(ProtocolHandler.PlayerJoin.class);
+                    if (playerJoin != null) {
+                        PLAYER_JOIN.add(new PlayerInvokerHolder<>(protocol, method, playerJoin));
+                        continue;
+                    }
 
-                final ProtocolHandler.PlayerLeave playerLeave = method.getAnnotation(ProtocolHandler.PlayerLeave.class);
-                if (playerLeave != null) {
-                    PLAYER_LEAVE.add(new PlayerInvokerHolder<>(protocol, method, playerLeave));
-                    continue;
-                }
+                    final ProtocolHandler.PlayerLeave playerLeave = method.getAnnotation(ProtocolHandler.PlayerLeave.class);
+                    if (playerLeave != null) {
+                        PLAYER_LEAVE.add(new PlayerInvokerHolder<>(protocol, method, playerLeave));
+                        continue;
+                    }
 
-                final ProtocolHandler.ReloadServer reloadServer = method.getAnnotation(ProtocolHandler.ReloadServer.class);
-                if (reloadServer != null) {
-                    RELOAD_SERVER.add(new EmptyInvokerHolder<>(protocol, method, reloadServer));
-                    continue;
-                }
+                    final ProtocolHandler.ReloadServer reloadServer = method.getAnnotation(ProtocolHandler.ReloadServer.class);
+                    if (reloadServer != null) {
+                        RELOAD_SERVER.add(new EmptyInvokerHolder<>(protocol, method, reloadServer));
+                        continue;
+                    }
 
-                final ProtocolHandler.ReloadDataPack reloadDataPack = method.getAnnotation(ProtocolHandler.ReloadDataPack.class);
-                if (reloadDataPack != null) {
-                    RELOAD_DATAPACK.add(new EmptyInvokerHolder<>(protocol, method, reloadDataPack));
-                    continue;
-                }
+                    final ProtocolHandler.ReloadDataPack reloadDataPack = method.getAnnotation(ProtocolHandler.ReloadDataPack.class);
+                    if (reloadDataPack != null) {
+                        RELOAD_DATAPACK.add(new EmptyInvokerHolder<>(protocol, method, reloadDataPack));
+                        continue;
+                    }
 
-                final ProtocolHandler.MinecraftRegister minecraftRegister = method.getAnnotation(ProtocolHandler.MinecraftRegister.class);
-                if (minecraftRegister != null) {
-                    String key = minecraftRegister.key();
-                    MinecraftRegisterInvokerHolder holder = new MinecraftRegisterInvokerHolder(protocol, method, minecraftRegister);
-                    if (minecraftRegister.onlyNamespace()) {
-                        NAMESPACED_MINECRAFT_REGISTER.put(key.isEmpty() ? register.namespace() : key, holder);
-                    } else {
-                        if (key.isEmpty()) {
-                            WILD_MINECRAFT_REGISTER.add(holder);
+                    final ProtocolHandler.MinecraftRegister minecraftRegister = method.getAnnotation(ProtocolHandler.MinecraftRegister.class);
+                    if (minecraftRegister != null) {
+                        String key = minecraftRegister.key();
+                        MinecraftRegisterInvokerHolder holder = new MinecraftRegisterInvokerHolder(protocol, method, minecraftRegister);
+                        if (minecraftRegister.onlyNamespace()) {
+                            NAMESPACED_MINECRAFT_REGISTER.put(key.isEmpty() ? register.namespace() : key, holder);
                         } else {
-                            if (key.contains(":")) {
-                                STRICT_MINECRAFT_REGISTER.put(key, holder);
+                            if (key.isEmpty()) {
+                                WILD_MINECRAFT_REGISTER.add(holder);
                             } else {
-                                STRICT_MINECRAFT_REGISTER.put(register.namespace() + ":" + key, holder);
+                                if (key.contains(":")) {
+                                    STRICT_MINECRAFT_REGISTER.put(key, holder);
+                                } else {
+                                    STRICT_MINECRAFT_REGISTER.put(register.namespace() + ":" + key, holder);
+                                }
                             }
                         }
                     }
@@ -369,80 +370,5 @@ public class LeavesProtocolManager {
             }
             buf.writerIndex(Math.max(buf.writerIndex() - 1, 0));
         });
-    }
-
-    public static Set<Class<?>> getClasses(String pack) {
-        Set<Class<?>> classes = new LinkedHashSet<>();
-        String packageDirName = pack.replace('.', '/');
-        Enumeration<URL> dirs;
-        try {
-            dirs = Thread.currentThread().getContextClassLoader().getResources(packageDirName);
-            while (dirs.hasMoreElements()) {
-                URL url = dirs.nextElement();
-                String protocol = url.getProtocol();
-                if ("file".equals(protocol)) {
-                    String filePath = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8);
-                    findClassesInPackageByFile(pack, filePath, classes);
-                } else if ("jar".equals(protocol)) {
-                    JarFile jar;
-                    try {
-                        jar = ((JarURLConnection) url.openConnection()).getJarFile();
-                        Enumeration<JarEntry> entries = jar.entries();
-                        findClassesInPackageByJar(pack, entries, packageDirName, classes);
-                    } catch (IOException exception) {
-                        LOGGER.warn("Failed to load jar file, {}: {}", exception.getCause(), exception.getMessage());
-                    }
-                }
-            }
-        } catch (IOException exception) {
-            LOGGER.warn("Failed to load classes, {}: {}", exception.getCause(), exception.getMessage());
-        }
-        return classes;
-    }
-
-    private static void findClassesInPackageByFile(String packageName, String packagePath, Set<Class<?>> classes) {
-        File dir = new File(packagePath);
-        if (!dir.exists() || !dir.isDirectory()) {
-            return;
-        }
-        File[] dirfiles = dir.listFiles((file) -> file.isDirectory() || file.getName().endsWith(".class"));
-        if (dirfiles != null) {
-            for (File file : dirfiles) {
-                if (file.isDirectory()) {
-                    findClassesInPackageByFile(packageName + "." + file.getName(), file.getAbsolutePath(), classes);
-                } else {
-                    String className = file.getName().substring(0, file.getName().length() - 6);
-                    try {
-                        classes.add(Class.forName(packageName + '.' + className));
-                    } catch (ClassNotFoundException exception) {
-                        LOGGER.warn("Failed to load class {}, {}: {}", className, exception.getCause(), exception.getMessage());
-                    }
-                }
-            }
-        }
-    }
-
-    private static void findClassesInPackageByJar(String packageName, Enumeration<JarEntry> entries, String packageDirName, Set<Class<?>> classes) {
-        while (entries.hasMoreElements()) {
-            JarEntry entry = entries.nextElement();
-            String name = entry.getName();
-            if (name.charAt(0) == '/') {
-                name = name.substring(1);
-            }
-            if (name.startsWith(packageDirName)) {
-                int idx = name.lastIndexOf('/');
-                if (idx != -1) {
-                    packageName = name.substring(0, idx).replace('/', '.');
-                }
-                if (name.endsWith(".class") && !entry.isDirectory()) {
-                    String className = name.substring(packageName.length() + 1, name.length() - 6);
-                    try {
-                        classes.add(Class.forName(packageName + '.' + className));
-                    } catch (ClassNotFoundException exception) {
-                        LOGGER.warn("Failed to load class {}, {}: {}", className, exception.getCause(), exception.getMessage());
-                    }
-                }
-            }
-        }
     }
 }
