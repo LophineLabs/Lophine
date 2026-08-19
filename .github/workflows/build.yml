@@ -209,17 +209,24 @@ jobs:
 
           echo "Tag synced. Triggering CNB release pipeline..."
 
-          curl --fail-with-body \
-            --request POST \
-            --url "https://api.cnb.cool/LophineLabs/Lophine/-/build/start" \
-            --header "Authorization: ${CNB_TOKEN}" \
-            --header "Content-Type: application/json" \
-            --data "$(jq -nc \
-              --arg tag "${{ env.tag }}" \
-              '{
-                event: "api_trigger_release_sync",
-                env: {
-                  RELEASE_TAG: $tag
-                }
-              }'
-            )"
+          RESPONSE="$(
+            curl --fail-with-body \
+              --request POST \
+              --url "https://api.cnb.cool/LophineLabs/Lophine/-/build/start" \
+              --header "Authorization: Bearer ${CNB_TOKEN}" \
+              --header "Accept: application/json" \
+              --header "Content-Type: application/json" \
+              --data "$(jq -nc \
+                --arg tag "${{ env.tag }}" \
+                '{
+                  branch: "main",
+                  event: "api_trigger_release_sync",
+                  env: {
+                    RELEASE_TAG: $tag
+                  }
+                }'
+              )"
+          )"
+
+          echo "CNB API Response:"
+          echo "$RESPONSE"
