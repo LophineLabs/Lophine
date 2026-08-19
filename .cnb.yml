@@ -11,6 +11,7 @@
       stages:
         - name: Download GitHub Release
           script: |
+            bash <<'BASH'
             set -euo pipefail
 
             apt-get update
@@ -65,6 +66,7 @@
 
             echo "Downloaded assets:"
             ls -lh github-release-assets
+            BASH
 
           exports:
             release_title: RELEASE_TITLE
