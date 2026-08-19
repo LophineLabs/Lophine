@@ -209,25 +209,40 @@ jobs:
 
           echo "Tag synced. Triggering CNB release pipeline..."
 
-          RESPONSE="$(
-            curl --fail-with-body \
-              --request POST \
-              --url "https://api.cnb.cool/LophineLabs/Lophine/-/build/start" \
-              --header "Authorization: Bearer ${CNB_TOKEN}" \
-              --header "Accept: application/json" \
-              --header "Content-Type: application/json" \
-              --data "$(jq -nc \
-                --arg tag "${{ env.tag }}" \
-                --arg branch "${{ github.ref_name }}" \
-                '{
-                  branch: $branch,
-                  event: "api_trigger_release_sync",
-                  env: {
-                    RELEASE_TAG: $tag
-                  }
-                }'
-              )"
+          REQUEST_BODY="$(jq -nc \
+            --arg tag "${{ env.tag }}" \
+            --arg branch "${{ github.ref_name }}" \
+            '{
+              branch: $branch,
+              event: "api_trigger_release_sync",
+              env: {
+                RELEASE_TAG: $tag
+              }
+            }'
           )"
 
+          echo "CNB branch: ${{ github.ref_name }}"
+          echo "CNB release tag: ${{ env.tag }}"
+
+          HTTP_CODE="$(
+            curl --silent \
+              --show-error \
+              --output /tmp/cnb-response.json \
+              --write-out "%{http_code}" \
+              --request POST \
+              --url "https://api.cnb.cool/LophineLabs/Lophine/-/build/start" \
+              --header "Authorization: ${CNB_TOKEN}" \
+              --header "Accept: application/json" \
+              --header "Content-Type: application/json" \
+              --data "${REQUEST_BODY}"
+          )"
+
+          echo "CNB HTTP Status: ${HTTP_CODE}"
           echo "CNB API Response:"
-          echo "$RESPONSE"
+          cat /tmp/cnb-response.json
+          echo
+
+          if [ "${HTTP_CODE}" -lt 200 ] || [ "${HTTP_CODE}" -ge 300 ]; then
+            echo "ERROR: Failed to trigger CNB pipeline"
+            exit 1
+          fi
