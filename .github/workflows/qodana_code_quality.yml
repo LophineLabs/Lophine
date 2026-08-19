@@ -3,10 +3,6 @@ on:
   workflow_dispatch:
   pull_request:
   push:
-    branches: # Specify your branches here
-      - ver/* # Stable branch
-      - exp/* # Experimental branch
-      - dev/* # Development Branch
 
 jobs:
   qodana:
@@ -16,14 +12,33 @@ jobs:
       pull-requests: write
       checks: write
     steps:
-      - uses: actions/checkout@v7
+      - name: Check If Open PR Exists
+        id: check-pr
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pr_count=$(gh pr list --repo ${{ github.repository }} --head ${{ github.ref_name }} --state open --json number --jq 'length')
+          if [ "$pr_count" -gt 0 ]; then
+            echo "Open PR exists for branch ${{ github.ref_name }}, skipping push CI"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "No open PR for branch ${{ github.ref_name }}"
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout
+        if: steps.check-pr.outputs.skip != 'true'
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha }}  # to check out the actual pull request commit, not the merge commit
           fetch-depth: 0  # a full history is required for pull request analysis
+
       - name: 'Qodana Scan'
+        if: steps.check-pr.outputs.skip != 'true'
         uses: JetBrains/qodana-action@latest
         with:
           pr-mode: false
         env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_1658551725 }}
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
           QODANA_ENDPOINT: 'https://qodana.cloud'

@@ -2,11 +2,7 @@ name: Lophine CI
 
 on:
   push:
-    branches:
-      - "**"
   pull_request:
-    branches:
-      - "**"
   workflow_dispatch:
     inputs:
       force-release:
@@ -31,42 +27,112 @@ jobs:
     env:
       BUILD_NUMBER: ${{ github.run_number }}
     steps:
+      - name: Check If Open PR Exists
+        id: check-pr
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pr_count=$(gh pr list --repo ${{ github.repository }} --head ${{ github.ref_name }} --state open --json number --jq 'length')
+          if [ "$pr_count" -gt 0 ]; then
+            echo "Open PR exists for branch ${{ github.ref_name }}, skipping push CI"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "No open PR for branch ${{ github.ref_name }}"
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout Git Repository
+        if: steps.check-pr.outputs.skip != 'true'
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Sync to CNB
+        if: github.event_name != 'pull_request' && steps.check-pr.outputs.skip != 'true'
+        env:
+          CNB_TOKEN: ${{ secrets.CNB_TOKEN }}
+          CNB_TARGET_URL: https://cnb.cool/LophineLabs/Lophine.git
+        run: |
+          git fetch --all --tags --force
+
+          docker run --rm \
+            -v "${{ github.workspace }}:${{ github.workspace }}" \
+            -w "${{ github.workspace }}" \
+            -e PLUGIN_TARGET_URL="$CNB_TARGET_URL" \
+            -e PLUGIN_AUTH_TYPE="https" \
+            -e PLUGIN_USERNAME="cnb" \
+            -e PLUGIN_PASSWORD="$CNB_TOKEN" \
+            -e PLUGIN_FORCE="true" \
+            -e PLUGIN_PUSH_TAGS="true" \
+            tencentcom/git-sync
 
       - name: Set Up JDK
+        if: steps.check-pr.outputs.skip != 'true'
         uses: actions/setup-java@v5.7.0
         with:
           distribution: zulu
           java-version: 25
 
       - name: Setup Gradle
+        if: steps.check-pr.outputs.skip != 'true'
         uses: gradle/actions/setup-gradle@v6
 
       - name: Grant execute permission for gradlew
+        if: steps.check-pr.outputs.skip != 'true'
         run: chmod +x gradlew
 
       - name: Configure Git User Details
+        if: steps.check-pr.outputs.skip != 'true'
         run: git config --global user.email "ci@lophinelabs.com" && git config --global user.name "LophinelabsCI"
 
       - name: Apply All Patches
+        if: steps.check-pr.outputs.skip != 'true'
         run: ./gradlew --refresh-dependencies applyAllPatches
 
       - name: Build Paperclip Jar
+        if: steps.check-pr.outputs.skip != 'true'
         run: ./gradlew --refresh-dependencies createPaperclipJar
 
       - name: Upload Artifact
+        if: steps.check-pr.outputs.skip != 'true'
         uses: actions/upload-artifact@v7
         with:
           name: ${{ env.project_id_b }} CI Artifacts
           path: lophine-server/build/libs/*-paperclip-*.jar
 
       - name: Set Environment
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && steps.check-pr.outputs.skip != 'true'
         run: sh scripts/SetENV.sh
 
+      - name: Detect PR Merge Push
+        if: github.event_name == 'push' && steps.check-pr.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PRS="$(
+            gh api \
+              -H "Accept: application/vnd.github+json" \
+              "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls"
+          )"
+
+          MERGED_PR_COUNT="$(
+            echo "$PRS" | jq \
+              --arg base "${{ github.ref_name }}" \
+              '[.[] | select(.merged_at != null and .base.ref == $base)] | length'
+          )"
+
+          echo "Merged PR count for this commit: ${MERGED_PR_COUNT}"
+
+          if [ "${MERGED_PR_COUNT}" -gt 0 ]; then
+            echo "This push was produced by a merged PR."
+            echo "from_pr_merge=true" >> "$GITHUB_ENV"
+          else
+            echo "from_pr_merge=false" >> "$GITHUB_ENV"
+          fi
+
       - name: Check If Release Exists
-        if: github.event_name != 'pull_request' && env.flag_release == 'true'
+        if: github.event_name != 'pull_request' && env.flag_release == 'true' && steps.check-pr.outputs.skip != 'true'
         run: |
           git fetch --tags
           if [ -n "$(git tag -l "${{ env.tag }}")" ]; then
@@ -88,7 +154,7 @@ jobs:
           echo "release_exists=${release_exists}" >> $GITHUB_ENV
 
       - name: Check If Branch In Expectations
-        if: github.event_name != 'pull_request' && env.flag_release == 'true'
+        if: github.event_name != 'pull_request' && env.flag_release == 'true' && steps.check-pr.outputs.skip != 'true'
         run: |
           if [[ "$GITHUB_REF_NAME" == ver/* ]] || [[ "$GITHUB_REF_NAME" == exp/* ]] || [[ "$GITHUB_REF_NAME" == dev/* ]]; then
             echo "Branch is in expected prefixes"
@@ -99,7 +165,7 @@ jobs:
           fi
 
       - name: Publish To Repo
-        if: ( github.event_name != 'pull_request' && !( env.unexpect == 'true' ) && env.flag_push_repo == 'true' && !( inputs.force-push == 'false' )) || inputs.force-push == 'true'
+        if: (( github.event_name != 'pull_request' && !( env.unexpect == 'true' ) && env.flag_push_repo == 'true' && !( inputs.force-push == 'false' )) || inputs.force-push == 'true') && steps.check-pr.outputs.skip != 'true'
         continue-on-error: true
         run: ./gradlew --refresh-dependencies generateDevelopmentBundle publish -PpublishDevBundle=true
         env:
@@ -107,7 +173,7 @@ jobs:
           PRIVATE_MAVEN_REPO_USERNAME: ${{ secrets.PRIVATE_MAVEN_REPO_USERNAME }}
 
       - name: Create Release - Pre Process
-        if: ( github.event_name != 'pull_request' && !( env.unexpect == 'true' ) && env.flag_release == 'true' && env.release_exists != 'true' && !(inputs.force-release == 'false')) || inputs.force-release == 'true'
+        if: (( github.event_name != 'pull_request' && env.from_pr_merge != 'true' && !( env.unexpect == 'true' ) && env.flag_release == 'true' && env.release_exists != 'true' && !(inputs.force-release == 'false')) || inputs.force-release == 'true') && steps.check-pr.outputs.skip != 'true'
         run: |
           if [ "${{ inputs.comments }}" == "" ]; then
             echo "No comments provided"
@@ -118,7 +184,8 @@ jobs:
           fi
 
       - name: Create Release - No Comment
-        if: env.flag_comment == 'false'
+        id: release_no_comment
+        if: env.flag_comment == 'false' && steps.check-pr.outputs.skip != 'true'
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ env.tag }}
@@ -137,7 +204,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release - With Comment
-        if: env.flag_comment == 'true'
+        id: release_with_comment
+        if: env.flag_comment == 'true' && steps.check-pr.outputs.skip != 'true'
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ env.tag }}
@@ -156,3 +224,70 @@ jobs:
           prerelease: ${{ env.pre }}
           makeLatest: ${{ env.make_latest }}
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync Release Tag to CNB
+        if: ${{ !cancelled() && (steps.release_no_comment.conclusion == 'success' || steps.release_with_comment.conclusion == 'success') }}
+        env:
+          CNB_TOKEN: ${{ secrets.CNB_TOKEN }}
+          CNB_TARGET_URL: https://cnb.cool/LophineLabs/Lophine.git
+        run: |
+          set -euo pipefail
+
+          echo "Sync release tag to CNB: ${{ env.tag }}"
+
+          git fetch origin \
+            "refs/tags/${{ env.tag }}:refs/tags/${{ env.tag }}" \
+            --force
+
+          git remote remove target 2>/dev/null || true
+
+          docker run --rm \
+            -v "${{ github.workspace }}:${{ github.workspace }}" \
+            -w "${{ github.workspace }}" \
+            -e PLUGIN_TARGET_URL="$CNB_TARGET_URL" \
+            -e PLUGIN_AUTH_TYPE="https" \
+            -e PLUGIN_USERNAME="cnb" \
+            -e PLUGIN_PASSWORD="$CNB_TOKEN" \
+            -e PLUGIN_FORCE="true" \
+            -e PLUGIN_PUSH_TAGS="true" \
+            tencentcom/git-sync
+
+          echo "Tag synced. Triggering CNB release pipeline..."
+
+          REQUEST_BODY="$(jq -nc \
+            --arg tag "${{ env.tag }}" \
+            --arg branch "${{ github.ref_name }}" \
+            '{
+              branch: $branch,
+              event: "api_trigger_release_sync",
+              env: {
+                RELEASE_TAG: $tag
+              }
+            }'
+          )"
+
+          echo "CNB branch: ${{ github.ref_name }}"
+          echo "CNB release tag: ${{ env.tag }}"
+
+          HTTP_CODE="$(
+            curl --silent \
+              --show-error \
+              --output /tmp/cnb-response.json \
+              --write-out "%{http_code}" \
+              --request POST \
+              --url "https://api.cnb.cool/LophineLabs/Lophine/-/build/start" \
+              --header "Authorization: ${CNB_TOKEN}" \
+              --header "Accept: application/json" \
+              --header "Content-Type: application/json" \
+              --data "${REQUEST_BODY}"
+          )"
+
+          echo "CNB HTTP Status: ${HTTP_CODE}"
+          echo "CNB API Response:"
+          cat /tmp/cnb-response.json
+          echo
+
+          if [ "${HTTP_CODE}" -lt 200 ] || [ "${HTTP_CODE}" -ge 300 ]; then
+            echo "ERROR: Failed to trigger CNB pipeline"
+            exit 1
+          fi
