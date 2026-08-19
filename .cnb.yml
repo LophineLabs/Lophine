@@ -1,4 +1,4 @@
-main:
+"**":
   api_trigger_release_sync:
     - name: Sync GitHub Release
 

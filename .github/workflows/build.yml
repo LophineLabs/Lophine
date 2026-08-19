@@ -218,8 +218,9 @@ jobs:
               --header "Content-Type: application/json" \
               --data "$(jq -nc \
                 --arg tag "${{ env.tag }}" \
+                --arg branch "${{ github.ref_name }}" \
                 '{
-                  branch: "main",
+                  branch: $branch,
                   event: "api_trigger_release_sync",
                   env: {
                     RELEASE_TAG: $tag
