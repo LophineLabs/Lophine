@@ -186,11 +186,15 @@ jobs:
           CNB_TOKEN: ${{ secrets.CNB_TOKEN }}
           CNB_TARGET_URL: https://cnb.cool/LophineLabs/Lophine.git
         run: |
+          set -euo pipefail
+
           echo "Sync release tag to CNB: ${{ env.tag }}"
 
           git fetch origin \
             "refs/tags/${{ env.tag }}:refs/tags/${{ env.tag }}" \
             --force
+
+          git remote remove target 2>/dev/null || true
 
           docker run --rm \
             -v "${{ github.workspace }}:${{ github.workspace }}" \
@@ -202,3 +206,20 @@ jobs:
             -e PLUGIN_FORCE="true" \
             -e PLUGIN_PUSH_TAGS="true" \
             tencentcom/git-sync
+
+          echo "Tag synced. Triggering CNB release pipeline..."
+
+          curl --fail-with-body \
+            --request POST \
+            --url "https://api.cnb.cool/LophineLabs/Lophine/-/build/start" \
+            --header "Authorization: ${CNB_TOKEN}" \
+            --header "Content-Type: application/json" \
+            --data "$(jq -nc \
+              --arg tag "${{ env.tag }}" \
+              '{
+                event: "api_trigger_release_sync",
+                env: {
+                  RELEASE_TAG: $tag
+                }
+              }'
+            )"
