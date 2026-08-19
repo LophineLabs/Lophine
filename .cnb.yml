@@ -1,143 +1,80 @@
 $:
-  push:
-    - name: Lophine CI
+  tag_push:
+    - name: Sync GitHub Release
 
       runner:
         tags: cnb:arch:amd64
-        cpus: 16
+        cpus: 6
 
       docker:
-        image: azul/zulu-openjdk:25-latest
-        volumes:
-          - /root/.gradle:copy-on-write
+        image: ubuntu:24.04
 
       stages:
-        - name: Install Git
+        - name: Download GitHub Release
           script: |
-            if ! command -v git >/dev/null 2>&1; then
-              apt-get update
-              apt-get install -y --no-install-recommends git ca-certificates
-              rm -rf /var/lib/apt/lists/*
+            set -euo pipefail
+
+            apt-get update
+            apt-get install -y --no-install-recommends \
+              curl \
+              jq \
+              ca-certificates
+
+            rm -rf /var/lib/apt/lists/*
+
+            echo "GitHub Release Tag: ${CNB_BRANCH}"
+
+            mkdir -p github-release-assets
+
+            curl -fL \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/LophineLabs/Lophine/releases/tags/${CNB_BRANCH}" \
+              -o github-release.json
+
+            echo "GitHub Release:"
+            jq -r '.name' github-release.json
+
+            echo "Assets:"
+            jq -r '.assets[].name' github-release.json
+
+            ASSET_COUNT="$(jq '.assets | length' github-release.json)"
+
+            if [ "$ASSET_COUNT" -eq 0 ]; then
+              echo "ERROR: GitHub Release has no assets"
+              exit 1
             fi
 
-        - name: Grant execute permission for gradlew
-          script: chmod +x gradlew
+            jq -r '.body // ""' github-release.json > release-body.md
 
-        - name: Set Build Number
-          script: echo -n "$(git rev-list --count HEAD)"
+            RELEASE_TITLE="$(jq -r '.name // .tag_name' github-release.json)"
+            echo "##[set-output release_title=${RELEASE_TITLE}]"
+
+            jq -r '.assets[] | [.name, .browser_download_url] | @tsv' \
+              github-release.json |
+            while IFS=$'\t' read -r NAME URL; do
+              echo "Downloading: ${NAME}"
+
+              curl -fL \
+                --retry 5 \
+                --retry-delay 2 \
+                "$URL" \
+                -o "github-release-assets/${NAME}"
+            done
+
+            echo "Downloaded:"
+            ls -lh github-release-assets
+
           exports:
-            stdout: BUILD_NUMBER
-
-        - name: Environment Info
-          script:
-            - java -version
-            - ./gradlew --version
-            - echo "BUILD_NUMBER=$BUILD_NUMBER"
-            - echo "CNB Branch=$CNB_BRANCH"
-            - echo "CNB Commit=$CNB_COMMIT"
-            - git rev-parse HEAD
-            - git log -1 --oneline
-
-        - name: Configure Git User Details
-          script:
-            - git config --global user.email "ci@lophinelabs.com"
-            - git config --global user.name "LophinelabsCI"
-
-        - name: Apply All Patches
-          script:
-            - ./gradlew --refresh-dependencies applyAllPatches
-
-        - name: Build Paperclip Jar
-          script:
-            - ./gradlew --refresh-dependencies createPaperclipJar
-
-        - name: Show Build Artifacts
-          script:
-            - ls -lah lophine-server/build/libs/
-            - find lophine-server/build/libs/ -maxdepth 1 -type f -name "*-paperclip-*.jar" -print
-
-
-  tag_push:
-    - name: Lophine Release
-
-      docker:
-        image: azul/zulu-openjdk:25-latest
-        volumes:
-          - /root/.gradle:copy-on-write
-
-      stages:
-        - name: Prepare Build Environment
-          script:
-            - |
-              if ! command -v git >/dev/null 2>&1; then
-                apt-get update
-                apt-get install -y --no-install-recommends git ca-certificates
-                rm -rf /var/lib/apt/lists/*
-              fi
-            - chmod +x gradlew
-
-        - name: Set Build Number
-          script: echo -n "$(git rev-list --count HEAD)"
-          exports:
-            stdout: BUILD_NUMBER
-
-        - name: Environment Info
-          script:
-            - java -version
-            - ./gradlew --version
-            - echo "BUILD_NUMBER=$BUILD_NUMBER"
-            - echo "CNB Tag=$CNB_BRANCH"
-            - echo "CNB Commit=$CNB_COMMIT"
-            - git rev-parse HEAD
-            - git log -1 --oneline
-
-        - name: Configure Git User Details
-          script:
-            - git config --global user.email "ci@lophinelabs.com"
-            - git config --global user.name "LophinelabsCI"
-
-        - name: Apply All Patches
-          script:
-            - ./gradlew --refresh-dependencies applyAllPatches
-
-        - name: Build Paperclip Jar
-          script:
-            - ./gradlew --refresh-dependencies createPaperclipJar
-
-        - name: Show Release Artifact
-          script:
-            - ls -lah lophine-server/build/libs/
-            - find lophine-server/build/libs/ -maxdepth 1 -type f -name "*-paperclip-*.jar" -print
-
-        - name: Generate Release Notes
-          script: |
-            cat > CNB_RELEASE_NOTES.md <<EOF
-            📦 Tag: \`$CNB_BRANCH\` | Commit: \`$CNB_COMMIT_SHORT\`
-
-            This release is automatically compiled by CNB.
-
-            ### Source
-
-            GitHub: LophineLabs/Lophine
-
-            ### Commit Message
-
-            $CNB_COMMIT_MESSAGE
-            EOF
+            release_title: RELEASE_TITLE
 
         - name: Create CNB Release
           type: git:release
           options:
-            overlying: false
-            tag: $CNB_BRANCH
-            title: "Lophine $CNB_BRANCH - $CNB_COMMIT_SHORT"
-            descriptionFromFile: CNB_RELEASE_NOTES.md
-            latest: true
+            title: $RELEASE_TITLE
+            descriptionFromFile: release-body.md
 
-        - name: Upload Paperclip Jar to CNB Release
+        - name: Upload Release Assets
           image: cnbcool/attachments:latest
           settings:
-            type: UPLOAD
-            tag: $CNB_BRANCH
             attachments:
-              - "lophine-server/build/libs/*-paperclip-*.jar"
+              - "./github-release-assets/*"

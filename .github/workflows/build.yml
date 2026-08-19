@@ -36,25 +36,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Sync to CNB
-        if: github.event_name != 'pull_request'
-        env:
-          CNB_TOKEN: ${{ secrets.CNB_TOKEN }}
-          CNB_TARGET_URL: https://cnb.cool/LophineLabs/Lophine.git
-        run: |
-          git fetch --all --tags --force
-
-          docker run --rm \
-            -v "${{ github.workspace }}:${{ github.workspace }}" \
-            -w "${{ github.workspace }}" \
-            -e PLUGIN_TARGET_URL="$CNB_TARGET_URL" \
-            -e PLUGIN_AUTH_TYPE="https" \
-            -e PLUGIN_USERNAME="cnb" \
-            -e PLUGIN_PASSWORD="$CNB_TOKEN" \
-            -e PLUGIN_FORCE="true" \
-            -e PLUGIN_PUSH_TAGS="true" \
-            tencentcom/git-sync
-
       - name: Set Up JDK
         uses: actions/setup-java@v5.7.0
         with:
@@ -177,3 +158,26 @@ jobs:
           prerelease: ${{ env.pre }}
           makeLatest: ${{ env.make_latest }}
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync Release Tag to CNB
+        if: ( github.event_name != 'pull_request' && !( env.unexpect == 'true' ) && env.flag_release == 'true' && env.release_exists != 'true' && !(inputs.force-release == 'false')) || inputs.force-release == 'true'
+        env:
+          CNB_TOKEN: ${{ secrets.CNB_TOKEN }}
+          CNB_TARGET_URL: https://cnb.cool/LophineLabs/Lophine.git
+        run: |
+          echo "Sync release tag to CNB: ${{ env.tag }}"
+
+          git fetch origin \
+            "refs/tags/${{ env.tag }}:refs/tags/${{ env.tag }}" \
+            --force
+
+          docker run --rm \
+            -v "${{ github.workspace }}:${{ github.workspace }}" \
+            -w "${{ github.workspace }}" \
+            -e PLUGIN_TARGET_URL="$CNB_TARGET_URL" \
+            -e PLUGIN_AUTH_TYPE="https" \
+            -e PLUGIN_USERNAME="cnb" \
+            -e PLUGIN_PASSWORD="$CNB_TOKEN" \
+            -e PLUGIN_FORCE="true" \
+            -e PLUGIN_PUSH_TAGS="true" \
+            tencentcom/git-sync
