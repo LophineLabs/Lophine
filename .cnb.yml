@@ -1,0 +1,86 @@
+"**":
+  api_trigger_release_sync:
+    - name: Sync GitHub Release
+
+      runner:
+        tags: cnb:arch:amd64
+
+      docker:
+        image: ubuntu:24.04
+
+      stages:
+        - name: Download GitHub Release
+          script: |
+            bash <<'BASH'
+            set -euo pipefail
+
+            apt-get update
+            apt-get install -y --no-install-recommends \
+              curl \
+              jq \
+              ca-certificates
+
+            rm -rf /var/lib/apt/lists/*
+
+            echo "GitHub Release Tag: ${RELEASE_TAG}"
+
+            mkdir -p github-release-assets
+
+            curl -fL \
+              --retry 5 \
+              --retry-delay 2 \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/LophineLabs/Lophine/releases/tags/${RELEASE_TAG}" \
+              -o github-release.json
+
+            echo "GitHub Release:"
+            jq -r '.name' github-release.json
+
+            echo "Assets:"
+            jq -r '.assets[].name' github-release.json
+
+            ASSET_COUNT="$(jq '.assets | length' github-release.json)"
+
+            if [ "${ASSET_COUNT}" -eq 0 ]; then
+              echo "ERROR: GitHub Release has no assets"
+              exit 1
+            fi
+
+            jq -r '.body // ""' github-release.json > release-body.md
+
+            RELEASE_TITLE="$(jq -r '.name // .tag_name' github-release.json)"
+
+            echo "##[set-output release_title=${RELEASE_TITLE}]"
+
+            jq -r '.assets[] | [.name, .browser_download_url] | @tsv' \
+              github-release.json |
+            while IFS=$'\t' read -r NAME URL; do
+              echo "Downloading: ${NAME}"
+
+              curl -fL \
+                --retry 5 \
+                --retry-delay 2 \
+                "${URL}" \
+                -o "github-release-assets/${NAME}"
+            done
+
+            echo "Downloaded assets:"
+            ls -lh github-release-assets
+            BASH
+
+          exports:
+            release_title: RELEASE_TITLE
+
+        - name: Create CNB Release
+          type: git:release
+          options:
+            tag: $RELEASE_TAG
+            title: $RELEASE_TITLE
+            descriptionFromFile: release-body.md
+
+        - name: Upload Release Assets
+          image: cnbcool/attachments:latest
+          settings:
+            tag: $RELEASE_TAG
+            attachments:
+              - "./github-release-assets/*"

@@ -1,43 +1,49 @@
 <div align="center">
   <img src="./public/image/lophine/lophine3.png" alt="Lophine Logo" width="300">
-  
-  # Lophine
-  
-  *Lophine 是一个基于Folia的分支，具有许多有用的优化和可配置的原版特性，目标是在Folia上实现更多生电的内容（请注意，完整生电请使用Fabric）*
-  
-  ![Created At](https://img.shields.io/github/created-at/LophineLabs/Lophine?style=for-the-badge&color=blue)
-  [![License](https://img.shields.io/github/license/LophineLabs/Lophine?style=for-the-badge&color=green)](LICENSE.md)
-  [![Issues](https://img.shields.io/github/issues/LophineLabs/Lophine?style=for-the-badge&color=orange)](https://github.com/LophineLabs/Lophine/issues)
-  
-  ![Commit Activity](https://img.shields.io/github/commit-activity/w/LophineLabs/Lophine?style=for-the-badge&color=purple)
-  ![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/LophineLabs/Lophine?style=for-the-badge&color=yellow)
-  ![GitHub all releases](https://img.shields.io/github/downloads/LophineLabs/Lophine/total?style=for-the-badge&color=red)
-  
-  ![Repo contributors](https://img.shields.io/github/contributors/LophineLabs/Lophine?style=for-the-badge&color=brightgreen)
-  
-  [English](./README_EN.md) | **中文（简体）** | [中文（繁體）](./README_ZH_TW.md)
+
+# Lophine
+
+*Lophine 是一个基于Folia的分支，具有许多有用的优化和可配置的原版特性，目标是在Folia上实现更多生电的内容（请注意，完整生电请使用Fabric）*
+
+![Created At](https://img.shields.io/github/created-at/LophineLabs/Lophine?style=for-the-badge&color=blue)
+[![License](https://img.shields.io/github/license/LophineLabs/Lophine?style=for-the-badge&color=green)](LICENSE.md)
+[![Issues](https://img.shields.io/github/issues/LophineLabs/Lophine?style=for-the-badge&color=orange)](https://github.com/LophineLabs/Lophine/issues)
+
+![Commit Activity](https://img.shields.io/github/commit-activity/w/LophineLabs/Lophine?style=for-the-badge&color=purple)
+![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/LophineLabs/Lophine?style=for-the-badge&color=yellow)
+![GitHub all releases](https://img.shields.io/github/downloads/LophineLabs/Lophine/total?style=for-the-badge&color=red)
+
+![Repo contributors](https://img.shields.io/github/contributors/LophineLabs/Lophine?style=for-the-badge&color=brightgreen)
+
+[English](README.en.md) | **中文（简体）** | [中文（繁體）](README.zh-TW.md)
 </div>
 
 ---
 
+> **仓库与镜像说明：** GitHub 是 Lophine 的官方上游与唯一权威来源。[CNB](https://cnb.cool/LophineLabs/Lophine) 从 GitHub 自动同步，并针对对应提交独立构建和发布 CNB Releases，服务中国大陆用户。Issue、Pull Request 与 Discussions 统一在 GitHub 进行。
+
 ## ✨ 核心特性
 
-- 🔧 **可配置的原版特性** - 灵活调整游戏机制以适应不同服务器需求
-- 📊 **Tpsbar 支持** - 实时显示服务器 TPS 状态
-- 🐛 **Folia Bug 修复** - 针对 Folia 已知问题的专项修复
-- 💾 **多存档格式支持** - 支持 b_linear（linear 重新实现）存档格式
-- 🔬 **生电功能增强** - 在 Folia 上实现更多生电内容（完整生电请使用 Fabric）
-- 🛠️ **更多实用功能** - 持续添加有用的服务器功能
+- **可配置的原版特性** - 灵活调整游戏机制以适应不同服务器需求
+- **Tpsbar 支持** - 实时显示服务器 TPS 状态
+- **Folia Bug 修复** - 针对 Folia 已知问题的专项修复
+- **多存档格式支持** - 支持 b_linear（linear 重新实现）存档格式
+- **生电功能增强** - 在 Folia 上实现更多生电内容（完整生电请使用 Fabric）
+- **更多实用功能** - 持续添加有用的服务器功能
 
 ### 额外启动参数
 
- - morninggloryclip.useMojangSource 强制服务端使用mojang源下载文件
- - morninggloryclip.enable.mixin 启用服务器插件的mixin支持
+- morninggloryclip.useMojangSource 强制服务端使用mojang源下载文件
+- morninggloryclip.enable.mixin 启用服务器插件的mixin支持
 
 ## 📥 下载
 
 ### 稳定版本
-所有发布版本都可以在 [Releases](https://github.com/LophineLabs/Lophine/releases) 页面找到。
+
+- 中国大陆（CNB 镜像）：[CNB Releases](https://cnb.cool/LophineLabs/Lophine/-/releases) · [CNB 镜像仓库](https://cnb.cool/LophineLabs/Lophine)
+- 全球 / 官方（GitHub）：[GitHub Releases](https://github.com/LophineLabs/Lophine/releases) · [GitHub 官方仓库](https://github.com/LophineLabs/Lophine)
+
+CNB 与 GitHub 的对应版本基于相同的 Git Commit。中国大陆用户可优先通过 CNB 下载或克隆；代码贡献与问题反馈请前往 GitHub。
 
 ### 开发版本
 如果您想体验最新功能，可以通过以下步骤自行构建。
@@ -61,13 +67,13 @@ cd Lophine
 
 ```kotlin
 repositories {
-    maven {
-        url = "https://repo.bacteriawa.com/repository/maven-public/"
-    }
+  maven {
+    url = "https://repo.bacteriawa.com/repository/maven-public/"
+  }
 }
 
 dependencies {
-    compileOnly("fun.bm.lophine:lophine-api:26.2.build.+")
+  compileOnly("fun.bm.lophine:lophine-api:26.2.build.+")
 }
 
 java {
@@ -79,18 +85,18 @@ java {
 
 ```xml
 <repositories>
-    <repository>
-        <id>repository</id>
-        <url>https://repo.bacteriawa.com/repository/maven-public/</url>
-    </repository>
+  <repository>
+    <id>repository</id>
+    <url>https://repo.bacteriawa.com/repository/maven-public/</url>
+  </repository>
 </repositories>
 
 <dependencies>
-    <dependency>
-        <groupId>fun.bm.lophine</groupId>
-        <artifactId>lophine-api</artifactId>
-        <version>[26.2.build,)</version>
-    </dependency>
+<dependency>
+  <groupId>fun.bm.lophine</groupId>
+  <artifactId>lophine-api</artifactId>
+  <version>[26.2.build,)</version>
+</dependency>
 </dependencies>
 ```
 
@@ -105,27 +111,27 @@ java {
 
 ### 获取帮助
 
-- 📋 [提交 Issue](https://github.com/LophineLabs/Lophine/issues)
-- 💬 [GitHub Discussions](https://github.com/LophineLabs/Lophine/discussions)
-- 📖 [项目文档](./docs/)
+- [提交 Issue](https://github.com/LophineLabs/Lophine/issues)
+- [GitHub Discussions](https://github.com/LophineLabs/Lophine/discussions)
+- [项目文档](./docs/)
 
 ## 🐛 问题反馈
 
 当您遇到任何问题时，请向我们提问，我们将尽力解决。请记得：
 
-- 📝 **清楚描述问题** - 详细说明问题的具体表现
-- 📋 **提供完整日志** - 包含错误日志和相关配置信息
-- 🔍 **环境信息** - 说明服务器版本、插件列表等环境详情
-- 🔄 **复现步骤** - 如果可能，请提供问题复现的具体步骤
+- **清楚描述问题** - 详细说明问题的具体表现
+- **提供完整日志** - 包含错误日志和相关配置信息
+- **环境信息** - 说明服务器版本、插件列表等环境详情
+- **复现步骤** - 如果可能，请提供问题复现的具体步骤
 
 ## 🤝 贡献代码
 
 我们欢迎社区贡献！详细的贡献指南请查看：
 
-- 📖 [贡献指南 (简体中文)](./docs/CONTRIBUTING.md)
-- 📖 [Contributing Guide (English)](./docs/CONTRIBUTING_EN.md)
-- 📖 [貢獻指南（繁體中文）](./docs/CONTRIBUTING_ZH_TW.md)
-- 📖 [貢献ガイド（日本語）](./docs/CONTRIBUTING_JP.md)
+- [贡献指南 (简体中文)](./docs/CONTRIBUTING.md)
+- [Contributing Guide (English)](./docs/CONTRIBUTING_EN.md)
+- [貢獻指南（繁體中文）](./docs/CONTRIBUTING_ZH_TW.md)
+- [貢献ガイド（日本語）](./docs/CONTRIBUTING_JP.md)
 
 ## 📊 项目统计
 
