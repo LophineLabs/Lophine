@@ -49,7 +49,7 @@ jobs:
           fetch-depth: 0
 
       - name: Sync to CNB
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && steps.check-pr.outputs.skip != 'true'
         env:
           CNB_TOKEN: ${{ secrets.CNB_TOKEN }}
           CNB_TARGET_URL: https://cnb.cool/LophineLabs/Lophine.git
@@ -106,7 +106,7 @@ jobs:
         run: sh scripts/SetENV.sh
 
       - name: Detect PR Merge Push
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && steps.check-pr.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
