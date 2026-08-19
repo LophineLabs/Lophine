@@ -139,6 +139,7 @@ jobs:
           fi
 
       - name: Create Release - No Comment
+        id: release_no_comment
         if: env.flag_comment == 'false'
         uses: ncipollo/release-action@v1
         with:
@@ -158,6 +159,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release - With Comment
+        id: release_with_comment
         if: env.flag_comment == 'true'
         uses: ncipollo/release-action@v1
         with:
@@ -179,11 +181,13 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Sync Release Tag to CNB
-        if: steps.release_no_comment.outcome == 'success' || steps.release_with_comment.outcome == 'success'
+        if: ${{ !cancelled() && (steps.release_no_comment.conclusion == 'success' || steps.release_with_comment.conclusion == 'success') }}
         env:
           CNB_TOKEN: ${{ secrets.CNB_TOKEN }}
           CNB_TARGET_URL: https://cnb.cool/LophineLabs/Lophine.git
         run: |
+          echo "Sync release tag to CNB: ${{ env.tag }}"
+
           git fetch origin \
             "refs/tags/${{ env.tag }}:refs/tags/${{ env.tag }}" \
             --force
