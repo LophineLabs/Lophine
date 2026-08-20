@@ -27,10 +27,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.*;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 
@@ -43,7 +40,8 @@ public class ServerI18nUtil {
     private static final Logger logger = LogUtils.getClassLogger();
     private static final String VERSION = ServerBuildInfo.buildInfo().minecraftVersionId();
     private static final String BASE_PATH = "cache/lophine/" + VERSION + "/";
-    private static final String defaultLophineLangPath = "/assets/lophine/lang/en_us.json";
+    private static final Set<String> registeredLanguageBasePath = new HashSet<>();
+    private static final String defaultLophineLangName = "en_us.json";
     private static final String manifestUrl = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
     private static final String resourceBaseUrl = "https://resources.download.minecraft.net/";
     // pre-load
@@ -54,20 +52,32 @@ public class ServerI18nUtil {
     private static String versionPath;
     private static String manifestPath;
     private static String langJsonPath;
-    private static String lophineLangPath;
+    private static String targetLangFileName;
+
+    private static void register() {
+        register("assets/lophine/lang");
+    }
+
+    private static void register(String base) {
+        if (!base.endsWith("/")) {
+            base += "/";
+        }
+        registeredLanguageBasePath.add(base);
+    }
 
     public static void init() {
         if (Objects.equals(LanguageConfig.lang, "en_us")) {
             return;
         }
+        register();
         langPath = BASE_PATH + "lang/" + LanguageConfig.lang + ".json";
         langJsonPath = "minecraft/lang/" + LanguageConfig.lang + ".json";
-        lophineLangPath = "/assets/lophine/lang/" + LanguageConfig.lang + ".json";
+        targetLangFileName = LanguageConfig.lang + ".json";
         logger.info("Starting load language: {}", LanguageConfig.lang);
         if (LanguageConfig.full_blocking_load) {
             loadI18n(LanguageConfig.lang, 2);
         } else {
-            preloadTask.thenAcceptAsync(v -> loadI18n(LanguageConfig.lang, 2));
+            preloadTask.thenAcceptAsync(_ -> loadI18n(LanguageConfig.lang, 2));
         }
     }
 
@@ -274,16 +284,21 @@ public class ServerI18nUtil {
     }
 
     private static void loadLophineI18n(BiConsumer<String, String> bi) {
-        if (Language.class.getResource(lophineLangPath) != null) {
-            Language.parseTranslations(bi, lophineLangPath);
-        } else {
-            loadLophineI18nDefault(bi);
+        loadLophineI18nDefault(bi);
+        for (String targetPath : registeredLanguageBasePath) {
+            String targetFile = targetPath + targetLangFileName;
+            if (Language.class.getResource(targetFile) != null) {
+                Language.parseTranslations(bi, targetFile);
+            }
         }
     }
 
     public static void loadLophineI18nDefault(BiConsumer<String, String> bi) {
-        if (Language.class.getResource(defaultLophineLangPath) != null) {
-            Language.parseTranslations(bi, defaultLophineLangPath);
+        for (String targetPath : registeredLanguageBasePath) {
+            String targetFile = targetPath + defaultLophineLangName;
+            if (Language.class.getResource(targetFile) != null) {
+                Language.parseTranslations(bi, targetFile);
+            }
         }
     }
 
