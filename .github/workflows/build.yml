@@ -1,6 +1,7 @@
 name: Lophine CI
 
 on:
+  pull_request:
   workflow_dispatch:
     inputs:
       force-release:
@@ -15,11 +16,6 @@ on:
         description: "Add comments to release"
         required: false
         default: ""
-      is-pr:
-        description: "Whether this is a PR trigger"
-        required: false
-        type: string
-        default: "false"
 
 permissions: write-all
 
@@ -36,7 +32,7 @@ jobs:
           fetch-depth: 0
 
       - name: Sync to CNB
-        if: inputs.is-pr != 'true'
+        if: github.event_name != 'pull_request'
         env:
           CNB_TOKEN: ${{ secrets.CNB_TOKEN }}
           CNB_TARGET_URL: https://cnb.cool/LophineLabs/Lophine.git
@@ -82,11 +78,11 @@ jobs:
           path: lophine-server/build/libs/*-paperclip-*.jar
 
       - name: Set Environment
-        if: inputs.is-pr != 'true'
+        if: github.event_name != 'pull_request'
         run: sh scripts/SetENV.sh
 
       - name: Detect PR Merge Push
-        if: inputs.is-pr != 'true'
+        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -112,7 +108,7 @@ jobs:
           fi
 
       - name: Check If Release Exists
-        if: inputs.is-pr != 'true' && env.flag_release == 'true'
+        if: github.event_name != 'pull_request' && env.flag_release == 'true'
         run: |
           git fetch --tags
           if [ -n "$(git tag -l "${{ env.tag }}")" ]; then
@@ -134,7 +130,7 @@ jobs:
           echo "release_exists=${release_exists}" >> $GITHUB_ENV
 
       - name: Check If Branch In Expectations
-        if: inputs.is-pr != 'true' && env.flag_release == 'true'
+        if: github.event_name != 'pull_request' && env.flag_release == 'true'
         run: |
           if [[ "$GITHUB_REF_NAME" == ver/* ]] || [[ "$GITHUB_REF_NAME" == exp/* ]] || [[ "$GITHUB_REF_NAME" == dev/* ]]; then
             echo "Branch is in expected prefixes"
@@ -145,7 +141,7 @@ jobs:
           fi
 
       - name: Publish To Repo
-        if: ( inputs.is-pr != 'true' && !( env.unexpect == 'true' ) && env.flag_push_repo == 'true' && !( inputs.force-push == 'false' )) || inputs.force-push == 'true'
+        if: ( github.event_name != 'pull_request' && !( env.unexpect == 'true' ) && env.flag_push_repo == 'true' && !( inputs.force-push == 'false' )) || inputs.force-push == 'true'
         continue-on-error: true
         run: ./gradlew --refresh-dependencies generateDevelopmentBundle publish -PpublishDevBundle=true
         env:
@@ -153,7 +149,7 @@ jobs:
           PRIVATE_MAVEN_REPO_USERNAME: ${{ secrets.PRIVATE_MAVEN_REPO_USERNAME }}
 
       - name: Create Release - Pre Process
-        if: ( inputs.is-pr != 'true' && env.from_pr_merge != 'true' && !( env.unexpect == 'true' ) && env.flag_release == 'true' && env.release_exists != 'true' && !(inputs.force-release == 'false')) || inputs.force-release == 'true'
+        if: ( github.event_name != 'pull_request' && env.from_pr_merge != 'true' && !( env.unexpect == 'true' ) && env.flag_release == 'true' && env.release_exists != 'true' && !(inputs.force-release == 'false')) || inputs.force-release == 'true'
         run: |
           if [ "${{ inputs.comments }}" == "" ]; then
             echo "No comments provided"

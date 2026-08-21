@@ -1,8 +1,7 @@
-name: Pre Check
+name: Pre Check For Push
 
 on:
   push:
-  pull_request:
 
 permissions: write-all
 
@@ -14,7 +13,6 @@ jobs:
     steps:
       - name: Check If Open PR Exists
         id: check-pr
-        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -36,10 +34,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ref="${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}"
           gh workflow run build.yml \
             --repo ${{ github.repository }} \
-            --ref "$ref" \
+            --ref "${{ github.ref_name }}" \
             -f is-pr=${{ github.event_name == 'pull_request' }}
 
   dispatch-qodana:
@@ -51,7 +48,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ref="${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}"
           gh workflow run qodana_code_quality.yml \
             --repo ${{ github.repository }} \
-            --ref "$ref"
+            --ref "${{ github.ref_name }}"
