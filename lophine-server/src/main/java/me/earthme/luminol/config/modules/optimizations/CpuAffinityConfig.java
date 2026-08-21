@@ -1,8 +1,12 @@
 package me.earthme.luminol.config.modules.optimizations;
 
 import com.mojang.logging.LogUtils;
-import me.earthme.luminol.config.flags.*;
+import me.earthme.luminol.config.flags.ConfigClassInfo;
+import me.earthme.luminol.config.flags.ConfigInfo;
+import me.earthme.luminol.config.flags.DoNotLoad;
+import me.earthme.luminol.config.flags.NeedRun;
 import me.earthme.luminol.enums.EnumConfigCategory;
+import me.earthme.luminol.enums.EnumLoadType;
 import me.earthme.luminol.enums.EnumRunnableType;
 import me.earthme.luminol.utils.AffinityRunnableWrapper;
 import net.openhft.affinity.Affinity;
@@ -14,29 +18,29 @@ import java.util.List;
 
 @ConfigClassInfo(category = EnumConfigCategory.OPTIMIZATIONS, name = "cpu_affinity")
 public class CpuAffinityConfig {
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "enabled_for_tickregion")
     public static boolean enabledForTickRegion = false;
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "enable_for_chunksystem_worker")
     public static boolean enabledForChunkSystemWorker = false;
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "enable_for_chunksystem_io")
     public static boolean enabledForChunkSystemIo = false;
 
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "tickregion_affinity")
     public static List<String> tickRegionAffinity = Affinity.getAffinity()
             .stream()
             .mapToObj(String::valueOf)
             .toList();
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "chunksystem_worker_affinity")
     public static List<String> chunkSystemWorkerAffinity = Affinity.getAffinity()
             .stream()
             .mapToObj(String::valueOf)
             .toList();
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "chunksystem_io_affinity")
     public static List<String> chunkSystemIoAffinity = Affinity.getAffinity()
             .stream()

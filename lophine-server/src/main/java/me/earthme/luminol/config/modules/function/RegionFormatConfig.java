@@ -5,6 +5,7 @@ import io.anonymous.anonymous.enums.EnumRegionFormat;
 import me.earthme.luminol.config.IllegalFormatConversionExceptionWithOrigin;
 import me.earthme.luminol.config.flags.*;
 import me.earthme.luminol.enums.EnumConfigCategory;
+import me.earthme.luminol.enums.EnumLoadType;
 import me.earthme.luminol.enums.EnumRunnableType;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.Nullable;
@@ -13,17 +14,17 @@ import java.util.Set;
 
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "region_format")
 public class RegionFormatConfig {
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "format", allowAutoReset = false)
     public static EnumRegionFormat regionFormat = EnumRegionFormat.MCA;
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @TransformedConfig(name = "linear_compression_level", directory = {"function", "region_format"})
     @ConfigInfo(name = "blinear_compression_level")
     public static int blinearCompressionLevel = 1;
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "blinear_io_flush_delay_ms")
     public static int blinearIoFlushDelayMs = 3000;
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "blinear_io_thread_count")
     public static int blinearIoThreadCount = 6;
 

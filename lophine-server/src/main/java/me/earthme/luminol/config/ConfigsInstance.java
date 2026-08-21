@@ -10,6 +10,7 @@ import me.earthme.luminol.api.config.LuminolConfigsInstance;
 import me.earthme.luminol.commands.config.ConfigCommand;
 import me.earthme.luminol.config.flags.*;
 import me.earthme.luminol.enums.EnumConfigCategory;
+import me.earthme.luminol.enums.EnumLoadType;
 import me.earthme.luminol.enums.EnumRunnableType;
 import me.earthme.luminol.utils.ClassLoadUtil;
 import org.jetbrains.annotations.NotNull;
@@ -178,7 +179,8 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                 }
 
                 ConfigInfo configInfo = field.getAnnotation(ConfigInfo.class);
-                if (configInfo == null || field.getAnnotation(DoNotLoad.class) != null) {
+                DoNotLoad doNotLoad = field.getAnnotation(DoNotLoad.class);
+                if (configInfo == null || (doNotLoad != null && doNotLoad.when() == EnumLoadType.ALWAYS)) {
                     continue;
                 }
 
@@ -351,8 +353,9 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         }
 
         // Check for special annotations
-        boolean skipLoad = field.getAnnotation(DoNotLoad.class) != null;
-        boolean doNotReload = alreadyInit && field.getAnnotation(HotReloadUnsupported.class) != null;
+        DoNotLoad doNotLoad = field.getAnnotation(DoNotLoad.class);
+        boolean skipLoad = doNotLoad != null && doNotLoad.when() == EnumLoadType.ALWAYS;
+        boolean doNotReload = alreadyInit && doNotLoad != null && doNotLoad.when() == EnumLoadType.RELOAD;
         ConfigInfo configInfo = field.getAnnotation(ConfigInfo.class);
 
         if (skipLoad || configInfo == null) {

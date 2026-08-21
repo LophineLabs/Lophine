@@ -2,12 +2,13 @@ package fun.bm.lophine.config.modules.function;
 
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
-import me.earthme.luminol.config.flags.HotReloadUnsupported;
+import me.earthme.luminol.config.flags.DoNotLoad;
 import me.earthme.luminol.enums.EnumConfigCategory;
+import me.earthme.luminol.enums.EnumLoadType;
 
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "language")
 public class LanguageConfig {
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "lang")
     public static String lang = "en_us";
 
