@@ -38,6 +38,3 @@ jobs:
     needs: pre-check
     if: needs.pre-check.outputs.skip != 'true'
     uses: ./.github/workflows/qodana_code_quality.yml
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
