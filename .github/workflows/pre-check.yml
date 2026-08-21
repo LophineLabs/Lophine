@@ -1,0 +1,43 @@
+name: Pre Check
+
+on:
+  push:
+  pull_request:
+
+permissions: write-all
+
+jobs:
+  pre-check:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check-pr.outputs.skip }}
+    steps:
+      - name: Check If Open PR Exists
+        id: check-pr
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pr_count=$(gh pr list --repo ${{ github.repository }} --head ${{ github.ref_name }} --state open --json number --jq 'length')
+          if [ "$pr_count" -gt 0 ]; then
+            echo "Open PR exists for branch ${{ github.ref_name }}, skipping push CI"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "No open PR for branch ${{ github.ref_name }}"
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+  build:
+    needs: pre-check
+    if: needs.pre-check.outputs.skip != 'true'
+    uses: ./.github/workflows/build.yml
+    with:
+      is-pr: ${{ github.event_name == 'pull_request' }}
+
+  qodana:
+    needs: pre-check
+    if: needs.pre-check.outputs.skip != 'true'
+    uses: ./.github/workflows/qodana_code_quality.yml
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}

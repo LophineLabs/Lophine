@@ -1,8 +1,6 @@
 name: Lophine CI
 
 on:
-  push:
-  pull_request:
   workflow_dispatch:
     inputs:
       force-release:
@@ -17,6 +15,13 @@ on:
         description: "Add comments to release"
         required: false
         default: ""
+  workflow_call:
+    inputs:
+      is-pr:
+        description: "Whether this is a PR trigger"
+        required: false
+        type: string
+        default: "false"
 
 permissions: write-all
 
@@ -27,29 +32,13 @@ jobs:
     env:
       BUILD_NUMBER: ${{ github.run_number }}
     steps:
-      - name: Check If Open PR Exists
-        id: check-pr
-        if: github.event_name == 'push'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          pr_count=$(gh pr list --repo ${{ github.repository }} --head ${{ github.ref_name }} --state open --json number --jq 'length')
-          if [ "$pr_count" -gt 0 ]; then
-            echo "Open PR exists for branch ${{ github.ref_name }}, skipping push CI"
-            echo "skip=true" >> $GITHUB_OUTPUT
-          else
-            echo "No open PR for branch ${{ github.ref_name }}"
-            echo "skip=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Checkout Git Repository
-        if: steps.check-pr.outputs.skip != 'true'
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Sync to CNB
-        if: github.event_name != 'pull_request' && steps.check-pr.outputs.skip != 'true'
+        if: inputs.is-pr != 'true'
         env:
           CNB_TOKEN: ${{ secrets.CNB_TOKEN }}
           CNB_TARGET_URL: https://cnb.cool/LophineLabs/Lophine.git
@@ -68,45 +57,38 @@ jobs:
             tencentcom/git-sync
 
       - name: Set Up JDK
-        if: steps.check-pr.outputs.skip != 'true'
         uses: actions/setup-java@v5.7.0
         with:
           distribution: zulu
           java-version: 25
 
       - name: Setup Gradle
-        if: steps.check-pr.outputs.skip != 'true'
         uses: gradle/actions/setup-gradle@v6
 
       - name: Grant execute permission for gradlew
-        if: steps.check-pr.outputs.skip != 'true'
         run: chmod +x gradlew
 
       - name: Configure Git User Details
-        if: steps.check-pr.outputs.skip != 'true'
         run: git config --global user.email "ci@lophinelabs.com" && git config --global user.name "LophinelabsCI"
 
       - name: Apply All Patches
-        if: steps.check-pr.outputs.skip != 'true'
         run: ./gradlew --refresh-dependencies applyAllPatches
 
       - name: Build Paperclip Jar
-        if: steps.check-pr.outputs.skip != 'true'
         run: ./gradlew --refresh-dependencies createPaperclipJar
 
       - name: Upload Artifact
-        if: steps.check-pr.outputs.skip != 'true'
         uses: actions/upload-artifact@v7
         with:
           name: ${{ env.project_id_b }} CI Artifacts
           path: lophine-server/build/libs/*-paperclip-*.jar
 
       - name: Set Environment
-        if: github.event_name != 'pull_request' && steps.check-pr.outputs.skip != 'true'
+        if: inputs.is-pr != 'true'
         run: sh scripts/SetENV.sh
 
       - name: Detect PR Merge Push
-        if: github.event_name == 'push' && steps.check-pr.outputs.skip != 'true'
+        if: inputs.is-pr != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -132,7 +114,7 @@ jobs:
           fi
 
       - name: Check If Release Exists
-        if: github.event_name != 'pull_request' && env.flag_release == 'true' && steps.check-pr.outputs.skip != 'true'
+        if: inputs.is-pr != 'true' && env.flag_release == 'true'
         run: |
           git fetch --tags
           if [ -n "$(git tag -l "${{ env.tag }}")" ]; then
@@ -154,7 +136,7 @@ jobs:
           echo "release_exists=${release_exists}" >> $GITHUB_ENV
 
       - name: Check If Branch In Expectations
-        if: github.event_name != 'pull_request' && env.flag_release == 'true' && steps.check-pr.outputs.skip != 'true'
+        if: inputs.is-pr != 'true' && env.flag_release == 'true'
         run: |
           if [[ "$GITHUB_REF_NAME" == ver/* ]] || [[ "$GITHUB_REF_NAME" == exp/* ]] || [[ "$GITHUB_REF_NAME" == dev/* ]]; then
             echo "Branch is in expected prefixes"
@@ -165,7 +147,7 @@ jobs:
           fi
 
       - name: Publish To Repo
-        if: (( github.event_name != 'pull_request' && !( env.unexpect == 'true' ) && env.flag_push_repo == 'true' && !( inputs.force-push == 'false' )) || inputs.force-push == 'true') && steps.check-pr.outputs.skip != 'true'
+        if: ( inputs.is-pr != 'true' && !( env.unexpect == 'true' ) && env.flag_push_repo == 'true' && !( inputs.force-push == 'false' )) || inputs.force-push == 'true'
         continue-on-error: true
         run: ./gradlew --refresh-dependencies generateDevelopmentBundle publish -PpublishDevBundle=true
         env:
@@ -173,7 +155,7 @@ jobs:
           PRIVATE_MAVEN_REPO_USERNAME: ${{ secrets.PRIVATE_MAVEN_REPO_USERNAME }}
 
       - name: Create Release - Pre Process
-        if: (( github.event_name != 'pull_request' && env.from_pr_merge != 'true' && !( env.unexpect == 'true' ) && env.flag_release == 'true' && env.release_exists != 'true' && !(inputs.force-release == 'false')) || inputs.force-release == 'true') && steps.check-pr.outputs.skip != 'true'
+        if: ( inputs.is-pr != 'true' && env.from_pr_merge != 'true' && !( env.unexpect == 'true' ) && env.flag_release == 'true' && env.release_exists != 'true' && !(inputs.force-release == 'false')) || inputs.force-release == 'true'
         run: |
           if [ "${{ inputs.comments }}" == "" ]; then
             echo "No comments provided"
@@ -185,7 +167,7 @@ jobs:
 
       - name: Create Release - No Comment
         id: release_no_comment
-        if: env.flag_comment == 'false' && steps.check-pr.outputs.skip != 'true'
+        if: env.flag_comment == 'false'
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ env.tag }}
@@ -205,7 +187,7 @@ jobs:
 
       - name: Create Release - With Comment
         id: release_with_comment
-        if: env.flag_comment == 'true' && steps.check-pr.outputs.skip != 'true'
+        if: env.flag_comment == 'true'
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ env.tag }}
