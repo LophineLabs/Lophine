@@ -57,7 +57,7 @@ public class ResetCommentsCommand extends ConfigSubcommand {
                 );
                 return true;
             }
-            parent.config.reloadAsync(false).thenAccept(nullValue -> context.getSender().sendMessage(
+            parent.config.reloadAsync(false).thenAccept(_ -> context.getSender().sendMessage(
                     Component
                             .text("Reset comments to default in the configuration file!")
                             .color(TextColor.color(0, 255, 0))

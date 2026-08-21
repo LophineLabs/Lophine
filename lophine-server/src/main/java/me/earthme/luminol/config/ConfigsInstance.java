@@ -5,7 +5,7 @@ import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.mojang.logging.LogUtils;
 import fun.bm.lophine.utils.ServerI18nUtil;
 import io.papermc.paper.threadedregions.RegionizedServer;
-import me.earthme.luminol.api.config.ConfigDataPair;
+import me.earthme.luminol.api.config.EnumConfigData;
 import me.earthme.luminol.api.config.LuminolConfigsInstance;
 import me.earthme.luminol.commands.config.ConfigCommand;
 import me.earthme.luminol.config.flags.*;
@@ -822,8 +822,8 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     /**
      * Get default configuration value as string
      */
-    public String getDefaultConfig(String key) {
-        return defaultvalueMap.get(key).toString();
+    public Object getDefaultConfig(String key) {
+        return defaultvalueMap.get(key);
     }
 
     /**
@@ -961,96 +961,52 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     // ========================================================================
 
     /**
-     * Get all configuration data
+     * Get configuration data
      */
-    public Set<ConfigDataPair> getAllData() {
-        return getData("", false, false);
-    }
-
-    /**
-     * Get configuration data with specified prefix
-     */
-    public Set<ConfigDataPair> getData(String prefix) {
-        return getData(prefix, false, false);
-    }
-
-    /**
-     * Get all configuration data with comments
-     */
-    public Set<ConfigDataPair> getAllDataFull() {
-        return getData("", true, true);
-    }
-
-    /**
-     * Get configuration data with comments and specified prefix
-     */
-    public Set<ConfigDataPair> getDataFull(String prefix) {
-        return getData(prefix, true, true);
-    }
-
-    /**
-     * Get configuration data with specified prefix
-     */
-    public Set<ConfigDataPair> getData(String prefix, boolean _comment, boolean _withSuggestions) {
-        List<String> keys = getAllConfigPaths(prefix);
-        return getData(keys, _comment, _withSuggestions);
-    }
-
-    /**
-     * Get configuration data for specified keys
-     */
-    public Set<ConfigDataPair> getData(List<String> list) {
-        return getData(list, false, false);
-    }
-
-    /**
-     * Get configuration data with comments for specified keys
-     */
-    public Set<ConfigDataPair> getDataWithComment(List<String> list) {
-        return getData(list, true, false);
-    }
-
-    public Set<ConfigDataPair> getDataFull(List<String> list) {
-        return getData(list, true, true);
-    }
-
-    /**
-     * Get configuration data for specified keys
-     */
-    public Set<ConfigDataPair> getData(List<String> list, boolean _comment, boolean _withSuggestions) {
-        Set<ConfigDataPair> result = new HashSet<>();
+    public Map<String, Map<EnumConfigData, Object>> getData(Collection<String> list, Collection<EnumConfigData> features) {
+        Map<String, Map<EnumConfigData, Object>> map = new TreeMap<>();
         for (String key : list) {
-            Object valueOrigin = configFileInstance.get(key);
-            Object value = valueOrigin;
-            if (value instanceof List<?> list1) {
-                value = parseStringFromList(list1);
-            } else if (value instanceof Enum) {
-                value = ((Enum<?>) value).name();
-            }
-            String comment = null;
-            if (_comment) {
-                comment = configFileInstance.getComment(key);
-                if (comment == null || comment.isEmpty()) {
-                    comment = null;
-                }
-            }
-            String[] suggestions = null;
-            if (_withSuggestions) {
-                suggestions = getConfigSuggestions(key);
-            }
-
-            if (suggestions == null) {
-                if (valueOrigin instanceof Enum<?> enumValue) {
-                    Enum<?>[] values = enumValue.getClass().getEnumConstants();
-                    suggestions = new String[values.length];
-                    for (Enum<?> enumValue1 : values) {
-                        suggestions[enumValue1.ordinal()] = enumValue1.name();
+            Map<EnumConfigData, Object> dataMap = new EnumMap<>(EnumConfigData.class);
+            for (EnumConfigData feature : features) {
+                switch (feature) {
+                    case EnumConfigData.REAL_VALUE -> dataMap.put(feature, configFileInstance.get(key));
+                    case EnumConfigData.VALUE -> dataMap.put(feature, parseDataToReadable(configFileInstance.get(key)));
+                    case EnumConfigData.STRING_VALUE ->
+                            dataMap.put(feature, parseDataToReadable(configFileInstance.get(key)).toString());
+                    case EnumConfigData.COMMENT -> {
+                        String comment = configFileInstance.getComment(key);
+                        if (comment == null || comment.isEmpty()) {
+                            comment = null;
+                        }
+                        dataMap.put(feature, comment);
+                    }
+                    case EnumConfigData.SUGGESTIONS -> {
+                        String[] suggestions = getConfigSuggestions(key);
+                        if (suggestions == null) {
+                            if (configFileInstance.get(key) instanceof Enum<?> enumValue) {
+                                Enum<?>[] values = enumValue.getClass().getEnumConstants();
+                                suggestions = new String[values.length];
+                                for (Enum<?> enumValue1 : values) {
+                                    suggestions[enumValue1.ordinal()] = enumValue1.name();
+                                }
+                            }
+                        }
+                        dataMap.put(feature, suggestions);
                     }
                 }
             }
-            result.add(new ConfigDataPair(key, value, comment, suggestions));
+            map.put(key, dataMap);
         }
-        return result;
+        return map;
+    }
+
+    private Object parseDataToReadable(Object value) {
+        if (value instanceof List<?> list1) {
+            return parseStringFromList(list1);
+        } else if (value instanceof Enum) {
+            return ((Enum<?>) value).name();
+        }
+        return value;
     }
 
     /**
