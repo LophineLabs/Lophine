@@ -36,10 +36,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          REF="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
           gh workflow run build.yml \
             --repo ${{ github.repository }} \
-            --ref "$REF" \
+            --ref "${{ github.ref_name }}" \
             -f is-pr=${{ github.event_name == 'pull_request' }}
 
   dispatch-qodana:
@@ -51,7 +50,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          REF="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
           gh workflow run qodana_code_quality.yml \
             --repo ${{ github.repository }} \
-            --ref "$REF"
+            --ref "${{ github.ref_name }}"
