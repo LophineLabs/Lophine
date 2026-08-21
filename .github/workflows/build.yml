@@ -15,8 +15,6 @@ on:
         description: "Add comments to release"
         required: false
         default: ""
-  workflow_call:
-    inputs:
       is-pr:
         description: "Whether this is a PR trigger"
         required: false

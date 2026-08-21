@@ -27,14 +27,31 @@ jobs:
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
 
-  build:
+  dispatch-build:
     needs: pre-check
     if: needs.pre-check.outputs.skip != 'true'
-    uses: ./.github/workflows/build.yml
-    with:
-      is-pr: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Build Workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REF="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          gh workflow run build.yml \
+            --repo ${{ github.repository }} \
+            --ref "$REF" \
+            -f is-pr=${{ github.event_name == 'pull_request' }}
 
-  qodana:
+  dispatch-qodana:
     needs: pre-check
     if: needs.pre-check.outputs.skip != 'true'
-    uses: ./.github/workflows/qodana_code_quality.yml
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Qodana Workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REF="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          gh workflow run qodana_code_quality.yml \
+            --repo ${{ github.repository }} \
+            --ref "$REF"
