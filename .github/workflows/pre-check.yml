@@ -36,8 +36,7 @@ jobs:
         run: |
           gh workflow run build.yml \
             --repo ${{ github.repository }} \
-            --ref "${{ github.ref_name }}" \
-            -f is-pr=${{ github.event_name == 'pull_request' }}
+            --ref "${{ github.ref_name }}"
 
   dispatch-qodana:
     needs: pre-check
