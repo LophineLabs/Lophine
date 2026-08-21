@@ -1,6 +1,5 @@
 package me.earthme.luminol.config.modules.function;
 
-import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
 import me.earthme.luminol.config.flags.HotReloadUnsupported;
@@ -11,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @ConfigClassInfo(name = "portal_rate_limit", category = EnumConfigCategory.FUNCTION)
-public class PortalRateLimiterConfig implements IConfigModule {
+public class PortalRateLimiterConfig {
     @ConfigInfo(name = "enable")
     @HotReloadUnsupported
     public static boolean enabled = false;

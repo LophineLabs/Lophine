@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ConfigManager {
     private static boolean initialized = false;
+    public static boolean shouldCrash = false;
     private static final ConfigsInstanceBuilder builder = new ConfigsInstanceBuilder();
     private static final Map<String, ConfigsInstance> configfiles = new HashMap<>();
     private static final Collection<Runnable> runnableBeforeFinalLoad = new ConcurrentLinkedQueue<>();
@@ -65,6 +66,7 @@ public class ConfigManager {
         CompletableFuture.allOf(futures).join();
         CommandRegister.register(); // register command after config loaded to enable some command didn't depend on config files
         initialized = true;
+        if (shouldCrash) throw new RuntimeException("Config load failed with uncatchable error.");
     }
 
     public static void registerRunnableBeforeFinalLoad(Runnable runnable) {

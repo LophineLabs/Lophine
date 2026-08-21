@@ -1,19 +1,17 @@
 package me.earthme.luminol.config.modules.misc;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
 import me.earthme.luminol.config.flags.DoNotLoad;
+import me.earthme.luminol.config.flags.NeedRun;
 import me.earthme.luminol.enums.EnumConfigCategory;
+import me.earthme.luminol.enums.EnumRunnableType;
 import me.earthme.luminol.utils.AutoUpdateHelper;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Set;
 
 @ConfigClassInfo(category = EnumConfigCategory.MISC, name = "auto_update")
-public class AutoUpdateConfig implements IConfigModule {
+public class AutoUpdateConfig {
     @ConfigInfo(name = "enabled")
     public static boolean enabled = false;
 
@@ -29,8 +27,8 @@ public class AutoUpdateConfig implements IConfigModule {
     @DoNotLoad
     public AutoUpdateHelper instance = null;
 
-    @Override
-    public void onLoaded(CommentedFileConfig configInstance, @Nullable Set<Exception> exs) {
+    @NeedRun(when = EnumRunnableType.ON_LOADED)
+    public void onLoaded() {
         if (enabled) {
             if (instance == null) {
                 instance = new AutoUpdateHelper();
@@ -39,8 +37,8 @@ public class AutoUpdateConfig implements IConfigModule {
         }
     }
 
-    @Override
-    public void onUnloaded(CommentedFileConfig configInstance) {
+    @NeedRun(when = EnumRunnableType.ON_UNLOAD)
+    public void onUnloaded() {
         if (instance != null) instance.shutdown();
     }
 }

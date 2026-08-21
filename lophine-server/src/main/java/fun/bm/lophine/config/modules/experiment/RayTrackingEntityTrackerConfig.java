@@ -1,12 +1,11 @@
 package fun.bm.lophine.config.modules.experiment;
 
-import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
 import me.earthme.luminol.enums.EnumConfigCategory;
 
 @ConfigClassInfo(category = EnumConfigCategory.EXPERIMENT, name = "ray_tracking_entity_tracker")
-public class RayTrackingEntityTrackerConfig implements IConfigModule {
+public class RayTrackingEntityTrackerConfig {
     @ConfigInfo(name = "enabled")
     public static boolean enabled = false;
     @ConfigInfo(name = "skip_marker_armor_stands")

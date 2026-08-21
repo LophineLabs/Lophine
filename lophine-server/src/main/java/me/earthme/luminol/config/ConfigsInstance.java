@@ -10,6 +10,7 @@ import me.earthme.luminol.api.config.LuminolConfigsInstance;
 import me.earthme.luminol.commands.config.ConfigCommand;
 import me.earthme.luminol.config.flags.*;
 import me.earthme.luminol.enums.EnumConfigCategory;
+import me.earthme.luminol.enums.EnumRunnableType;
 import me.earthme.luminol.utils.ClassLoadUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -39,7 +41,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     private final String pack;          // Used to find all classes
 
     // Storage collections
-    private final Map<IConfigModule, Set<Exception>> allInstanced = new HashMap<>(); // add exception to map to store exceptions
+    private final Map<Object, Set<Exception>> allInstanced = new HashMap<>(); // add exception to map to store exceptions
     private final Map<String, Object> stagedConfigMap = new HashMap<>();
     private final Map<String, Object> defaultvalueMap = new HashMap<>();
     private final Map<String, String[]> suggestionsMap = new HashMap<>();
@@ -136,17 +138,17 @@ public class ConfigsInstance implements LuminolConfigsInstance {
      * Run unload tasks for all modules
      */
     public void runUnloadTasks() {
-        for (IConfigModule module : allInstanced.keySet()) {
-            module.onUnloaded(configFileInstance);
+        for (Object module : allInstanced.keySet()) {
+            invokeNeedRunMethods(module, EnumRunnableType.ON_UNLOAD);
         }
     }
 
     /**
-     * Finalize configuration loading by calling onLoaded for all modules
+     * Finalize configuration loading by calling @NeedRun(ON_LOADED) methods for all modules
      */
     public void finalizeLoadConfig() {
-        for (Map.Entry<IConfigModule, Set<Exception>> entry : allInstanced.entrySet()) {
-            entry.getKey().onLoaded(configFileInstance, entry.getValue());
+        for (Map.Entry<Object, Set<Exception>> entry : allInstanced.entrySet()) {
+            invokeNeedRunMethods(entry.getKey(), EnumRunnableType.ON_LOADED, entry.getValue());
         }
         // if the config load with exceptions but allowed, remove exceptions from the map
         allInstanced.replaceAll((_, _) -> null);
@@ -164,8 +166,9 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         }
 
         // For each staged config value, update the corresponding field
-        for (Map.Entry<IConfigModule, Set<Exception>> entry : allInstanced.entrySet()) {
-            IConfigModule module = entry.getKey();
+        for (Map.Entry<Object, Set<Exception>> entry : allInstanced.entrySet()) {
+            Object module = entry.getKey();
+
             Field[] fields = module.getClass().getDeclaredFields();
 
             for (Field field : fields) {
@@ -250,8 +253,8 @@ public class ConfigsInstance implements LuminolConfigsInstance {
      * Load all configuration modules
      */
     private void loadAllModules(boolean keepComments) {
-        Map<IConfigModule, Set<Exception>> stagedMap = new HashMap<>();
-        for (IConfigModule instanced : allInstanced.keySet()) {
+        Map<Object, Set<Exception>> stagedMap = new HashMap<>();
+        for (Object instanced : allInstanced.keySet()) {
             Set<Exception> exceptions = loadForSingle(instanced, keepComments);
             if (exceptions != null) {
                 stagedMap.put(instanced, exceptions);
@@ -262,17 +265,14 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     }
 
     /**
-     * Load config category comments
-     */
-
-    /**
      * Instantiate all configuration modules
      */
     private void instanceAllModule() throws NoSuchMethodException, InvocationTargetException,
             InstantiationException, IllegalAccessException {
         for (Class<?> clazz : ClassLoadUtil.getClasses(pack, loader)) {
-            if (IConfigModule.class.isAssignableFrom(clazz)) {
-                allInstanced.put((IConfigModule) clazz.getConstructor().newInstance(), null);
+            ConfigClassInfo configClassInfo = getConfigClassInfo(clazz);
+            if (configClassInfo != null) {
+                allInstanced.put(clazz.getConstructor().newInstance(), null);
             }
         }
     }
@@ -280,11 +280,8 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     /**
      * Load configuration for a single module
      */
-    private @Nullable Set<Exception> loadForSingle(@NotNull IConfigModule singleConfigModule, boolean keepComments) {
+    private @Nullable Set<Exception> loadForSingle(@NotNull Object singleConfigModule, boolean keepComments) {
         ConfigClassInfo configClassInfo = getConfigClassInfo(singleConfigModule);
-        if (configClassInfo == null) {
-            return null;
-        }
 
         // Build configuration path and handle class comments
         final List<String> category = buildConfigCategoryPath(configClassInfo);
@@ -307,8 +304,9 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     /**
      * Get ConfigClassInfo annotation from a config module
      */
-    private ConfigClassInfo getConfigClassInfo(IConfigModule singleConfigModule) {
-        return singleConfigModule.getClass().getAnnotation(ConfigClassInfo.class);
+    private ConfigClassInfo getConfigClassInfo(Object singleConfigModule) {
+        Class<?> clazz = singleConfigModule instanceof Class<?> ? (Class<?>) singleConfigModule : singleConfigModule.getClass();
+        return clazz.getAnnotation(ConfigClassInfo.class);
     }
 
     /**
@@ -345,7 +343,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     /**
      * Process a single configuration field
      */
-    private void processConfigField(Field field, @NotNull IConfigModule singleConfigModule,
+    private void processConfigField(Field field, @NotNull Object singleConfigModule,
                                     List<String> category, boolean keepComments) throws IllegalAccessException {
         int modifiers = field.getModifiers();
         if (!(Modifier.isStatic(modifiers) && !Modifier.isFinal(modifiers))) {
@@ -388,7 +386,17 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         }
 
         // handle tasks need processed before config finalized
-        ConfigManager.registerRunnableBeforeFinalLoad(singleConfigModule::beforeFinalLoad);
+        if (!alreadyInit) {
+            for (Method method : singleConfigModule.getClass().getDeclaredMethods()) {
+                NeedRun needRun = method.getAnnotation(NeedRun.class);
+                if (needRun != null && needRun.when() == EnumRunnableType.BEFORE_FINAL_LOAD) {
+                    method.setAccessible(true);
+                    ConfigManager.registerRunnableBeforeFinalLoad(() ->
+                            invokeNeedRunMethods(singleConfigModule, EnumRunnableType.BEFORE_FINAL_LOAD)
+                    );
+                }
+            }
+        }
     }
 
     /**
@@ -415,10 +423,10 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         if (currentValue instanceof Enum) {
             currentValue = ((Enum<?>) currentValue).name();
         } else if (currentValue instanceof List<?> list) {
-            if (!list.isEmpty() && list.getFirst() instanceof Enum) {
+            if (!list.isEmpty() && list.getFirst() instanceof Enum<?>) {
                 List<String> stringList = new ArrayList<>();
                 for (Object item : list) {
-                    if (item instanceof Enum e) {
+                    if (item instanceof Enum<?> e) {
                         stringList.add(e.name());
                     } else {
                         stringList.add(item.toString());
@@ -505,9 +513,14 @@ public class ConfigsInstance implements LuminolConfigsInstance {
             actuallyValue = tryTransform(field, actuallyValue);
             configFileInstance.set(fullConfigKeyName, actuallyValue);
         } catch (IllegalFormatConversionException e) {
-            if (configInfo.allowAutoReset()) resetConfig(fullConfigKeyName);
-            e0 = e;
-            logger.error("Failed to transform config {}, reset to default!", fullConfigKeyName);
+            if (configInfo.allowAutoReset()) {
+                actuallyValue = tryTransform(field, defaultvalueMap.get(fullConfigKeyName));
+                e0 = e;
+                logger.error("Failed to transform config {}, because of annotation of allowAutoReset, reset to default!", fullConfigKeyName);
+            } else {
+                logger.error("Failed to transform config {}, because of annotation of allowAutoReset, keep old value!", fullConfigKeyName);
+                throw e;
+            }
         }
 
         // Update field value if hot reload is supported
@@ -1006,7 +1019,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         for (String key : list) {
             Object valueOrigin = configFileInstance.get(key);
             Object value = valueOrigin;
-            if (value instanceof List list1) {
+            if (value instanceof List<?> list1) {
                 value = parseStringFromList(list1);
             } else if (value instanceof Enum) {
                 value = ((Enum<?>) value).name();
@@ -1053,4 +1066,33 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         saveConfigs();
     }
 
+    private void invokeNeedRunMethods(Object module, EnumRunnableType type) {
+        invokeNeedRunMethods(module, type, null);
+    }
+
+    private void invokeNeedRunMethods(Object module, EnumRunnableType type, @Nullable Set<Exception> exs) {
+        for (Method method : module.getClass().getDeclaredMethods()) {
+            NeedRun needRun = method.getAnnotation(NeedRun.class);
+            if (needRun != null && needRun.when() == type) {
+                try {
+                    method.setAccessible(true);
+                    Class<?>[] paramTypes = method.getParameterTypes();
+                    Object[] args = new Object[paramTypes.length];
+                    for (int i = 0; i < paramTypes.length; i++) {
+                        if (CommentedFileConfig.class.isAssignableFrom(paramTypes[i])) {
+                            args[i] = configFileInstance;
+                        } else if (Set.class.isAssignableFrom(paramTypes[i])) {
+                            args[i] = exs;
+                        }
+                    }
+                    Object invokeTarget = Modifier.isStatic(method.getModifiers()) ? null : module.getClass().getDeclaredConstructor().newInstance();
+                    method.invoke(invokeTarget, args);
+                } catch (Exception e) {
+                    logger.error("Failed to invoke @NeedRun({}) method {} on {}",
+                            type, method.getName(), module.getClass().getSimpleName(), e);
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
 }

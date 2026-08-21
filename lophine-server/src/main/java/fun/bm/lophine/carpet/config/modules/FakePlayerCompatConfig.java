@@ -1,18 +1,15 @@
 package fun.bm.lophine.carpet.config.modules;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
 import me.earthme.luminol.config.flags.DoNotLoad;
+import me.earthme.luminol.config.flags.NeedRun;
 import me.earthme.luminol.enums.EnumConfigCategory;
-import org.jetbrains.annotations.Nullable;
+import me.earthme.luminol.enums.EnumRunnableType;
 import org.leavesmc.leaves.command.bot.BotCommand;
 
-import java.util.Set;
-
 @ConfigClassInfo(category = EnumConfigCategory.ROOT, name = "fakeplayer", directory = {"carpet"})
-public class FakePlayerCompatConfig implements IConfigModule {
+public class FakePlayerCompatConfig {
     @ConfigInfo(name = "commandPlayer")
     public static boolean commandPlayer = false;
 
@@ -49,16 +46,16 @@ public class FakePlayerCompatConfig implements IConfigModule {
     @DoNotLoad
     private BotCommand command = null;
 
-    @Override
-    public void onLoaded(CommentedFileConfig configInstance, @Nullable Set<Exception> exs) {
+    @NeedRun(when = EnumRunnableType.ON_LOADED)
+    public void onLoaded() {
         if (commandPlayer && command == null) {
             command = new BotCommand("player");
             command.register();
         }
     }
 
-    @Override
-    public void onUnloaded(CommentedFileConfig configInstance) {
+    @NeedRun(when = EnumRunnableType.ON_UNLOAD)
+    public void onUnloaded() {
         if (command != null) {
             command.unregister();
             command = null;

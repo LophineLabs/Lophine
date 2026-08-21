@@ -1,6 +1,5 @@
 package me.earthme.luminol.config.modules.function;
 
-import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
 import me.earthme.luminol.config.flags.HotReloadUnsupported;
@@ -10,7 +9,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "secure_seed")
-public class SecureSeedConfig implements IConfigModule {
+public class SecureSeedConfig {
     @ConfigInfo(name = "enabled")
     @HotReloadUnsupported
     public static boolean enabled = false;

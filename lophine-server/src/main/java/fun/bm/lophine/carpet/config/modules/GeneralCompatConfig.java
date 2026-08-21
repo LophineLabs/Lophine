@@ -1,15 +1,16 @@
 package fun.bm.lophine.carpet.config.modules;
 
 import fun.bm.lophine.carpet.CarpetProtocalDataBase;
-import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
+import me.earthme.luminol.config.flags.NeedRun;
 import me.earthme.luminol.enums.EnumConfigCategory;
+import me.earthme.luminol.enums.EnumRunnableType;
 
 import java.util.List;
 
 @ConfigClassInfo(category = EnumConfigCategory.ROOT, name = "general", directory = {"carpet"})
-public class GeneralCompatConfig implements IConfigModule {
+public class GeneralCompatConfig {
     @ConfigInfo(name = "language")
     public static String language = "en_us";
 
@@ -190,9 +191,8 @@ public class GeneralCompatConfig implements IConfigModule {
         return Math.clamp(tickCommandPermission, 0, 4);
     }
 
-    @Override
-    public void beforeFinalLoad() {
-        // send changes to client
+    @NeedRun(when = EnumRunnableType.BEFORE_FINAL_LOAD)
+    public void sendChangesToClient() {
         CarpetProtocalDataBase.apply();
     }
 }

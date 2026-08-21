@@ -1,27 +1,24 @@
 package me.earthme.luminol.config.modules.optimizations;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.mojang.logging.LogUtils;
 import gg.pufferfish.pufferfish.simd.SIMDDetection;
-import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
 import me.earthme.luminol.config.flags.DoNotLoad;
+import me.earthme.luminol.config.flags.NeedRun;
 import me.earthme.luminol.enums.EnumConfigCategory;
-import org.jetbrains.annotations.Nullable;
+import me.earthme.luminol.enums.EnumRunnableType;
 import org.slf4j.Logger;
 
-import java.util.Set;
-
 @ConfigClassInfo(category = EnumConfigCategory.OPTIMIZATIONS, name = "use_simd")
-public class SIMDConfig implements IConfigModule {
+public class SIMDConfig {
     @DoNotLoad
     private static final Logger LOGGER = LogUtils.getLogger();
     @ConfigInfo(name = "enabled")
     public static boolean enabled = true;
 
-    @Override
-    public void onLoaded(CommentedFileConfig configInstance, @Nullable Set<Exception> e) {
+    @NeedRun(when = EnumRunnableType.ON_LOADED)
+    public void onLoaded() {
         if (!enabled) {
             return;
         }

@@ -2,18 +2,16 @@ package me.earthme.luminol.config.modules.misc;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import gg.pufferfish.pufferfish.sentry.SentryManager;
-import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.CommandSuggestions;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
+import me.earthme.luminol.config.flags.NeedRun;
 import me.earthme.luminol.enums.EnumConfigCategory;
+import me.earthme.luminol.enums.EnumRunnableType;
 import org.apache.logging.log4j.Level;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.Set;
 
 @ConfigClassInfo(category = EnumConfigCategory.MISC, name = "sentry")
-public class SentryConfig implements IConfigModule {
+public class SentryConfig {
 
     @ConfigInfo(name = "dsn")
     public static String sentryDsn = "";
@@ -25,8 +23,8 @@ public class SentryConfig implements IConfigModule {
     @ConfigInfo(name = "only_log_thrown")
     public static boolean onlyLogThrown = true;
 
-    @Override
-    public void onLoaded(CommentedFileConfig configInstance, @Nullable Set<Exception> exs) {
+    @NeedRun(when = EnumRunnableType.ON_LOADED)
+    public void onLoaded(CommentedFileConfig configInstance) {
         String sentryEnvironment = System.getenv("SENTRY_DSN");
 
         sentryDsn = sentryEnvironment != null && !sentryEnvironment.isBlank()

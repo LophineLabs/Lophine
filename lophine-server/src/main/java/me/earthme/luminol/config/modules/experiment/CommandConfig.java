@@ -1,13 +1,12 @@
 package me.earthme.luminol.config.modules.experiment;
 
-import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
 import me.earthme.luminol.config.flags.HotReloadUnsupported;
 import me.earthme.luminol.enums.EnumConfigCategory;
 
 @ConfigClassInfo(category = EnumConfigCategory.EXPERIMENT, name = "command")
-public class CommandConfig implements IConfigModule {
+public class CommandConfig {
     @ConfigInfo(name = "enable_data_command")
     @HotReloadUnsupported
     public static boolean data = false;
