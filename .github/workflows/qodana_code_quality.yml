@@ -1,12 +1,6 @@
 name: Qodana
 on:
   workflow_dispatch:
-    inputs:
-      target-sha:
-        description: "Target commit SHA to analyze"
-        required: false
-        type: string
-        default: ""
 
 jobs:
   qodana:
