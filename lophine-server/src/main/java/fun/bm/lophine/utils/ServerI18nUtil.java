@@ -59,6 +59,9 @@ public class ServerI18nUtil {
     }
 
     private static void register(String base) {
+        if (!base.startsWith("/")) {
+            base = "/" + base;
+        }
         if (!base.endsWith("/")) {
             base += "/";
         }
