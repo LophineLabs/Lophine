@@ -1,0 +1,11 @@
+--- a/folia-checkstyle/build.gradle.kts
++++ b/folia-checkstyle/build.gradle.kts
+@@ -34,7 +_,7 @@
+     testData.implementationConfigurationName("org.jspecify:jspecify:1.0.0")
+ 
+-    checkstyle(project(":folia-checkstyle"))
++    checkstyle(project(":lophine-checkstyle"))
+ }
+ 
+ tasks {
+     test {

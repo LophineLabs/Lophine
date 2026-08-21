@@ -20,7 +20,7 @@ plugins {
 
 rootProject.name = "lophine"
 
-for (name in listOf("lophine-api", "lophine-server")) {
+for (name in listOf("lophine-api", "lophine-server", "lophine-checkstyle")) {
     include(name)
     file(name).mkdirs()
 }

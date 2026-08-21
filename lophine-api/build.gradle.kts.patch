@@ -13,7 +13,7 @@
  
      // checkstyle
 -    checkstyle(project(":folia-checkstyle"))
-+    //checkstyle(project(":folia-checkstyle"))
++    checkstyle(project(":lophine-checkstyle"))
  }
  
  val generatedDir: java.nio.file.Path = rootProject.layout.projectDirectory.dir("paper-api/src/generated/java").asFile.toPath()

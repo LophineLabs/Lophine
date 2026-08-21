@@ -8,9 +8,12 @@ build
 
 /lophine-server/build.gradle.kts
 /lophine-api/build.gradle.kts
+/lophine-checkstyle/build.gradle.kts
 /luminol-server/src/minecraft
 /paper-server
 /paper-api
 /paper-api-generator
+/paper-checkstyle
+/.checkstyle
 
 .idea/

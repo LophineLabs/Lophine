@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Bacteriawa <A3167717663@hotmail.com>
+Date: Fri, 21 Aug 2026 18:59:45 +0800
+Subject: [PATCH] Add Lophine checkstyle configuration
+
+
+diff --git a/.checkstyle/ignored_directories.txt b/.checkstyle/ignored_directories.txt
+index 2d76afe8944cec73f47326d1fea06b3f61fb22a5..9c6ec62df80871f78fdd29e95a0dbcc5d187cf05 100644
+--- a/.checkstyle/ignored_directories.txt
++++ b/.checkstyle/ignored_directories.txt
+@@ -1,6 +1,20 @@
+ paper-api/src/generated/java/com/destroystokyo/paper/entity/ai/
+ paper-api/src/generated/java/io/papermc/paper/registry/keys/
+ paper-api/src/generated/java/io/papermc/paper/registry/keys/tags/
++lophine-api/src/main/java/gg/pufferfish/pufferfish/sentry/
++lophine-api/src/main/java/gg/pufferfish/pufferfish/simd/
++lophine-api/src/main/java/me/earthme/luminol/api/
++lophine-api/src/main/java/me/earthme/luminol/api/config/
++lophine-api/src/main/java/me/earthme/luminol/api/entity/
++lophine-api/src/main/java/me/earthme/luminol/api/entity/player/
++lophine-api/src/main/java/me/earthme/luminol/api/portal/
++lophine-api/src/main/java/org/leavesmc/leaves/entity/bot/
++lophine-api/src/main/java/org/leavesmc/leaves/entity/bot/action/
++lophine-api/src/main/java/org/leavesmc/leaves/entity/photographer/
++lophine-api/src/main/java/org/leavesmc/leaves/event/bot/
++lophine-api/src/main/java/org/leavesmc/leaves/event/player/
++lophine-api/src/main/java/org/leavesmc/leaves/plugin/
++lophine-api/src/main/java/org/leavesmc/leaves/replay/
+ paper-api/src/main/java/co/aikar/timings/
+ paper-api/src/main/java/co/aikar/util/
+ paper-api/src/main/java/com/destroystokyo/paper/
+diff --git a/src/main/java/io/papermc/paper/ServerBuildInfo.java b/src/main/java/io/papermc/paper/ServerBuildInfo.java
+index ed558bea1f939ab902d3c45417573fba83307abc..d9127bc6c5801521a5dd1171e4e215f241934034 100644
+--- a/src/main/java/io/papermc/paper/ServerBuildInfo.java
++++ b/src/main/java/io/papermc/paper/ServerBuildInfo.java
+@@ -19,7 +19,7 @@ public interface ServerBuildInfo {
+ 
+     // Lophine start
+     /**
+-     * The brand id for folia
++     * The brand id for Folia.
+      */
+     Key BRAND_FOLIA_ID = Key.key("papermc", "folia");
+     /**
