@@ -25,6 +25,11 @@ paperweight {
             outputFile = file("lophine-api/build.gradle.kts")
             patchFile = file("lophine-api/build.gradle.kts.patch")
         }
+        patchFile {
+            path = "folia-checkstyle/build.gradle.kts"
+            outputFile = file("lophine-checkstyle/build.gradle.kts")
+            patchFile = file("lophine-checkstyle/build.gradle.kts.patch")
+        }
         patchRepo("paperApi") {
             upstreamPath = "paper-api"
             patchesDir = file("lophine-api/paper-patches")
@@ -35,6 +40,16 @@ paperweight {
             excludes = listOf("build.gradle.kts", "build.gradle.kts.patch", "paper-patches")
             patchesDir = file("lophine-api/folia-patches")
             outputDir = file("folia-api")
+        }
+        patchRepo("paperCheckstyle") {
+            upstreamPath = "paper-checkstyle"
+            patchesDir = file("lophine-checkstyle/paper-patches")
+            outputDir = file("paper-checkstyle")
+        }
+        patchRepo("paperCheckstyleConfig") {
+            upstreamPath = ".checkstyle"
+            patchesDir = file("lophine-checkstyle/config-patches")
+            outputDir = file(".checkstyle")
         }
     }
 }
