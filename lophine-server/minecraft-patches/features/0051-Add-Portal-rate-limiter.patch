@@ -68,8 +68,20 @@ index 981458f6697a79dbc9fc8cf41c088c98e556c6dd..4dbbe03d949811bf6140a35faa5e8cee
      // entities
      // this is copy on write to allow packet processing to iterate safely
      private final CopyOnWriteArrayList<ServerPlayer> localPlayers = new CopyOnWriteArrayList<>();
+diff --git a/io/papermc/paper/threadedregions/TickRegions.java b/io/papermc/paper/threadedregions/TickRegions.java
+index 97c514673a454b752ab86b944fd143725ca8090d..805895eb6fca750b603b323a350b0daa9c3059b7 100644
+--- a/io/papermc/paper/threadedregions/TickRegions.java
++++ b/io/papermc/paper/threadedregions/TickRegions.java
+@@ -204,6 +204,7 @@ public final class TickRegions implements ThreadedRegionizer.RegionCallbacks<Tic
+ 
+         // async-safe read-only region data
+         private final RegionStats regionStats;
++        public final fun.bm.lophine.utils.PortalIngressController portalIngressController = new fun.bm.lophine.utils.PortalIngressController(); // Lophine - destination-driven portal backpressure
+ 
+         private final AtomicBoolean hasPackets = new AtomicBoolean(false);
+ 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index ff6809944c2dd8a2cc7c11a8b05b0f7c17b5fb4c..fe1b70edb24e2ded42f8ca1f5ddfbae7151b147a 100644
+index ff6809944c2dd8a2cc7c11a8b05b0f7c17b5fb4c..06a2ae7c0d2b39ab17a650d66d14e16680a9880d 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -1978,6 +1978,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -83,7 +95,7 @@ index ff6809944c2dd8a2cc7c11a8b05b0f7c17b5fb4c..fe1b70edb24e2ded42f8ca1f5ddfbae7
  
              try {
                  foliaProfiler.startTimer(level.tickTimerId); try { // Folia - profiler
-@@ -1992,6 +1995,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1992,6 +1996,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              profiler.pop();
              profiler.pop();
              regionizedWorldData.explosionDensityCache.clear(); // Paper - Optimize explosions // Folia - region threading
@@ -129,23 +141,14 @@ index ad030c9076d9959def11fb4238e8ad8185957a8b..896701e01e362d1af90d14962d538990
                  return;
              }
              // Folia end - region threading
-diff --git a/io/papermc/paper/threadedregions/TickRegions.java b/io/papermc/paper/threadedregions/TickRegions.java
-index 4a847e25bb9fe722175d20ae12f6132371d6085b..a93dcfbd9057c4cf4f08e4368f06dcf8a1c01a11 100644
---- a/io/papermc/paper/threadedregions/TickRegions.java
-+++ b/io/papermc/paper/threadedregions/TickRegions.java
-@@ -208,3 +208,4 @@ public final class TickRegions implements ThreadedRegionizer.ThreadedRegionCallb
-         private final RegionStats regionStats;
--
-+        public final fun.bm.lophine.utils.PortalIngressController portalIngressController = new fun.bm.lophine.utils.PortalIngressController(); // Lophine - destination-driven portal backpressure
-+
-         private final AtomicBoolean hasPackets = new AtomicBoolean(false);
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 1a2f09bd565cad7169478ed1c97cc6892426158c..1207bda1d48fab79800f8ec5d6a50b08c9c6d224 100644
+index e6490dfafd047a579a883e6c987cf17b67aea14a..ff2e55a19d2ce62b7d4577083eb2830d94d6bca8 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -4990,3 +4990,28 @@ public abstract class Entity
+@@ -4962,6 +4962,31 @@ public abstract class Entity
+             return false;
+         }
          // Luminol end
--
 +        // Lophine start - destination-driven portal backpressure
 +        if (type == PortalType.NETHER && me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.destinationBackpressureEnabled) {
 +            final double dimensionScale = net.minecraft.world.level.dimension.DimensionType.getTeleportationScale(this.level().dimensionType(), destination.dimensionType());
@@ -171,5 +174,6 @@ index 1a2f09bd565cad7169478ed1c97cc6892426158c..1207bda1d48fab79800f8ec5d6a50b08
 +            }
 +        }
 +        // Lophine end - destination-driven portal backpressure
-+
+ 
          // Kaiiju start - sync end platform spawning & entity teleportation
+         final java.util.function.Consumer<Entity> tpComplete = type == PortalType.END && destination.getTypeKey() == net.minecraft.world.level.dimension.LevelStem.END ?

@@ -18,7 +18,7 @@ index a96da8ab0d8ca8241df79fbfca33f3e6072db367..f881d10d63a665a73aefe03ba1305ca9
          for (final ServerLevel world : this.worlds) {
              this.globalTick(world, tickCount);
 diff --git a/io/papermc/paper/threadedregions/TickRegions.java b/io/papermc/paper/threadedregions/TickRegions.java
-index 97c514673a454b752ab86b944fd143725ca8090d..ba91d40d6d91588a4b39abfefcb17a362bfc5490 100644
+index 805895eb6fca750b603b323a350b0daa9c3059b7..842b039d27857e6ed8bb72c0e2b351e5e2c674b8 100644
 --- a/io/papermc/paper/threadedregions/TickRegions.java
 +++ b/io/papermc/paper/threadedregions/TickRegions.java
 @@ -190,6 +190,8 @@ public final class TickRegions implements ThreadedRegionizer.RegionCallbacks<Tic
@@ -48,7 +48,7 @@ index 5a5f7f7fefacaa0d77ec389d6eb332eff519496a..f0f6175569100589102d9d76b3ff8f55
              SaveOnCommand.register(this.dispatcher);
              SetPlayerIdleTimeoutCommand.register(this.dispatcher);
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 908cff4caa1457e07d809fb793d00d367ae42320..143b7a167dcbf015a7318f2fe5e0798418fa2572 100644
+index 910ff2c538c475f8b5e37f6434d7d6d131eeaa49..f3667c55f75ba54a49daf40fd3e4dc55fc80d232 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -1651,6 +1651,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
