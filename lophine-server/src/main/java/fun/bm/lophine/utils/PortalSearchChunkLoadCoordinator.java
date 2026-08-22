@@ -1,16 +1,17 @@
 package fun.bm.lophine.utils;
 
 import ca.spottedleaf.concurrentutil.util.Priority;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 /**
  * Coalesces identical in-flight chunk-area loads used by Nether portal searches.
@@ -38,7 +39,7 @@ public final class PortalSearchChunkLoadCoordinator {
                 (pos.getZ() + radiusBlocks) >> 4
         );
 
-        for (;;) {
+        for (; ; ) {
             final PendingLoad existing = this.inFlight.get(key);
             if (existing != null) {
                 if (existing.add(onLoad)) {
