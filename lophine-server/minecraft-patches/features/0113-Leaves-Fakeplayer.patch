@@ -46,7 +46,7 @@ index 63c78d8dbfdcfb908100052e36d75ffce8c9d613..6a57cf05044ffab0d6dc280e583613fc
      private final java.util.concurrent.atomic.AtomicBoolean disconnectionHandled = new java.util.concurrent.atomic.AtomicBoolean(false); // Folia - region threading - may be called concurrently during configuration stage
      private int receivedPackets;
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 22ad0846be08292b07b363b6b96f7431f87a4f3d..07add4a7a350ac61b7fa7797874ab24d5289b9b1 100644
+index 2fddc13b7096f82c0308e19a1cba60e6197a250b..4e925b9716f7ad3fb11e5ca5ace4d06ea899d57d 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -296,6 +296,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -92,7 +92,7 @@ index 22ad0846be08292b07b363b6b96f7431f87a4f3d..07add4a7a350ac61b7fa7797874ab24d
              }
              if (region == null && fullSave) { // Folia - region threading - don't auto save level data
                  this.saveGlobalData(false);
-@@ -2057,6 +2070,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -2058,6 +2071,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
  
      protected void tickConnection() {
          this.getConnection().tick();
@@ -100,7 +100,7 @@ index 22ad0846be08292b07b363b6b96f7431f87a4f3d..07add4a7a350ac61b7fa7797874ab24d
      }
  
      public void forceGameTimeSynchronization() {
-@@ -3266,6 +3280,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -3267,6 +3281,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          return this.debugSubscribers;
      }
  
@@ -570,7 +570,7 @@ index 71988e11c512fcb391f845a1905411ea240479fa..a7a687c7a90bce1ad20d32241f0b4316
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 924f10d6339604580652e46ff0a476ff21398d3a..460f8b58e0c4030eed9de0134e35a6d19acf740a 100644
+index 7b55b3547181aead6b8321cb584e18ababcb1bdc..398526aada6bc5e99b341265f2ba074f29bbd29b 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1265,7 +1265,7 @@ public abstract class Entity

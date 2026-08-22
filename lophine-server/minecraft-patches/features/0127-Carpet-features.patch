@@ -842,6 +842,7 @@ index b90077b44ce81d5d60f9d0ad2414f0b7c6b1e720..4f4512d30717e5e41bd98703574485c0
          final ObjectArrayList<BlockPos> ret = new ObjectArrayList<>();
  
 diff --git a/net/minecraft/world/level/block/Blocks.java b/net/minecraft/world/level/block/Blocks.java
+index f94f8049572c860652c97c10ecd888ef2c338262..cd4241d9d643f5744262ad3f551b35f938e4cf23 100644
 --- a/net/minecraft/world/level/block/Blocks.java
 +++ b/net/minecraft/world/level/block/Blocks.java
 @@ -6012,7 +6012,7 @@ public class Blocks {
@@ -1106,7 +1107,7 @@ index c27fc92d6ff9dd7e07a61513601ef73ff16cf842..e5915893a06e332992c34b8ac5115955
 +    // Lophine end - Carpet features
  }
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index e36078c6cd89af980da8f7dd6961e8975f5a7035..feb24d6cb6fac68aa88296f899ff9541c34fb93e 100644
+index 9037169e7036a29087f9b7794b3f6a523b24accd..ce26418d00046b65ee4a1174e45049f244deed26 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -241,7 +241,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
