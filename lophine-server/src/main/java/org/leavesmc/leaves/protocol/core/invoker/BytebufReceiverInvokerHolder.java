@@ -30,6 +30,7 @@ public class BytebufReceiverInvokerHolder extends AbstractInvokerHolder<Protocol
     }
 
     public boolean invoke(IdentifierSelector selector, FriendlyByteBuf buf) {
-        return invoke0(false, selector.select(handler.stage()), buf) instanceof Boolean b && b;
+        Object stageTarget = selector.select(handler.stage());
+        return stageTarget != null && invoke0(false, stageTarget, buf) instanceof Boolean b && b;
     }
 }

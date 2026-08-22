@@ -30,6 +30,9 @@ public class PayloadReceiverInvokerHolder extends AbstractInvokerHolder<Protocol
     }
 
     public void invoke(IdentifierSelector selector, LeavesCustomPayload payload) {
-        invoke0(false, selector.select(handler.stage()), payload);
+        Object stageTarget = selector.select(handler.stage());
+        if (stageTarget != null) {
+            invoke0(false, stageTarget, payload);
+        }
     }
 }
