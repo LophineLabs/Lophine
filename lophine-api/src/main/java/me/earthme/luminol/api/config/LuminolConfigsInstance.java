@@ -42,6 +42,14 @@ public interface LuminolConfigsInstance {
     boolean setConfig(String key, Object value);
 
     /**
+     * Remove a configuration entry by its key.
+     * If the key does not exist this should be a no-op.
+     *
+     * @param key the configuration key to remove
+     */
+    void removeConfig(String key);
+
+    /**
      * Saves all pending configuration changes to disk
      */
     void saveConfigs();
@@ -95,15 +103,6 @@ public interface LuminolConfigsInstance {
     List<String> completeConfigPath(String partialPath);
 
     /**
-     * Completes a partial configuration path with specific depth
-     *
-     * @param partialPath the partial path to complete
-     * @param dotIndex    the maximum number of dots (depth) in the result
-     * @return list of possible completions
-     */
-    List<String> completeConfigPath(String partialPath, int dotIndex);
-
-    /**
      * Gets all configuration paths that start with the given prefix
      *
      * @param currentPath the prefix to search for
@@ -119,21 +118,4 @@ public interface LuminolConfigsInstance {
      * @return map of configuration data
      */
     Map<String, Map<EnumConfigData, Object>> getData(Collection<String> list, Collection<EnumConfigData> features);
-
-    /**
-     * Remove a configuration entry by its key.
-     * If the key does not exist this should be a no-op.
-     *
-     * @param key the configuration key to remove
-     */
-    void removeConfig(String key);
-
-    /**
-     * Remove multiple configuration entries by their keys.
-     * Implementations should attempt to remove each key provided. If some
-     * keys do not exist they may be ignored.
-     *
-     * @param keys an array of configuration keys to remove
-     */
-    void removeConfig(String[] keys);
 }

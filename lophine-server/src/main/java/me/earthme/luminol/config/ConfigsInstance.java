@@ -140,7 +140,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
      */
     public void runUnloadTasks() {
         for (Object module : allInstanced.keySet()) {
-            invokeNeedRunMethods(module, EnumRunnableType.ON_UNLOAD);
+            invokeNeedRunMethods(module, EnumRunnableType.ON_UNLOAD, null);
         }
     }
 
@@ -395,7 +395,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                 if (needRun != null && needRun.when() == EnumRunnableType.BEFORE_FINAL_LOAD) {
                     method.setAccessible(true);
                     ConfigManager.registerRunnableBeforeFinalLoad(() ->
-                            invokeNeedRunMethods(singleConfigModule, EnumRunnableType.BEFORE_FINAL_LOAD)
+                            invokeNeedRunMethods(singleConfigModule, EnumRunnableType.BEFORE_FINAL_LOAD, null)
                     );
                 }
             }
@@ -612,7 +612,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     /**
      * Recursively remove configuration entries
      */
-    public void removeConfig(String[] keys) {
+    private void removeConfig(String[] keys) {
         configFileInstance.remove(String.join(".", keys));
         Object configAtPath = configFileInstance.get(String.join(".", Arrays.copyOfRange(keys, 1, keys.length)));
         if (configAtPath instanceof UnmodifiableConfig && ((UnmodifiableConfig) configAtPath).isEmpty()) {
@@ -803,13 +803,6 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     }
 
     /**
-     * Reset configuration by keys array
-     */
-    public void resetConfig(String[] keys) {
-        resetConfig(String.join(".", keys));
-    }
-
-    /**
      * Reset configuration by key
      */
     public void resetConfig(String key) {
@@ -827,13 +820,6 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     }
 
     /**
-     * Get configuration value as string by keys array
-     */
-    public String getConfig(String[] keys) {
-        return getConfig(String.join(".", keys));
-    }
-
-    /**
      * Get configuration value as string by key
      */
     public String getConfig(String key) {
@@ -841,24 +827,10 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     }
 
     /**
-     * Get original configuration value by keys array
-     */
-    public <T> T getConfigOrigin(String[] keys) {
-        return getConfigOrigin(String.join(".", keys));
-    }
-
-    /**
      * Get original configuration value by key
      */
     public <T> T getConfigOrigin(String key) {
         return configFileInstance.get(key);
-    }
-
-    /**
-     * Get configuration suggestions by keys array
-     */
-    public String[] getConfigSuggestions(String[] keys) {
-        return getConfigSuggestions(String.join(".", keys));
     }
 
     /**
@@ -923,36 +895,6 @@ public class ConfigsInstance implements LuminolConfigsInstance {
             }
         }
         return list;
-    }
-
-    /**
-     * Complete configuration path with specific dot index
-     */
-    public List<String> completeConfigPath(String partialPath, int dotIndex) {
-        List<String> allPaths = getAllConfigPaths(partialPath);
-        Set<String> resultSet = new HashSet<>();
-
-        for (String path : allPaths) {
-            String remaining = path.substring(partialPath.length());
-            if (remaining.isEmpty()) continue;
-
-            String fullPath = partialPath + remaining;
-            String[] parts = fullPath.split("\\.");
-
-            if (dotIndex == -1 || dotIndex < parts.length) {
-                StringBuilder suggestionBuilder = new StringBuilder();
-                for (int i = 0; i <= dotIndex; i++) {
-                    if (i > 0) {
-                        suggestionBuilder.append(".");
-                    }
-                    suggestionBuilder.append(parts[i]);
-                }
-                String suggestion = suggestionBuilder.toString();
-                resultSet.add(suggestion);
-            }
-        }
-
-        return new ArrayList<>(resultSet);
     }
 
     /**
@@ -1030,10 +972,6 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         validValues.forEach(configFileInstance::set);
         validComments.forEach(configFileInstance::setComment);
         saveConfigs();
-    }
-
-    private void invokeNeedRunMethods(Object module, EnumRunnableType type) {
-        invokeNeedRunMethods(module, type, null);
     }
 
     private void invokeNeedRunMethods(Object module, EnumRunnableType type, @Nullable Set<Exception> exs) {
