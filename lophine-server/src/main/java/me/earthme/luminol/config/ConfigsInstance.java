@@ -458,7 +458,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         for (TransformedConfig transformedConfig : field.getAnnotationsByType(TransformedConfig.class)) {
             final String oldConfigKeyName = String.join(".", transformedConfig.directory()) + "." + transformedConfig.name();
 
-            if (!Objects.equals(transformedConfig.originInstance(), "")) {
+            if (!(Objects.equals(transformedConfig.originInstance(), "") || Objects.equals(transformedConfig.originInstance(), name))) {
                 ConfigManager.registerTransformedConfig(transformedConfig.originInstance(), name,
                         oldConfigKeyName, fullConfigKeyName, transformedConfig);
             } else {
@@ -873,6 +873,13 @@ public class ConfigsInstance implements LuminolConfigsInstance {
      */
     public CommentedFileConfig getFileInstance() {
         return configFileInstance;
+    }
+
+    /**
+     * Get the name of the configuration instance
+     */
+    public String getName() {
+        return name;
     }
 
     // Configuration path completion methods

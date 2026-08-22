@@ -24,10 +24,10 @@ public class ConfigManager {
     // 3 -> target full path
 
     public static void initConfigs() {
-        registerConfig("luminol", builder.of("luminol", "me.earthme.luminol.config.modules"));
-        registerConfig("lophine", builder.of("lophine", "fun.bm.lophine.config.modules")); // add lophine global config
+        registerConfig(builder.of("luminol", "me.earthme.luminol.config.modules"));
+        registerConfig(builder.of("lophine", "fun.bm.lophine.config.modules")); // add lophine global config
         // Lophine start - add carpet config
-        registerConfig("lophine_carpet", builder.of(
+        registerConfig(builder.of(
                 new java.io.File("lophine_config"),
                 "lophine_carpet",
                 "lophine_carpet_config.toml",
@@ -38,8 +38,8 @@ public class ConfigManager {
         preLoad();
     }
 
-    public static void registerConfig(String name, ConfigsInstance config) {
-        configfiles.put(name, config);
+    public static void registerConfig(ConfigsInstance config) {
+        configfiles.put(config.getName(), config);
     }
 
     public static void preLoad() {
