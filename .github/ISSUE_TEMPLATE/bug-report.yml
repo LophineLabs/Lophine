@@ -77,8 +77,8 @@ body:
         - \spigot.yml
         - \bukkit.yml
         - \config\\\*
-        - \lophine_config\\\*
         - \luminol_config\\\*
+        - \lophine_config\\\*
   - type: textarea
     id: other
     attributes:
