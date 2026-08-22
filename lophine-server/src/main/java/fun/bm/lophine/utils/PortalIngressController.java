@@ -1,8 +1,9 @@
 package fun.bm.lophine.utils;
 
+import me.earthme.luminol.config.modules.function.PortalRateLimiterConfig;
+
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
-import me.earthme.luminol.config.modules.function.PortalRateLimiterConfig;
 
 /**
  * Destination-region token bucket for cross-region portal transfers.
@@ -40,7 +41,7 @@ public final class PortalIngressController {
         }
 
         final int required = Math.max(1, entityCount);
-        for (;;) {
+        for (; ; ) {
             final int current = this.availableTokens.get();
             if (current < required) {
                 this.deferredEntities.add(required);
