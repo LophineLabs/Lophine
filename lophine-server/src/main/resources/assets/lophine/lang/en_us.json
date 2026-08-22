@@ -40,7 +40,7 @@
   "lophine.function.protocol.jade.enabled.comment": "Enable Jade protocol support",
   "lophine.function.protocol.pca.enabled.comment": "Enable PCA sync protocol support",
   "lophine.function.protocol.pca.sync-player-entity.comment": "Controls which player entities can be watched through the PCA sync protocol.\nNOBODY: never sync player entities\nBOT: only sync Lophine fake players\nOPS: sync fake players and allow operators to sync real players\nOPS_AND_SELF: sync fake players, operators, and a player's own entity\nEVERYONE: allow all player entities",
-  "lophine.function.protocol.recipe-sync.enabled.comment": "Synchronize server recipes to compatible same-version Fabric and NeoForge clients",
+  "lophine.function.protocol.recipe-sync.enabled.comment": "Synchronize server recipes to compatible same-version clients",
   "lophine.function.protocol.rei.enabled.comment": "Enable Roughly Enough Items protocol support",
   "lophine.function.protocol.servux.litematics.litematics-print-max-delay-ticks.comment": "The max delay ticks for printing litematics, -1 to disable",
   "lophine.function.protocol.syncmatica.enabled.comment": "Enable Syncmatica protocol support",

@@ -40,7 +40,7 @@
   "lophine.function.protocol.jade.enabled.comment": "启用 Jade 协议支持",
   "lophine.function.protocol.pca.enabled.comment": "启用 PCA 同步协议支持",
   "lophine.function.protocol.pca.sync-player-entity.comment": "控制哪些玩家实体可以通过 PCA 同步协议被观察。\nNOBODY：从不同步玩家实体\nBOT：仅同步 Lophine 假人\nOPS：同步假人，并允许管理员同步真实玩家\nOPS_AND_SELF：同步假人、管理员以及玩家自己的实体\nEVERYONE：允许所有玩家实体",
-  "lophine.function.protocol.recipe-sync.enabled.comment": "向兼容且游戏版本相同的 Fabric 与 NeoForge 客户端同步服务端配方",
+  "lophine.function.protocol.recipe-sync.enabled.comment": "向兼容且游戏版本相同的客户端同步服务端配方",
   "lophine.function.protocol.rei.enabled.comment": "启用 REI 协议支持",
   "lophine.function.protocol.servux.litematics.litematics-print-max-delay-ticks.comment": "打印投影的最大延迟刻数，-1 表示禁用",
   "lophine.function.protocol.syncmatica.enabled.comment": "启用共享原理图协议支持",
