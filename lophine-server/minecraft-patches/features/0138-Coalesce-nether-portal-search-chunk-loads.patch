@@ -1,33 +1,37 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Helvetica Volubi <suisuroru@blue-millennium.fun>
-Date: Sat, 1 Aug 2026 16:31:57 +0800
-Subject: [PATCH] Anonymous Object: Reduce ticket operations in nether portal
- searching
+From: Bacteriawa <A3167717663@hotmail.com>
+Date: Sat, 22 Aug 2026 15:00:00 +0800
+Subject: [PATCH] Coalesce nether portal search chunk loads
 
-As requested by the original author, this patch will be anonymous and hide the original commit address.
-This patch is used with permission from the original author.
-Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
+Keep Moonrise responsible for chunk tickets and share only identical
+in-flight portal search area loads. This avoids the custom reference-counted
+ticket cache while preventing every entity in a high-throughput farm from
+scheduling the same chunk area independently.
+
+Also honor the requested chunk status in Moonrise's async area loader instead
+of forcing every request to FULL. Portal searches request EMPTY explicitly.
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 65cc3bec3f4a0ec99ff00501421884a849f2eb03..09a148e759d0fcead0bfdb5a379ca6b515d5b8e5 100644
+index 65cc3bec3f4a0ec99ff00501421884a849f2eb03..22df8389dfd427e2e84b80ed04ba8fdfb281c614 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -221,6 +221,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      private final StructureCheck structureCheck;
      public final boolean tickTime; // Folia - region threading
      private final LevelDebugSynchronizers debugSynchronizers = new LevelDebugSynchronizers(this);
-+    public final io.anonymous.anonymous.utils.ReferenceCountingChunkLoader portalSearchingChunkLoader = new io.anonymous.anonymous.utils.ReferenceCountingChunkLoader(this, net.minecraft.world.level.chunk.status.ChunkStatus.EMPTY); // Anonymous - Reduce ticket operations in nether portal searching
++    public final fun.bm.lophine.utils.PortalSearchChunkLoadCoordinator portalSearchChunkLoadCoordinator = new fun.bm.lophine.utils.PortalSearchChunkLoadCoordinator(this); // Lophine - coalesce portal search area loads
      // Luminol start - Level schedulers
      private static final java.util.concurrent.atomic.AtomicInteger UNLOADER_ID_GEN = new java.util.concurrent.atomic.AtomicInteger(0);
      public final me.earthme.luminol.utils.thread.LevelAwareRegionScheduler levelScheduler = new me.earthme.luminol.utils.thread.LevelAwareRegionScheduler(io.papermc.paper.threadedregions.TickRegions.getScheduler().scheduler);
-@@ -1004,6 +1005,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
- 
-         this.debugSynchronizers.tick(this.server.debugSubscribers());
-         profiler.pop();
-+        this.portalSearchingChunkLoader.tickChunkReferenceTTL(); // Anonymous - Reduce ticket operations in nether portal searching
-     }
- 
-     // Folia start - region threading
+@@ -482,7 +483,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+         for (int cx = minChunkX; cx <= maxChunkX; ++cx) {
+             for (int cz = minChunkZ; cz <= maxChunkZ; ++cz) {
+                 ca.spottedleaf.moonrise.common.PlatformHooks.get().scheduleChunkLoad(
+-                    this, cx, cz, net.minecraft.world.level.chunk.status.ChunkStatus.FULL, true, priority, consumer
++                    this, cx, cz, chunkStatus, true, priority, consumer // Lophine - respect requested status
+                 );
+             }
+         }
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
 index d400fdb0fb5e3049c3f9558b6a99e8460e78c68a..a885de9b8a03016ecef9acef9c8cd50bbfb3f2d0 100644
 --- a/net/minecraft/world/entity/Entity.java
@@ -37,11 +41,11 @@ index d400fdb0fb5e3049c3f9558b6a99e8460e78c68a..a885de9b8a03016ecef9acef9c8cd50b
  
                  // kick off search for existing portal or creation
 -                destination.moonrise$loadChunksAsync(
-+                destination.portalSearchingChunkLoader.loadChunksAsync( // Anonymous - Reduce ticket operations in nether portal searching
++                destination.portalSearchChunkLoadCoordinator.loadChunksAsync( // Lophine - coalesce portal search area loads
                      // add 32 so that the final search for a portal frame doesn't load any chunks
                      targetPos, portalSearchRadius + 32,
 -                    net.minecraft.world.level.chunk.status.ChunkStatus.EMPTY,
-+                    //net.minecraft.world.level.chunk.status.ChunkStatus.EMPTY, // Anonymous - Reduce ticket operations in nether portal searching
++                    // ChunkStatus.EMPTY is supplied by the coordinator
                      ca.spottedleaf.concurrentutil.util.Priority.HIGH,
                      (chunks) -> {
                          BlockUtil.FoundRectangle portal =

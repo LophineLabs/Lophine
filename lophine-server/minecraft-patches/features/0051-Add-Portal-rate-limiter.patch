@@ -72,12 +72,13 @@ diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/Mi
 index ff6809944c2dd8a2cc7c11a8b05b0f7c17b5fb4c..fe1b70edb24e2ded42f8ca1f5ddfbae7151b147a 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1978,6 +1978,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1978,6 +1978,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              //net.minecraft.world.level.block.entity.HopperBlockEntity.skipHopperEvents = level.paperConfig().hopper.disableMoveEvent || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0; // Paper - Perf: Optimize Hoppers // Folia - region threading
              profiler.push(() -> level + " " + level.dimension().identifier());
              profiler.push("tick");
 +            // Luminol start - Portal rate limiter
 +            regionizedWorldData.portalRateThrottler.begin();
++            region.portalIngressController.refillForDestinationTick(); // Lophine - destination-driven portal backpressure
 +            // Luminol end
  
              try {
@@ -128,3 +129,47 @@ index ad030c9076d9959def11fb4238e8ad8185957a8b..896701e01e362d1af90d14962d538990
                  return;
              }
              // Folia end - region threading
+diff --git a/io/papermc/paper/threadedregions/TickRegions.java b/io/papermc/paper/threadedregions/TickRegions.java
+index 4a847e25bb9fe722175d20ae12f6132371d6085b..a93dcfbd9057c4cf4f08e4368f06dcf8a1c01a11 100644
+--- a/io/papermc/paper/threadedregions/TickRegions.java
++++ b/io/papermc/paper/threadedregions/TickRegions.java
+@@ -208,3 +208,4 @@ public final class TickRegions implements ThreadedRegionizer.ThreadedRegionCallb
+         private final RegionStats regionStats;
+-
++        public final fun.bm.lophine.utils.PortalIngressController portalIngressController = new fun.bm.lophine.utils.PortalIngressController(); // Lophine - destination-driven portal backpressure
++
+         private final AtomicBoolean hasPackets = new AtomicBoolean(false);
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index 1a2f09bd565cad7169478ed1c97cc6892426158c..1207bda1d48fab79800f8ec5d6a50b08c9c6d224 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -4990,3 +4990,28 @@ public abstract class Entity
+         // Luminol end
+-
++        // Lophine start - destination-driven portal backpressure
++        if (type == PortalType.NETHER && me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.destinationBackpressureEnabled) {
++            final double dimensionScale = net.minecraft.world.level.dimension.DimensionType.getTeleportationScale(this.level().dimensionType(), destination.dimensionType());
++            final BlockPos approximateTarget = destination.getWorldBorder().clampToBounds(
++                    this.getX() * dimensionScale, this.getY(), this.getZ() * dimensionScale
++            );
++            final io.papermc.paper.threadedregions.ThreadedRegionizer.ThreadedRegion<
++                    io.papermc.paper.threadedregions.TickRegions.TickRegionData,
++                    io.papermc.paper.threadedregions.TickRegions.TickRegionSectionData
++            > targetRegion = destination.regioniser.getRegionAtSynchronised(
++                    approximateTarget.getX() >> 4, approximateTarget.getZ() >> 4
++            );
++            if (targetRegion != null) {
++                int entityCount = 1;
++                if (takePassengers) {
++                    for (final Entity ignored : this.getIndirectPassengers()) {
++                        ++entityCount;
++                    }
++                }
++                if (!targetRegion.getData().portalIngressController.tryAcquire(entityCount)) {
++                    return false;
++                }
++            }
++        }
++        // Lophine end - destination-driven portal backpressure
++
+         // Kaiiju start - sync end platform spawning & entity teleportation
