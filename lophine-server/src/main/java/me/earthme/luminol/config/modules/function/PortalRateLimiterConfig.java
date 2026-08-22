@@ -25,15 +25,15 @@ public class PortalRateLimiterConfig {
     public static String maxPortalTeleportsExpression = "50 * (1 + sqrt(e/1000) + c/200 + p/5)";
 
     @ConfigInfo(name = "destination_backpressure_enabled")
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     public static boolean destinationBackpressureEnabled = true;
 
     @ConfigInfo(name = "destination_tokens_per_tick")
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     public static int portalIngressTokensPerTick = 16;
 
     @ConfigInfo(name = "destination_burst_capacity")
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     public static int portalIngressBurstCapacity = 64;
 
     // use this to prevent reallocation
