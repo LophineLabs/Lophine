@@ -57,6 +57,7 @@ public class LeavesProtocolManager {
 
     private static final List<EmptyInvokerHolder<ProtocolHandler.Ticker>> TICKERS = new ArrayList<>();
 
+    private static final List<PlayerInvokerHolder<ProtocolHandler.PlayerRecipeSync>> PLAYER_RECIPE_SYNC = new ArrayList<>();
     private static final List<PlayerInvokerHolder<ProtocolHandler.PlayerJoin>> PLAYER_JOIN = new ArrayList<>();
     private static final List<PlayerInvokerHolder<ProtocolHandler.PlayerLeave>> PLAYER_LEAVE = new ArrayList<>();
     private static final List<EmptyInvokerHolder<ProtocolHandler.ReloadServer>> RELOAD_SERVER = new ArrayList<>();
@@ -155,6 +156,12 @@ public class LeavesProtocolManager {
                     final ProtocolHandler.Ticker ticker = method.getAnnotation(ProtocolHandler.Ticker.class);
                     if (ticker != null) {
                         TICKERS.add(new EmptyInvokerHolder<>(protocol, method, ticker));
+                        continue;
+                    }
+
+                    final ProtocolHandler.PlayerRecipeSync playerRecipeSync = method.getAnnotation(ProtocolHandler.PlayerRecipeSync.class);
+                    if (playerRecipeSync != null) {
+                        PLAYER_RECIPE_SYNC.add(new PlayerInvokerHolder<>(protocol, method, playerRecipeSync));
                         continue;
                     }
 
@@ -312,6 +319,12 @@ public class LeavesProtocolManager {
         sendKnownId(player, ProtocolHandler.Stage.GAME);
         for (var join : PLAYER_JOIN) {
             join.invoke(player);
+        }
+    }
+
+    public static void handlePlayerRecipeSync(ServerPlayer player) {
+        for (var sync : PLAYER_RECIPE_SYNC) {
+            sync.invoke(player);
         }
     }
 

@@ -110,6 +110,14 @@ diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server
 index 1dcb4fe3e2c250554e4f065caf21b37ea659e621..1f20671b8bc07c77e8a3e60414bb2c8255e37385 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
+@@ -270,6 +270,7 @@ public abstract class PlayerList {
+         playerConnection.send(new ClientboundPlayerAbilitiesPacket(player.getAbilities()));
+         playerConnection.send(new ClientboundSetHeldSlotPacket(player.getInventory().getSelectedSlot()));
+         RecipeManager recipeManager = this.server.getRecipeManager();
++        org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handlePlayerRecipeSync(player); // Leaves - protocol
+         playerConnection.send(
+             new ClientboundUpdateRecipesPacket(recipeManager.getSynchronizedItemProperties(), recipeManager.getSynchronizedStonecutterRecipes())
+         );
 @@ -318,6 +318,8 @@ public abstract class PlayerList {
              //return; // Folia - region threading - must still allow the player to connect, as we must add to chunk map before handling disconnect
          }

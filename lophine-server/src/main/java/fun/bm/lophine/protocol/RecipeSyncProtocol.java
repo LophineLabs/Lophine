@@ -22,6 +22,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.Nullable;
 import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 import org.leavesmc.leaves.protocol.core.Context;
 import org.leavesmc.leaves.protocol.core.LeavesCustomPayload;
@@ -128,6 +129,7 @@ public final class RecipeSyncProtocol implements LeavesProtocol {
         }
 
         context.connection().channel.attr(FABRIC_SUPPORTED_SERIALIZERS).set(Set.copyOf(supported));
+        markChannelAvailable(context, FABRIC_CHANNEL_AVAILABLE);
     }
 
     @ProtocolHandler.MinecraftRegister(key = "fabric:recipe_sync")
@@ -138,6 +140,16 @@ public final class RecipeSyncProtocol implements LeavesProtocol {
     @ProtocolHandler.MinecraftRegister(key = "neoforge:recipe_content")
     public static void handleNeoForgeChannel(Context context, Identifier ignored) {
         markChannelAvailable(context, NEOFORGE_CHANNEL_AVAILABLE);
+    }
+
+    @ProtocolHandler.PlayerRecipeSync
+    public static void handleInitialRecipeSync(ServerPlayer player) {
+        Channel channel = channel(player);
+        if (channel == null) {
+            return;
+        }
+        channel.attr(CONNECTION_ACTIVE).set(true);
+        syncAvailableChannels(player, true);
     }
 
     @ProtocolHandler.PlayerJoin
@@ -247,19 +259,23 @@ public final class RecipeSyncProtocol implements LeavesProtocol {
     }
 
     private static void syncAvailableChannels(ServerPlayer player) {
+        syncAvailableChannels(player, false);
+    }
+
+    private static void syncAvailableChannels(ServerPlayer player, boolean beforeVanillaRecipeUpdate) {
         Channel channel = channel(player);
         if (channel == null || !Boolean.TRUE.equals(channel.attr(CONNECTION_ACTIVE).get())) {
             return;
         }
         if (Boolean.TRUE.equals(channel.attr(FABRIC_CHANNEL_AVAILABLE).get())) {
-            syncFabric(player);
+            syncFabric(player, beforeVanillaRecipeUpdate);
         }
         if (Boolean.TRUE.equals(channel.attr(NEOFORGE_CHANNEL_AVAILABLE).get())) {
-            syncNeoForge(player);
+            syncNeoForge(player, beforeVanillaRecipeUpdate);
         }
     }
 
-    private static void syncFabric(ServerPlayer player) {
+    private static void syncFabric(ServerPlayer player, boolean beforeVanillaRecipeUpdate) {
         Channel channel = channel(player);
         if (channel == null) {
             return;
@@ -275,7 +291,14 @@ public final class RecipeSyncProtocol implements LeavesProtocol {
             queueSync(player.getUUID());
             return;
         }
-        EncodedPayload payload = cache.fabricPayload(supported);
+        EncodedPayload payload = beforeVanillaRecipeUpdate
+                ? cache.cachedFabricPayload(supported)
+                : cache.fabricPayload(supported);
+        if (payload == null) {
+            // Variant payloads are assembled by the global fallback instead of a Folia player region.
+            queueSync(player.getUUID());
+            return;
+        }
         if (!payload.sendable()) {
             return;
         }
@@ -288,27 +311,29 @@ public final class RecipeSyncProtocol implements LeavesProtocol {
         if (sentGeneration != null && sentGeneration == generation) {
             return;
         }
-        if (!isCurrentPlayer(player)) {
+        if (!canSendToPlayer(player, beforeVanillaRecipeUpdate)) {
             return;
         }
 
         try {
             ProtocolUtils.sendRawPayloadPacket(player, FABRIC_RECIPE_SYNC, payload.data());
 
-            // JEI stores the synchronized RecipeMap first, then reloads it when vanilla's
-            // update-recipes packet is handled. Reversing this order leaves JEI on fallback recipes.
-            RecipeManager recipeManager = MinecraftServer.getServer().getRecipeManager();
-            player.connection.send(new ClientboundUpdateRecipesPacket(
-                    recipeManager.getSynchronizedItemProperties(),
-                    recipeManager.getSynchronizedStonecutterRecipes()
-            ));
+            if (!beforeVanillaRecipeUpdate) {
+                // JEI stores the synchronized RecipeMap first, then reloads it when vanilla's
+                // update-recipes packet is handled. Reversing this order leaves JEI on fallback recipes.
+                RecipeManager recipeManager = MinecraftServer.getServer().getRecipeManager();
+                player.connection.send(new ClientboundUpdateRecipesPacket(
+                        recipeManager.getSynchronizedItemProperties(),
+                        recipeManager.getSynchronizedStonecutterRecipes()
+                ));
+            }
             channel.attr(FABRIC_SENT_GENERATION).set(generation);
         } catch (RuntimeException exception) {
             LOGGER.warn("Failed to synchronize Fabric recipes to {}", player.getScoreboardName(), exception);
         }
     }
 
-    private static void syncNeoForge(ServerPlayer player) {
+    private static void syncNeoForge(ServerPlayer player, boolean beforeVanillaRecipeUpdate) {
         Channel channel = channel(player);
         if (channel == null) {
             return;
@@ -336,7 +361,7 @@ public final class RecipeSyncProtocol implements LeavesProtocol {
         if (sentGeneration != null && sentGeneration == generation) {
             return;
         }
-        if (!isCurrentPlayer(player)) {
+        if (!canSendToPlayer(player, beforeVanillaRecipeUpdate)) {
             return;
         }
 
@@ -378,6 +403,13 @@ public final class RecipeSyncProtocol implements LeavesProtocol {
         return server != null
                 && isConnectionActive(player)
                 && server.getPlayerList().getPlayer(player.getUUID()) == player;
+    }
+
+    private static boolean canSendToPlayer(ServerPlayer player, boolean beforeVanillaRecipeUpdate) {
+        if (!isConnectionActive(player) || !player.connection.isAcceptingMessages()) {
+            return false;
+        }
+        return beforeVanillaRecipeUpdate || isCurrentPlayer(player);
     }
 
     private static RecipePayloadCache ensurePayloadCache() {
@@ -583,13 +615,7 @@ public final class RecipeSyncProtocol implements LeavesProtocol {
             if (this == EMPTY) {
                 return EncodedPayload.EMPTY;
             }
-            Set<Identifier> selected = new HashSet<>();
-            for (Identifier serializer : supportedSerializers) {
-                if (this.fabricGroups.containsKey(serializer)) {
-                    selected.add(serializer);
-                }
-            }
-            Set<Identifier> key = Set.copyOf(selected);
+            Set<Identifier> key = this.selectFabricSerializers(supportedSerializers);
             EncodedPayload cached = this.fabricPayloads.get(key);
             if (cached != null) {
                 return cached;
@@ -602,6 +628,23 @@ public final class RecipeSyncProtocol implements LeavesProtocol {
             }
             this.fabricPayloads.put(key, encoded);
             return encoded;
+        }
+
+        private synchronized @Nullable EncodedPayload cachedFabricPayload(Set<Identifier> supportedSerializers) {
+            if (this == EMPTY) {
+                return EncodedPayload.EMPTY;
+            }
+            return this.fabricPayloads.get(this.selectFabricSerializers(supportedSerializers));
+        }
+
+        private Set<Identifier> selectFabricSerializers(Set<Identifier> supportedSerializers) {
+            Set<Identifier> selected = new HashSet<>();
+            for (Identifier serializer : supportedSerializers) {
+                if (this.fabricGroups.containsKey(serializer)) {
+                    selected.add(serializer);
+                }
+            }
+            return Set.copyOf(selected);
         }
 
         private void warmFabricPayload() {
