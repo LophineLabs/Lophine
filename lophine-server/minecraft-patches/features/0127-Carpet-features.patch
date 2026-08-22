@@ -841,6 +841,18 @@ index b90077b44ce81d5d60f9d0ad2414f0b7c6b1e720..4f4512d30717e5e41bd98703574485c0
          // Paper start - collision optimisations
          final ObjectArrayList<BlockPos> ret = new ObjectArrayList<>();
  
+diff --git a/net/minecraft/world/level/block/Blocks.java b/net/minecraft/world/level/block/Blocks.java
+--- a/net/minecraft/world/level/block/Blocks.java
++++ b/net/minecraft/world/level/block/Blocks.java
+@@ -6012,7 +6012,7 @@ public class Blocks {
+             }
+         }
+         // Make sure this stays as a method reference, else the synthetic lambda method makes this blow up
+-        statesToInit.parallelStream().forEach(BlockBehaviour.BlockStateBase::initCache);
++        statesToInit.forEach(BlockBehaviour.BlockStateBase::initCache); // Lophine - avoid class-init deadlock with carpet features
+         // Paper end - Perf: Optimize block state cache initialization
+     }
+ }
 diff --git a/net/minecraft/world/level/block/CarvedPumpkinBlock.java b/net/minecraft/world/level/block/CarvedPumpkinBlock.java
 index 5a316fedee1992efd4a21c4678b659c4589d57ec..f0a46c30b3c446cdc52a8198608d7f60441b7d1b 100644
 --- a/net/minecraft/world/level/block/CarvedPumpkinBlock.java
