@@ -48,6 +48,17 @@ index 143b7a167dcbf015a7318f2fe5e0798418fa2572..22ad0846be08292b07b363b6b96f7431
          if (false) for (Runnable tickable : this.tickables) { // Folia - region threading - TODO WTF is this?
              tickable.run();
          }
+diff --git a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
+--- a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
+@@ -102,6 +102,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
+     public void startConfiguration() {
+         new io.papermc.paper.event.connection.configuration.PlayerConnectionInitialConfigureEvent(this.paperConnection).callEvent(); // Paper
+         this.send(new ClientboundCustomPayloadPacket(new BrandPayload(this.server.getServerModName())));
++        org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handleConfigurationStart(this); // Leaves - protocol
+         ServerLinks serverLinks = this.server.serverLinks();
+         // Paper start
+         org.bukkit.craftbukkit.CraftServerLinks links = new org.bukkit.craftbukkit.CraftServerLinks(serverLinks);
 diff --git a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
 index 010180899d69d0457dcc9feee4f1c062c5354995..279b5072596c062a7c800510ed914a9df8ce0698 100644
 --- a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
