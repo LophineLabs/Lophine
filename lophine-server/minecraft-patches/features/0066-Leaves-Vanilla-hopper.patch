@@ -11,7 +11,7 @@ Original project: https://github.com/LeavesMC/Leaves
 This is a temporary solution designed to attempt to restore the vanilla behavior of the funnel while preserving optimizations as much as possible. It should ultimately be replaced by the optimization solution provided by lithium.
 
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index a858cb658af70f07614fa1f4d9e8a3435d5c161f..b418d11d5bff749c3eaf1b34c5727bfa8c295dbd 100644
+index a858cb658af70f07614fa1f4d9e8a3435d5c161f..40e869a77eb491dbc9885312ce77d2eeb36343c3 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -281,36 +281,67 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
@@ -23,7 +23,6 @@ index a858cb658af70f07614fa1f4d9e8a3435d5c161f..b418d11d5bff749c3eaf1b34c5727bfa
 +        // Leaves start - Vanilla hopper
 +        if (movedItemCount == 1) {
 +            movedItem.setCount(movedItemCount);
-+            container.setChanged();
 +            if (!worldData.skipPullModeEventFire) {
 +                movedItem = callPullMoveEvent(hopper, container, movedItem);
 +                if (movedItem == null) { // cancelled
@@ -51,6 +50,7 @@ index a858cb658af70f07614fa1f4d9e8a3435d5c161f..b418d11d5bff749c3eaf1b34c5727bfa
 +            if (remainingItem.getCount() != itemCountToMove) {
 +                origItemStack.setCount(removeOriginalItem ? originalItemCount - movedItemCount : originalItemCount);
 +                container.setItem(i, origItemStack);
++                container.setChanged(); // Lophine move down
                  return true;
              }
 -        }
