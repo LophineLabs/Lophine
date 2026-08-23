@@ -268,7 +268,7 @@ index 11d177e486958727f880f073550ae5db7e233dcd..e489da1acbb77c003951b608856ea706
                  } else {
                      LOGGER.warn("Player {} was dropping items too fast in creative mode, ignoring.", this.player.getPlainTextName());
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 7f3492a909536ca14577c3ec3aa511e98ca5551f..2d6500eb0a01f455de8d7a627cabcc06bb60ca61 100644
+index 9bbae1060588d4dfa06352ceb067c0481c665ff1..10d7cd83571280a6c82477814e64aaca6c712f46 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -280,7 +280,7 @@ public abstract class PlayerList {
@@ -280,7 +280,7 @@ index 7f3492a909536ca14577c3ec3aa511e98ca5551f..2d6500eb0a01f455de8d7a627cabcc06
              org.leavesmc.leaves.bot.ServerBot bot = this.server.getBotList().getBotByName(player.getScoreboardName());
              if (bot != null) {
                  this.server.getBotList().removeBot(bot, org.leavesmc.leaves.event.bot.BotRemoveEvent.RemoveReason.INTERNAL, player.getBukkitEntity(), false, false);
-@@ -442,7 +442,7 @@ public abstract class PlayerList {
+@@ -443,7 +443,7 @@ public abstract class PlayerList {
          org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handlePlayerJoin(player); // Leaves - protocol
  
          // Leaves start - bot support
@@ -289,7 +289,7 @@ index 7f3492a909536ca14577c3ec3aa511e98ca5551f..2d6500eb0a01f455de8d7a627cabcc06
              org.leavesmc.leaves.bot.ServerBot bot = this.server.getBotList().getBotByName(player.getScoreboardName());
              if (bot != null) {
                  this.server.getBotList().removeBot(bot, org.leavesmc.leaves.event.bot.BotRemoveEvent.RemoveReason.INTERNAL, player.getBukkitEntity(), false, false);
-@@ -970,7 +970,7 @@ public abstract class PlayerList {
+@@ -971,7 +971,7 @@ public abstract class PlayerList {
          ).callEvent();
          // Paper end
          // Leaves start - bot support

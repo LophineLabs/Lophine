@@ -21,10 +21,10 @@ index 86ccc19ed973d3a9bdb0210f37994c72aae0f1ab..2f89f44d405d1683659fcd02624e5073
                  }
                  // Paper end - Fix merchant inventory not closing on entity removal
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 1f20671b8bc07c77e8a3e60414bb2c8255e37385..9d69106b5a1867af541c23dc92f63005315e27e2 100644
+index c143e18e35d2a32a53f0f6411b83ed598300392e..b7beafb9fc187604a39e300f128cd3633797a674 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -557,7 +557,7 @@ public abstract class PlayerList {
+@@ -558,7 +558,7 @@ public abstract class PlayerList {
                  player.stopRiding();
                  vehicle.getPassengersAndSelf().forEach(e -> {
                      // Paper start - Fix villager boat exploit

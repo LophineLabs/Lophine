@@ -48,17 +48,6 @@ index f3667c55f75ba54a49daf40fd3e4dc55fc80d232..2fddc13b7096f82c0308e19a1cba60e6
          if (false) for (Runnable tickable : this.tickables) { // Folia - region threading - TODO WTF is this?
              tickable.run();
          }
-diff --git a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
---- a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
-+++ b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
-@@ -102,6 +102,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
-     public void startConfiguration() {
-         new io.papermc.paper.event.connection.configuration.PlayerConnectionInitialConfigureEvent(this.paperConnection).callEvent(); // Paper
-         this.send(new ClientboundCustomPayloadPacket(new BrandPayload(this.server.getServerModName())));
-+        org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handleConfigurationStart(this); // Leaves - protocol
-         ServerLinks serverLinks = this.server.serverLinks();
-         // Paper start
-         org.bukkit.craftbukkit.CraftServerLinks links = new org.bukkit.craftbukkit.CraftServerLinks(serverLinks);
 diff --git a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
 index 010180899d69d0457dcc9feee4f1c062c5354995..279b5072596c062a7c800510ed914a9df8ce0698 100644
 --- a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
@@ -106,11 +95,23 @@ index 010180899d69d0457dcc9feee4f1c062c5354995..279b5072596c062a7c800510ed914a9d
          } else {
              bridge.removeChannel(channel);
          }
+diff --git a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
+index e074fe9eb6a1e6cb30b7de522fcac673dcb81960..ca9993d703f523cda4ede40c5360d612856f5e3e 100644
+--- a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
+@@ -103,6 +103,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
+     public void startConfiguration() {
+         new io.papermc.paper.event.connection.configuration.PlayerConnectionInitialConfigureEvent(this.paperConnection).callEvent(); // Paper
+         this.send(new ClientboundCustomPayloadPacket(new BrandPayload(this.server.getServerModName())));
++        org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handleConfigurationStart(this); // Leaves - protocol
+         ServerLinks serverLinks = this.server.serverLinks();
+         // Paper start
+         org.bukkit.craftbukkit.CraftServerLinks links = new org.bukkit.craftbukkit.CraftServerLinks(serverLinks);
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 1dcb4fe3e2c250554e4f065caf21b37ea659e621..1f20671b8bc07c77e8a3e60414bb2c8255e37385 100644
+index 1dcb4fe3e2c250554e4f065caf21b37ea659e621..c143e18e35d2a32a53f0f6411b83ed598300392e 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -270,6 +270,7 @@ public abstract class PlayerList {
+@@ -269,6 +269,7 @@ public abstract class PlayerList {
          playerConnection.send(new ClientboundPlayerAbilitiesPacket(player.getAbilities()));
          playerConnection.send(new ClientboundSetHeldSlotPacket(player.getInventory().getSelectedSlot()));
          RecipeManager recipeManager = this.server.getRecipeManager();
@@ -118,7 +119,7 @@ index 1dcb4fe3e2c250554e4f065caf21b37ea659e621..1f20671b8bc07c77e8a3e60414bb2c82
          playerConnection.send(
              new ClientboundUpdateRecipesPacket(recipeManager.getSynchronizedItemProperties(), recipeManager.getSynchronizedStonecutterRecipes())
          );
-@@ -318,6 +318,8 @@ public abstract class PlayerList {
+@@ -318,6 +319,8 @@ public abstract class PlayerList {
              //return; // Folia - region threading - must still allow the player to connect, as we must add to chunk map before handling disconnect
          }
  
@@ -127,7 +128,7 @@ index 1dcb4fe3e2c250554e4f065caf21b37ea659e621..1f20671b8bc07c77e8a3e60414bb2c82
          final net.kyori.adventure.text.Component jm = playerJoinEvent.joinMessage();
  
          if (jm != null && !jm.equals(net.kyori.adventure.text.Component.empty())) { // Paper - Adventure
-@@ -514,6 +516,7 @@ public abstract class PlayerList {
+@@ -514,6 +517,7 @@ public abstract class PlayerList {
          return this.remove(player, net.kyori.adventure.text.Component.translatable("multiplayer.player.left", net.kyori.adventure.text.format.NamedTextColor.YELLOW, io.papermc.paper.configuration.GlobalConfiguration.get().messages.useDisplayNameInQuitMessage ? player.getBukkitEntity().displayName() : io.papermc.paper.adventure.PaperAdventure.asAdventure(player.getDisplayName())));
      }
      public net.kyori.adventure.text.@Nullable Component remove(final ServerPlayer player, final net.kyori.adventure.text.Component leaveMessage) {
@@ -135,7 +136,7 @@ index 1dcb4fe3e2c250554e4f065caf21b37ea659e621..1f20671b8bc07c77e8a3e60414bb2c82
          // Paper end - Fix kick event leave message not being sent
          ServerLevel level = player.level();
          player.awardStat(Stats.LEAVE_GAME);
-@@ -1417,6 +1420,7 @@ public abstract class PlayerList {
+@@ -1417,6 +1421,7 @@ public abstract class PlayerList {
              player.connection.send(recipes);
              player.getRecipeBook().sendInitialRecipeBook(player);
          }

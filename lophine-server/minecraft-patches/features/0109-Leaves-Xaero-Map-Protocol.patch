@@ -8,10 +8,10 @@ As a part of : Leaves (https://github.com/LeavesMC/Leaves)
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 9d69106b5a1867af541c23dc92f63005315e27e2..71988e11c512fcb391f845a1905411ea240479fa 100644
+index b7beafb9fc187604a39e300f128cd3633797a674..1f0e83b56e7b2c4815771aa569b76a59427f0c8c 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -1107,6 +1107,7 @@ public abstract class PlayerList {
+@@ -1108,6 +1108,7 @@ public abstract class PlayerList {
          //player.connection.send(new ClientboundSetChunkCacheRadiusPacket(io.papermc.paper.FeatureHooks.getViewDistance(level))); // Paper - rewrite chunk system
          //player.connection.send(new ClientboundSetSimulationDistancePacket(io.papermc.paper.FeatureHooks.getSimulationDistance(level))); // Paper - rewrite chunk system
          // Paper end - view distances
