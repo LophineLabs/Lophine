@@ -311,7 +311,7 @@ index a45c65678af08c94a88c81f847ef04d94f6331e4..2933acfc26ca6d9b668a19ba24aa8745
                  }
                  // Leaves end - skip
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index a7a687c7a90bce1ad20d32241f0b4316fefc8f9d..7f3492a909536ca14577c3ec3aa511e98ca5551f 100644
+index 622ee5324931f3f4f064889b7a3af84253c7a48d..9bbae1060588d4dfa06352ceb067c0481c665ff1 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -129,6 +129,7 @@ public abstract class PlayerList {
@@ -455,7 +455,7 @@ index a7a687c7a90bce1ad20d32241f0b4316fefc8f9d..7f3492a909536ca14577c3ec3aa511e9
      public void placeNewPlayer(final Connection connection, final ServerPlayer player, final CommonListenerCookie cookie) {
          player.isRealPlayer = true; // Paper
          player.loginTime = System.currentTimeMillis(); // Paper - Replace OfflinePlayer#getLastPlayed
-@@ -295,6 +415,7 @@ public abstract class PlayerList {
+@@ -296,6 +416,7 @@ public abstract class PlayerList {
  
          // player.connection.send(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(this.players)); // CraftBukkit - replaced with loop below
          this.players.add(player);
@@ -463,7 +463,7 @@ index a7a687c7a90bce1ad20d32241f0b4316fefc8f9d..7f3492a909536ca14577c3ec3aa511e9
          this.playersByName.put(player.getScoreboardName().toLowerCase(java.util.Locale.ROOT), player); // Spigot
          this.playersByUUID.put(player.getUUID(), player);
          // this.broadcastAll(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(List.of(player))); // CraftBukkit - replaced with loop below
-@@ -510,6 +631,7 @@ public abstract class PlayerList {
+@@ -511,6 +632,7 @@ public abstract class PlayerList {
      }
  
      protected void save(final ServerPlayer player) {
@@ -471,7 +471,7 @@ index a7a687c7a90bce1ad20d32241f0b4316fefc8f9d..7f3492a909536ca14577c3ec3aa511e9
          if (!player.getBukkitEntity().isPersistent()) return; // CraftBukkit
          player.lastSave = System.nanoTime(); // Folia - region threading - changed to nanoTime tracking
          this.playerIo.save(player);
-@@ -524,6 +646,48 @@ public abstract class PlayerList {
+@@ -525,6 +647,48 @@ public abstract class PlayerList {
          }
      }
  
@@ -520,7 +520,7 @@ index a7a687c7a90bce1ad20d32241f0b4316fefc8f9d..7f3492a909536ca14577c3ec3aa511e9
      public net.kyori.adventure.text.@Nullable Component remove(final ServerPlayer player) { // CraftBukkit - return string // Paper - return Component
          // Paper start - Fix kick event leave message not being sent
          return this.remove(player, net.kyori.adventure.text.Component.translatable("multiplayer.player.left", net.kyori.adventure.text.format.NamedTextColor.YELLOW, io.papermc.paper.configuration.GlobalConfiguration.get().messages.useDisplayNameInQuitMessage ? player.getBukkitEntity().displayName() : io.papermc.paper.adventure.PaperAdventure.asAdventure(player.getDisplayName())));
-@@ -597,6 +761,7 @@ public abstract class PlayerList {
+@@ -598,6 +762,7 @@ public abstract class PlayerList {
          player.getBukkitEntity().packetProcessor.close(); // Folia - region threading
          player.getAdvancements().clearTriggers();
          this.players.remove(player);
@@ -528,7 +528,7 @@ index a7a687c7a90bce1ad20d32241f0b4316fefc8f9d..7f3492a909536ca14577c3ec3aa511e9
          this.playersByName.remove(player.getScoreboardName().toLowerCase(java.util.Locale.ROOT)); // Spigot
          if (me.earthme.luminol.config.modules.misc.UsernameCheckConfig.allowOldPlayersJoin) this.playedPlayers.remove(player.getGameProfile().name()); // Leaf - Configurable vanilla username check
          this.server.getCustomBossEvents().onPlayerDisconnect(player);
-@@ -910,15 +1075,15 @@ public abstract class PlayerList {
+@@ -911,15 +1076,15 @@ public abstract class PlayerList {
      }
  
      public String[] getPlayerNamesArray() {

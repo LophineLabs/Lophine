@@ -1,0 +1,65 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 23 Aug 2026 16:19:43 +0800
+Subject: [PATCH] Rewritten Hopper Logic
+
+
+diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
+index a858cb658af70f07614fa1f4d9e8a3435d5c161f..b6b12a599424af6dbc840436bb81fb584a3968ab 100644
+--- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
++++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
+@@ -281,6 +281,46 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+         ItemStack movedItem = origItemStack;
+         final int originalItemCount = origItemStack.getCount();
+         final int movedItemCount = Math.min(level.spigotConfig.hopperAmount, originalItemCount);
++        // Lophine start - rewritten hopper logic
++        if (true) {
++            int fixedMovedItemCount = movedItemCount;
++            if (!worldData.skipPullModeEventFire) { // Folia - region threading
++                ItemStack eItem = movedItem.copy();
++                eItem.setCount(movedItemCount);
++                eItem = callPullMoveEvent(hopper, container, eItem);
++                if (eItem == null) { // cancelled
++                    origItemStack.setCount(originalItemCount);
++                    // Drastically improve performance by returning true.
++                    // No plugin could have relied on the behavior of false as the other call
++                    // site for IMIE did not exhibit the same behavior
++                    return true;
++                }
++                // paper marked update item is undefined in events,
++                // so we don't care about that,
++                // but we still need check the item count if the count is too large
++                fixedMovedItemCount = Math.min(eItem.getCount(), originalItemCount);
++            }
++            movedItem = origItemStack.copy();
++            final ItemStack remainingItem = addItem(container, hopper, container.removeItem(i, fixedMovedItemCount), null);
++            final int realMovedItemCount = fixedMovedItemCount - remainingItem.getCount();
++            if (remainingItem.isEmpty()) {
++                container.setChanged();
++                return true;
++            } else if (realMovedItemCount != 0
++                    && remainingItem != net.minecraft.world.item.ItemStack.EMPTY
++                    && remainingItem.getItem() != net.minecraft.world.item.Items.AIR
++            ) {
++                // because of paper's config,
++                // the hopper might move more items here but not all were really moved successful,
++                // we need to restore the items that were not moved
++                movedItem.setCount(originalItemCount - realMovedItemCount);
++                container.setItem(i, movedItem);
++                container.setChanged();
++                return true;
++            }
++            container.setItem(i, movedItem);
++        } else {
++        // Lophine end - rewritten vanilla hopper logic
+         container.setChanged(); // original logic always marks source inv as changed even if no move happens.
+         movedItem.setCount(movedItemCount);
+ 
+@@ -311,6 +351,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+             return true;
+         }
+         origItemStack.setCount(originalItemCount);
++        } // Lophine - rewritten vanilla hopper logic
+ 
+         if (level.paperConfig().hopper.cooldownWhenFull) {
+             applyCooldown(hopper);
