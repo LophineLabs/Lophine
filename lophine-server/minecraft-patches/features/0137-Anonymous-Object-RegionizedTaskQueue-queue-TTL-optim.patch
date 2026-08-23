@@ -133,7 +133,7 @@ index fe0a6bd90cba4869a0ee11723832f2dee5039f62..53579b6faa9d55485088d59ec2fd1e42
                  throw new IllegalStateException("Negative reference count");
              }
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 657801b605ff49af0a7b80e17bc45b89e243b35e..b498cecb37cf83d31ad4a02bb1acecf7328e7aa6 100644
+index cc5fd9a6dd723c97ab0f61ee19e64e617e0c5f0a..1bc821edffe81544466cae77c959cf5e02249284 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -1755,6 +1755,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa

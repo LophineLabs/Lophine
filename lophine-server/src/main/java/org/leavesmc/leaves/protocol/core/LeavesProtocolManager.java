@@ -26,6 +26,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerCommonPacketListenerImpl;
 import org.leavesmc.leaves.protocol.core.invoker.*;
 import org.slf4j.Logger;
 
@@ -56,6 +57,7 @@ public class LeavesProtocolManager {
 
     private static final List<EmptyInvokerHolder<ProtocolHandler.Ticker>> TICKERS = new ArrayList<>();
 
+    private static final List<PlayerInvokerHolder<ProtocolHandler.PlayerRecipeSync>> PLAYER_RECIPE_SYNC = new ArrayList<>();
     private static final List<PlayerInvokerHolder<ProtocolHandler.PlayerJoin>> PLAYER_JOIN = new ArrayList<>();
     private static final List<PlayerInvokerHolder<ProtocolHandler.PlayerLeave>> PLAYER_LEAVE = new ArrayList<>();
     private static final List<EmptyInvokerHolder<ProtocolHandler.ReloadServer>> RELOAD_SERVER = new ArrayList<>();
@@ -154,6 +156,12 @@ public class LeavesProtocolManager {
                     final ProtocolHandler.Ticker ticker = method.getAnnotation(ProtocolHandler.Ticker.class);
                     if (ticker != null) {
                         TICKERS.add(new EmptyInvokerHolder<>(protocol, method, ticker));
+                        continue;
+                    }
+
+                    final ProtocolHandler.PlayerRecipeSync playerRecipeSync = method.getAnnotation(ProtocolHandler.PlayerRecipeSync.class);
+                    if (playerRecipeSync != null) {
+                        PLAYER_RECIPE_SYNC.add(new PlayerInvokerHolder<>(protocol, method, playerRecipeSync));
                         continue;
                     }
 
@@ -308,10 +316,20 @@ public class LeavesProtocolManager {
     }
 
     public static void handlePlayerJoin(ServerPlayer player) {
-        sendKnownId(player);
+        sendKnownId(player, ProtocolHandler.Stage.GAME);
         for (var join : PLAYER_JOIN) {
             join.invoke(player);
         }
+    }
+
+    public static void handlePlayerRecipeSync(ServerPlayer player) {
+        for (var sync : PLAYER_RECIPE_SYNC) {
+            sync.invoke(player);
+        }
+    }
+
+    public static void handleConfigurationStart(ServerCommonPacketListenerImpl listener) {
+        sendKnownId(new Context(listener.profile, listener.connection), ProtocolHandler.Stage.CONFIGURATION);
     }
 
     public static void handlePlayerLeave(ServerPlayer player) {
@@ -351,24 +369,49 @@ public class LeavesProtocolManager {
         }
     }
 
-    private static void sendKnownId(ServerPlayer player) {
-        Set<String> set = new HashSet<>();
+    private static Set<String> collectKnownIds(ProtocolHandler.Stage stage) {
+        Set<String> set = new TreeSet<>();
         PAYLOAD_RECEIVERS.forEach((clazz, holder) -> {
-            if (holder.owner().isActive()) {
-                set.add(IDS.get(clazz).toString());
+            if (holder.owner().isActive() && holder.handler().stage() == stage) {
+                Identifier id = IDS.get(clazz);
+                if (id != null) {
+                    set.add(id.toString());
+                }
             }
         });
         STRICT_BYTEBUF_RECEIVERS.forEach((key, holder) -> {
-            if (holder.owner().isActive()) {
+            if (holder.owner().isActive() && holder.handler().stage() == stage) {
                 set.add(key);
             }
         });
+        return set;
+    }
+
+    private static void sendKnownId(ServerPlayer player, ProtocolHandler.Stage stage) {
+        Set<String> set = collectKnownIds(stage);
+        if (set.isEmpty()) {
+            return;
+        }
         ProtocolUtils.sendBytebufPacket(player, Identifier.fromNamespaceAndPath("minecraft", "register"), buf -> {
-            for (String channel : set) {
-                buf.writeBytes(channel.getBytes(StandardCharsets.US_ASCII));
-                buf.writeByte(0);
-            }
-            buf.writerIndex(Math.max(buf.writerIndex() - 1, 0));
+            writeKnownIds(buf, set);
         });
+    }
+
+    private static void sendKnownId(Context context, ProtocolHandler.Stage stage) {
+        Set<String> set = collectKnownIds(stage);
+        if (set.isEmpty()) {
+            return;
+        }
+        ProtocolUtils.sendBytebufPacket(context, Identifier.fromNamespaceAndPath("minecraft", "register"), buf -> {
+            writeKnownIds(buf, set);
+        });
+    }
+
+    private static void writeKnownIds(FriendlyByteBuf buf, Set<String> ids) {
+        for (String channel : ids) {
+            buf.writeBytes(channel.getBytes(StandardCharsets.US_ASCII));
+            buf.writeByte(0);
+        }
+        buf.writerIndex(buf.writerIndex() - 1);
     }
 }

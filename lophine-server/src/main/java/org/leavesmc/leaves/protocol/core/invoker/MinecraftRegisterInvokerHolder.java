@@ -30,6 +30,9 @@ public class MinecraftRegisterInvokerHolder extends AbstractInvokerHolder<Protoc
     }
 
     public void invoke(IdentifierSelector selector, Identifier id) {
-        invoke0(false, selector.select(handler.stage()), id);
+        Object stageTarget = selector.select(handler.stage());
+        if (stageTarget != null) {
+            invoke0(false, stageTarget, id);
+        }
     }
 }

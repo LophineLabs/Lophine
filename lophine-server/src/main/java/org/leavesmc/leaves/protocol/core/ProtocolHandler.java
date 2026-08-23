@@ -62,6 +62,11 @@ public class ProtocolHandler {
 
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
+    public @interface PlayerRecipeSync {
+    }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
     public @interface PlayerLeave {
     }
 
