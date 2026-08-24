@@ -8,7 +8,7 @@ As part of: Leaves (https://github.com/LeavesMC/Leaves/blob/c5f18b7864206cea4411
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java b/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
-index 8d2518600ad518999b75124f0a87db9efe541f2e..09e1d701038042052fcbde4b4686da5d6a15f695 100644
+index bc91b87da9c8034fc142007bfb0be4927bd958d6..1277f35842e5cea58c5f358e6169b7f491db14d1 100644
 --- a/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
 +++ b/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
 @@ -101,6 +101,14 @@ public final class CollisionUtil {
@@ -35,7 +35,7 @@ index 8d2518600ad518999b75124f0a87db9efe541f2e..09e1d701038042052fcbde4b4686da5d
                                                  continue;
                                              }
                                          }
-@@ -2087,6 +2095,18 @@ public final class CollisionUtil {
+@@ -2088,6 +2096,18 @@ public final class CollisionUtil {
          return ret;
      }
  
