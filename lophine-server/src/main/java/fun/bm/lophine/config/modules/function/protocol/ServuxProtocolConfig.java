@@ -1,6 +1,5 @@
 package fun.bm.lophine.config.modules.function.protocol;
 
-import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.CommandSuggestions;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
@@ -9,7 +8,7 @@ import me.earthme.luminol.enums.EnumConfigCategory;
 import java.util.List;
 
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "servux", directory = {"protocol"})
-public class ServuxProtocolConfig implements IConfigModule {
+public class ServuxProtocolConfig {
     @ConfigInfo(name = "entity-protocol", directory = {"data"})
     public static boolean entityProtocol = false;
 

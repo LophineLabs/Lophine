@@ -1,26 +1,26 @@
 package me.earthme.luminol.config.modules.function;
 
-import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
-import me.earthme.luminol.config.flags.HotReloadUnsupported;
+import me.earthme.luminol.config.flags.DoNotLoad;
 import me.earthme.luminol.enums.EnumConfigCategory;
+import me.earthme.luminol.enums.EnumLoadType;
 
 import java.security.SecureRandom;
 import java.util.Base64;
 
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "secure_seed")
-public class SecureSeedConfig implements IConfigModule {
+public class SecureSeedConfig {
     @ConfigInfo(name = "enabled")
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     public static boolean enabled = false;
 
     @ConfigInfo(name = "version")
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     public static int version = 1;
 
     @ConfigInfo(name = "salt")
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     public static String salt = generateSalt();
 
     private static String generateSalt() {

@@ -2,6 +2,7 @@ package me.earthme.luminol.utils.dialog;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import me.earthme.luminol.api.config.EnumConfigData;
 import me.earthme.luminol.config.ConfigsInstance;
 import net.kyori.adventure.text.format.TextColor;
 import net.minecraft.commands.functions.StringTemplate;
@@ -12,11 +13,11 @@ import net.minecraft.world.entity.player.Player;
 import org.bukkit.command.CommandSender;
 
 import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class ConfigCommandDialog {
+    private static final Set<EnumConfigData> allNeedFeatures = Set.of(EnumConfigData.VALUE, EnumConfigData.COMMENT, EnumConfigData.SUGGESTIONS);
+
     public static void openGui(Player player, String name, ConfigsInstance config) {
         openGui(player, name, config, "");
     }
@@ -27,10 +28,11 @@ public class ConfigCommandDialog {
 
     public static void openGui(Player player, String name, ConfigsInstance config, String prefix) {
         if (prefix.equals("full")) {
+            Collection<String> allKeys = config.getAllConfigPaths("");
             player.openDialog(
                     ConfigDialogUtil.createHolder(
                             name,
-                            config.getAllDataFull(),
+                            config.getData(config.getAllConfigPaths(""), allNeedFeatures),
                             name + " submit "
                     ));
             return;
@@ -63,7 +65,7 @@ public class ConfigCommandDialog {
         }
 
         ConfigDialogUtil.addInputs(
-                config.getDataFull(keySingleConfigs),
+                config.getData(keySingleConfigs, allNeedFeatures),
                 name + " submit ",
                 builder
         );

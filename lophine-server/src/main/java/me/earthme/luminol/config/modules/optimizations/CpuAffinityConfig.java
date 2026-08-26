@@ -1,48 +1,46 @@
 package me.earthme.luminol.config.modules.optimizations;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.mojang.logging.LogUtils;
-import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
 import me.earthme.luminol.config.flags.DoNotLoad;
-import me.earthme.luminol.config.flags.HotReloadUnsupported;
+import me.earthme.luminol.config.flags.NeedRun;
 import me.earthme.luminol.enums.EnumConfigCategory;
+import me.earthme.luminol.enums.EnumLoadType;
+import me.earthme.luminol.enums.EnumRunnableType;
 import me.earthme.luminol.utils.AffinityRunnableWrapper;
 import net.openhft.affinity.Affinity;
-import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 
 import java.util.BitSet;
 import java.util.List;
-import java.util.Set;
 
 @ConfigClassInfo(category = EnumConfigCategory.OPTIMIZATIONS, name = "cpu_affinity")
-public class CpuAffinityConfig implements IConfigModule {
-    @HotReloadUnsupported
+public class CpuAffinityConfig {
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "enabled_for_tickregion")
     public static boolean enabledForTickRegion = false;
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "enable_for_chunksystem_worker")
     public static boolean enabledForChunkSystemWorker = false;
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "enable_for_chunksystem_io")
     public static boolean enabledForChunkSystemIo = false;
 
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "tickregion_affinity")
     public static List<String> tickRegionAffinity = Affinity.getAffinity()
             .stream()
             .mapToObj(String::valueOf)
             .toList();
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "chunksystem_worker_affinity")
     public static List<String> chunkSystemWorkerAffinity = Affinity.getAffinity()
             .stream()
             .mapToObj(String::valueOf)
             .toList();
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "chunksystem_io_affinity")
     public static List<String> chunkSystemIoAffinity = Affinity.getAffinity()
             .stream()
@@ -72,8 +70,8 @@ public class CpuAffinityConfig implements IConfigModule {
         return chunkSystemIoRunnableWrapper == null ? in : chunkSystemIoRunnableWrapper.wrap(in);
     }
 
-    @Override
-    public void onLoaded(CommentedFileConfig configInstance, @Nullable Set<Exception> e) {
+    @NeedRun(when = EnumRunnableType.ON_LOADED)
+    public void onLoaded() {
         if (enabledForTickRegion) {
             tickRegionRunnableWrapper = new AffinityRunnableWrapper("tick_region", parseAffinity(tickRegionAffinity));
             LOGGER.info("Tick region thread now bound to: {}", tickRegionRunnableWrapper.getAffinity());

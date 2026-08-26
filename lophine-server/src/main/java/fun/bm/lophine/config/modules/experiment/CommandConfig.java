@@ -1,12 +1,11 @@
 package fun.bm.lophine.config.modules.experiment;
 
-import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
 import me.earthme.luminol.enums.EnumConfigCategory;
 
 @ConfigClassInfo(category = EnumConfigCategory.EXPERIMENT, name = "command")
-public class CommandConfig implements IConfigModule {
+public class CommandConfig {
     @ConfigInfo(name = "trigger_command_enabled")
     public static boolean trigger = false;
 

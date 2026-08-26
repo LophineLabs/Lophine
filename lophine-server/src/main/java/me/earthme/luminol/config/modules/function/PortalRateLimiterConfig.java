@@ -1,39 +1,39 @@
 package me.earthme.luminol.config.modules.function;
 
-import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
-import me.earthme.luminol.config.flags.HotReloadUnsupported;
+import me.earthme.luminol.config.flags.DoNotLoad;
 import me.earthme.luminol.enums.EnumConfigCategory;
+import me.earthme.luminol.enums.EnumLoadType;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @ConfigClassInfo(name = "portal_rate_limit", category = EnumConfigCategory.FUNCTION)
-public class PortalRateLimiterConfig implements IConfigModule {
+public class PortalRateLimiterConfig {
     @ConfigInfo(name = "enable")
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     public static boolean enabled = false;
 
     @ConfigInfo(name = "maximum_portal_teleports_per_tick")
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     public static int maxPortalTeleportsPerTick = 200;
 
     @ConfigInfo(name = "maximum_portal_teleports_per_tick_expression")
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     public static String maxPortalTeleportsExpression = "50 * (1 + sqrt(e/1000) + c/200 + p/5)";
 
     @ConfigInfo(name = "destination_backpressure_enabled")
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     public static boolean destinationBackpressureEnabled = true;
 
     @ConfigInfo(name = "destination_tokens_per_tick")
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     public static int portalIngressTokensPerTick = 16;
 
     @ConfigInfo(name = "destination_burst_capacity")
-    @HotReloadUnsupported
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     public static int portalIngressBurstCapacity = 64;
 
     // use this to prevent reallocation

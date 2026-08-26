@@ -3,8 +3,9 @@ package me.earthme.luminol.api.config;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -41,6 +42,14 @@ public interface LuminolConfigsInstance {
     boolean setConfig(String key, Object value);
 
     /**
+     * Remove a configuration entry by its key.
+     * If the key does not exist this should be a no-op.
+     *
+     * @param key the configuration key to remove
+     */
+    void removeConfig(String key);
+
+    /**
      * Saves all pending configuration changes to disk
      */
     void saveConfigs();
@@ -58,7 +67,7 @@ public interface LuminolConfigsInstance {
      * @param key the configuration key
      * @return the default value as string
      */
-    String getDefaultConfig(String key);
+    Object getDefaultConfig(String key);
 
     /**
      * Gets the current value of a configuration as string
@@ -94,15 +103,6 @@ public interface LuminolConfigsInstance {
     List<String> completeConfigPath(String partialPath);
 
     /**
-     * Completes a partial configuration path with specific depth
-     *
-     * @param partialPath the partial path to complete
-     * @param dotIndex    the maximum number of dots (depth) in the result
-     * @return list of possible completions
-     */
-    List<String> completeConfigPath(String partialPath, int dotIndex);
-
-    /**
      * Gets all configuration paths that start with the given prefix
      *
      * @param currentPath the prefix to search for
@@ -111,93 +111,11 @@ public interface LuminolConfigsInstance {
     List<String> getAllConfigPaths(String currentPath);
 
     /**
-     * Gets all configuration data pairs without prefix filter
-     *
-     * @return set of all configuration data
-     */
-    Set<ConfigDataPair> getAllData();
-
-    /**
-     * Gets configuration data pairs filtered by prefix
-     *
-     * @param prefix the prefix to filter by
-     * @return set of matching configuration data
-     */
-    Set<ConfigDataPair> getData(String prefix);
-
-    /**
-     * Gets all configuration data pairs with full information (comments and suggestions)
-     *
-     * @return set of all configuration data with full details
-     */
-    Set<ConfigDataPair> getAllDataFull();
-
-    /**
-     * Gets configuration data pairs with full information filtered by prefix
-     *
-     * @param prefix the prefix to filter by
-     * @return set of matching configuration data with full details
-     */
-    Set<ConfigDataPair> getDataFull(String prefix);
-
-    /**
-     * Gets configuration data pairs with optional comments and suggestions
-     *
-     * @param prefix           the prefix to filter by
-     * @param _comment         whether to include comments
-     * @param _withSuggestions whether to include suggestions
-     * @return set of matching configuration data
-     */
-    Set<ConfigDataPair> getData(String prefix, boolean _comment, boolean _withSuggestions);
-
-    /**
-     * Gets configuration data pairs for specified keys
-     *
-     * @param list list of configuration keys
-     * @return set of configuration data for the specified keys
-     */
-    Set<ConfigDataPair> getData(List<String> list);
-
-    /**
-     * Gets configuration data pairs with comments for specified keys
-     *
-     * @param list list of configuration keys
-     * @return set of configuration data with comments
-     */
-    Set<ConfigDataPair> getDataWithComment(List<String> list);
-
-    /**
-     * Gets configuration data pairs with full information for specified keys
-     *
-     * @param list list of configuration keys
-     * @return set of configuration data with full details
-     */
-    Set<ConfigDataPair> getDataFull(List<String> list);
-
-    /**
      * Gets configuration data pairs for specified keys with optional features
      *
-     * @param list             list of configuration keys
-     * @param _comment         whether to include comments
-     * @param _withSuggestions whether to include suggestions
-     * @return set of configuration data
+     * @param list     list of configuration keys
+     * @param features data features need to return
+     * @return map of configuration data
      */
-    Set<ConfigDataPair> getData(List<String> list, boolean _comment, boolean _withSuggestions);
-
-    /**
-     * Remove a configuration entry by its key.
-     * If the key does not exist this should be a no-op.
-     *
-     * @param key the configuration key to remove
-     */
-    void removeConfig(String key);
-
-    /**
-     * Remove multiple configuration entries by their keys.
-     * Implementations should attempt to remove each key provided. If some
-     * keys do not exist they may be ignored.
-     *
-     * @param keys an array of configuration keys to remove
-     */
-    void removeConfig(String[] keys);
+    Map<String, Map<EnumConfigData, Object>> getData(Collection<String> list, Collection<EnumConfigData> features);
 }

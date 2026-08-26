@@ -1,23 +1,21 @@
 package me.earthme.luminol.config.modules.function;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
 import me.earthme.luminol.config.flags.DoNotLoad;
+import me.earthme.luminol.config.flags.NeedRun;
 import me.earthme.luminol.enums.EnumBarType;
 import me.earthme.luminol.enums.EnumConfigCategory;
+import me.earthme.luminol.enums.EnumRunnableType;
 import me.earthme.luminol.enums.EnumStatusBarDisplay;
 import me.earthme.luminol.functions.bars.TickableStatusBarList;
 import net.kyori.adventure.bossbar.BossBar;
 import org.bukkit.Bukkit;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Set;
 
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "tpsbar")
-public class TpsBarConfig implements IConfigModule {
+public class TpsBarConfig {
     @ConfigInfo(name = "enabled")
     public static boolean tpsbarEnabled = false;
     @ConfigInfo(name = "format")
@@ -42,8 +40,8 @@ public class TpsBarConfig implements IConfigModule {
     @DoNotLoad
     private static boolean inited = false;
 
-    @Override
-    public void onLoaded(CommentedFileConfig configInstance, @Nullable Set<Exception> e) {
+    @NeedRun(when = EnumRunnableType.ON_LOADED)
+    public void onLoaded() {
         TickableStatusBarList.raiseGlobalReload(EnumBarType.TPS);
 
         if (!inited) { // command has moved to CommandRegister
@@ -51,8 +49,8 @@ public class TpsBarConfig implements IConfigModule {
         }
     }
 
-    @Override
-    public void onUnloaded(CommentedFileConfig configInstance) {
+    @NeedRun(when = EnumRunnableType.ON_UNLOAD)
+    public void onUnloaded() {
         Bukkit.getCommandMap().getKnownCommands().remove("luminol:tpsbar");
     }
 }

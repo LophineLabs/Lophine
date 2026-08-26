@@ -1,20 +1,18 @@
 package me.earthme.luminol.config.modules.misc;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.mojang.logging.LogUtils;
-import me.earthme.luminol.config.IConfigModule;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
 import me.earthme.luminol.config.flags.DoNotLoad;
+import me.earthme.luminol.config.flags.NeedRun;
 import me.earthme.luminol.enums.EnumConfigCategory;
-import org.jetbrains.annotations.Nullable;
+import me.earthme.luminol.enums.EnumRunnableType;
 import org.slf4j.Logger;
 
-import java.util.Set;
 import java.util.regex.Pattern;
 
 @ConfigClassInfo(category = EnumConfigCategory.MISC, name = "username_checks")
-public class UsernameCheckConfig implements IConfigModule {
+public class UsernameCheckConfig {
     @DoNotLoad
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -43,8 +41,8 @@ public class UsernameCheckConfig implements IConfigModule {
         return !enabled || !usernameCheckRegex.equals(defaultUsernameCheckRegex);
     }
 
-    @Override
-    public void onLoaded(CommentedFileConfig configInstance, @Nullable Set<Exception> e) {
+    @NeedRun(when = EnumRunnableType.ON_LOADED)
+    public void onLoaded() {
         try {
             usernameRegex = Pattern.compile(usernameCheckRegex);
         } catch (Exception ex) {
