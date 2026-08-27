@@ -165,7 +165,7 @@ index 0bbce88f95c8f96d865f3c58e830e5aa006e48bb..1cf8b71bb636b92df21b2e5027ad3dee
                  }
                  // Paper end - Fix bees aging inside; use exitTickCounter to keep actual bee life
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index a2da25462a43233df7d0c98498d4ad36e672b1ff..b845e311113c002b5dbede96ca36e38e2837483e 100644
+index 73579f9559888ce683be0b7d97e466b9fbc8eba3..573b82e4424ce863c6bca65eff08420c84dfd1a3 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -346,7 +346,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen

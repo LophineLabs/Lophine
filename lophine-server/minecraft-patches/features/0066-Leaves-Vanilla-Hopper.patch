@@ -1,0 +1,111 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Thu, 27 Aug 2026 16:38:43 +0800
+Subject: [PATCH] Leaves: Vanilla Hopper
+
+Original license: GPL-3.0-only
+Original project: https://github.com/LeavesMC/Leaves
+
+This is a temporary solution designed to attempt to restore the vanilla behavior of the funnel while preserving optimizations as much as possible. It should ultimately be replaced by the optimization solution provided by lithium.
+
+diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
+index a858cb658af70f07614fa1f4d9e8a3435d5c161f..e171731f1fa4dcce9150789b605e3f5f01f39775 100644
+--- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
++++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
+@@ -281,36 +281,73 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+         ItemStack movedItem = origItemStack;
+         final int originalItemCount = origItemStack.getCount();
+         final int movedItemCount = Math.min(level.spigotConfig.hopperAmount, originalItemCount);
+-        container.setChanged(); // original logic always marks source inv as changed even if no move happens.
+-        movedItem.setCount(movedItemCount);
+ 
+-        if (!worldData.skipPullModeEventFire) { // Folia - region threading
+-            movedItem = callPullMoveEvent(hopper, container, movedItem);
+-            if (movedItem == null) { // cancelled
+-                origItemStack.setCount(originalItemCount);
+-                // Drastically improve performance by returning true.
+-                // No plugin could have relied on the behavior of false as the other call
+-                // site for IMIE did not exhibit the same behavior
+-                return true;
++        // Leaves start - fix vanilla
++        if (true) { // Lophine - always true
++            movedItem.setCount(movedItemCount);
++            if (!worldData.skipPullModeEventFire) {
++                movedItem = callPullMoveEvent(hopper, container, movedItem);
++                if (movedItem == null) { // cancelled
++                    origItemStack.setCount(originalItemCount);
++                    // Drastically improve performance by returning true.
++                    // No plugin could have relied on the behavior of false as the other call
++                    // site for IMIE did not exhibit the same behavior
++                    return true;
++                }
+             }
+-        }
++            final boolean removeOriginalItem = movedItem == origItemStack;
++            if (removeOriginalItem) {
++                movedItem = container.removeItem(i, movedItemCount);
++                if (movedItem == origItemStack) {
++                    movedItem = movedItem.copy(true); // copy if reference equal
++                }
++            }
++
++            final int itemCountToMove = movedItem.getCount();
++            final ItemStack remainingItem = addItem(container, hopper, movedItem, null);
+ 
+-        final ItemStack remainingItem = addItem(container, hopper, movedItem, null);
+-        final int remainingItemCount = remainingItem.getCount();
+-        if (remainingItemCount != movedItemCount) {
+-            origItemStack = origItemStack.copy(true);
++            final int remainingItemCount = remainingItem.getCount();
++            if (remainingItemCount != itemCountToMove) {
++                origItemStack.setCount(removeOriginalItem ? originalItemCount - movedItemCount + remainingItemCount : originalItemCount);
++                container.setItem(i, origItemStack);
++                container.setChanged();
++                return true;
++            }
+             origItemStack.setCount(originalItemCount);
+-            if (!origItemStack.isEmpty()) {
+-                origItemStack.setCount(originalItemCount - movedItemCount + remainingItemCount);
++            container.setItem(i, origItemStack);
++        } else {
++            container.setChanged(); // original logic always marks source inv as changed even if no move happens.
++            movedItem.setCount(movedItemCount);
++
++            if (!worldData.skipPullModeEventFire) {
++                movedItem = callPullMoveEvent(hopper, container, movedItem);
++                if (movedItem == null) { // cancelled
++                    origItemStack.setCount(originalItemCount);
++                    // Drastically improve performance by returning true.
++                    // No plugin could have relied on the behavior of false as the other call
++                    // site for IMIE did not exhibit the same behavior
++                    return true;
++                }
+             }
+ 
+-            IGNORE_TILE_UPDATES.set(true); // Folia - region threading
+-            container.setItem(i, origItemStack);
+-            IGNORE_TILE_UPDATES.set(false); // Folia - region threading
+-            container.setChanged();
+-            return true;
++            final ItemStack remainingItem = addItem(container, hopper, movedItem, null);
++            final int remainingItemCount = remainingItem.getCount();
++            if (remainingItemCount != movedItemCount) {
++                origItemStack = origItemStack.copy(true);
++                origItemStack.setCount(originalItemCount);
++                if (!origItemStack.isEmpty()) {
++                    origItemStack.setCount(originalItemCount - movedItemCount + remainingItemCount);
++                }
++
++                IGNORE_TILE_UPDATES.set(true); // Folia - region threading
++                container.setItem(i, origItemStack);
++                IGNORE_TILE_UPDATES.set(false); // Folia - region threading
++                container.setChanged();
++                return true;
++            }
++            origItemStack.setCount(originalItemCount);
+         }
+-        origItemStack.setCount(originalItemCount);
++        // Leaves end - fix vanilla
+ 
+         if (level.paperConfig().hopper.cooldownWhenFull) {
+             applyCooldown(hopper);
