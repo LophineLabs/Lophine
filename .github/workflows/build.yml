@@ -33,6 +33,7 @@ jobs:
 
       - name: Sync to CNB
         if: github.event_name != 'pull_request'
+        continue-on-error: true
         env:
           CNB_TOKEN: ${{ secrets.CNB_TOKEN }}
           CNB_TARGET_URL: https://cnb.cool/LophineLabs/Lophine.git
@@ -177,6 +178,7 @@ jobs:
 
       - name: Sync Release Tag to CNB
         if: ${{ !cancelled() && (steps.release_no_comment.conclusion == 'success' || steps.release_with_comment.conclusion == 'success') }}
+        continue-on-error: true
         env:
           CNB_TOKEN: ${{ secrets.CNB_TOKEN }}
           CNB_TARGET_URL: https://cnb.cool/LophineLabs/Lophine.git
