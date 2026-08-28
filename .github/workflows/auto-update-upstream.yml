@@ -1,0 +1,131 @@
+name: Auto Update Upstream
+
+on:
+  schedule:
+    - cron: '0 */8 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      TOOL: "LophineLabs/AutoUpdateUpstream"
+      UPSTREAM_URL: "https://github.com/PaperMC/Folia.git"
+      REF: "foliaRef"
+      TITLE: "Update Upstream (Folia)"
+    steps:
+      - name: Checkout AutoUpdateUpstream
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.TOOL }}
+          path: tool
+
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          path: repo
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'zulu'
+
+      - name: Build AutoUpdateUpstream
+        working-directory: tool
+        run: |
+          chmod +x gradlew
+          ./gradlew jar -x test
+
+      - name: Read old upstream ref
+        working-directory: repo
+        run: |
+          OLD_REF=$(grep '^${{ env.REF }}=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
+          echo "old_ref=$OLD_REF" >> "$GITHUB_OUTPUT"
+        id: oldref
+
+      - name: Run AutoUpdateUpstream
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          java -jar tool/build/libs/*.jar --repo=${{ github.workspace }}/repo
+
+      - name: Get upstream commit messages
+        working-directory: repo
+        run: |
+          UPSTREAM_URL="${{ env.UPSTREAM_URL }}"
+          OLD_REF="${{ steps.oldref.outputs.old_ref }}"
+          NEW_REF=$(grep '^${{ env.REF }}=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
+          git fetch "$UPSTREAM_URL" "+$NEW_REF:refs/upstream-tmp"
+          {
+            echo "UPSTREAM_MSG<<__COMMIT_MSG__"
+            git log --reverse --format='---%s---%n%n%b%n------------' "$OLD_REF..refs/upstream-tmp"
+            echo "__COMMIT_MSG__"
+          } >> "$GITHUB_ENV"
+          git update-ref -d refs/upstream-tmp
+
+      - name: Check for .patch changes
+        id: check
+        working-directory: repo
+        run: |
+          if git diff --quiet -- '*.patch' && git diff --cached --quiet -- '*.patch' && [ -z "$(git ls-files --others --exclude-standard -- '*.patch')" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create or update PR
+        if: steps.check.outputs.changed == 'true'
+        working-directory: repo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UPSTREAM_MSG: ${{ env.UPSTREAM_MSG }}
+        run: |
+          BRANCH="auto-update/upstream"
+          BASE="${{ github.event.repository.default_branch }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git stash push -u -m "upstream-update"
+
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            git fetch origin "$BRANCH" "$BASE"
+            git checkout "$BRANCH"
+            git reset --hard "origin/$BASE"
+          else
+            git fetch origin "$BASE"
+            git checkout -b "$BRANCH"
+          fi
+
+          # 恢复修改
+          git stash pop
+          # 清理 Gradle apply 任务产生的嵌套 .git 目录，避免被当作 gitlink 提交
+          find . -mindepth 2 -name .git -type d -exec rm -rf {} + 2>/dev/null || true
+
+          # 如果要推送的分支已存在且内容一致，跳过推送
+          if git rev-parse "origin/$BRANCH" >/dev/null 2>&1; then
+            if git diff --quiet "origin/$BRANCH" --; then
+              echo "Remote branch $BRANCH is up to date, skipping push"
+              exit 0
+            fi
+          fi
+
+          git add -- '*.patch'
+          printf '%s\n\n%s\n' "$TITLE" "$UPSTREAM_MSG" > /tmp/commit-msg.txt
+          git commit -F /tmp/commit-msg.txt
+          git push origin "$BRANCH" --force
+
+          # 查找已有的上游更新 PR
+          EXISTING=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            echo "Updated existing PR #$EXISTING"
+          else
+            gh pr create \
+              --base "$BASE" \
+              --head "$BRANCH" \
+              --title "$TITLE" \
+              --body-file /tmp/commit-msg.txt
+            echo "Created new PR"
+          fi
