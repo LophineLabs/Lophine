@@ -15,13 +15,13 @@ jobs:
       TITLE: "Update Upstream (Folia)"
     steps:
       - name: Checkout AutoUpdateUpstream
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: ${{ env.TOOL }}
           path: tool
 
       - name: Checkout target repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: ${{ github.repository }}
           path: repo
