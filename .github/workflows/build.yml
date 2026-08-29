@@ -52,7 +52,7 @@ jobs:
             tencentcom/git-sync
 
       - name: Set Up JDK
-        uses: actions/setup-java@v5.7.0
+        uses: actions/setup-java@v6
         with:
           distribution: zulu
           java-version: 25
