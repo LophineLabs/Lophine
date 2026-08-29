@@ -27,7 +27,7 @@ jobs:
           path: repo
 
       - name: Set up JDK 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: '25'
           distribution: 'zulu'
