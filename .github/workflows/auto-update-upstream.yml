@@ -69,7 +69,7 @@ jobs:
         id: check
         working-directory: repo
         run: |
-          if git diff --quiet -- '*.patch' && git diff --cached --quiet -- '*.patch' && [ -z "$(git ls-files --others --exclude-standard -- '*.patch')" ]; then
+          if git diff --quiet -- '*.patch' 'gradle.properties' && git diff --cached --quiet -- '*.patch' 'gradle.properties' && [ -z "$(git ls-files --others --exclude-standard -- '*.patch' 'gradle.properties')" ]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -112,7 +112,7 @@ jobs:
             fi
           fi
 
-          git add -- '*.patch'
+          git add -- '*.patch' 'gradle.properties'
           printf '%s\n\n%s\n' "$TITLE" "$UPSTREAM_MSG" > /tmp/commit-msg.txt
           git commit -F /tmp/commit-msg.txt
           git push origin "$BRANCH" --force
