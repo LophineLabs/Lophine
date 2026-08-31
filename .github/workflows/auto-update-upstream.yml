@@ -55,12 +55,13 @@ jobs:
         working-directory: repo
         run: |
           UPSTREAM_URL="${{ env.UPSTREAM_URL }}"
+          UPSTREAM_WEB_URL="${UPSTREAM_URL%.git}"
           OLD_REF="${{ steps.oldref.outputs.old_ref }}"
           NEW_REF=$(grep '^${{ env.REF }}=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
           git fetch "$UPSTREAM_URL" "+$NEW_REF:refs/upstream-tmp"
           {
             echo "UPSTREAM_MSG<<__COMMIT_MSG__"
-            git log --reverse --format='---%s---%n%n%b%n------------' "$OLD_REF..refs/upstream-tmp"
+            git log --reverse --format="[%H]($UPSTREAM_WEB_URL/commit/%H) %s%n%n%b%n------------%n" "$OLD_REF..refs/upstream-tmp" | sed 's/\[[^]]*\] *//g' | grep -v -E '^(Signed-off-by:|Co-authored-by:)'
             echo "__COMMIT_MSG__"
           } >> "$GITHUB_ENV"
           git update-ref -d refs/upstream-tmp
@@ -120,6 +121,7 @@ jobs:
           # 查找已有的上游更新 PR
           EXISTING=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
           if [ -n "$EXISTING" ]; then
+            gh pr edit "$EXISTING" --title "$TITLE" --body-file /tmp/commit-msg.txt
             echo "Updated existing PR #$EXISTING"
           else
             gh pr create \
