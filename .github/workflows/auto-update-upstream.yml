@@ -61,7 +61,7 @@ jobs:
           git fetch "$UPSTREAM_URL" "+$NEW_REF:refs/upstream-tmp"
           {
             echo "UPSTREAM_MSG<<__COMMIT_MSG__"
-            git log --reverse --format="[%H]($UPSTREAM_WEB_URL/commit/%H) %s%n%n%b%n------------%n" "$OLD_REF..refs/upstream-tmp" | sed 's/\[[^]]*\] *//g' | grep -v -E '^(Signed-off-by:|Co-authored-by:)'
+            git log --reverse --format="[%H]($UPSTREAM_WEB_URL/commit/%H) %s%n%n%b%n------------%n" "$OLD_REF..refs/upstream-tmp" | sed 's/\[[^]]*\] *//g' | grep -v -E '^(Signed-off-by:|Co-authored-by:)' || true
             echo "__COMMIT_MSG__"
           } >> "$GITHUB_ENV"
           git update-ref -d refs/upstream-tmp
