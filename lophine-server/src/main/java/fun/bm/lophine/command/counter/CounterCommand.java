@@ -19,9 +19,9 @@ public class CounterCommand extends RootNode {
     public CounterCommand() {
         super("counter", "lophine.commands.counter");
         children(
-                new ToggleCommand(),
-                new ResetCommand(),
-                new DisplayCommand()
+                ToggleCommand::new,
+                ResetCommand::new,
+                DisplayCommand::new
         );
     }
 
