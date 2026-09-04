@@ -2,7 +2,6 @@ package fun.bm.lophine.command.counter.sub;
 
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import fun.bm.lophine.command.counter.CounterCommand;
 import fun.bm.lophine.command.counter.CounterSubCommand;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -12,8 +11,8 @@ import org.leavesmc.leaves.command.CommandContext;
 import org.leavesmc.leaves.util.HopperCounter;
 
 public class ToggleCommand extends CounterSubCommand {
-    public ToggleCommand(CounterCommand parent) {
-        super("toggle", parent);
+    public ToggleCommand() {
+        super("toggle");
         children(
                 BooleanArg::new
         );

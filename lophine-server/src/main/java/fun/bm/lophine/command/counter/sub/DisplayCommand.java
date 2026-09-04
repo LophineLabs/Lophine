@@ -3,7 +3,6 @@ package fun.bm.lophine.command.counter.sub;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import fun.bm.lophine.command.counter.CounterCommand;
 import fun.bm.lophine.command.counter.CounterSubCommand;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -17,8 +16,8 @@ import org.leavesmc.leaves.util.HopperCounter;
 import java.util.concurrent.CompletableFuture;
 
 public class DisplayCommand extends CounterSubCommand {
-    public DisplayCommand(CounterCommand parent) {
-        super("display", parent);
+    public DisplayCommand() {
+        super("display");
         children(
                 DyeColorArg::new
         );

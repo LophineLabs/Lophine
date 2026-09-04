@@ -4,7 +4,6 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import fun.bm.lophine.command.counter.CounterCommand;
 import fun.bm.lophine.command.counter.CounterSubCommand;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
@@ -19,8 +18,8 @@ import org.leavesmc.leaves.util.HopperCounter;
 import java.util.concurrent.CompletableFuture;
 
 public class ResetCommand extends CounterSubCommand {
-    public ResetCommand(CounterCommand parent) {
-        super("reset", parent);
+    public ResetCommand() {
+        super("reset");
         children(
                 DyeColorArg::new
         );

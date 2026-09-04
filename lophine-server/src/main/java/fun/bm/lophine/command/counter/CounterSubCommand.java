@@ -6,11 +6,9 @@ import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.command.LiteralNode;
 
 public class CounterSubCommand extends LiteralNode {
-    protected final CounterCommand parent;
 
-    protected CounterSubCommand(String name, CounterCommand parent) {
+    protected CounterSubCommand(String name) {
         super(name);
-        this.parent = parent;
     }
 
     @Override
@@ -19,6 +17,6 @@ public class CounterSubCommand extends LiteralNode {
     }
 
     protected boolean hasPermission(CommandSender sender) {
-        return parent.hasPermission(sender, this.name);
+        return CounterCommand.hasPermission(sender, this.name);
     }
 }

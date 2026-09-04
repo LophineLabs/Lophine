@@ -14,15 +14,14 @@ import org.leavesmc.leaves.command.RootNode;
 import org.leavesmc.leaves.util.HopperCounter;
 
 public class CounterCommand extends RootNode {
-    private final String PERM_BASE;
+    private static final String PERM_BASE = "lophine.commands.counter";
 
     public CounterCommand() {
         super("counter", "lophine.commands.counter");
-        this.PERM_BASE = "lophine.commands.counter";
         children(
-                new ToggleCommand(this),
-                new ResetCommand(this),
-                new DisplayCommand(this)
+                new ToggleCommand(),
+                new ResetCommand(),
+                new DisplayCommand()
         );
     }
 
@@ -35,7 +34,7 @@ public class CounterCommand extends RootNode {
         return true;
     }
 
-    public boolean hasPermission(@NotNull CommandSender sender, String... subcommand) {
+    public static boolean hasPermission(@NotNull CommandSender sender, String... subcommand) {
         return hasPermission(PERM_BASE, sender, subcommand);
     }
 }
