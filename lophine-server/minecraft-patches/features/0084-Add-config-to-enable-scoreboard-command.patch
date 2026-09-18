@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Mon, 29 Sep 2025 22:56:03 +0800
+Subject: [PATCH] Add config to enable scoreboard command
+
+
+diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
+index 3216d0b4faa2e360d583dd5ab9c20d7edd35c24d..ff146d571c0396b827f1b716f3aa53bd562b58dd 100644
+--- a/net/minecraft/commands/Commands.java
++++ b/net/minecraft/commands/Commands.java
+@@ -250,7 +250,11 @@ public class Commands {
+         RotateCommand.register(this.dispatcher);
+         SayCommand.register(this.dispatcher);
+         //ScheduleCommand.register(this.dispatcher); // Folia - region threading
+-        //ScoreboardCommand.register(this.dispatcher, context); // Folia - region threading
++        // Lophine start - Add a config to enable scoreboard command
++        if (fun.bm.lophine.config.modules.experiment.CommandConfig.scoreboard) {
++            ScoreboardCommand.register(this.dispatcher, context); // Folia - region threading
++        }
++        // Lophine end - Add a config to enable scoreboard command
+         SeedCommand.register(this.dispatcher, commandSelection != Commands.CommandSelection.INTEGRATED);
+         VersionCommand.register(this.dispatcher, commandSelection != Commands.CommandSelection.INTEGRATED);
+         SetBlockCommand.register(this.dispatcher, context);

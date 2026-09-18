@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Thu, 12 Jun 2025 04:44:24 +0800
+Subject: [PATCH] Server I18n
+
+
+diff --git a/net/minecraft/locale/Language.java b/net/minecraft/locale/Language.java
+index 5760100429aa76fe6b2b004a8a2e1e0f6de4d1c4..abad2338c581d7881d093e2995231c103e258fd9 100644
+--- a/net/minecraft/locale/Language.java
++++ b/net/minecraft/locale/Language.java
+@@ -37,6 +37,7 @@ public abstract class Language {
+         Map<String, String> loadedData = new HashMap<>();
+         BiConsumer<String, String> output = loadedData::put;
+         parseTranslations(output, "/assets/minecraft/lang/en_us.json");
++        fun.bm.lophine.utils.ServerI18nUtil.loadLophineI18nDefault(output); // Lophine - Server I18n
+         deprecatedInfo.applyToMap(loadedData);
+         final Map<String, String> storage = Map.copyOf(loadedData);
+         return new Language() {
+@@ -66,7 +67,7 @@ public abstract class Language {
+         };
+     }
+ 
+-    private static void parseTranslations(final BiConsumer<String, String> output, final String path) {
++    public static void parseTranslations(final BiConsumer<String, String> output, final String path) { // Lophine - private -> public
+         try (InputStream stream = Language.class.getResourceAsStream(path)) {
+             loadFromJson(stream, output);
+         } catch (IOException | JsonParseException e) {
+diff --git a/net/minecraft/server/Main.java b/net/minecraft/server/Main.java
+index f72f7044b4110e2a5a185b1012a3181900e836b4..89cc1eb32ef2daf8523cdce5ab707863c9647ad9 100644
+--- a/net/minecraft/server/Main.java
++++ b/net/minecraft/server/Main.java
+@@ -167,6 +167,8 @@ public class Main {
+                 return;
+             }
+ 
++            fun.bm.lophine.utils.ServerI18nUtil.preInit(); // Lophine - I18n support
++
+             // Paper start - Detect headless JRE
+             String awtException = io.papermc.paper.util.ServerEnvironment.awtDependencyCheck();
+             if (awtException != null) {
+diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
+index 84c9ec561f9eb93de745d29a52087337c4c035ca..96efd4e9dc86c6005fe8c4d1bfcf6e25ff13cb1a 100644
+--- a/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -239,6 +239,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+         this.paperConfigurations.initializeWorldDefaultsConfiguration(this.registryAccess());
+         // Paper end - initialize global and world-defaults configuration
+         me.earthme.luminol.config.ConfigManager.loadConfigFiles(); // Luminol - load config file
++        fun.bm.lophine.utils.ServerI18nUtil.init(); // Lophine - I18n support
+         if (false) this.server.spark.enableEarlyIfRequested(); // Paper - spark // Luminol - Force disable builtin spark
+         // Paper start - fix converting txt to json file; convert old users earlier after PlayerList creation but before file load/save
+         if (this.convertOldUsers()) {

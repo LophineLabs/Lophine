@@ -23,6 +23,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -62,7 +63,7 @@ public class ServerBreakBlockAction extends AbstractTimerBotAction<ServerBreakBl
                 lastSentState = -1;
 
                 if (!iblockdata.isAir()) {
-                    bot.swing(InteractionHand.MAIN_HAND);
+                    bot.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);
                     EnchantmentHelper.onHitBlock(
                             bot.level(), bot.getMainHandItem(), bot, bot, EquipmentSlot.MAINHAND, Vec3.atCenterOf(pos), iblockdata,
                             item -> bot.onEquippedItemBroken(item, EquipmentSlot.MAINHAND)
@@ -83,7 +84,7 @@ public class ServerBreakBlockAction extends AbstractTimerBotAction<ServerBreakBl
                 }
             } else {
                 if (!iblockdata.isAir()) {
-                    bot.swing(InteractionHand.MAIN_HAND);
+                    bot.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);
                     float damage = this.incrementDestroyProgress(bot, iblockdata, pos);
                     if (damage >= 1.0F) {
                         bot.gameMode.destroyAndAck(pos, 0, "destroyed");

@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Bacteriawa <A3167717663@hotmail.com>
+Date: Sat, 22 Aug 2026 15:00:00 +0800
+Subject: [PATCH] Coalesce nether portal search chunk loads
+
+Keep Moonrise responsible for chunk tickets and share only identical
+in-flight portal search area loads. This avoids the custom reference-counted
+ticket cache while preventing every entity in a high-throughput farm from
+scheduling the same chunk area independently.
+
+Also honor the requested chunk status in Moonrise's async area loader instead
+of forcing every request to FULL. Portal searches request EMPTY explicitly.
+
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index 965b77f2f70d94fe23ebf87b351848ca2759cef9..70b5d284e08aca83bd28ecb2f96f19969e0a5a8e 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -223,6 +223,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+     private final StructureCheck structureCheck;
+     public final boolean tickTime; // Folia - region threading
+     private final LevelDebugSynchronizers debugSynchronizers = new LevelDebugSynchronizers(this);
++    public final fun.bm.lophine.utils.PortalSearchChunkLoadCoordinator portalSearchChunkLoadCoordinator = new fun.bm.lophine.utils.PortalSearchChunkLoadCoordinator(this); // Lophine - coalesce portal search area loads
+     // Luminol start - Level schedulers
+     private static final java.util.concurrent.atomic.AtomicInteger UNLOADER_ID_GEN = new java.util.concurrent.atomic.AtomicInteger(0);
+     public final me.earthme.luminol.utils.thread.LevelAwareRegionScheduler levelScheduler = new me.earthme.luminol.utils.thread.LevelAwareRegionScheduler(io.papermc.paper.threadedregions.TickRegions.getScheduler().scheduler);
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index 2fd06874fd45d0772f0b4ce150fc302c996d42db..4ba97ab9f156f97e154e3be2431ff10c19443c44 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -4978,10 +4978,10 @@ public abstract class Entity
+                 );
+ 
+                 // kick off search for existing portal or creation
+-                destination.moonrise$loadChunksAsync(
++                destination.portalSearchChunkLoadCoordinator.loadChunksAsync( // Lophine - coalesce portal search area loads
+                     // add 32 so that the final search for a portal frame doesn't load any chunks
+                     targetPos, portalSearchRadius + 32,
+-                    net.minecraft.world.level.chunk.status.ChunkStatus.EMPTY,
++                    // ChunkStatus.EMPTY is supplied by the coordinator
+                     ca.spottedleaf.concurrentutil.util.Priority.HIGH,
+                     (chunks) -> {
+                         BlockUtil.FoundRectangle portal =

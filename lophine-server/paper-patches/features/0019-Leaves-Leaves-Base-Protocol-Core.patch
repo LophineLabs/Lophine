@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 3 Aug 2025 15:57:08 +0800
+Subject: [PATCH] Leaves: Leaves Base Protocol Core
+
+Co-authored by: violetc <58360096+s-yh-china@users.noreply.github.com>
+As a part of : Leaves (https://github.com/LeavesMC/Leaves/blob/3e7f4a313ff0d2469dd7feae36304f0c8994cba1/leaves-server/paper-patches/features/0004-Leaves-Protocol-Core.patch)
+Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index ec18d21850f53e5e617c3c5b19bc1f7df13245e1..b085ab1116f7430b8589cc048d7e5015edd5751a 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -481,6 +481,7 @@ public final class CraftServer implements Server {
+         this.potionBrewer = new io.papermc.paper.potion.PaperPotionBrewer(console); // Paper - custom potion mixes
+         datapackManager = new io.papermc.paper.datapack.PaperDatapackManager(console.getPackRepository()); // Paper
+         if (false) this.spark = new io.papermc.paper.SparksFly(this); // Paper - spark // Luminol - Force disable builtin spark
++        org.leavesmc.leaves.protocol.core.LeavesProtocolManager.init(); // Leaves - protocol
+     }
+ 
+     public boolean getCommandBlockOverride(String command) {
+@@ -1054,6 +1055,7 @@ public final class CraftServer implements Server {
+         if (false) this.spark.registerCommandBeforePlugins(this); // Paper - spark // Luminol - Force disable builtin spark
+         this.overrideAllCommandBlockCommands = this.commandsConfiguration.getStringList("command-block-overrides").contains("*");
+         this.ignoreVanillaPermissions = this.commandsConfiguration.getBoolean("ignore-vanilla-permissions");
++        org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handleServerReload(); // Leaves - protocol
+ 
+         int pollCount = 0;
+ 

@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Fri, 15 Aug 2025 02:29:30 +0800
+Subject: [PATCH] Compatibility fix for Raid Revert and Cross Region Damage
+ Trace
+
+
+diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
+index a08ffc1c77ebcfbb2f9bab90da9b3e7f52a829f4..fc74620e5be51da93da985dd5d6179df7c2c1668 100644
+--- a/net/minecraft/world/entity/LivingEntity.java
++++ b/net/minecraft/world/entity/LivingEntity.java
+@@ -1231,6 +1231,30 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+         return changed;
+     }
+ 
++    // Lophine Start - raid revert adapt Cross Region Damage trace
++    public boolean addEffect(final MobEffectInstance effectInstance, EntityPotionEffectEvent.Cause cause, boolean fireEvent, boolean async) {
++        if (!async || ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(this)) {
++            return addEffect(effectInstance, this, cause, fireEvent);
++        } else if (fun.bm.lophine.config.modules.experiment.EntityDamageSourceTraceConfig.enabled) {
++            postToAddEffect(effectInstance, this, cause, fireEvent);
++            return true;
++        }
++        return false;
++    }
++
++    private void postToAddEffect(final MobEffectInstance effectInstance, @Nullable Entity entity, EntityPotionEffectEvent.Cause cause, boolean fireEvent) {
++        if (entity != null)
++            entity.getBukkitEntity().taskScheduler.schedule((Entity nmsEntity) -> {
++                try {
++                    if (nmsEntity.isRemoved()) return;
++                    addEffect(effectInstance, nmsEntity, cause, fireEvent);
++                } catch (Throwable ex) {
++                    LOGGER.error(ex.getMessage(), ex);
++                }
++            }, null, 1L);
++    }
++    // Lophine End - raid revert adapt Cross Region Damage trace
++
+     public boolean canBeAffected(final MobEffectInstance newEffect) {
+         if (this.is(EntityTypeTags.IMMUNE_TO_INFESTED)) {
+             return !newEffect.is(MobEffects.INFESTED);
+diff --git a/net/minecraft/world/entity/raid/Raider.java b/net/minecraft/world/entity/raid/Raider.java
+index 7555f0c5edf6a5419018203487cf8941e8095cb5..44f8302a8c3fb867f122a97dc29f24a311f0ad91 100644
+--- a/net/minecraft/world/entity/raid/Raider.java
++++ b/net/minecraft/world/entity/raid/Raider.java
+@@ -159,7 +159,7 @@ public abstract class Raider extends PatrollingMonster {
+                     net.minecraft.world.effect.MobEffectInstance mobeffect1 = new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.BAD_OMEN, 120000, amp, false, false, true);
+ 
+                     if (serverLevel.getGameRules().get(net.minecraft.world.level.gamerules.GameRules.RAIDS)) {
+-                        entityhuman.addEffect(mobeffect1, org.bukkit.event.entity.EntityPotionEffectEvent.Cause.PATROL_CAPTAIN); // CraftBukkit
++                        entityhuman.addEffect(mobeffect1, org.bukkit.event.entity.EntityPotionEffectEvent.Cause.PATROL_CAPTAIN, true, fun.bm.lophine.config.modules.experiment.EntityDamageSourceTraceConfig.enabled); // CraftBukkit // Lophine - raid revert adapt Cross Region Damage trace
+                     }
+                     this.setPatrolLeader(false);
+                 }

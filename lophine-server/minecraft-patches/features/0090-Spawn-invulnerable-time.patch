@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Mon, 19 May 2025 00:06:03 +0800
+Subject: [PATCH] Spawn invulnerable time
+
+
+diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
+index ff5e15613a91bc2696928c4c49df46ba30e9b905..25754161d62981477fb0e703530374c0707cfb3f 100644
+--- a/net/minecraft/server/level/ServerPlayer.java
++++ b/net/minecraft/server/level/ServerPlayer.java
+@@ -249,6 +249,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+     private int lastSentFood = -99999999;
+     private boolean lastFoodSaturationZero = true;
+     public int lastSentExp = -99999999;
++    protected int spawnInvulnerableTime = 60; // Lophine - spawn invulnerable time
+     private ChatVisiblity chatVisibility = ChatVisiblity.FULL;
+     public ParticleStatus particleStatus = ParticleStatus.ALL;
+     private boolean canChatColor = true;
+@@ -909,6 +910,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+         this.connection.tickClientLoadTimeout();
+         this.gameMode.tick();
+         this.wardenSpawnTracker.tick();
++        if (this.spawnInvulnerableTime > 0) --this.spawnInvulnerableTime; // Lophine - spawn invulnerable time
+         if (this.damageCooldownTime > 0) {
+             this.damageCooldownTime--;
+         }
+@@ -1543,6 +1545,13 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+             return false;
+         }
+ 
++        // Lophine start - spawn invulnerable time
++        if (fun.bm.lophine.config.modules.function.OldFeatureConfig.spawnInvulnerableTime) {
++            if (this.spawnInvulnerableTime > 0 && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) {
++                return false;
++            }
++        }
++        // Lophine end - spawn invulnerable time
+         Entity entity = source.getEntity();
+         if (!( // Paper - split the if statement. If below statement is false, hurtServer would not have been evaluated. Return false.
+             !(entity instanceof Player player && !this.canHarmPlayer(player))

@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 28 Jun 2026 19:19:31 +0800
+Subject: [PATCH] Sync dragon part when teleportation or firstly created
+
+
+diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/server/ServerEntityLookup.java b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/server/ServerEntityLookup.java
+index aa53138b3670a8337b639472a6ab5ce46702ff76..ed27b73e787782f328906b2a061feeca25d42a24 100644
+--- a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/server/ServerEntityLookup.java
++++ b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/server/ServerEntityLookup.java
+@@ -93,6 +93,7 @@ public final class ServerEntityLookup extends EntityLookup {
+         if (entity instanceof ThrownEnderpearl enderpearl) {
+             this.addEnderPearl(CoordinateUtils.getChunkKey(enderpearl.chunkPosition()), enderpearl.getId()); // Folia - region threading
+         }
++        if (entity instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) dragon.syncDragonPartsAfterTeleportTransform(); // Luminol - Sync dragon part when teleportation or firstly created
+         entity.registerScheduler(); // Paper - optimise Folia entity scheduler
+     }
+ 
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index d08b48f4ce6108154e65ff0977d72b4601a2eea5..e6b157e3b9f29a859db24d58e4105b8f6ff3ede9 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -4578,6 +4578,7 @@ public abstract class Entity
+         Entity copy = this.getType().create(destination, EntitySpawnReason.DIMENSION_TRAVEL);
+         copy.restoreFrom(this);
+         copy.transform(pos, yaw, pitch, velocity);
++        if (copy instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) dragon.syncDragonPartsAfterTeleportTransform(); // Luminol - Sync dragon part when teleportation or firstly created
+         // vanilla code used to call remove _after_ copying, and some stuff is required to be after copy - so add hook here
+         // for example, clearing of inventory after switching dimensions
+         this.postRemoveAfterChangingDimensions();
+diff --git a/net/minecraft/world/entity/boss/enderdragon/EnderDragon.java b/net/minecraft/world/entity/boss/enderdragon/EnderDragon.java
+index f852126b179dc0c5dab3dbd22d3bfb8b73a5dba8..de96c272fbdd70602b12a1684563185e8f0bda95 100644
+--- a/net/minecraft/world/entity/boss/enderdragon/EnderDragon.java
++++ b/net/minecraft/world/entity/boss/enderdragon/EnderDragon.java
+@@ -1017,4 +1017,12 @@ public class EnderDragon extends Mob implements Enemy {
+         return 500;
+     }
+     // Paper end - init expToDrop for already dying spawned dragon
++
++    // Luminol start - Sync dragon part when teleportation or firstly created
++    public void syncDragonPartsAfterTeleportTransform() {
++        for (EnderDragonPart part : this.subEntities) {
++            this.tickPart(part, 0.0, 0.0, 0.0); // offset -> 0.0
++        }
++    }
++    // Luminol end
+ }

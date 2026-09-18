@@ -1,0 +1,68 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Bacteriawa <A3167717663@hotmail.com>
+Date: Sat, 8 Aug 2026 01:31:30 +0800
+Subject: [PATCH] Pufferfish: Reduce projectile chunk loading
+
+A part of Pufferfish(https://github.com/Pufferfish-gg/Pufferfish)
+Co-authored-by: Paul Sauve <paul@technove.co>
+Original patch: https://github.com/pufferfish-gg/Pufferfish/blob/ver/1.21/pufferfish-server/minecraft-patches/features/0006-Reduce-projectile-chunk-loading.patch
+Original license(GPL-3.0): https://github.com/pufferfish-gg/Pufferfish/blob/ver/1.21/PATCH-LICENSE
+
+diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
+index 33154288e7ce62664d51ffb7dee18010dffbe2ff..b9f3245e21e312b55ba568b51d46712fa2336415 100644
+--- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
++++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
+@@ -333,6 +333,10 @@ public final class RegionizedWorldData {
+ 
+     private RegionizedServer.WorldLevelData tickData;
+ 
++    // Luminol start - Pufferfish projectile limiter
++    public long pufferfish$loadedThisTick = 0L;
++    public long pufferfish$loadedTick = 0L;
++    // Luminol end
+     // connections
+     private static final Connection[] EMPTY_CONNECTION_ARRAY = new Connection[0];
+     private final ReferenceList<Connection> connections = new ReferenceList<>(EMPTY_CONNECTION_ARRAY);
+diff --git a/net/minecraft/world/entity/projectile/Projectile.java b/net/minecraft/world/entity/projectile/Projectile.java
+index 937d06dbb1826ac053bfb92b58d18e3e1e9841c1..926b15590d804494cd55f587bba10a4af74809c5 100644
+--- a/net/minecraft/world/entity/projectile/Projectile.java
++++ b/net/minecraft/world/entity/projectile/Projectile.java
+@@ -85,6 +85,38 @@ public abstract class Projectile extends Entity implements TraceableEntity {
+         this.setOwner(EntityReference.of(owner));
+     }
+ 
++    // Pufferfish start
++    private int loadedLifetime = 0;
++    @Override
++    public void setPos(double x, double y, double z) {
++        var currRegionData = io.papermc.paper.threadedregions.TickRegionScheduler.getCurrentRegionizedWorldData();
++        // we might run this on a chunk system worker(chunk gen), so skip this check if no world data was fetched
++        if (currRegionData == null || currRegionData.world != this.level()) {
++            return;
++        }
++        long currentTick = currRegionData.getRedstoneGameTime();
++        if (currRegionData.pufferfish$loadedTick != currentTick) {
++            currRegionData.pufferfish$loadedTick = currentTick;
++            currRegionData.pufferfish$loadedThisTick = 0L;
++        }
++        int previousX = Mth.floor(this.getX()) >> 4, previousZ = Mth.floor(this.getZ()) >> 4;
++        int newX = Mth.floor(x) >> 4, newZ = Mth.floor(z) >> 4;
++        if (previousX != newX || previousZ != newZ) {
++            boolean isLoaded = ((net.minecraft.server.level.ServerChunkCache) this.level().getChunkSource()).getChunkAtIfLoadedImmediately(newX, newZ) != null;
++            if (!isLoaded) {
++                if (currRegionData.pufferfish$loadedThisTick > me.earthme.luminol.config.modules.optimizations.ProjectileChunkReduceConfig.maxProjectileLoadsPerTick) {
++                    if (++this.loadedLifetime > me.earthme.luminol.config.modules.optimizations.ProjectileChunkReduceConfig.maxProjectileLoadsPerProjectile) {
++                        this.discard();
++                    }
++                    return;
++                }
++                currRegionData.pufferfish$loadedThisTick++;
++            }
++        }
++        super.setPos(x, y, z);
++    }
++    // Pufferfish end
++
+     // Folia start - region threading
+     // In general, this is an entire mess. At the time of writing, there are fifty usages of getOwner.
+     // Usage of this function is to avoid concurrency issues, even if it sacrifices behavior.

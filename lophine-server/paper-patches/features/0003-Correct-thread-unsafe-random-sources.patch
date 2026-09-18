@@ -5,7 +5,7 @@ Subject: [PATCH] Correct thread unsafe random sources
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java
-index 70e21e1fc337c6ea40e64020fa1832d1630cae97..196301994341f7ff9eaf3b9401132df7d6eaaa8e 100644
+index 01271bd7484f75664ac14bc10ad7abc78fa88b8c..265cfcebd4986557538b65509f676990b913d8f8 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java
 @@ -40,7 +40,7 @@ import org.bukkit.inventory.meta.ItemMeta;

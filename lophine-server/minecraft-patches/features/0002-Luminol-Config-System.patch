@@ -5,7 +5,7 @@ Subject: [PATCH] Luminol Config System
 
 
 diff --git a/net/minecraft/server/Main.java b/net/minecraft/server/Main.java
-index 693ce1c23c7be6406eda22da57aa4a1b86a08f5f..4385488983a7544eb6d9193d913dc55294f4620d 100644
+index aa7f2ba4d931f98ce15c52dc2b99f07504149582..f72f7044b4110e2a5a185b1012a3181900e836b4 100644
 --- a/net/minecraft/server/Main.java
 +++ b/net/minecraft/server/Main.java
 @@ -110,6 +110,7 @@ public class Main {
@@ -17,10 +17,10 @@ index 693ce1c23c7be6406eda22da57aa4a1b86a08f5f..4385488983a7544eb6d9193d913dc552
              Bootstrap.bootStrap();
              Bootstrap.validate();
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index be15a671e0b39b455cd5983f4b90f8f3022a2ebc..56d26866cb8f413684e62558e5609b273efb8552 100644
+index 8c26b7169276af1b3ea5418ddece3ed6e250d7ad..08e51a22e9485dc31baae77a0d54f29fef2a97ad 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1168,6 +1168,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1150,6 +1150,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              ca.spottedleaf.moonrise.common.util.MoonriseCommon.haltExecutors();
          }
          // Paper end - rewrite chunk system
@@ -31,7 +31,7 @@ index be15a671e0b39b455cd5983f4b90f8f3022a2ebc..56d26866cb8f413684e62558e5609b27
          Util.shutdownExecutors();
          this.onServerExit();
 diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
-index cd5551c0221ad2a7b5c7d452d8d91ffc9711c3ee..1ad4704523a3d90414ac514488207b1b5def9afd 100644
+index 762822ce2ccf98952dc92be4824c48fe6bc1bacb..dcbdffd521fd37fe7de222023ed3b933787473b2 100644
 --- a/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -238,6 +238,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface

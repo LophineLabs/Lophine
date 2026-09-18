@@ -23,6 +23,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
@@ -67,7 +68,7 @@ public class ServerUseItemToAction extends AbstractUseBotAction<ServerUseItemToA
         }
 
         if (shouldSwing(interactionResult)) {
-            bot.swing(hand);
+            bot.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);
         }
 
         return interactionResult;

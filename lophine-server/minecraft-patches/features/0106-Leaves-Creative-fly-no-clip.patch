@@ -1,0 +1,144 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 8 Mar 2026 23:56:06 +0800
+Subject: [PATCH] Leaves: Creative fly no clip
+
+Co-authored by: violetc <58360096+s-yh-china@users.noreply.github.com>
+As a part of : Leaves (https://github.com/LeavesMC/Leaves/blob/da12a58e8d3bd3cd13b52a60676d5a1e03acd30a/leaves-server/minecraft-patches/features/0049-Creative-fly-no-clip.patch)
+Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
+
+diff --git a/net/minecraft/world/entity/ExperienceOrb.java b/net/minecraft/world/entity/ExperienceOrb.java
+index 674ef836e7d996a5810e653cd1e00bb295308547..e679e863eacdcec40dfa9d91e8ee051610d64601 100644
+--- a/net/minecraft/world/entity/ExperienceOrb.java
++++ b/net/minecraft/world/entity/ExperienceOrb.java
+@@ -202,7 +202,7 @@ public class ExperienceOrb extends Entity {
+         Player prevTarget = this.followingPlayer; // CraftBukkit - store old target
+         if (this.followingPlayer == null || this.followingPlayer.isSpectator() || this.followingPlayer.distanceToSqr(this) > 64.0) {
+             Player nearestPlayer = this.level().getNearestPlayer(this, 8.0);
+-            if (nearestPlayer != null && !nearestPlayer.isSpectator() && !nearestPlayer.isDeadOrDying()) {
++            if (nearestPlayer != null && !nearestPlayer.isCreativeFlyOrSpectator() && !nearestPlayer.isDeadOrDying()) { // Leaves - creative no clip
+                 this.followingPlayer = nearestPlayer;
+             } else {
+                 this.followingPlayer = null;
+diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
+index a7c5b1f7629b0b120458bcee738c3c81e76b96f3..1607008fd8bd7c7295248d47f7763c486986c36f 100644
+--- a/net/minecraft/world/entity/player/Player.java
++++ b/net/minecraft/world/entity/player/Player.java
+@@ -284,8 +284,8 @@ public abstract class Player extends Avatar implements ContainerUser {
+         if (this.cullTask != null) this.cullTask.requestCullSignal(); // Luminol - Ray tracing entity tracker
+         // Luminol end
+ 
+-        this.noPhysics = this.isSpectator();
+-        if (this.isSpectator() || this.isPassenger()) {
++        this.noPhysics = this.isCreativeFlyOrSpectator(); // Leaves - creative no clip
++        if (this.isCreativeFlyOrSpectator() || this.isPassenger()) { // Leaves - creative no clip
+             this.setOnGround(false);
+         }
+ 
+@@ -412,7 +412,7 @@ public abstract class Player extends Avatar implements ContainerUser {
+         if (this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.SWIMMING)) {
+             Pose desiredPose = this.getDesiredPose();
+             Pose actualPose;
+-            if (this.isSpectator() || this.isPassenger() || this.canPlayerFitWithinBlocksAndEntitiesWhen(desiredPose)) {
++            if (this.isCreativeFlyOrSpectator() || this.isPassenger() || this.canPlayerFitWithinBlocksAndEntitiesWhen(desiredPose)) { // Leaves - creative no clip
+                 actualPose = desiredPose;
+             } else if (this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.CROUCHING)) {
+                 actualPose = Pose.CROUCHING;
+@@ -540,7 +540,7 @@ public abstract class Player extends Avatar implements ContainerUser {
+         super.aiStep();
+         this.yHeadRot = this.getYRot();
+         this.setSpeed((float)this.getAttributeValue(Attributes.MOVEMENT_SPEED));
+-        if (this.getHealth() > 0.0F && !this.isSpectator()) {
++        if (this.getHealth() > 0.0F && !this.isCreativeFlyOrSpectator()) { // Leaves - creative no clip
+             AABB pickupArea;
+             if (this.isPassenger() && !this.getVehicle().isRemoved()) {
+                 pickupArea = this.getBoundingBox().minmax(this.getVehicle().getBoundingBox()).inflate(1.0, 0.0, 1.0);
+@@ -1867,6 +1867,26 @@ public abstract class Player extends Avatar implements ContainerUser {
+         return this.gameMode() == GameType.SPECTATOR;
+     }
+ 
++    // Leaves start - creative no clip
++    public boolean isCreativeFlyOrSpectator() {
++        return isSpectator() || (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.creativeNoClip && isCreative() && getAbilities().flying);
++    }
++
++    public boolean canSpectatingPlace(final net.minecraft.world.level.LevelReader world, final BlockState state, final BlockPos pos, final net.minecraft.world.phys.shapes.CollisionContext context) {
++        if (this.isCreativeFlyOrSpectator()) {
++            net.minecraft.world.phys.shapes.VoxelShape voxelShape = state.getCollisionShape(world, pos, context);
++            return voxelShape.isEmpty() || world.isUnobstructed(this, voxelShape.move(pos.getX(), pos.getY(), pos.getZ()));
++        } else {
++            return world.isUnobstructed(state, pos, context);
++        }
++    }
++
++    @Override
++    public boolean isCollidable(final boolean ignoreClimbing) {
++        return !isCreativeFlyOrSpectator() && super.isCollidable(ignoreClimbing);
++    }
++    // Leaves end - creative no clip
++
+     @Override
+     public boolean isPickable() {
+         return !this.isSpectator() && super.isPickable();
+diff --git a/net/minecraft/world/item/BlockItem.java b/net/minecraft/world/item/BlockItem.java
+index d52f7565d027799a9c67d3735d6572b08f3d9a1a..289b5bd5e83ce06eaeb2c26208afd821a5093352 100644
+--- a/net/minecraft/world/item/BlockItem.java
++++ b/net/minecraft/world/item/BlockItem.java
+@@ -164,8 +164,9 @@ public class BlockItem extends Item {
+         Player player = context.getPlayer();
+         // CraftBukkit start
+         Level world = context.getLevel(); // Paper - Cancel hit for vanished players
++        CollisionContext collisionContext = player == null ? CollisionContext.empty() : CollisionContext.placementContext(player); // Leaves - creative no clip
+         boolean canBuild = (!this.mustSurvive() || stateForPlacement.canSurvive(world, context.getClickedPos()))
+-            && world.checkEntityCollision(stateForPlacement, player, CollisionContext.placementContext(player), context.getClickedPos(), true); // Paper - Cancel hit for vanished players
++            && ((fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.creativeNoClip && context.getPlayer() != null) ? context.getPlayer().canSpectatingPlace(world, stateForPlacement, context.getClickedPos(), collisionContext) : world.checkEntityCollision(stateForPlacement, player, collisionContext, context.getClickedPos(), true)); // Paper - Cancel hit for vanished players // Leaves - creative no clip
+         org.bukkit.entity.Player bukkitPlayer = (context.getPlayer() instanceof ServerPlayer) ? (org.bukkit.entity.Player) context.getPlayer().getBukkitEntity() : null;
+ 
+         org.bukkit.event.block.BlockCanBuildEvent event = new org.bukkit.event.block.BlockCanBuildEvent(
+diff --git a/net/minecraft/world/item/StandingAndWallBlockItem.java b/net/minecraft/world/item/StandingAndWallBlockItem.java
+index 1f17f966882320b3a2ced50b3f73925cd0dfa14c..5a75df997c9026bcc740823d7039c8e426ea345a 100644
+--- a/net/minecraft/world/item/StandingAndWallBlockItem.java
++++ b/net/minecraft/world/item/StandingAndWallBlockItem.java
+@@ -44,7 +44,7 @@ public class StandingAndWallBlockItem extends BlockItem {
+         // return stateForPlacement != null && level.isUnobstructed(stateForPlacement, pos, CollisionContext.empty()) ? stateForPlacement : null;
+         // CraftBukkit start
+         if (stateForPlacement != null) {
+-            boolean defaultReturn = level.isUnobstructed(stateForPlacement, pos, CollisionContext.empty());
++            boolean defaultReturn = (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.creativeNoClip && context.getPlayer() != null) ? context.getPlayer().canSpectatingPlace(level, stateForPlacement, pos, CollisionContext.empty()) : level.isUnobstructed(stateForPlacement, pos, CollisionContext.empty()); // Leaves - creative no clip
+             org.bukkit.entity.Player player = (context.getPlayer() instanceof net.minecraft.server.level.ServerPlayer serverPlayer) ? serverPlayer.getBukkitEntity() : null;
+ 
+             org.bukkit.event.block.BlockCanBuildEvent event = new org.bukkit.event.block.BlockCanBuildEvent(org.bukkit.craftbukkit.block.CraftBlock.at(context.getLevel(), pos), player, stateForPlacement.asBlockData(), defaultReturn, org.bukkit.craftbukkit.CraftEquipmentSlot.getHand(context.getHand())); // Paper - Expose hand in BlockCanBuildEvent
+diff --git a/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java b/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
+index c0ec84f3366297b72a12b1f534fd29226165034f..18591428f887f2465fbef0a929dfac40e0315013 100644
+--- a/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
++++ b/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
+@@ -152,7 +152,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
+             List<Entity> entities = level.getEntities(null, aabb);
+             if (!entities.isEmpty()) {
+                 for (Entity entity : entities) {
+-                    if (entity.getPistonPushReaction() != PushReaction.IGNORE_ENTITY) {
++                    if (entity.getPistonPushReaction() != PushReaction.IGNORE_ENTITY && !(entity instanceof net.minecraft.world.entity.player.Player player && player.isCreativeFlyOrSpectator())) { // Leaves - creative no clip
+                         entity.move(
+                             MoverType.SHULKER_BOX,
+                             new Vec3(
+diff --git a/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java b/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
+index 3071e93408565509c7ebba6353024d914873e111..e36295101d6e667976cfabd31932ecf59fe5996e 100644
+--- a/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
++++ b/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
+@@ -154,7 +154,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
+                                     dz = movement.getStepZ();
+                             }
+ 
+-                            entity.setDeltaMovement(dx, dy, dz);
++                            if (!(entity instanceof net.minecraft.world.entity.player.Player player) || !player.isCreativeFlyOrSpectator()) entity.setDeltaMovement(dx, dy, dz); // Leaves - creative no clip
+                             // Paper - EAR items stuck in slime pushed by a piston
+                             entity.activatedTick = Math.max(entity.activatedTick, io.papermc.paper.threadedregions.RegionizedServer.getCurrentTick() + 10); // Folia - region threading
+                             entity.activatedImmunityTick = Math.max(entity.activatedImmunityTick, io.papermc.paper.threadedregions.RegionizedServer.getCurrentTick() + 10); // Folia - region threading
+@@ -188,6 +188,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
+     }
+ 
+     private static void moveEntityByPiston(final Direction pistonDirection, final Entity entity, final double delta, final Direction movement) {
++        if (entity instanceof net.minecraft.world.entity.player.Player player && player.isCreativeFlyOrSpectator()) return; // Leaves - creative no clip
+         NOCLIP.set(pistonDirection);
+         Vec3 previousPos = entity.position();
+         entity.move(MoverType.PISTON, new Vec3(delta * movement.getStepX(), delta * movement.getStepY(), delta * movement.getStepZ()));

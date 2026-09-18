@@ -136,7 +136,7 @@ public class Recorder extends Connection {
 
         LayeredRegistryAccess<RegistryLayer> layeredregistryaccess = server.registries();
         DynamicOps<Tag> dynamicOps = layeredregistryaccess.compositeAccess().createSerializationContext(NbtOps.INSTANCE);
-        RegistrySynchronization.packRegistries(dynamicOps, layeredregistryaccess.getAccessFrom(RegistryLayer.WORLDGEN), Set.copyOf(knownPackslist),
+        RegistrySynchronization.packRegistries(dynamicOps, layeredregistryaccess.getAccessFrom(RegistryLayer.WORLD), Set.copyOf(knownPackslist),
                 (key, entries) ->
                         this.savePacket(new ClientboundRegistryDataPacket(key, entries), ConnectionProtocol.CONFIGURATION)
         );

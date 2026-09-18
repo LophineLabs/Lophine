@@ -129,7 +129,7 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
     }
 
     public static void refreshRecipeManager(ServerPlayer player) {
-        Collection<RecipeHolder<?>> recipes = MinecraftServer.getServer().getRecipeManager().getRecipes();
+/*        Collection<RecipeHolder<?>> recipes = MinecraftServer.getServer().getRecipeManager().getRecipes();
         CompoundTag nbt = new CompoundTag();
         ListTag list = new ListTag();
 
@@ -146,7 +146,7 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
         }));
 
         nbt.put("RecipeManager", list);
-        sendPacket(player, new HudDataPayload(HudDataPayloadType.PACKET_S2C_NBT_RESPONSE_START, nbt));
+        sendPacket(player, new HudDataPayload(HudDataPayloadType.PACKET_S2C_NBT_RESPONSE_START, nbt));*/
     }
 
     public static void refreshWeatherData(ServerPlayer player) {

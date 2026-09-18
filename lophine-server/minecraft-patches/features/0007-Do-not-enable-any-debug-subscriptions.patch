@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Fri, 17 Apr 2026 23:00:48 +0800
+Subject: [PATCH] Do not enable any debug subscriptions
+
+Really this would really crash the server by accident when the operators used F3 + J or toggled the debug synchronizer
+
+diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
+index 6a3aaf69b8f98c2af3ba8f6672a3c4ffa2208428..91ce0cd95bb48be1cdc2f7b874b382d54bd48549 100644
+--- a/net/minecraft/server/level/ServerPlayer.java
++++ b/net/minecraft/server/level/ServerPlayer.java
+@@ -3523,7 +3523,8 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+     }
+ 
+     public Set<DebugSubscription<?>> debugSubscriptions() {
+-        return !this.server.debugSubscribers().hasRequiredPermissions(this) ? Set.of() : this.requestedDebugSubscriptions;
++        // return !this.server.debugSubscribers().hasRequiredPermissions(this) ? Set.of() : this.requestedDebugSubscriptions; // Luminol - Do not enable any debug subscriptions
++        return Set.of(); // Luminol - Do not enable any debug subscriptions
+     }
+ 
+     @Override

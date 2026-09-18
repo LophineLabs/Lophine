@@ -5,7 +5,7 @@ Subject: [PATCH] Correct portal logic of some projectile entities
 
 
 diff --git a/net/minecraft/world/entity/projectile/ShulkerBullet.java b/net/minecraft/world/entity/projectile/ShulkerBullet.java
-index d5506bfc84912ec50cd5391225b9b5291435d3aa..6339a770526324bdc1bcc0c0e3bacc0a10f359ab 100644
+index 54caa09ef2a5c1a5cd254c13873058d54f990308..2c46a3983d8b9f50972101a87dcca24a64ab9a92 100644
 --- a/net/minecraft/world/entity/projectile/ShulkerBullet.java
 +++ b/net/minecraft/world/entity/projectile/ShulkerBullet.java
 @@ -229,7 +229,7 @@ public class ShulkerBullet extends Projectile {
@@ -18,10 +18,10 @@ index d5506bfc84912ec50cd5391225b9b5291435d3aa..6339a770526324bdc1bcc0c0e3bacc0a
  
          if (hitResult != null && this.isAlive() && hitResult.getType() != HitResult.Type.MISS) {
 diff --git a/net/minecraft/world/entity/projectile/arrow/AbstractArrow.java b/net/minecraft/world/entity/projectile/arrow/AbstractArrow.java
-index 88c2f0f927bd8376522eb9aed184abd6f09230f6..d66a4826400eca835645e1115c4fefc61715f336 100644
+index 8bf7b67fadbb28e725619a1ec1f4797ccdd2e803..2fb7fb789c20ffc31b36aef98728f8048c722ccd 100644
 --- a/net/minecraft/world/entity/projectile/arrow/AbstractArrow.java
 +++ b/net/minecraft/world/entity/projectile/arrow/AbstractArrow.java
-@@ -276,7 +276,7 @@ public abstract class AbstractArrow extends Projectile {
+@@ -274,7 +274,7 @@ public abstract class AbstractArrow extends Projectile {
                      .clipIncludingBorder(
                          new ClipContext(originalPosition, originalPosition.add(movement), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this)
                      );
@@ -30,7 +30,7 @@ index 88c2f0f927bd8376522eb9aed184abd6f09230f6..d66a4826400eca835645e1115c4fefc6
              } else {
                  this.setPos(originalPosition.add(movement));
                  this.applyEffectsFromBlocks();
-@@ -299,7 +299,7 @@ public abstract class AbstractArrow extends Projectile {
+@@ -297,7 +297,7 @@ public abstract class AbstractArrow extends Projectile {
          return 0.99F;
      }
  
@@ -39,7 +39,7 @@ index 88c2f0f927bd8376522eb9aed184abd6f09230f6..d66a4826400eca835645e1115c4fefc6
          while (this.isAlive()) {
              Vec3 initialPosition = this.position();
              ArrayList<EntityHitResult> entitiesHit = new ArrayList<>(this.findHitEntities(initialPosition, blockHitResult.getLocation()));
-@@ -309,7 +309,7 @@ public abstract class AbstractArrow extends Projectile {
+@@ -307,7 +307,7 @@ public abstract class AbstractArrow extends Projectile {
              this.setPos(nextLocation);
              this.applyEffectsFromBlocks(initialPosition, nextLocation);
              if (this.portalProcess != null && this.portalProcess.isInsidePortalThisTick()) {
@@ -48,7 +48,7 @@ index 88c2f0f927bd8376522eb9aed184abd6f09230f6..d66a4826400eca835645e1115c4fefc6
              }
  
              if (entitiesHit.isEmpty()) {
-@@ -327,6 +327,7 @@ public abstract class AbstractArrow extends Projectile {
+@@ -325,6 +325,7 @@ public abstract class AbstractArrow extends Projectile {
                  break;
              }
          }

@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Libalpm64 <Levamara@proton.me>
+Date: Wed, 4 Mar 2026 00:00:00 +0000
+Subject: [PATCH] Add config for item multitask
+
+Allows players to use items while moving or switching hotbar slots. This
+is for Anarchy servers or Crystal PVP servers this allows them to pvp
+without stopping the item mid animation.
+
+diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index 06c3c8fea2cbefc8fd7af55b9ccccc206edc9fd6..c5e8647d9a35fb2507ac476a66869ec9f2413d93 100644
+--- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -2240,7 +2240,9 @@ public class ServerGamePacketListenerImpl
+                                 this.player.sendSpawnProtectionMessage(pos);
+                             } else if (this.awaitingPositionFromClient == null && (level.mayInteract(this.player, pos) || passthroughSignInteraction)) {
+                                 // Paper end - Allow using signs inside spawn protection
++                                 if (!me.earthme.luminol.config.modules.fixes.ItemMultitaskConfig.enabled) { // Luminol - Add item multitask config
+                                 this.player.stopUsingItem(); // CraftBukkit - SPIGOT-4706
++                                } // Luminol - Add item multitask config
+                                 InteractionResult interactionResult = this.player.gameMode.useItemOn(this.player, level, itemStack, hand, blockHit);
+                                 if (interactionResult.consumesAction()) {
+                                     CriteriaTriggers.ANY_BLOCK_USE.trigger(this.player, blockHit.getBlockPos(), itemStack);
+@@ -2438,9 +2440,13 @@ public class ServerGamePacketListenerImpl
+                 return;
+             }
+             // CraftBukkit end
+-            if (this.player.getInventory().getSelectedSlot() != packet.getSlot() && this.player.getUsedItemHand() == InteractionHand.MAIN_HAND) {
+-                this.player.stopUsingItem();
++            // Luminol start - Add item multitask config
++            if (!me.earthme.luminol.config.modules.fixes.ItemMultitaskConfig.enabled) {
++                if (this.player.getInventory().getSelectedSlot() != packet.getSlot() && this.player.getUsedItemHand() == InteractionHand.MAIN_HAND) {
++                    this.player.stopUsingItem();
++                }
+             }
++            // Luminol end
+ 
+             this.player.getInventory().setSelectedSlot(packet.getSlot());
+             this.player.resetLastActionTime();

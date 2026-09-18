@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Wed, 8 Jul 2026 21:37:19 +0800
+Subject: [PATCH] Fix teleport missing original rotation and velocity
+
+
+diff --git a/io/papermc/paper/threadedregions/TeleportUtils.java b/io/papermc/paper/threadedregions/TeleportUtils.java
+index 2a64a5b2cf049661fe3f5a22ddfa39979624f5ec..335e9775e0d9a61f0e9641aba691a3bdf3ac7f2b 100644
+--- a/io/papermc/paper/threadedregions/TeleportUtils.java
++++ b/io/papermc/paper/threadedregions/TeleportUtils.java
+@@ -41,7 +41,7 @@ public final class TeleportUtils {
+                             return;
+                         }
+                         (useFromRootVehicle ? realFrom.getRootVehicle() : realFrom).teleportAsync(
+-                            ((CraftWorld)loc.getWorld()).getHandle(), pos, null, null, null,
++                            ((CraftWorld)loc.getWorld()).getHandle(), pos, yaw, pitch, null, // Camellia - Fix teleport missing original rotation and velocity
+                             cause, teleportFlags, onComplete
+                         );
+                     },
+diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
+index 701e91bfbc72e1712e78eeacd8af903ede325579..dcb7e2d4038646919d48e729e1a11ebbbc5f2e52 100644
+--- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
++++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
+@@ -99,7 +99,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+                 }
+ 
+                 entity.teleportAsync(
+-                    checkWorld, to, null, null, null,
++                    checkWorld, to, null, null, entity.getDeltaMovement(), // Camellia - Fix teleport missing original rotation and velocity
+                     org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.ENDER_PEARL,
+                     // chunk could have been unloaded
+                     Entity.TELEPORT_FLAG_TELEPORT_PASSENGERS | Entity.TELEPORT_FLAG_LOAD_CHUNK,

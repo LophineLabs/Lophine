@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sat, 18 Apr 2026 09:09:33 +0800
+Subject: [PATCH] Add config for offline mode warning
+
+
+diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
+index fe9df490b2676dab1f0a8cd2fad21f2be5836e42..84c9ec561f9eb93de745d29a52087337c4c035ca 100644
+--- a/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -304,7 +304,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+         String proxyFlavor = (io.papermc.paper.configuration.GlobalConfiguration.get().proxies.velocity.enabled) ? "Velocity" : "BungeeCord";
+         String proxyLink = (io.papermc.paper.configuration.GlobalConfiguration.get().proxies.velocity.enabled) ? "https://docs.papermc.io/velocity/security" : "http://www.spigotmc.org/wiki/firewall-guide/";
+         // Paper end - Add Velocity IP Forwarding Support
+-        if (!this.usesAuthentication()) {
++        if (!this.usesAuthentication() && !me.earthme.luminol.config.modules.misc.DisableWarningConfig.disableOfflineModeWarning) { //Luminol - Add config for offline mod warning
+             LOGGER.warn("**** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!");
+             LOGGER.warn("The server will make no attempt to authenticate usernames. Beware.");
+             // Spigot start

@@ -1,0 +1,106 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Tue, 29 Apr 2025 23:03:56 +0800
+Subject: [PATCH] Add config to enable cross region damage trace
+
+
+diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
+index 4a1ca42b2ea730da3e0f61491b4ecb772253aff6..ff5e15613a91bc2696928c4c49df46ba30e9b905 100644
+--- a/net/minecraft/server/level/ServerPlayer.java
++++ b/net/minecraft/server/level/ServerPlayer.java
+@@ -1459,6 +1459,13 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+             this.awardStat(Stats.ENTITY_KILLED_BY.get(killer.getType()));
+             killer.awardKillScore(this, source);
+             this.createWitherRose(killer);
++        // Lophine Start - Cross Region Damage trace
++        } else if (fun.bm.lophine.config.modules.experiment.EntityDamageSourceTraceConfig.enabled) {
++            final LivingEntity entitylivingnew = this.getKillCreditOrigin();
++            if (entitylivingnew != null) {
++                this.damageTransferToAsync(entitylivingnew, source);
++            }
++        // Lophine End - Cross Region Damage trace
+         }
+ 
+         this.level().broadcastEntityEvent(this, EntityEvent.DEATH);
+@@ -1473,6 +1480,24 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+         this.connection.markClientUnloadedAfterDeath();
+     }
+ 
++    // Lophine Start - Cross Region Damage trace
++    private void damageTransferToAsync(LivingEntity entity, DamageSource cause) {
++        // Operations running on current entity
++        this.awardStat(Stats.ENTITY_KILLED_BY.get(entity.getType()));
++        this.createWitherRose(entity);
++
++        // the entity might be in another tickregion sometimes, so we need to schedule the task onto the entity
++        // to ensure thread safe
++        entity.getBukkitEntity().taskScheduler.schedule((LivingEntity nmsEntity) -> {
++            try {
++                nmsEntity.awardKillScore(this, cause);
++            } catch (Throwable ex) {
++                LOGGER.error(ex.getMessage(), ex);
++            }
++        }, null, 1L);
++    }
++    // Lophine End - Cross Region Damage trace
++
+     private void tellNeutralMobsThatIDied() {
+         AABB aabb = new AABB(this.blockPosition()).inflate(32.0, 10.0, 32.0);
+         this.level()
+diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
+index 5c5720cad738ad55a9b223f7b0c51bbd6067a541..a08ffc1c77ebcfbb2f9bab90da9b3e7f52a829f4 100644
+--- a/net/minecraft/world/entity/LivingEntity.java
++++ b/net/minecraft/world/entity/LivingEntity.java
+@@ -1864,6 +1864,13 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+             Runnable afterEvent = () -> { // Paper
+             if (killer != null) {
+                 killer.awardKillScore(this, source);
++            // Lophine Start - Cross Region Damage trace
++            } else if (fun.bm.lophine.config.modules.experiment.EntityDamageSourceTraceConfig.enabled) {
++                final LivingEntity killernew = this.getKillCreditOrigin();
++                if (killernew != null) {
++                    this.damageTransferToAsync(killernew, source);
++                }
++            // Lophine End - Cross Region Damage trace
+             }
+ 
+             if (this.isSleeping()) {
+@@ -1951,6 +1958,19 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+         this.postDeathEventTasks.add(() -> this.dropExperience(level, source.getEntity())); // Paper
+     }
+ 
++    // Lophine Start - Cross Region Damage trace
++    private void damageTransferToAsync(LivingEntity entity, DamageSource damageSource) {
++        entity.getBukkitEntity().taskScheduler.schedule((LivingEntity nmsEntity) -> {
++            try {
++                if (nmsEntity.isRemoved()) return;
++                nmsEntity.awardKillScore(this, damageSource);
++            } catch (Throwable ex) {
++                LOGGER.error(ex.getMessage(), ex);
++            }
++        }, null, 1L );
++    }
++    // Lophine End - Cross Region Damage trace
++
+     protected void dropEquipment(final ServerLevel level) {
+     }
+ 
+@@ -2617,6 +2637,18 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+         }
+     }
+ 
++    // Lophine Start - Cross Region Damage trace
++    @Nullable
++    public LivingEntity getKillCreditOrigin() {
++        if (this.lastHurtByPlayer != null) {
++            return this.lastHurtByPlayer.getEntity(this.level(), Player.class);
++        } else if (this.lastHurtByMob != null) {
++            return this.lastHurtByMob.getEntity(this.level(), LivingEntity.class);
++        }
++        return null;
++    }
++    // Lophine End - Cross Region Damage trace
++
+     public final float getMaxHealth() {
+         return (float)this.getAttributeValue(Attributes.MAX_HEALTH);
+     }
