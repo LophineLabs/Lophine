@@ -216,7 +216,7 @@ public abstract class Display {
             case SlotDisplay.ItemSlotDisplay s -> EntryIngredient.of(s.item().value());
             case SlotDisplay.ItemStackSlotDisplay s ->
                     EntryIngredient.of(s.stack().create()); // Leaves - Paper 26.1: ItemStackSlotDisplay.stack() now returns ItemStackTemplate
-            case SlotDisplay.TagSlotDisplay s -> ofItemTag(s.tag());
+            case SlotDisplay.TagSlotDisplay s -> ofItemTag(s.tag().unwrapKey().get());
             case SlotDisplay.Composite s -> {
                 ArrayList<ItemStack> list = new ArrayList<>();
                 for (SlotDisplay slotDisplay : s.contents()) {
@@ -230,8 +230,8 @@ public abstract class Display {
                 RegistryAccess access = MinecraftServer.getServer().registryAccess();
                 try {
                     List<ItemStack> stacks = slot.resolveForStacks(new ContextMap.Builder()
-                            .withParameter(SlotDisplayContext.REGISTRIES, access)
-                            .create(SlotDisplayContext.CONTEXT));
+                            .set(SlotDisplayContext.REGISTRIES, access)
+                            .buildAndValidate(SlotDisplayContext.CONTEXT));
                     yield EntryIngredient.of(stacks.toArray(new ItemStack[0]));
                 } catch (Exception e) {
                     MinecraftServer.LOGGER.warn("Failed to resolve slot display: {}", slot, e);

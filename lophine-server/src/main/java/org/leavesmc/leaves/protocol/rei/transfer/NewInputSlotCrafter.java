@@ -19,6 +19,7 @@ package org.leavesmc.leaves.protocol.rei.transfer;
 
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.leavesmc.leaves.protocol.rei.transfer.slot.SlotAccessor;
 
 import java.util.HashMap;
@@ -67,7 +68,7 @@ public class NewInputSlotCrafter<T extends AbstractContainerMenu> extends InputS
     @Override
     protected void cleanInputs() {
         for (SlotAccessor slot : getInputSlots()) {
-            org.bukkit.inventory.ItemStack bukkitStack = slot.getItemStack().getBukkitStack();
+            org.bukkit.inventory.ItemStack bukkitStack = CraftItemStack.asBukkitMirror(slot.getItemStack());
             if (bukkitStack.getType().isAir()) {
                 continue;
             }
@@ -76,7 +77,14 @@ public class NewInputSlotCrafter<T extends AbstractContainerMenu> extends InputS
                 slot.setItemStack(ItemStack.EMPTY);
             } else {
                 org.bukkit.inventory.ItemStack remain = notAdded.values().iterator().next();
-                slot.setItemStack(ItemStack.fromBukkitCopy(remain));
+                ItemStack remainingStack = null;
+                if (remain instanceof CraftItemStack cis) {
+                    remainingStack = cis.handle;
+                }
+                if (remainingStack == null || remainingStack.isEmpty()) {
+                    remainingStack = CraftItemStack.asNMSCopy(remain);
+                }
+                slot.setItemStack(remainingStack);
                 throw new IllegalStateException("rei.rei.no.slot.in.inv");
             }
         }

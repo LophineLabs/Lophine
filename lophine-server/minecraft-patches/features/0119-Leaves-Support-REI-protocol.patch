@@ -7,8 +7,21 @@ Co-authored by: violetc <58360096+s-yh-china@users.noreply.github.com>
 As a part of : Leaves (https://github.com/LeavesMC/Leaves)
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
+diff --git a/net/minecraft/util/context/ContextMap.java b/net/minecraft/util/context/ContextMap.java
+index 86ce93af5e6d19d49e75ac59c0b522be88844025..71715124fa318e47d0d8f3b4e2ef532a722219c7 100644
+--- a/net/minecraft/util/context/ContextMap.java
++++ b/net/minecraft/util/context/ContextMap.java
+@@ -45,7 +45,7 @@ public final class ContextMap {
+     public static class Builder {
+         private final Map<ContextKey<?>, Object> params = new Reference2ObjectOpenHashMap<>();
+ 
+-        private Builder() {
++        public Builder() { // Lophine - make public
+         }
+ 
+         public <T> ContextMap.Builder set(final ContextKey<T> param, final @Nullable T value) {
 diff --git a/net/minecraft/world/item/crafting/SmithingTransformRecipe.java b/net/minecraft/world/item/crafting/SmithingTransformRecipe.java
-index 33f9870a4f966a887023b1debd4ab9ef9d24378f..89983e7da244434a5346b23b49c748349cd79e34 100644
+index 0acc02955ae7229deb59bff210cc0a1314fd55fa..09fc1ea0010305c8589b7e5bd58273ce44bf87a6 100644
 --- a/net/minecraft/world/item/crafting/SmithingTransformRecipe.java
 +++ b/net/minecraft/world/item/crafting/SmithingTransformRecipe.java
 @@ -115,6 +115,12 @@ public class SmithingTransformRecipe extends SimpleSmithingRecipe {
