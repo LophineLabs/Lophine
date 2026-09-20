@@ -3,7 +3,10 @@ package me.earthme.luminol.config.modules.function;
 import io.anonymous.anonymous.data.BufferedLinearRegionFileFlusher;
 import io.anonymous.anonymous.enums.EnumRegionFormat;
 import me.earthme.luminol.config.IllegalFormatConversionExceptionWithOrigin;
-import me.earthme.luminol.config.flags.*;
+import me.earthme.luminol.config.flags.ConfigClassInfo;
+import me.earthme.luminol.config.flags.ConfigInfo;
+import me.earthme.luminol.config.flags.DoNotLoad;
+import me.earthme.luminol.config.flags.NeedRun;
 import me.earthme.luminol.enums.EnumConfigCategory;
 import me.earthme.luminol.enums.EnumLoadType;
 import me.earthme.luminol.enums.EnumRunnableType;
@@ -18,7 +21,6 @@ public class RegionFormatConfig {
     @ConfigInfo(name = "format", allowAutoReset = false)
     public static EnumRegionFormat regionFormat = EnumRegionFormat.MCA;
     @DoNotLoad(when = EnumLoadType.RELOAD)
-    @TransformedConfig(name = "linear_compression_level", directory = {"function", "region_format"})
     @ConfigInfo(name = "blinear_compression_level")
     public static int blinearCompressionLevel = 1;
     @DoNotLoad(when = EnumLoadType.RELOAD)
