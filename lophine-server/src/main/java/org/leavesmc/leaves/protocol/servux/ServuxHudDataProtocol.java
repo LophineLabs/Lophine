@@ -17,15 +17,12 @@
 
 package org.leavesmc.leaves.protocol.servux;
 
-import com.mojang.serialization.DataResult;
 import fun.bm.lophine.config.modules.function.protocol.ServuxProtocolConfig;
 import fun.bm.lophine.utils.concurrent.AbstractConcurrentTable;
 import fun.bm.lophine.utils.concurrent.OptimizedConcurrentTable;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -34,8 +31,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.saveddata.WeatherData;
 import org.jetbrains.annotations.NotNull;

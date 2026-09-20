@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Tue, 28 Jul 2026 15:09:06 +0800
+Subject: [PATCH] Anonymous Object: Lithium optimized collections for
+ WeightedList
+
+This is a part of lithium(https://github.com/CaffeineMC/lithium/blob/c42972b6e9d21c8ff45559df6b271802050a22e2/common/src/main/java/net/caffeinemc/mods/lithium/mixin/ai/sensor/secondary_poi/SecondaryPoiSensorMixin.java#L13)
+
+Original license: https://github.com/CaffeineMC/lithium/blob/c42972b6e9d21c8ff45559df6b271802050a22e2/LICENSE.md
+
+diff --git a/net/minecraft/util/random/WeightedList.java b/net/minecraft/util/random/WeightedList.java
+index 99ed1908e6396f73ce2c80e48cd7ac454de29e04..7aa1751fdb88ef3bcf61d686d72aea63c3666176 100644
+--- a/net/minecraft/util/random/WeightedList.java
++++ b/net/minecraft/util/random/WeightedList.java
+@@ -23,7 +23,7 @@ public class WeightedList<E> { // Paper - non-final
+     private final WeightedList.@Nullable Selector<E> selector;
+ 
+     protected WeightedList(final List<? extends Weighted<E>> items) { // Paper - protected
+-        this.items = List.copyOf(items);
++        this.items = items.size() > 4 ? new net.caffeinemc.mods.lithium.common.util.collections.HashedReferenceList(items) : new it.unimi.dsi.fastutil.objects.ReferenceArrayList<>(items); // Anonymous - Lithium optimized collections for WeightedList
+         this.totalWeight = WeightedRandom.getTotalWeight(items, Weighted::weight);
+         if (this.totalWeight == 0) {
+             this.selector = null;

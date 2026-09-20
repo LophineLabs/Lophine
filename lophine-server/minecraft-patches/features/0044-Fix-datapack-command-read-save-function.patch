@@ -1,0 +1,62 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Wed, 2 Jul 2025 23:36:25 +0800
+Subject: [PATCH] Fix datapack command read & save function
+
+
+diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
+index 33db15f04ce74aa98f1ed31ca994f331731ad91a..eed505ae12c4a398870e9ef6a1087771c8e0a7b1 100644
+--- a/net/minecraft/commands/Commands.java
++++ b/net/minecraft/commands/Commands.java
+@@ -208,7 +208,7 @@ public class Commands {
+         if(me.earthme.luminol.config.modules.experiment.CommandConfig.data) { // Luminol - Config for data command
+         DataCommands.register(this.dispatcher, context); // Folia - region threading - TODO // Luminol - Config for data command
+         } // Luminol - Config for data command
+-        //DataPackCommand.register(this.dispatcher, context); // Folia - region threading - TODO
++        DataPackCommand.register(this.dispatcher, context); // Folia - region threading - TODO // Luminol - Add back read-only datapack command
+         //DebugCommand.register(this.dispatcher); // Folia - region threading - TODO
+         DefaultGameModeCommands.register(this.dispatcher);
+         //DialogCommand.register(this.dispatcher, context); // Folia - region threading - TODO
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index ddaf8113b1f3eff60b7190a8041fb1a2e2cdb6ff..59d4742330ca7e0c17ec840a27d1f3dbbcb33116 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -2416,6 +2416,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+         return this.reloadResources(packsToEnable, io.papermc.paper.event.server.ServerResourcesReloadedEvent.Cause.PLUGIN);
+     }
+ 
++    // Lophine start - region thread skip reload // TODO - add reload support
++    public void saveDatapacks(Collection<String> selectedPacks) {
++        this.packRepository.setSelected(selectedPacks, false); // Paper - add pendingReload flag to determine required pack loading - false as this is *after* a reload (see above)
++        WorldDataConfiguration worldDataConfiguration = new WorldDataConfiguration(
++                getSelectedPacks(this.packRepository, true), this.worldData.enabledFeatures()
++        );
++        this.worldData.setDataConfiguration(worldDataConfiguration);
++    }
++    // Lophine end - region thread skip reload // TODO - add reload support
++
+     public CompletableFuture<Void> reloadResources(
+         final Collection<String> packsToEnable, final io.papermc.paper.event.server.ServerResourcesReloadedEvent.Cause cause
+     ) {
+diff --git a/net/minecraft/server/commands/ReloadCommand.java b/net/minecraft/server/commands/ReloadCommand.java
+index 80fef4277b9e986c17a4cb895e130726bdb63229..cf6732926392bfce577a811fd5b6f66731c6aaa9 100644
+--- a/net/minecraft/server/commands/ReloadCommand.java
++++ b/net/minecraft/server/commands/ReloadCommand.java
+@@ -16,11 +16,17 @@ public class ReloadCommand {
+     private static final Logger LOGGER = LogUtils.getLogger();
+ 
+     public static void reloadPacks(final Collection<String> selectedPacks, final CommandSourceStack source) {
++        // Lophine start - region thread skip reload // TODO - add reload support
++        source.getServer().saveDatapacks(selectedPacks);
++        source.getSender().sendMessage(fun.bm.lophine.utils.ServerI18nUtil.getLocalizedText("vanilla.command.datapack.restart"));
++        if (false) {
+         source.getServer().reloadResources(selectedPacks, io.papermc.paper.event.server.ServerResourcesReloadedEvent.Cause.COMMAND).exceptionally(throwable -> { // Paper - Add ServerResourcesReloadedEvent
+             LOGGER.warn("Failed to execute reload", throwable);
+             source.sendFailure(Component.translatable("commands.reload.failure"));
+             return null;
+         });
++        }
++        // Lophine end - region thread skip reload // TODO - add reload support
+     }
+ 
+     private static Collection<String> discoverNewPacks(final PackRepository packRepository, final WorldData worldData, final Collection<String> currentPacks) {

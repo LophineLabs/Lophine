@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 20 Sep 2026 18:43:04 +0800
+Subject: [PATCH] Anonymous Object: Lithium skip unnecessary secondary poi
+ sensing
+
+This is a part of lithium(https://github.com/CaffeineMC/lithium/blob/c42972b6e9d21c8ff45559df6b271802050a22e2/common/src/main/java/net/caffeinemc/mods/lithium/mixin/ai/sensor/secondary_poi/SecondaryPoiSensorMixin.java#L13)
+
+Original license: https://github.com/CaffeineMC/lithium/blob/c42972b6e9d21c8ff45559df6b271802050a22e2/LICENSE.md
+
+diff --git a/net/minecraft/world/entity/ai/sensing/SecondaryPoiSensor.java b/net/minecraft/world/entity/ai/sensing/SecondaryPoiSensor.java
+index 7d3e843c2d3c5e15b7bea7302d6118419d3a4957..d4c0407470913a806b735e98ace257fb2d8aae33 100644
+--- a/net/minecraft/world/entity/ai/sensing/SecondaryPoiSensor.java
++++ b/net/minecraft/world/entity/ai/sensing/SecondaryPoiSensor.java
+@@ -22,6 +22,12 @@ public class SecondaryPoiSensor extends Sensor<Villager> {
+ 
+     @Override
+     protected void doTick(final ServerLevel level, final Villager body) {
++        // Anonymous start - lithium skip unnecessary secondary poi sensing
++        if (body.getVillagerData().profession().value().secondaryPoi().isEmpty()) {
++            body.getBrain().eraseMemory(MemoryModuleType.SECONDARY_JOB_SITE);
++            return;
++        }
++        // Anonymous end - lithium skip unnecessary secondary poi sensing
+         ResourceKey<Level> dimensionType = level.dimension();
+         BlockPos center = body.blockPosition();
+         List<GlobalPos> jobSites = Lists.newArrayList();
