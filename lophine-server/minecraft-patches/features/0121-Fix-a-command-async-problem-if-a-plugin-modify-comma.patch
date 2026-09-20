@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Mon, 21 Sep 2026 01:02:22 +0800
+Subject: [PATCH] Fix a command async problem if a plugin modify command node
+ when player join the server
+
+
+diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
+index 332b5b2ed7fbbd536705a1f5b43279617b73ef0b..a2436ee2fb64b55e6aec985e83d3d5607b589940 100644
+--- a/net/minecraft/commands/Commands.java
++++ b/net/minecraft/commands/Commands.java
+@@ -533,7 +533,20 @@ public class Commands {
+         Map<CommandNode<CommandSourceStack>, CommandNode<CommandSourceStack>> playerCommands = new HashMap<>();
+         RootCommandNode<CommandSourceStack> root = new RootCommandNode<>();
+         playerCommands.put(this.dispatcher.getRoot(), root);
+-        fillUsableCommands(dispatcherRootChildren, root, player.createCommandSourceStack(), playerCommands); // Paper - Perf: Async command map building; pass copy of children
++        try {
++            fillUsableCommands(dispatcherRootChildren, root, player.createCommandSourceStack(), playerCommands); // Paper - Perf: Async command map building; pass copy of children
++        } catch (java.util.ConcurrentModificationException e) {
++            net.minecraft.server.MinecraftServer.LOGGER.warn(e.getMessage());
++            org.bukkit.Bukkit.getGlobalRegionScheduler().runDelayed(org.leavesmc.leaves.plugin.MinecraftInternalPlugin.INSTANCE,
++                    (_) -> {
++                        synchronized (player) {
++                            net.minecraft.server.MinecraftServer.LOGGER.info("Retrying command send for {}, UUID: {}", player, player.getUUID());
++                            if (!player.hasDisconnected()) {
++                                this.sendAsync(player, dispatcherRootChildren);
++                            }
++                        }
++                    }, 20L);
++        }
+ 
+         java.util.Collection<String> bukkit = new java.util.LinkedHashSet<>();
+         for (CommandNode node : root.getChildren()) {
+@@ -568,6 +581,10 @@ public class Commands {
+         final java.util.Collection<CommandNode<S>> children, final CommandNode<S> target, final S commandFilter, final Map<CommandNode<S>, CommandNode<S>> converted // Paper - Perf: Async command map building; pass copy of children
+     ) {
+         for (CommandNode<S> child : children) { // Paper - Perf: Async command map building; pass copy of children
++            // Lophine start - fix command null problem
++            if (child == null) {
++                throw new java.util.ConcurrentModificationException("Command Node was edited while building command list.");
++            }
+             // Paper start - Brigadier API
+             if (child.clientNode != null) {
+                 child = child.clientNode;
