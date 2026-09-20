@@ -8,21 +8,8 @@ Co-authored by: violetc <58360096+s-yh-china@users.noreply.github.com>
 As a part of : Leaves (https://github.com/LeavesMC/Leaves)
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
-diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index b180b65ab4de4ca6f28b22c8650e894c7d328b82..71433d0a09fd4e90254a2842addf989a257b3b50 100644
---- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-+++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -3907,7 +3907,7 @@ public class ServerGamePacketListenerImpl
-     }
- 
-     @Deprecated @io.papermc.paper.annotation.DoNotUse // Paper - Add PlayerLoadedWorldEvent
--    private void markClientLoaded() {
-+    public void markClientLoaded() { // Lophine - private -> public
-         // Paper start - Add PlayerLoadedWorldEvent
-         this.markClientLoaded(false);
-     }
 diff --git a/net/minecraft/world/entity/animal/armadillo/Armadillo.java b/net/minecraft/world/entity/animal/armadillo/Armadillo.java
-index c8c50683597a2314a3c0e72888d5d75dc73fb94a..3663aa490106b05772574ae7c4ac9d4d84574e79 100644
+index 41fd33b6d70eacd987862915b10e9b559867f44d..ccfd8993a64d279be9f4339a03cda717d1a5987e 100644
 --- a/net/minecraft/world/entity/animal/armadillo/Armadillo.java
 +++ b/net/minecraft/world/entity/animal/armadillo/Armadillo.java
 @@ -75,7 +75,7 @@ public class Armadillo extends Animal {
@@ -48,7 +35,7 @@ index 296cae1d5f5a3a054949ee03e2a2552bfeae4682..97c49875269dd52c6a4692940b122f1d
      }
  
 diff --git a/net/minecraft/world/level/storage/loot/LootPool.java b/net/minecraft/world/level/storage/loot/LootPool.java
-index dde475b92375a484cb10a7de5a1256b0741ae5c6..c216b1e047a515a69a0974586a4cd0b536544c66 100644
+index 475e00df0cbbeb2dcd682ad03ad42320d89c762b..c79c39b01b3cbfc6b9b7d2c000182cc16d11cee9 100644
 --- a/net/minecraft/world/level/storage/loot/LootPool.java
 +++ b/net/minecraft/world/level/storage/loot/LootPool.java
 @@ -37,7 +37,7 @@ public class LootPool implements Validatable {
@@ -57,27 +44,27 @@ index dde475b92375a484cb10a7de5a1256b0741ae5c6..c216b1e047a515a69a0974586a4cd0b5
      );
 -    private final List<LootPoolEntryContainer> entries;
 +    public final List<LootPoolEntryContainer> entries; // Leaves - private -> public
-     private final List<LootItemCondition> conditions;
-     private final Predicate<LootContext> compositeCondition;
-     private final List<LootItemFunction> functions;
+     private final Optional<Holder<LootItemCondition>> condition;
+     private final Optional<Holder<LootItemFunction>> modifier;
+     private final Holder<ContextIntProvider> rolls;
 diff --git a/net/minecraft/world/level/storage/loot/LootTable.java b/net/minecraft/world/level/storage/loot/LootTable.java
-index 14fc07badbd14a5a4c8e8c7d237d08a4eb6a6f12..0aaf2240a0f79b5c4aaa9c22dca7b2f0953dac49 100644
+index 10c384c5c828115f361f6e3b2c4114ba167a027f..3498420b6406c236fa011be83a86b909d0ec7de8 100644
 --- a/net/minecraft/world/level/storage/loot/LootTable.java
 +++ b/net/minecraft/world/level/storage/loot/LootTable.java
-@@ -49,7 +49,7 @@ public class LootTable implements Validatable {
-     public static final LootTable EMPTY = new LootTable(LootContextParamSets.EMPTY, Optional.empty(), List.of(), List.of());
+@@ -50,7 +50,7 @@ public class LootTable implements Validatable {
+     public static final LootTable EMPTY = new LootTable(LootContextParamSets.EMPTY, Optional.empty(), List.of(), Optional.empty());
      private final ContextKeySet paramSet;
      private final Optional<Identifier> randomSequence;
 -    private final List<LootPool> pools;
 +    public final List<LootPool> pools; // Leaves - private -> public
-     private final List<LootItemFunction> functions;
-     private final BiFunction<ItemStack, LootContext, ItemStack> compositeFunction;
+     private final Optional<Holder<LootItemFunction>> modifier;
      public org.bukkit.craftbukkit.CraftLootTable craftLootTable; // CraftBukkit
+ 
 diff --git a/net/minecraft/world/level/storage/loot/entries/CompositeEntryBase.java b/net/minecraft/world/level/storage/loot/entries/CompositeEntryBase.java
-index 53e4375a4af610e54309f2978e59985e6ada15f5..615b533caecef09d967c615ae39ef29c80784575 100644
+index 898b0d1238296bbd325059fac21b322085f2804b..457e607645a8a4b0d94be20714713b1c94aec27d 100644
 --- a/net/minecraft/world/level/storage/loot/entries/CompositeEntryBase.java
 +++ b/net/minecraft/world/level/storage/loot/entries/CompositeEntryBase.java
-@@ -17,7 +17,7 @@ public abstract class CompositeEntryBase extends LootPoolEntryContainer {
+@@ -21,7 +21,7 @@ public abstract class CompositeEntryBase extends LootPoolEntryContainer {
              return "Empty children list";
          }
      };
@@ -85,43 +72,43 @@ index 53e4375a4af610e54309f2978e59985e6ada15f5..615b533caecef09d967c615ae39ef29c
 +    public final List<LootPoolEntryContainer> children; // Leaves - private -> public
      private final ComposableEntryContainer composedChildren;
  
-     protected CompositeEntryBase(final List<LootPoolEntryContainer> children, final List<LootItemCondition> conditions) {
+     protected CompositeEntryBase(
 diff --git a/net/minecraft/world/level/storage/loot/entries/LootPoolEntryContainer.java b/net/minecraft/world/level/storage/loot/entries/LootPoolEntryContainer.java
-index 83c514c213251dd5470627d0299b5858b850784d..d231f706388e6967d2e29f806a9f52e8f7f5ba61 100644
+index 08a00034b3b3b26638cd18fe28d3ecbc78bbc4f2..18721bbda9622353d6bb0beada9b1b623cc9c374 100644
 --- a/net/minecraft/world/level/storage/loot/entries/LootPoolEntryContainer.java
 +++ b/net/minecraft/world/level/storage/loot/entries/LootPoolEntryContainer.java
-@@ -15,7 +15,7 @@ import net.minecraft.world.level.storage.loot.predicates.ConditionUserBuilder;
+@@ -19,7 +19,7 @@ import net.minecraft.world.level.storage.loot.predicates.ConditionUserBuilder;
  import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
  
  public abstract class LootPoolEntryContainer implements ComposableEntryContainer, Validatable {
--    protected final List<LootItemCondition> conditions;
-+    public final List<LootItemCondition> conditions; // Leaves - private -> public
-     private final Predicate<LootContext> compositeCondition;
+-    protected final Optional<Holder<LootItemCondition>> condition;
++    public final Optional<Holder<LootItemCondition>> condition; // Leaves - private -> public
+     protected final Optional<Holder<LootItemFunction>> modifier;
  
-     protected LootPoolEntryContainer(final List<LootItemCondition> conditions) {
+     protected LootPoolEntryContainer(final Optional<Holder<LootItemCondition>> condition, final Optional<Holder<LootItemFunction>> modifier) {
 diff --git a/net/minecraft/world/level/storage/loot/entries/NestedLootTable.java b/net/minecraft/world/level/storage/loot/entries/NestedLootTable.java
-index 20520b7071f19af2882a797ee40019cddd76e378..11c4333ab28cffcfb97bcd289930b33c4baae993 100644
+index dbd606f430ec8e33b1b30f4d3ecc65c2d3313782..30b0ff5354b3186fd350e76688ee316b35e5396e 100644
 --- a/net/minecraft/world/level/storage/loot/entries/NestedLootTable.java
 +++ b/net/minecraft/world/level/storage/loot/entries/NestedLootTable.java
-@@ -29,7 +29,7 @@ public class NestedLootTable extends LootPoolSingletonContainer {
-             return "->{inline}";
-         }
-     };
--    private final Either<ResourceKey<LootTable>, LootTable> contents;
-+    public final Either<ResourceKey<LootTable>, LootTable> contents; // Leaves - private -> public
+@@ -18,7 +18,7 @@ public class NestedLootTable extends ExpandableContainerBase {
+     public static final MapCodec<NestedLootTable> MAP_CODEC = RecordCodecBuilder.mapCodec(
+         i -> i.group(LootTable.LIST_CODEC.fieldOf("value").forGetter(e -> e.value)).and(expandableFields(i)).apply(i, NestedLootTable::new)
+     );
+-    private final HolderSet<LootTable> value;
++    public final HolderSet<LootTable> value; // Leaves - private -> public
  
      private NestedLootTable(
-         final Either<ResourceKey<LootTable>, LootTable> contents,
+         final HolderSet<LootTable> value,
 diff --git a/net/minecraft/world/level/storage/loot/predicates/CompositeLootItemCondition.java b/net/minecraft/world/level/storage/loot/predicates/CompositeLootItemCondition.java
-index cb821605781050282fd0a28e3d096fa18de833b8..99624ca2e895884a5e92a965af2064803c0d3b14 100644
+index 4999efdbf7972590d6f783ee455605bb91735a10..70f959309d28a326271b6300b3a08373ccd1f994 100644
 --- a/net/minecraft/world/level/storage/loot/predicates/CompositeLootItemCondition.java
 +++ b/net/minecraft/world/level/storage/loot/predicates/CompositeLootItemCondition.java
-@@ -12,7 +12,7 @@ import net.minecraft.world.level.storage.loot.Validatable;
+@@ -13,7 +13,7 @@ import net.minecraft.world.level.storage.loot.Validatable;
  import net.minecraft.world.level.storage.loot.ValidationContext;
  
  public abstract class CompositeLootItemCondition implements LootItemCondition {
--    protected final List<LootItemCondition> terms;
-+    public final List<LootItemCondition> terms; // Leaves - private -> public
+-    protected final HolderSet<LootItemCondition> terms;
++    public final HolderSet<LootItemCondition> terms; // Leaves - private -> public
      private final Predicate<LootContext> composedPredicate;
  
-     protected CompositeLootItemCondition(final List<LootItemCondition> terms, final Predicate<LootContext> composedPredicate) {
+     protected CompositeLootItemCondition(final HolderSet<LootItemCondition> terms, final Predicate<LootContext> composedPredicate) {

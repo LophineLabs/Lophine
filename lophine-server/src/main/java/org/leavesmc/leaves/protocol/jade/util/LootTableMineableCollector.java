@@ -67,18 +67,13 @@ public class LootTableMineableCollector {
         return list;
     }
 
-    public static boolean isCorrectConditions(@NotNull List<LootItemCondition> conditions, ItemStack toolItem) {
-        if (conditions.size() != 1) {
-            return false;
-        }
-
-        LootItemCondition condition = conditions.getFirst();
+    public static boolean isCorrectConditions(LootItemCondition condition, ItemStack toolItem) {
         if (condition instanceof MatchTool(Optional<ItemPredicate> predicate)) {
             ItemPredicate itemPredicate = predicate.orElse(null);
             return itemPredicate != null && itemPredicate.test(toolItem);
         } else if (condition instanceof AnyOfCondition anyOfCondition) {
-            for (LootItemCondition child : anyOfCondition.terms) {
-                if (isCorrectConditions(List.of(child), toolItem)) {
+            for (Holder<LootItemCondition> child : anyOfCondition.terms) {
+                if (isCorrectConditions(child.value(), toolItem)) {
                     return true;
                 }
             }
@@ -116,10 +111,13 @@ public class LootTableMineableCollector {
                 }
             }
         } else if (entry instanceof NestedLootTable nestedLootTable) {
-            LootTable lootTable = nestedLootTable.contents.map($ -> lootRegistry.get($).map(Holder::value).orElse(null), Function.identity());
-            return doLootTable(lootTable);
-        } else {
-            return isCorrectConditions(entry.conditions, toolItem);
+            for (Holder<LootTable> child : nestedLootTable.value) {
+                if (doLootTable(child.value())) {
+                    return true;
+                }
+            }
+        } else if (entry.condition.isPresent()) {
+            return isCorrectConditions(entry.condition.get().value(), toolItem);
         }
         return false;
     }
