@@ -124,10 +124,10 @@ index b6973f9b48092676029ff58485ec8b8dece7387b..785f5c6f683ffdb73a70afabc42d6c09
      private static final Codec<Object> ARG_CODEC = Codec.either(PRIMITIVE_ARG_CODEC, ComponentSerialization.CODEC)
          .xmap(
 diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
-index 267259a79c7668da85d206f9dcbde16b379e2738..3ac92cb5a1c63b73b46c16fe470843b6a66325c5 100644
+index e46f95b19da1c14f240ec6697f22b5e220e0a835..70769a9c177bd846b1c8306af32e14e95d6c39be 100644
 --- a/net/minecraft/server/level/ServerEntity.java
 +++ b/net/minecraft/server/level/ServerEntity.java
-@@ -375,7 +375,7 @@ public class ServerEntity {
+@@ -383,7 +383,7 @@ public class ServerEntity {
          if (this.entity instanceof LivingEntity livingEntity) {
              List<Pair<EquipmentSlot, ItemStack>> slots = Lists.newArrayList();
  
@@ -150,7 +150,7 @@ index e616a7a04f1849354c8f9edf8b29c1f855998bb0..4a1ca42b2ea730da3e0f61491b4ecb77
                      this.getInventory().equipment.set(value, net.minecraft.world.item.ItemStack.EMPTY);
                  }
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 3a02deab59c8465245d961e981a59290d5b61d0b..e5d779de0490a791a7c05819360433d17e8aaf2b 100644
+index cbd2916285320f50e99e47b10355581c38d8538e..6fcc0c2004fa68f8902b939f8e4659292868deda 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -3080,7 +3080,7 @@ public class ServerGamePacketListenerImpl

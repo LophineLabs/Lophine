@@ -8,10 +8,10 @@ As a part of : Leaves (https://github.com/LeavesMC/Leaves)
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java b/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
-index 14fa5421107a571739f868eecb00d71dd3d29fef..0fce6dc8bffc341da2e7242422b4153b2743aa44 100644
+index 150e6e61fd7cf5ef219a29cda20e9a2d4acb09ee..8f1977d034fda8716b7d0a4c11f475e4748d456a 100644
 --- a/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
 +++ b/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
-@@ -57,7 +57,7 @@ class PaperEventManager {
+@@ -55,7 +55,7 @@ class PaperEventManager {
          }
  
          // Leaves start - skip bot

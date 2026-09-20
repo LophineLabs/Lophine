@@ -24,7 +24,7 @@ index 965b77f2f70d94fe23ebf87b351848ca2759cef9..70b5d284e08aca83bd28ecb2f96f1996
      private static final java.util.concurrent.atomic.AtomicInteger UNLOADER_ID_GEN = new java.util.concurrent.atomic.AtomicInteger(0);
      public final me.earthme.luminol.utils.thread.LevelAwareRegionScheduler levelScheduler = new me.earthme.luminol.utils.thread.LevelAwareRegionScheduler(io.papermc.paper.threadedregions.TickRegions.getScheduler().scheduler);
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 2fd06874fd45d0772f0b4ce150fc302c996d42db..4ba97ab9f156f97e154e3be2431ff10c19443c44 100644
+index a3326f7799e428da57279c98469a26b511363748..27c1e4b16fb316e51d4e266db1afd3e6f71a9da3 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -4978,10 +4978,10 @@ public abstract class Entity

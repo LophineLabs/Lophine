@@ -274,7 +274,7 @@ index 96efd4e9dc86c6005fe8c4d1bfcf6e25ff13cb1a..9b5736327af2ead2b6d367c780fc01ab
          LOGGER.info("Default game type: {}", properties.gameMode.get());
          // Paper start - Unix domain socket support
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
-index f52a157d9f199ed8def39cb2e3eced8ea321c82c..5c901840f0d86a574d40b5b4c19d07390cb232c1 100644
+index 660b87fde64153d1b1a74774315acbe56cc9f811..4affcb7845a61edbcb483119bf459b70fe23891e 100644
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
 @@ -971,7 +971,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
@@ -300,7 +300,7 @@ index f52a157d9f199ed8def39cb2e3eced8ea321c82c..5c901840f0d86a574d40b5b4c19d0739
                  }
              }
          }
-@@ -1407,6 +1414,13 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
+@@ -1408,6 +1415,13 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
                      }
                  } else {
                      this.removePlayer(player);
@@ -418,7 +418,7 @@ index 25754161d62981477fb0e703530374c0707cfb3f..82afebc93fa76a1ef9c3fab0391f3088
          org.bukkit.event.player.PlayerChangedWorldEvent changeEvent = new org.bukkit.event.player.PlayerChangedWorldEvent(this.getBukkitEntity(), oldLevel.getWorld());
          this.level().getCraftServer().getPluginManager().callEvent(changeEvent);
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index ef26b0f2789f632512f50345502e15360e3c441e..83fed502d29abdf31d7349646869a55e338ef1f3 100644
+index 2b3cad049a88ee3fcf1f114bddd924673d4f68b4..c22947654ada441d1142e5d67124092181bd3827 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -3962,7 +3962,7 @@ public class ServerGamePacketListenerImpl
@@ -583,7 +583,7 @@ index 9430f841a2882bac812675700ccf1625d0b95b4d..dd5c25c0dae9c9650f9cdaa8d35e4c0d
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 62510e06fb5ffdf76147773474e5fe0bd3a0f181..334f50677d258031a18c847d736c46649abf473f 100644
+index 0c7f8dadd0e31487be6df986fc37e392354b4000..c9089483655a92bff7d73839082814de558ef1c0 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1294,7 +1294,7 @@ public abstract class Entity

@@ -38,7 +38,7 @@ index 465268835e2fb91204b16e2d859628050022b403..8055657581041124a5ab0130f9d3b90f
          if (count > maxAllowedCount) {
              throw TOO_MANY_ITEMS.create(maxAllowedCount, prototypeItemStack.getDisplayName());
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index e6c23d3ef5078b9b1567a9bc08339e2fadee47c3..9afd0210024d934319b28745c30b0e7e2d8b2fb5 100644
+index de3e9b1047b5d379dfd5bb57b920d736117edecf..286ec57521364b86421a7ccc932bf6d2a4d65a3b 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -3286,7 +3286,7 @@ public class ServerGamePacketListenerImpl
@@ -124,10 +124,10 @@ index 073a3bbf1b1db7eac83cf35412543f370fa089ee..0f412551685a8ea76be3b389e0782e57
          if (diff > 0) {
              targetStack.grow(diff);
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index b8c9bc70421cbabd8d148a9a39ac6dd69fe1d92e..34a545fd9cf12434e0f0868d19cde1d77d4bcd49 100644
+index 7ba1c0f117db55670831a0b9a7a4468beb107882..fbb6d4d346ad14a7d1b08f9158b9a9592e776558 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
-@@ -279,10 +279,15 @@ public class ItemEntity extends Entity implements TraceableEntity {
+@@ -271,10 +271,15 @@ public class ItemEntity extends Entity implements TraceableEntity {
  
      private boolean isMergable() {
          ItemStack item = this.getItem();

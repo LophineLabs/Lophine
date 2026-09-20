@@ -50,7 +50,7 @@ index 63b6ff4831877913ecb3df2e4a3424f376bc8587..f5e591e3a3bb039003a8b4f9c60983e7
          } else {entity.inactiveTick();} // Paper - EAR 2
          profiler.pop();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 0c0bdbd050c771e01a5e8e6b5b6c0040948215e9..3288d14caaa3a003480b81e98653c7cfbcff1788 100644
+index 1ca9f9edb5f4195af8eeb5da6bf46071701b735b..f0f9dea7b4f731574205526e1d2c493792185114 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -393,6 +393,8 @@ public abstract class Entity
