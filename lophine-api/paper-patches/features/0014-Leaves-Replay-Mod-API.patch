@@ -8,10 +8,10 @@ As a part of : Leaves (https://github.com/LeavesMC/Leaves)
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index 7120bbea89c1c240b09562c73833f21a9980886f..b114df0dde2e5bede7bb2956359fdd4ca25ac3da 100644
+index 58a6efcdd101dbaa7b9915c5ab6478b99b5a158d..017e905fcd907e0130a1ef72d39136b13e66cab3 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
-@@ -3062,4 +3062,10 @@ public final class Bukkit {
+@@ -3058,4 +3058,10 @@ public final class Bukkit {
          return server.getBotManager();
      }
      // Leaves end - Bot API
