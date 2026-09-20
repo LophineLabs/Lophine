@@ -17,12 +17,16 @@
 
 package org.leavesmc.leaves.protocol.servux;
 
+import com.mojang.serialization.DataResult;
 import fun.bm.lophine.config.modules.function.protocol.ServuxProtocolConfig;
 import fun.bm.lophine.utils.concurrent.AbstractConcurrentTable;
 import fun.bm.lophine.utils.concurrent.OptimizedConcurrentTable;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -31,6 +35,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.saveddata.WeatherData;
 import org.jetbrains.annotations.NotNull;
@@ -124,12 +130,12 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
     }
 
     public static void refreshRecipeManager(ServerPlayer player) {
-/*        Collection<RecipeHolder<?>> recipes = MinecraftServer.getServer().getRecipeManager().getRecipes();
+        Collection<RecipeHolder<?>> recipes = MinecraftServer.getServer().getRecipeManager().getRecipes();
         CompoundTag nbt = new CompoundTag();
         ListTag list = new ListTag();
 
         recipes.forEach((recipeEntry -> {
-            DataResult<Tag> dr = Recipe.CODEC.encodeStart(NbtOps.INSTANCE, recipeEntry.value());
+            DataResult<Tag> dr = Recipe.CODEC.encodeStart(NbtOps.INSTANCE, (Holder<Recipe<?>>) recipeEntry.value());
 
             if (dr.result().isPresent()) {
                 CompoundTag entry = new CompoundTag();
@@ -141,7 +147,7 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
         }));
 
         nbt.put("RecipeManager", list);
-        sendPacket(player, new HudDataPayload(HudDataPayloadType.PACKET_S2C_NBT_RESPONSE_START, nbt));*/
+        sendPacket(player, new HudDataPayload(HudDataPayloadType.PACKET_S2C_NBT_RESPONSE_START, nbt));
     }
 
     public static void refreshWeatherData(ServerPlayer player) {
