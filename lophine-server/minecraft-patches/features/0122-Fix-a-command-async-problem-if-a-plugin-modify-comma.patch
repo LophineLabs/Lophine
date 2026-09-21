@@ -6,7 +6,7 @@ Subject: [PATCH] Fix a command async problem if a plugin modify command node
 
 
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index 332b5b2ed7fbbd536705a1f5b43279617b73ef0b..2aaf42cf9280990f70850e8c232d31280d923622 100644
+index 332b5b2ed7fbbd536705a1f5b43279617b73ef0b..31237aedad87c123cc3028a50f1815bf75de8c87 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -533,7 +533,22 @@ public class Commands {
@@ -20,7 +20,7 @@ index 332b5b2ed7fbbd536705a1f5b43279617b73ef0b..2aaf42cf9280990f70850e8c232d3128
 +        } catch (java.util.ConcurrentModificationException e) {
 +            net.minecraft.server.MinecraftServer.LOGGER.warn(e.getMessage());
 +            org.bukkit.Bukkit.getGlobalRegionScheduler().runDelayed(org.leavesmc.leaves.plugin.MinecraftInternalPlugin.INSTANCE,
-+                    (_) -> {
++                    _ -> {
 +                        synchronized (player) {
 +                            net.minecraft.server.MinecraftServer.LOGGER.info("Retrying command send for {}, UUID: {}", player, player.getUUID());
 +                            if (!player.hasDisconnected()) {
