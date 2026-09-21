@@ -22,10 +22,10 @@ index f8254b3ec264f2ece70a2635823493b90fb45ad8..ac8c1cd45094120152d04100c86381e4
 +    // KioCG end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 423358e23257b4dcf1f411a2bd5b3747e357cb9a..e68b13445f293ee6a9c20e00e7a7087ac7af06a2 100644
+index 10a42ff556039b2410732e26db25fb2a299db695..f4f839598795d61b1c4ce5477a77be02f2e5592b 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -3424,4 +3424,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+@@ -3427,4 +3427,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
          this.getHandle().fixedPose = false;
          this.getHandle().updatePlayerPose();
      }
