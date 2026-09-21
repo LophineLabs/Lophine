@@ -65,9 +65,9 @@ public class ChunkSectionItemEntityMovementTracker extends ChunkSectionEntityMov
         return tracker;
     }
 
-    // Luminol start - region threading for lithium sleeping block entity
+    // Anonymous start - region threading for lithium sleeping block entity
     public boolean hasUser() {
         return this.userCount > 0;
     }
-    // Luminol end
+    // Anonymous end
 }

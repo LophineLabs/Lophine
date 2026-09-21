@@ -79,7 +79,7 @@ index c50369bf5a5e392e8600d47c0cb6a540f51dd9a8..f3eb91c1500ed5c7831797d67c36013a
              if (this.isRainingAt(pos)) {
                  DifficultyInstance difficulty = this.getCurrentDifficultyAt(pos);
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index 61351be6d55034feeee556343ff671126ea8d14c..1d9f2eef1e0569984c9f1536afc8e002ed7a32bf 100644
+index 12f97de27336d5fe0bc7b44da93b1a0266aebaea..ddf45912757c6266b296d7057d2f94987458e065 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -143,6 +143,19 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot

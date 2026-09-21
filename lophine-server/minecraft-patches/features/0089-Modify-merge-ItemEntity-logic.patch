@@ -9,10 +9,10 @@ individual items may never reach their destination.
 This configuration option is added to fix this behavior.
 
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index f5e051095d0dbb0be7fa06c1817e2ff0567dba2e..7ba1c0f117db55670831a0b9a7a4468beb107882 100644
+index 8db83810ba4d3721779803e724150ff3a22bf926..ce1721546ec22dd1044d9367456edb8b501f68ad 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
-@@ -278,7 +278,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
+@@ -282,7 +282,7 @@ public class ItemEntity extends Entity implements TraceableEntity, ChangePublish
          ItemStack thisItemStack = this.getItem();
          ItemStack otherItemStack = other.getItem();
          if (Objects.equals(this.target, other.target) && areMergable(thisItemStack, otherItemStack)) {

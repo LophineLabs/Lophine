@@ -109,10 +109,10 @@ index 1f17f966882320b3a2ced50b3f73925cd0dfa14c..5a75df997c9026bcc740823d7039c8e4
  
              org.bukkit.event.block.BlockCanBuildEvent event = new org.bukkit.event.block.BlockCanBuildEvent(org.bukkit.craftbukkit.block.CraftBlock.at(context.getLevel(), pos), player, stateForPlacement.asBlockData(), defaultReturn, org.bukkit.craftbukkit.CraftEquipmentSlot.getHand(context.getHand())); // Paper - Expose hand in BlockCanBuildEvent
 diff --git a/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java b/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
-index c0ec84f3366297b72a12b1f534fd29226165034f..18591428f887f2465fbef0a929dfac40e0315013 100644
+index 3948b7a0beccb35d55cf3915e2ae431f884bdaa0..5abd613616aac5c9d152f432159db0c0369c93b6 100644
 --- a/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
-@@ -152,7 +152,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
+@@ -153,7 +153,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
              List<Entity> entities = level.getEntities(null, aabb);
              if (!entities.isEmpty()) {
                  for (Entity entity : entities) {

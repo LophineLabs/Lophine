@@ -300,10 +300,10 @@ index a7be57e72bdef66a1d77d1110c573435d3b89e03..95113078efc3581c2cd15932cce67b4c
              Equippable equippable = itemStack.get(DataComponents.EQUIPPABLE);
              if (itemStack.is(item) && equippable != null && equippable.slot() == slot) {
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index e4168ce74b60bffb8bd3d1e0b7bfb150d6315ab1..8f4243e1ec6df5a1289cb14ac81b38c902aac491 100644
+index a77311b1d9867cd11fe524780e08a074b4e875d3..dddbdac72ba703403a9c30408f96dc36845c7f66 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
-@@ -1174,7 +1174,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
+@@ -1179,7 +1179,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, Chang
  
      private void addAttributeTooltips(final Consumer<Component> consumer, final TooltipDisplay display, final @Nullable Player player) {
          if (display.shows(DataComponents.ATTRIBUTE_MODIFIERS)) {
@@ -361,10 +361,10 @@ index 9c667a09fcea23b4072c0616837b685e256e0462..d170ee3c74d0352fed4044cad9a87c8b
              if (predicate.test(item)) {
                  ItemEnchantments enchantments = item.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index e87744b539593d8a11ea43e5c6d26f9e920c9c90..89110094efad42811f4966a397e6aff638c80730 100644
+index bd7a43bd2b6b3981312e40fbb9ea518ec42c7fdc..cd48831f828e0f4ff3943aecb54d54ccd2e1a6da 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
-@@ -1946,7 +1946,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+@@ -1967,7 +1967,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
      public org.bukkit.entity.Entity[] getChunkEntities(int chunkX, int chunkZ) {
          ca.spottedleaf.moonrise.patches.chunk_system.level.entity.ChunkEntitySlices slices = ((ServerLevel)this).moonrise$getEntityLookup().getChunk(chunkX, chunkZ);
          if (slices == null) {
@@ -373,7 +373,7 @@ index e87744b539593d8a11ea43e5c6d26f9e920c9c90..89110094efad42811f4966a397e6aff6
          }
  
          List<org.bukkit.entity.Entity> ret = new java.util.ArrayList<>();
-@@ -1957,7 +1957,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+@@ -1978,7 +1978,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
              }
          }
  
@@ -383,7 +383,7 @@ index e87744b539593d8a11ea43e5c6d26f9e920c9c90..89110094efad42811f4966a397e6aff6
      // Paper end - rewrite chunk system
  
 diff --git a/net/minecraft/world/level/block/ComposterBlock.java b/net/minecraft/world/level/block/ComposterBlock.java
-index c89b85391ab2b982b7a6f0f11f74599d5acbb0fa..d9617737b971d7216a9eebe7a0f4be48f1dae869 100644
+index efc2c315340d76cfc6959e6710b64108b03902d1..b0bd25131ab2215d9c4583a357e348e892708652 100644
 --- a/net/minecraft/world/level/block/ComposterBlock.java
 +++ b/net/minecraft/world/level/block/ComposterBlock.java
 @@ -293,7 +293,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
@@ -404,7 +404,7 @@ index c89b85391ab2b982b7a6f0f11f74599d5acbb0fa..d9617737b971d7216a9eebe7a0f4be48
          }
  
          @Override
-@@ -380,7 +380,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
+@@ -381,7 +381,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
  
          @Override
          public int[] getSlotsForFace(final Direction direction) {
@@ -414,7 +414,7 @@ index c89b85391ab2b982b7a6f0f11f74599d5acbb0fa..d9617737b971d7216a9eebe7a0f4be48
  
          @Override
 diff --git a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
-index 2624bb1dbdc2dbf09ce5d1f0867cfa6722f32f0c..2970824e3eb76c0be7fe9488ccfc899da0ddcc6b 100644
+index f523a0f08b6cf4328a65698f41d7674c9efb70df..08b2956fb59238cf3974b75b48d3ec421715235f 100644
 --- a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
 @@ -49,7 +49,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit

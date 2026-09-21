@@ -24,10 +24,10 @@ index 5cb518a2590e6f988b3bf8f387b9c8da6f8a2560..c6be559770f2e3715456560bd9422dc7
      private static final java.util.concurrent.atomic.AtomicInteger UNLOADER_ID_GEN = new java.util.concurrent.atomic.AtomicInteger(0);
      public final me.earthme.luminol.utils.thread.LevelAwareRegionScheduler levelScheduler = new me.earthme.luminol.utils.thread.LevelAwareRegionScheduler(io.papermc.paper.threadedregions.TickRegions.getScheduler().scheduler);
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index a3326f7799e428da57279c98469a26b511363748..27c1e4b16fb316e51d4e266db1afd3e6f71a9da3 100644
+index 8f23d34f2558849b2ca4f49ac5918d7b0b2a0f11..d3e8351b25665c5b9d25a733e6d8c4f638d4e066 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -4978,10 +4978,10 @@ public abstract class Entity
+@@ -4980,10 +4980,10 @@ public abstract class Entity
                  );
  
                  // kick off search for existing portal or creation

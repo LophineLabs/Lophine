@@ -42,7 +42,7 @@ index 58b99596b16e1dd8b0c9bcde5d465c6df52cc28b..3bb07698d1908f310ea7a1bb7a0da531
  
      @Override
 diff --git a/net/minecraft/world/entity/vehicle/minecart/AbstractMinecartContainer.java b/net/minecraft/world/entity/vehicle/minecart/AbstractMinecartContainer.java
-index d3651110e15e8e1ad530df4bb4c05dbc73a79a63..6ddaf98748c327baa787966ae6e2098242e6f455 100644
+index d87dcb72fd5d2b22eafc1a444d4fc3807595b6a5..bd92576ec323befd4bc0aaf36cf3c1d03826668a 100644
 --- a/net/minecraft/world/entity/vehicle/minecart/AbstractMinecartContainer.java
 +++ b/net/minecraft/world/entity/vehicle/minecart/AbstractMinecartContainer.java
 @@ -66,6 +66,11 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
@@ -58,10 +58,10 @@ index d3651110e15e8e1ad530df4bb4c05dbc73a79a63..6ddaf98748c327baa787966ae6e20982
  
      @Override
 diff --git a/net/minecraft/world/level/block/entity/BlockEntity.java b/net/minecraft/world/level/block/entity/BlockEntity.java
-index cc6258e1edc9f0a746e9298feac273d8b8f958e9..6129a8d4cb85a69328f3d347ead20ac521e92fab 100644
+index 16cd9e2ace00fd7e76324a97a34e23c6d60ce9d3..b863c4e356098c6603497bb0384d42a6cab84654 100644
 --- a/net/minecraft/world/level/block/entity/BlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BlockEntity.java
-@@ -226,6 +226,14 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo
+@@ -236,6 +236,14 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo
          if (!blockState.isAir()) {
              level.updateNeighbourForOutputSignal(worldPosition, blockState.getBlock());
          }

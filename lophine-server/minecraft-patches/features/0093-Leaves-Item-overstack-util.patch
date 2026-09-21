@@ -85,10 +85,10 @@ index de3e9b1047b5d379dfd5bb57b920d736117edecf..286ec57521364b86421a7ccc932bf6d2
              } else if (drop && validData) {
                  if (this.dropSpamThrottler.isUnderThreshold()) {
 diff --git a/net/minecraft/world/Container.java b/net/minecraft/world/Container.java
-index 6e08d50794c4af4405f3e164a3fd46f376b3f78f..99449ab429ce545cf8f6f72bd1baad83b1461365 100644
+index dd2d0940eece3e85078e574f66f71a4c497d75fd..b3585aee0393142366e583fc2c8fb207f162e92b 100644
 --- a/net/minecraft/world/Container.java
 +++ b/net/minecraft/world/Container.java
-@@ -37,6 +37,12 @@ public interface Container extends Clearable, Iterable<ItemStack>, SlotProvider
+@@ -37,6 +37,12 @@ public interface Container extends Clearable, Iterable<ItemStack>, SlotProvider,
          return Math.min(this.getMaxStackSize(), itemStack.getMaxStackSize());
      }
  
@@ -124,10 +124,10 @@ index 073a3bbf1b1db7eac83cf35412543f370fa089ee..0f412551685a8ea76be3b389e0782e57
          if (diff > 0) {
              targetStack.grow(diff);
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index 7ba1c0f117db55670831a0b9a7a4468beb107882..fbb6d4d346ad14a7d1b08f9158b9a9592e776558 100644
+index ce1721546ec22dd1044d9367456edb8b501f68ad..de2af889221f1506ea71646689b5c52d407c420f 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
-@@ -271,10 +271,15 @@ public class ItemEntity extends Entity implements TraceableEntity {
+@@ -275,10 +275,15 @@ public class ItemEntity extends Entity implements TraceableEntity, ChangePublish
  
      private boolean isMergable() {
          ItemStack item = this.getItem();
@@ -226,7 +226,7 @@ index c80a44dbc54e0bf00daa525bef20422b15ce8a85..d9daef9b2ccf0f0bbe61ff3d7a20f251
  
      default @Nullable SlotAccess getChestVehicleSlot(final int slot) {
 diff --git a/net/minecraft/world/inventory/AbstractContainerMenu.java b/net/minecraft/world/inventory/AbstractContainerMenu.java
-index d5884ea047deb12fce520218c1b54cffd13f1da5..934d56af7021df591fc7f034ded75446a8622865 100644
+index e4cf0dac9116d05460a317d7b41135202fcfbffd..77df3d68693076e06b3d121234f2ad922d2b6c4a 100644
 --- a/net/minecraft/world/inventory/AbstractContainerMenu.java
 +++ b/net/minecraft/world/inventory/AbstractContainerMenu.java
 @@ -296,6 +296,14 @@ public abstract class AbstractContainerMenu {
@@ -318,7 +318,7 @@ index d5884ea047deb12fce520218c1b54cffd13f1da5..934d56af7021df591fc7f034ded75446
              default -> itemStack.getCount();
          };
      }
-@@ -912,7 +921,7 @@ public abstract class AbstractContainerMenu {
+@@ -913,7 +922,7 @@ public abstract class AbstractContainerMenu {
          for (int i = 0; i < container.getContainerSize(); i++) {
              ItemStack itemStack = container.getItem(i);
              if (!itemStack.isEmpty()) {
@@ -354,10 +354,10 @@ index 0e86b025bad2c336cc360c2ce764dad0a75de1b6..1873b9376df57ff73d2a1583b60a512c
  
      public @Nullable Identifier getNoItemIcon() {
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index 8f4243e1ec6df5a1289cb14ac81b38c902aac491..3c965d0b0ae1e0a0ae911ca617083ac3e192814d 100644
+index dddbdac72ba703403a9c30408f96dc36845c7f66..de2efb9cff5c61c7c5849692fc46cd1b54ea0835 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
-@@ -156,7 +156,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
+@@ -160,7 +160,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, Chang
      private int popTime;
      @Deprecated
      private @Nullable Holder<Item> item;
@@ -366,7 +366,7 @@ index 8f4243e1ec6df5a1289cb14ac81b38c902aac491..3c965d0b0ae1e0a0ae911ca617083ac3
  
      public static DataResult<ItemStack> validateStrict(final ItemStack itemStack) {
          DataResult<?> result = validateComponents(itemStack.getComponents());
-@@ -182,7 +182,8 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
+@@ -186,7 +186,8 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, Chang
  
                  Holder<Item> item = Item.STREAM_CODEC.decode(input);
                  DataComponentPatch patch = patchCodec.decode(input);
@@ -376,7 +376,7 @@ index 8f4243e1ec6df5a1289cb14ac81b38c902aac491..3c965d0b0ae1e0a0ae911ca617083ac3
              }
  
              @Override
-@@ -190,17 +191,20 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
+@@ -194,17 +195,20 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, Chang
                  if (itemStack.isEmpty()) {
                      output.writeVarInt(0);
                  } else {
@@ -415,10 +415,10 @@ index 35aafd51eb16a317c0fda06a7186d59cb263de30..d95ae36d4924bfb78142749d0e3bd73b
              org.bukkit.inventory.ItemStack oitemstack = org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitMirror(remaining);
  
 diff --git a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
-index 2970824e3eb76c0be7fe9488ccfc899da0ddcc6b..6b01a3a8771f9aa2d29e29354a96c8f52dbffbff 100644
+index 08b2956fb59238cf3974b75b48d3ec421715235f..56ad8964d4d244604f9f2df27cb69a11c24111d4 100644
 --- a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
-@@ -420,7 +420,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
+@@ -422,7 +422,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
          ItemStack oldStack = this.items.get(slot);
          boolean same = !itemStack.isEmpty() && ItemStack.isSameItemSameComponents(oldStack, itemStack);
          this.items.set(slot, itemStack);
@@ -428,10 +428,10 @@ index 2970824e3eb76c0be7fe9488ccfc899da0ddcc6b..6b01a3a8771f9aa2d29e29354a96c8f5
              this.cookingTotalTime = getTotalCookTime(serverLevel, this);
              this.cookingTimer = 0;
 diff --git a/net/minecraft/world/level/block/entity/BaseContainerBlockEntity.java b/net/minecraft/world/level/block/entity/BaseContainerBlockEntity.java
-index c2f8479eef826efca3ed2993973b2cfc2c51ed00..3ca2234bb2952e09856f766af5329d8b843c5821 100644
+index 191a43ce6c98583b4cc1ed2b5d5f0897224be41f..2e6c28c05ba97aa9a29c2e035ceec548f27ca1ee 100644
 --- a/net/minecraft/world/level/block/entity/BaseContainerBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BaseContainerBlockEntity.java
-@@ -130,7 +130,7 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
+@@ -140,7 +140,7 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
      @Override
      public void setItem(final int slot, final ItemStack itemStack) {
          this.getItems().set(slot, itemStack);
@@ -441,10 +441,10 @@ index c2f8479eef826efca3ed2993973b2cfc2c51ed00..3ca2234bb2952e09856f766af5329d8b
      }
  
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index 53675dbbcbd12ec30d851dc782cea5017fd38a4f..eb0a57c8516bc4c75ba6a5ef59ce4724028d8d5b 100644
+index c0caf2ce9ca412bace47cda2f527851a34f9a1b4..439d7316d1eca6347b306e008a92fa90904d3b69 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-@@ -124,7 +124,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -155,7 +155,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      public void setItem(final int slot, final ItemStack itemStack) {
          this.unpackLootTable(null);
          this.getItems().set(slot, itemStack);
@@ -453,7 +453,7 @@ index 53675dbbcbd12ec30d851dc782cea5017fd38a4f..eb0a57c8516bc4c75ba6a5ef59ce4724
      }
  
      @Override
-@@ -630,9 +630,9 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -688,9 +688,9 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
              if (current.isEmpty()) {
                  // Spigot start - SPIGOT-6693, SimpleContainer#setItem
                  ItemStack leftover = ItemStack.EMPTY; // Paper - Make hoppers respect inventory max stack size

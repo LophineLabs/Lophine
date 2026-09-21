@@ -8,10 +8,10 @@ As a part of : Leaves (https://github.com/LeavesMC/Leaves)
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index b9f3245e21e312b55ba568b51d46712fa2336415..8b3fc9464a303e712e7c4637f6af1a25b839fb8d 100644
+index a4ffd4261ece9863e3c854f2a4af4222f9c7d933..a117b93b812755075d1950e7f506f9fdb33fd17d 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-@@ -339,7 +339,7 @@ public final class RegionizedWorldData {
+@@ -408,7 +408,7 @@ public final class RegionizedWorldData {
      // Luminol end
      // connections
      private static final Connection[] EMPTY_CONNECTION_ARRAY = new Connection[0];
@@ -583,7 +583,7 @@ index 9430f841a2882bac812675700ccf1625d0b95b4d..dd5c25c0dae9c9650f9cdaa8d35e4c0d
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 0c7f8dadd0e31487be6df986fc37e392354b4000..c9089483655a92bff7d73839082814de558ef1c0 100644
+index 7bd97780e37463a94e2f72eb90886e0a43a757bc..ce377a9421184f4b3154349673b39790ed29cc6d 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1294,7 +1294,7 @@ public abstract class Entity
@@ -604,7 +604,7 @@ index 0c7f8dadd0e31487be6df986fc37e392354b4000..c9089483655a92bff7d73839082814de
          // Paper start - optimise collisions
          final boolean xZero = movement.x == 0.0;
          final boolean yZero = movement.y == 0.0;
-@@ -6028,7 +6028,7 @@ public abstract class Entity
+@@ -6030,7 +6030,7 @@ public abstract class Entity
          return MoveSimulationType.AUTHORITATIVE_SIDE;
      }
  
@@ -765,7 +765,7 @@ index 1a2a3ee823721dc3cb7855d0773f77ecba441d61..8be82f8b3632fa0a0f7fe44bc28ad03a
          return switch (this.getStatus()) {
              case IN_WATER, UNDER_WATER, UNDER_FLOWING_WATER -> SoundEvents.BOAT_PADDLE_WATER;
 diff --git a/net/minecraft/world/inventory/AbstractContainerMenu.java b/net/minecraft/world/inventory/AbstractContainerMenu.java
-index 934d56af7021df591fc7f034ded75446a8622865..4f9aeacb4a2fea3da79b671f1b85ced6896f1407 100644
+index 77df3d68693076e06b3d121234f2ad922d2b6c4a..a73c3f1b9fff4b151579be796e74494361134add 100644
 --- a/net/minecraft/world/inventory/AbstractContainerMenu.java
 +++ b/net/minecraft/world/inventory/AbstractContainerMenu.java
 @@ -409,6 +409,7 @@ public abstract class AbstractContainerMenu {
@@ -800,10 +800,10 @@ index 934d56af7021df591fc7f034ded75446a8622865..4f9aeacb4a2fea3da79b671f1b85ced6
          final Player player, final ClickAction clickAction, final Slot slot, final ItemStack clicked, final ItemStack carried
      ) {
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index 3c965d0b0ae1e0a0ae911ca617083ac3e192814d..7d32ba125fff7b42249dc7b3c98d424cc90ab677 100644
+index de2efb9cff5c61c7c5849692fc46cd1b54ea0835..3cca255dcad4b12c8895106d8145162b9efe16a5 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
-@@ -455,7 +455,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
+@@ -459,7 +459,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, Chang
                      placeEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callBlockPlaceEvent(level, player, hand, capturedBlockStates.getFirst(), pos);
                  }
  
@@ -812,7 +812,7 @@ index 3c965d0b0ae1e0a0ae911ca617083ac3e192814d..7d32ba125fff7b42249dc7b3c98d424c
                      result = InteractionResult.FAIL; // cancel placement
                      // PAIL: Remove this when MC-99075 fixed
                      player.containerMenu.forceHeldSlot(hand);
-@@ -964,6 +964,20 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
+@@ -968,6 +968,20 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, Chang
          }
      }
  

@@ -37,7 +37,7 @@ public class SleepUntilTimeBlockEntityTickInvoker implements TickingBlockEntity 
     @Override
     public void tick() {
         //noinspection ConstantConditions
-        long tickTime = this.sleepingBlockEntity.getLevel().getRedstoneGameTime(); // Luminol - Regionized threading for sleeping block entity
+        long tickTime = this.sleepingBlockEntity.getLevel().getRedstoneGameTime(); // Anonymous - Regionized threading for sleeping block entity
         if (tickTime >= this.sleepUntilTickExclusive) {
             ((SleepingBlockEntity) this.sleepingBlockEntity).setTicker(this.delegate);
             this.delegate.tick();

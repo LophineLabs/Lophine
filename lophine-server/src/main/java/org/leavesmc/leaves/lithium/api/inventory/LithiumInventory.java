@@ -30,11 +30,11 @@ import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
  * It is not required to implement this interface, but doing so will allow the mod's inventories to benefit from
  * Lithium's optimizations.
  * <p>
- * This interface should be implemented by your {@link net.minecraft.world.Container} or
+ * This interface should be implemented by your {@link Container} or
  * {@link net.minecraft.world.WorldlyContainer} type to access the stack list.
  * <p>
  * An inventory must not extend {@link net.minecraft.world.level.block.entity.BlockEntity} if it has a supporting block that
- * implements {@link net.minecraft.world.entity.vehicle.ContainerEntity}.
+ * implements {@link ContainerEntity}.
  * <p>
  * The hopper interaction behavior of a LithiumInventory should only change if the content of the inventory
  * stack list also changes. For example, an inventory which only accepts an item if it already contains an item of the
