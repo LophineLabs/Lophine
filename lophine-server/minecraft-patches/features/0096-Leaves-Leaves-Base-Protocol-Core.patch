@@ -108,7 +108,7 @@ index e074fe9eb6a1e6cb30b7de522fcac673dcb81960..ca9993d703f523cda4ede40c5360d612
          // Paper start
          org.bukkit.craftbukkit.CraftServerLinks links = new org.bukkit.craftbukkit.CraftServerLinks(serverLinks);
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 5d6bbdb074bfbca1f5acf1feea4ee59615140918..d757ce6ebb1b0fe7b0493eb10315f416e96d0abd 100644
+index 050828b15691a8f7fc2692af19a430caadbef051..8af0def20bc5c37ab6fef8a851dbf2d42bc1816e 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -271,6 +271,7 @@ public abstract class PlayerList {
@@ -136,7 +136,7 @@ index 5d6bbdb074bfbca1f5acf1feea4ee59615140918..d757ce6ebb1b0fe7b0493eb10315f416
          // Paper end - Fix kick event leave message not being sent
          ServerLevel level = player.level();
          player.awardStat(Stats.LEAVE_GAME);
-@@ -1417,5 +1421,6 @@ public abstract class PlayerList {
+@@ -1420,5 +1424,6 @@ public abstract class PlayerList {
              player.connection.send(recipes);
              player.getRecipeBook().sendInitialRecipeBook(player);
          }

@@ -24,10 +24,10 @@ index a814512fcfb85312474ae2c2c21443843bf57831..04f91629c8762f00e180d4aaa42d64bb
      public MoonriseRegionFileIO.RegionDataController.WriteData moonrise$startWrite(
              final int chunkX, final int chunkZ, final CompoundTag compound
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java b/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java
-index 3bb9b58ee97464687e348e23b99159226415c267..4c3ad63f17bb4a04f982b36ad3f53d3c0f58bdb5 100644
+index 775d93d35855e394e5eccf0ad80eca43b1ed9562..60c5df183fae4c04220baef6b8567db5304efd29 100644
 --- a/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java
-@@ -1273,7 +1273,7 @@ public final class MoonriseRegionFileIO {
+@@ -1311,7 +1311,7 @@ public final class MoonriseRegionFileIO {
                  this.regionDataController.finishWrite(this.chunkX, this.chunkZ, writeData);
                  // Paper start - flush regionfiles on save
                  if (this.world.paperConfig().chunks.flushRegionsOnSave) {
@@ -36,7 +36,7 @@ index 3bb9b58ee97464687e348e23b99159226415c267..4c3ad63f17bb4a04f982b36ad3f53d3c
                      if (regionFile != null) {
                          regionFile.flush();
                      } // else: evicted from cache, which should have called flush
-@@ -1489,7 +1489,7 @@ public final class MoonriseRegionFileIO {
+@@ -1562,7 +1562,7 @@ public final class MoonriseRegionFileIO {
  
          public static interface IORunnable {
  
