@@ -74,7 +74,7 @@ index 0cd91aebd4aed08c5e456d38e97d95d12d299040..cc5fd9a6dd723c97ab0f61ee19e64e61
  
              profiler.pop();
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 8024ff2b9194e43f23b5dea7e96ffe624a9a91ac..c53d2258dba5d3a51f55cad7ee513949822eaf0b 100644
+index 3a19a3e73180e82ed6a39acb1189cafb45c8c79a..e472667ddbe7180ee5de5ea1f7c61b7e3c6ae2db 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -957,7 +957,18 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet

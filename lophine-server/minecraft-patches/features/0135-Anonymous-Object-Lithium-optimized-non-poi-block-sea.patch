@@ -189,7 +189,7 @@ index c6e9b155c2341c13d569f28f54f0c1d2d7313676..927635518c51375315390877d582b32f
 +    // Anonymous end - Lithium Optimizes move to block goal
  }
 diff --git a/net/minecraft/world/entity/ai/goal/RemoveBlockGoal.java b/net/minecraft/world/entity/ai/goal/RemoveBlockGoal.java
-index 7f93335c30da56c913e1fbae4b8b82f3c7e051e9..5c18aa3fd0564a4e3e94e1be503e138bd3dc6268 100644
+index ff0f99d4b560a1c0721885b0eba5bd5ab2087bd7..99c076ee2fe0d8294398c5ef1f24a95da5eee89c 100644
 --- a/net/minecraft/world/entity/ai/goal/RemoveBlockGoal.java
 +++ b/net/minecraft/world/entity/ai/goal/RemoveBlockGoal.java
 @@ -25,6 +25,19 @@ public class RemoveBlockGoal extends MoveToBlockGoal {

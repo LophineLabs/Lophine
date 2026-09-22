@@ -8,10 +8,10 @@ As a part of : Leaves (https://github.com/LeavesMC/Leaves)
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index 2daedcec555a7dd72673d73287ce8a40cacd5e62..58a6efcdd101dbaa7b9915c5ab6478b99b5a158d 100644
+index e922a0eefb03db5e33f3306aaea558b6ed61b42a..7120bbea89c1c240b09562c73833f21a9980886f 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
-@@ -3047,4 +3047,15 @@ public final class Bukkit {
+@@ -3051,4 +3051,15 @@ public final class Bukkit {
          return server.getFeatureManager();
      }
      // Leaves end - Feature API
