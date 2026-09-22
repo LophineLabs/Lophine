@@ -1,4 +1,6 @@
 {
+  "lophine.function.old-feature.should-generate-end-ring": "生成末地环",
+  "lophine.function.old-feature.should-generate-end-ring.comment": "是否生成末地环\n此配置项目前并非完全直接操控世界生成，部分操作会在放置后尝试移除部分多余方块\n可能有一定性能问题",
   "carpet.fakeplayer": "假人",
   "carpet.general": "通用",
   "carpet.hopper_counter": "漏斗计数器",

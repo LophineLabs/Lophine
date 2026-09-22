@@ -1,4 +1,6 @@
 {
+  "lophine.function.old-feature.should-generate-end-ring": "Should Generate End Ring",
+  "lophine.function.old-feature.should-generate-end-ring.comment": "Whether to generate the End ring.\nThis config does not directly control world generation entirely;\nsome operations will attempt to remove excess blocks after placement.\nThis may cause some performance issues.",
   "carpet.fakeplayer": "Fake Player",
   "carpet.general": "General",
   "carpet.hopper_counter": "Hopper Counter",

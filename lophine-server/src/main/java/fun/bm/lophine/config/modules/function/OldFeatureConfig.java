@@ -23,4 +23,7 @@ public class OldFeatureConfig {
 
     @ConfigInfo(name = "villager-void-trade")
     public static boolean villagerVoidTrade = false;
+
+    @ConfigInfo(name = "should-generate-end-ring")
+    public static boolean shouldGenerateEndRing = false;
 }

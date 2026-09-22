@@ -1,0 +1,81 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Tue, 22 Sep 2026 17:28:04 +0800
+Subject: [PATCH] Add config to allow end ring generation
+
+
+diff --git a/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java b/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
+index f0529d233b791e226cec469b2efebcffd02c6d58..7f15624445c5467ee9de9e7754e8e3d772e5af64 100644
+--- a/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
++++ b/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
+@@ -429,6 +429,11 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
+                     if (customGenerator == null || customGenerator.shouldGenerateCaves(chunk)) // Paper - Bukkit chunk generator callbacks
+                     this.generateCarvers(chunk, blender, noiseChunk, randomState, biomeManager, carverBiomeRegion, materialRule);
+                 }
++                // Lophine start - modify end ring generation
++                if (structureManager.level.getMinecraftWorld().dimensionType().hasEnderDragonFight()) {
++                    fun.bm.lophine.utils.EndIslandGenerator.clearOverflowBlocks(chunk);
++                }
++                // Lophine end - modify end ring generation
+                 if (customGenerator != null) customGenerator.applyCarvers(chunk); // Paper - Bukkit chunk generator callbacks
+ 
+                 return chunk;
+diff --git a/net/minecraft/world/level/levelgen/densityfunction/generator/EndIslandFunction.java b/net/minecraft/world/level/levelgen/densityfunction/generator/EndIslandFunction.java
+index 04060959dc10bae58d39d41c3d30138e1eecc36d..81cddc78b9e9f05681f53fcfe48286dc9109f081 100644
+--- a/net/minecraft/world/level/levelgen/densityfunction/generator/EndIslandFunction.java
++++ b/net/minecraft/world/level/levelgen/densityfunction/generator/EndIslandFunction.java
+@@ -21,7 +21,7 @@ public record EndIslandFunction() implements DensityFunction {
+         int chunkZ = sectionZ / 2;
+         int subSectionX = sectionX % 2;
+         int subSectionZ = sectionZ % 2;
+-        float doffs = -100.0F;
++        float doffs = fun.bm.lophine.utils.EndIslandGenerator.getDefaultDoffs(sectionX, sectionZ); // Lophine - modify end ring generation
+ 
+         for (int xo = -12; xo <= 12; xo++) {
+             for (int zo = -12; zo <= 12; zo++) {
+@@ -32,7 +32,7 @@ public record EndIslandFunction() implements DensityFunction {
+                     float xd = subSectionX - xo * 2;
+                     float zd = subSectionZ - zo * 2;
+                     float newDoffs = 100.0F - Mth.sqrt(xd * xd + zd * zd) * islandSize;
+-                    newDoffs = Mth.clamp(newDoffs, -100.0F, 80.0F);
++                    newDoffs = fun.bm.lophine.utils.EndIslandGenerator.clamp(newDoffs, -100.0F, 80.0F); // Lophine - modify end ring generation
+                     doffs = Math.max(doffs, newDoffs);
+                 }
+             }
+diff --git a/net/minecraft/world/level/levelgen/feature/EndIslandFeature.java b/net/minecraft/world/level/levelgen/feature/EndIslandFeature.java
+index eadcfa9c95923f100a7a1636a3b5489051dcc561..2f3800a2e41e6375201da9e6734e78288554f689 100644
+--- a/net/minecraft/world/level/levelgen/feature/EndIslandFeature.java
++++ b/net/minecraft/world/level/levelgen/feature/EndIslandFeature.java
+@@ -20,11 +20,31 @@ public record EndIslandFeature() implements Feature {
+     public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
+         float size = random.nextInt(3) + 4.0F;
+ 
++        // Lophine start - modify end ring generation
++        int sectionXMin = (origin.getX() - Mth.ceil(size)) >> 3;
++        int sectionXMax = (origin.getX() + Mth.ceil(size)) >> 3;
++        int sectionZMin = (origin.getZ() - Mth.ceil(size)) >> 3;
++        int sectionZMax = (origin.getZ() + Mth.ceil(size)) >> 3;
++
++        boolean[] shouldSetBlock = fun.bm.lophine.utils.EndIslandGenerator.shouldSetBlock(sectionXMin, sectionXMax, sectionZMin, sectionZMax);
++        int width = sectionXMax - sectionXMin + 1;
++        // Lophine end - modify end ring generation
++
+         for (int y = 0; size > 0.5F; y--) {
+             for (int x = Mth.floor(-size); x <= Mth.ceil(size); x++) {
+                 for (int z = Mth.floor(-size); z <= Mth.ceil(size); z++) {
+                     if (x * x + z * z <= (size + 1.0F) * (size + 1.0F)) {
+-                        this.setBlock(level, origin.offset(x, y, z), Blocks.END_STONE.defaultBlockState());
++                        // Lophine start - modify end ring generation
++                        BlockPos pos = origin.offset(x, y, z);
++                        int sectionX = pos.getX() >> 3;
++                        int sectionZ = pos.getZ() >> 3;
++                        int dSectionX = sectionX - sectionXMin;
++                        int dSectionZ = sectionZ - sectionZMin;
++                        if (!shouldSetBlock[dSectionX + dSectionZ * width]) {
++                            continue;
++                        }
++                        this.setBlock(level, pos, Blocks.END_STONE.defaultBlockState());
++                        // Lophine end - modify end ring generation
+                     }
+                 }
+             }
