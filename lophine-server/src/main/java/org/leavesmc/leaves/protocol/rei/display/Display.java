@@ -26,7 +26,6 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -216,7 +215,7 @@ public abstract class Display {
             case SlotDisplay.ItemSlotDisplay s -> EntryIngredient.of(s.item().value());
             case SlotDisplay.ItemStackSlotDisplay s ->
                     EntryIngredient.of(s.stack().create()); // Leaves - Paper 26.1: ItemStackSlotDisplay.stack() now returns ItemStackTemplate
-            case SlotDisplay.TagSlotDisplay s -> ofItemTag(s.tag().unwrapKey().get());
+            case SlotDisplay.TagSlotDisplay s -> ofItemTag(s.tag());
             case SlotDisplay.Composite s -> {
                 ArrayList<ItemStack> list = new ArrayList<>();
                 for (SlotDisplay slotDisplay : s.contents()) {
@@ -252,13 +251,7 @@ public abstract class Display {
         return ingredients.build();
     }
 
-    public static <T extends ItemLike> EntryIngredient ofItemTag(TagKey<T> tagKey) {
-        HolderGetter<T> getter = MinecraftServer.getServer().registryAccess().lookupOrThrow(tagKey.registry());
-        HolderSet.Named<T> holders = getter.get(tagKey).orElse(null);
-        if (holders == null) {
-            return EntryIngredient.empty();
-        }
-
+    public static <T extends ItemLike> EntryIngredient ofItemTag(HolderSet<T> holders) {
         int size = holders.size();
         if (size == 0) {
             return EntryIngredient.empty();
