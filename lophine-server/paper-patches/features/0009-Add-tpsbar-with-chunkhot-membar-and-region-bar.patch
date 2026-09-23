@@ -5,7 +5,7 @@ Subject: [PATCH] Add tpsbar with chunkhot membar and region bar
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftChunk.java b/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
-index f8254b3ec264f2ece70a2635823493b90fb45ad8..ac8c1cd45094120152d04100c86381e4df117653 100644
+index f8254b3ec264f2ece70a2635823493b90fb45ad8..c1954a651c2527e4ff6911326244ac7f8a076dd6 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
 @@ -406,4 +406,12 @@ public class CraftChunk implements Chunk {
@@ -16,18 +16,18 @@ index f8254b3ec264f2ece70a2635823493b90fb45ad8..ac8c1cd45094120152d04100c86381e4
 +    // KioCG start - ChunkHot
 +    @Override
 +    public long getChunkHotAvg() {
-+        final net.minecraft.world.level.chunk.LevelChunk target = this.level.getChunkIfLoaded(this.x,this.z);
++        final net.minecraft.world.level.chunk.LevelChunk target = this.level.getChunkIfLoaded(this.x, this.z);
 +        return target == null ? -1 : target.getChunkHot().getAverage();
 +    }
 +    // KioCG end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 10a42ff556039b2410732e26db25fb2a299db695..f4f839598795d61b1c4ce5477a77be02f2e5592b 100644
+index aba936a53de0b083b8cc6da3a90149a549621708..03163c7a2b03512671673373a174bf012523e970 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -3427,4 +3427,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
-         this.getHandle().fixedPose = false;
-         this.getHandle().updatePlayerPose();
+@@ -3434,4 +3434,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+     public PlayerPostEffects postEffects() {
+         return new PaperPlayerPostEffects(this.getHandle());
      }
 +
 +    // KioCG start - ChunkHot
