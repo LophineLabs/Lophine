@@ -5,20 +5,19 @@ Subject: [PATCH] Fix entity portal-teleport speed
 
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 61d29f8dc1bd4bed07f6bd1fab4921385e0849c4..8daf8bb4e34236c0211f51dff50ee07a00d7ec34 100644
+index 61d29f8dc1bd4bed07f6bd1fab4921385e0849c4..1d6f0f8f0da0d619bf199038d6bbb9bb0dcf9596 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -1499,7 +1499,31 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1499,7 +1499,42 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          foliaProfiler.startTimer(timerId);
          try {
          // Folia end - profiler
 +        // Lophine start - Entity portal-teleport speed fix
          if (isActive) { // Paper - EAR 2
 +            if (!(entity instanceof Player) && entity.teleportTickType == fun.bm.lophine.enums.EnumTeleportStage.NEED_SYNC) { // Luminol - after portal compensate tick
-+                entity.tick();
-+                while (entity.losingTicks-- > 0) {
++                do { // tick losingTicks + 1 times
 +                    entity.tick();
-+                }
++                } while (entity.losingTicks-- > 0);
 +                entity.teleportTickType = fun.bm.lophine.enums.EnumTeleportStage.NORMAL;
 +                if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(entity)) {
 +                    return;
@@ -36,11 +35,23 @@ index 61d29f8dc1bd4bed07f6bd1fab4921385e0849c4..8daf8bb4e34236c0211f51dff50ee07a
 +                if (entity.handlePortal()) {
 +                    return;
 +                }
++                if (entity.teleportTickType == fun.bm.lophine.enums.EnumTeleportStage.SYNC_NOW) { // teleport canceled
++                    while (entity.losingTicks-- > 0) { // tick losingTicks times because we have added to it already
++                        entity.tick();
++                    }
++                    entity.teleportTickType = fun.bm.lophine.enums.EnumTeleportStage.NORMAL;
++                    if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(entity)) {
++                        return;
++                    }
++                    if (entity.handlePortal()) {
++                        return;
++                    }
++                }
 +            } else {
          entity.tick();
          // Folia start - region threading
          if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(entity)) {
-@@ -1510,6 +1534,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1510,6 +1545,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              // portalled
              return;
          }
@@ -50,7 +61,7 @@ index 61d29f8dc1bd4bed07f6bd1fab4921385e0849c4..8daf8bb4e34236c0211f51dff50ee07a
          } else {entity.inactiveTick();} // Paper - EAR 2
          profiler.pop();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 1ca9f9edb5f4195af8eeb5da6bf46071701b735b..f0f9dea7b4f731574205526e1d2c493792185114 100644
+index 1ca9f9edb5f4195af8eeb5da6bf46071701b735b..ef6cc2c3361a4f20fb3a4230d1bd3d34d325265d 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -393,6 +393,8 @@ public abstract class Entity
@@ -70,7 +81,15 @@ index 1ca9f9edb5f4195af8eeb5da6bf46071701b735b..f0f9dea7b4f731574205526e1d2c4937
              } else if (!this.portalProcess.isInsidePortalThisTick()) {
                  this.portalProcess.updateEntryPosition(pos.immutable());
                  this.portalProcess.setAsInsidePortalThisTick(true);
-@@ -4690,6 +4693,7 @@ public abstract class Entity
+@@ -3711,6 +3714,7 @@ public abstract class Entity
+                     // Folia end - region threading
+                 } else if (this.portalProcess.hasExpired()) {
+                     this.portalProcess = null;
++                    this.teleportTickType = fun.bm.lophine.enums.EnumTeleportStage.SYNC_NOW; // Lophine - reset tick type when portal expires
+                 }
+             }
+         }
+@@ -4690,6 +4694,7 @@ public abstract class Entity
  
      public void postChangeDimension() {
          this.resetStoredPositions();

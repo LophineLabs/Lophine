@@ -5,7 +5,7 @@ Subject: [PATCH] Add config for vanilla random
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 2a8dbd21313deef0174069507bb119f7ec50903b..daf86f402e1e1894b4db42ceac8c9af6ab22830f 100644
+index 9018fd1c4c51abd9a4be4d2fdc5662f9552204c6..ea5ee90b7bcef5537895cd7f7540fb392ebbc805 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -301,7 +301,7 @@ public abstract class Entity
