@@ -5,7 +5,7 @@ Subject: [PATCH] Add config to disable some check for operators
 
 
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 6fcc0c2004fa68f8902b939f8e4659292868deda..de3e9b1047b5d379dfd5bb57b920d736117edecf 100644
+index d94fea7b3c4a4884c47da07bcc5173b7a919591a..3d25c0fe882822cbf437e10bfddfeadbc03bb9cd 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -411,7 +411,7 @@ public class ServerGamePacketListenerImpl
@@ -35,7 +35,7 @@ index 6fcc0c2004fa68f8902b939f8e4659292868deda..de3e9b1047b5d379dfd5bb57b920d736
                      fail = true;
                      LOGGER.warn("{} (vehicle of {}) moved wrongly! {}", vehicle.getPlainTextName(), this.player.getPlainTextName(), Math.sqrt(movedDist));
                  }
-@@ -1649,7 +1649,7 @@ public class ServerGamePacketListenerImpl
+@@ -1655,7 +1655,7 @@ public class ServerGamePacketListenerImpl
                              // Paper start - Add fail move event
                              io.papermc.paper.event.player.PlayerFailMoveEvent event = fireFailMove(io.papermc.paper.event.player.PlayerFailMoveEvent.FailReason.MOVED_TOO_QUICKLY,
                                  targetX, targetY, targetZ, targetYRot, targetXRot, true);
@@ -44,7 +44,7 @@ index 6fcc0c2004fa68f8902b939f8e4659292868deda..de3e9b1047b5d379dfd5bb57b920d736
                              if (event.getLogWarning())
                              LOGGER.warn("{} moved too quickly! {},{},{}", this.player.getPlainTextName(), xDist, yDist, zDist);
                              this.teleport(this.player.getX(), this.player.getY(), this.player.getZ(), this.player.getYRot(), this.player.getXRot());
-@@ -1716,7 +1716,7 @@ public class ServerGamePacketListenerImpl
+@@ -1722,7 +1722,7 @@ public class ServerGamePacketListenerImpl
                      // Paper start - Add fail move event
                      io.papermc.paper.event.player.PlayerFailMoveEvent event = fireFailMove(io.papermc.paper.event.player.PlayerFailMoveEvent.FailReason.MOVED_WRONGLY,
                          targetX, targetY, targetZ, targetYRot, targetXRot, true);

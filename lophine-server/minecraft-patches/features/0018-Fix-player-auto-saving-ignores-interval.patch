@@ -5,7 +5,7 @@ Subject: [PATCH] Fix player auto saving ignores interval
 
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index be58ff4d87549f4dd1b1cfd91dbde3b516d7ef32..e55e7ad666a494b78ed6a2f418e6d64c248c148c 100644
+index 5c856eec1841e0ae4085121078509a91e694743f..0d2f47d6a5b247c98ee7c6fb8f113a06858135c5 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -212,7 +212,7 @@ import org.slf4j.Logger;

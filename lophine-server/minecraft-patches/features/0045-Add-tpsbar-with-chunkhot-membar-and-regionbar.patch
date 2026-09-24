@@ -106,7 +106,7 @@ index cb42b920f7187b1e6130aa4d37d72aad0cf0293b..0b34d31c06282cd4fbc3f3c2b8955841
      }
  
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 3571d1da8f8c3d9267c651d1980e930aceda9e38..33d48dc77c5f0c4b98083f984c89f75b33232743 100644
+index 167da06374f4b2f8c0b244e778f9e4be626ba79b..4c0ada0198d79d871a9453f3d14872bd03bdc906 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -446,7 +446,9 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -183,7 +183,7 @@ index c5a212e73c2efeb1f440778cb3f1fa6ee8165e63..52f0b0ad01d852f5bd17202eeaccd9a5
 +    // KioCG end
  }
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index ea5ee90b7bcef5537895cd7f7540fb392ebbc805..6d97d0e70bab96b8679818de5874dd959b15bad9 100644
+index b6505868acdf569bbdcadbc5575137ad74215c2d..fdeff02058c230d038bcd086988fdbf4dcc31ba7 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -6646,4 +6646,6 @@ public abstract class Entity

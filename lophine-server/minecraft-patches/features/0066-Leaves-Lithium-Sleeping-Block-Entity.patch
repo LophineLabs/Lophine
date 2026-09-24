@@ -240,7 +240,7 @@ index 6e08d50794c4af4405f3e164a3fd46f376b3f78f..dd2d0940eece3e85078e574f66f71a4c
  
      int getContainerSize();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 72749e527fbd63efbd74151b38574116c32ec1f2..9c02891339613cac3ad1b11412e33968612a8452 100644
+index 3fcf40e1237d37f417334c93ce93c82ed13b74af..f816592a25272a00c6a5024b03956a4e8622514d 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -327,7 +327,7 @@ public abstract class Entity

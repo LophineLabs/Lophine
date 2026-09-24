@@ -275,7 +275,7 @@ index 1d6f0f8f0da0d619bf199038d6bbb9bb0dcf9596..39aa0f7fd959385237fdb7593f764493
      // CraftBukkit start
      private final ResourceKey<LevelStem> typeKey;
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index e55e7ad666a494b78ed6a2f418e6d64c248c148c..3571d1da8f8c3d9267c651d1980e930aceda9e38 100644
+index 0d2f47d6a5b247c98ee7c6fb8f113a06858135c5..167da06374f4b2f8c0b244e778f9e4be626ba79b 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -1754,7 +1754,30 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -429,7 +429,7 @@ index 9fad06eda81b4c2c1889a9cfa7a6948e7ee01862..854f8954ccfd8c34c9f9c91fd1805260
          private final Vec2 spawnAngle;
  
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index b1f970f1ae0cfbf872339c68a899c061a14a40bd..db3091f82a2a838bfc2614b78ceac305ac4afd40 100644
+index 850366a24f1848488141163db13adddea5e849ac..61c26127fd1f38b84fca9de2fb61936ed6306eb1 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -399,6 +399,9 @@ public abstract class Entity

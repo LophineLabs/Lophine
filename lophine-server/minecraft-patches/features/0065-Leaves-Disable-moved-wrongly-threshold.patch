@@ -5,7 +5,7 @@ Subject: [PATCH] Leaves: Disable moved wrongly threshold
 
 
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 019a393e4c4a95fe5a27c2ccd274d3428f74dd09..cbd2916285320f50e99e47b10355581c38d8538e 100644
+index 94b9474f2ba1b5088514409ded52f676f159588c..bb2da959242275f866480dcb90855a4dd929c21c 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -655,7 +655,7 @@ public class ServerGamePacketListenerImpl
@@ -26,7 +26,7 @@ index 019a393e4c4a95fe5a27c2ccd274d3428f74dd09..cbd2916285320f50e99e47b10355581c
                      fail = true;
                      LOGGER.warn("{} (vehicle of {}) moved wrongly! {}", vehicle.getPlainTextName(), this.player.getPlainTextName(), Math.sqrt(movedDist));
                  }
-@@ -1645,7 +1645,7 @@ public class ServerGamePacketListenerImpl
+@@ -1651,7 +1651,7 @@ public class ServerGamePacketListenerImpl
  
                      if (this.shouldCheckPlayerMovement(isFallFlying)) {
                          float metersPerTick = isFallFlying ? 300.0F : 100.0F;
@@ -35,7 +35,7 @@ index 019a393e4c4a95fe5a27c2ccd274d3428f74dd09..cbd2916285320f50e99e47b10355581c
                              // Paper start - Add fail move event
                              io.papermc.paper.event.player.PlayerFailMoveEvent event = fireFailMove(io.papermc.paper.event.player.PlayerFailMoveEvent.FailReason.MOVED_TOO_QUICKLY,
                                  targetX, targetY, targetZ, targetYRot, targetXRot, true);
-@@ -1706,7 +1706,8 @@ public class ServerGamePacketListenerImpl
+@@ -1712,7 +1712,8 @@ public class ServerGamePacketListenerImpl
                  zDist = targetZ - this.player.getZ();
                  movedDist = xDist * xDist + yDist * yDist + zDist * zDist;
                  boolean movedWrongly = false; // Paper - Add fail move event; rename

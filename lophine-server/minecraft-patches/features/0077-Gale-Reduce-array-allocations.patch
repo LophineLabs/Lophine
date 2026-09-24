@@ -137,7 +137,7 @@ index e46f95b19da1c14f240ec6697f22b5e220e0a835..70769a9c177bd846b1c8306af32e14e9
                  if (!itemStack.isEmpty()) {
                      slots.add(Pair.of(slot, itemStack.copy()));
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 12ab3c90cc23c1341e1e97a9bb397d65e42d56fe..84d0fbf3745f4392d78de80b46934ed26380dc82 100644
+index 79f135c873e097c6ffd365c2119281029b20b512..315e7df8ac0fcfeef235146107c278770ece47d0 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -1435,7 +1435,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -150,10 +150,10 @@ index 12ab3c90cc23c1341e1e97a9bb397d65e42d56fe..84d0fbf3745f4392d78de80b46934ed2
                      this.getInventory().equipment.set(value, net.minecraft.world.item.ItemStack.EMPTY);
                  }
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index cbd2916285320f50e99e47b10355581c38d8538e..6fcc0c2004fa68f8902b939f8e4659292868deda 100644
+index bb2da959242275f866480dcb90855a4dd929c21c..d94fea7b3c4a4884c47da07bcc5173b7a919591a 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -3080,7 +3080,7 @@ public class ServerGamePacketListenerImpl
+@@ -3086,7 +3086,7 @@ public class ServerGamePacketListenerImpl
                              // SPIGOT-7136 - Allays
                              if (target instanceof net.minecraft.world.entity.animal.allay.Allay || target instanceof net.minecraft.world.entity.animal.equine.AbstractHorse) { // Paper - Fix horse armor desync
                                  ServerGamePacketListenerImpl.this.send(new net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket(

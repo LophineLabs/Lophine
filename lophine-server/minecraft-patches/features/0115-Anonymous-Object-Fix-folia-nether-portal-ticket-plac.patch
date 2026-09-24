@@ -33,7 +33,7 @@ index efd1cd1e78aea777adec650cdeafd251a1c7e2ec..818cec2fea266eae713812f5eed1f010
  
      public static class IntBounds {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index ed028e0e035dd27e00aa9ab0fc623fc93b4f3ecf..26c7d2f09db9f1c604626af83906b7a7d87154a8 100644
+index b701d311d1c42de014c6308826b1633e193c5c9c..a4b030d12064d45e676d2ad306878fe3cf66c677 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -4962,7 +4962,7 @@ public abstract class Entity
@@ -55,7 +55,7 @@ index ed028e0e035dd27e00aa9ab0fc623fc93b4f3ecf..26c7d2f09db9f1c604626af83906b7a7
                          );
                      }
 diff --git a/net/minecraft/world/level/block/NetherPortalBlock.java b/net/minecraft/world/level/block/NetherPortalBlock.java
-index 6ace38af2e6972645fde363935fc5469a07ac28c..a15c35d3aea0b3def7d647e8b0d73051ee9cc785 100644
+index 0ab3ffcb1497ab445b156674a8439f92c3be05e9..b994c7b22166e78a1e0c2aa6f94fb79725445f3f 100644
 --- a/net/minecraft/world/level/block/NetherPortalBlock.java
 +++ b/net/minecraft/world/level/block/NetherPortalBlock.java
 @@ -197,7 +197,7 @@ public class NetherPortalBlock extends Block implements Portal {

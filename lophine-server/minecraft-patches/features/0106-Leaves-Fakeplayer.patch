@@ -372,7 +372,7 @@ index 7bed6acec1aa39cd266b1fb416d981ca36d9c566..c5ed4051497b63ea099403d018b1e786
                  ServerLevel.this.updateSleepingPlayerList();
              }
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 2913d64b83fb7499788255793a5390ed3f335c92..7d135697c004c9c38bd2d59725391c38f7c03edd 100644
+index 781708612dc8414d0aeba31de3ace55d544610b8..d648b66dace7188b54d93e4a18b5eb5e30176719 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -236,7 +236,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -418,10 +418,10 @@ index 2913d64b83fb7499788255793a5390ed3f335c92..7d135697c004c9c38bd2d59725391c38
          org.bukkit.event.player.PlayerChangedWorldEvent changeEvent = new org.bukkit.event.player.PlayerChangedWorldEvent(this.getBukkitEntity(), oldLevel.getWorld());
          this.level().getCraftServer().getPluginManager().callEvent(changeEvent);
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 2b3cad049a88ee3fcf1f114bddd924673d4f68b4..c22947654ada441d1142e5d67124092181bd3827 100644
+index 19dc1317c60a1e784c38000fe598e3021b5e58b0..d5a7d32543e8a244375c614e797a869d3ba7fc96 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -3962,7 +3962,7 @@ public class ServerGamePacketListenerImpl
+@@ -3968,7 +3968,7 @@ public class ServerGamePacketListenerImpl
      }
  
      @Deprecated @io.papermc.paper.annotation.DoNotUse // Paper - Add PlayerLoadedWorldEvent
@@ -583,7 +583,7 @@ index d53257b2f05c9a5acb38840cb98ac83d0489354b..219d4071619168f3442d0beeee707954
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index d7c858555588785201d3722e09e582944963ebd0..ed028e0e035dd27e00aa9ab0fc623fc93b4f3ecf 100644
+index 55f40b089dcd5e99aeddfd62b77a51de02f429d0..b701d311d1c42de014c6308826b1633e193c5c9c 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1294,7 +1294,7 @@ public abstract class Entity
