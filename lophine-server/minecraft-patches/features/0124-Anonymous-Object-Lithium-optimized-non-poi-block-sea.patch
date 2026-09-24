@@ -222,7 +222,7 @@ index 7f93335c30da56c913e1fbae4b8b82f3c7e051e9..5c18aa3fd0564a4e3e94e1be503e138b
              return true;
          } else {
 diff --git a/net/minecraft/world/entity/ai/sensing/HoglinSpecificSensor.java b/net/minecraft/world/entity/ai/sensing/HoglinSpecificSensor.java
-index fd2dfb3079700f35579c2912dc828bc646d99470..a554594b3af995e67d160a58bd82c2473eefdc6f 100644
+index fd2dfb3079700f35579c2912dc828bc646d99470..53709d84e9baf428b68c1412c2d49acf846bfadc 100644
 --- a/net/minecraft/world/entity/ai/sensing/HoglinSpecificSensor.java
 +++ b/net/minecraft/world/entity/ai/sensing/HoglinSpecificSensor.java
 @@ -16,6 +16,14 @@ import net.minecraft.world.entity.monster.hoglin.Hoglin;
@@ -247,12 +247,12 @@ index fd2dfb3079700f35579c2912dc828bc646d99470..a554594b3af995e67d160a58bd82c247
 -        Brain<?> brain = body.getBrain();
 -        brain.setMemory(MemoryModuleType.NEAREST_REPELLENT, this.findNearestRepellent(level, body));
 +        Brain<?> brain = body.getBrain();;
-+        brain.setMemory(MemoryModuleType.NEAREST_REPELLENT, net.caffeinemc.mods.lithium.common.ai.non_poi_block_search.CommonBlockSearchesCheckAndCache.blockPosFindClosestMatch(level, body, 8, 4, IS_VALID_REPELLENT_PREDICATE, true)); // Anonymous - Lithium Optimizes Hoglin repellent search.
++        brain.setMemory(MemoryModuleType.NEAREST_REPELLENT, net.caffeinemc.mods.lithium.common.ai.non_poi_block_search.CommonBlockSearchesCheckAndCache.hasNoMatch(level, body, 8, 4, IS_VALID_REPELLENT_PREDICATE, true) ? Optional.empty() : this.findNearestRepellent(level, body)); // Anonymous - Lithium Optimizes Hoglin repellent search.
          Optional<Piglin> adultPiglin = Optional.empty();
          int adultPiglinCount = 0;
          List<Hoglin> adultHoglins = Lists.newArrayList();
 diff --git a/net/minecraft/world/entity/ai/sensing/PiglinSpecificSensor.java b/net/minecraft/world/entity/ai/sensing/PiglinSpecificSensor.java
-index 89d330f44b5ed85072d04dce20d396f51a26b3d3..b678f36f3533761a1bbdee8566bfbc1b5f82cf0a 100644
+index 89d330f44b5ed85072d04dce20d396f51a26b3d3..ec8c60f3c24cafb2917e6adf22e6da2ea8660583 100644
 --- a/net/minecraft/world/entity/ai/sensing/PiglinSpecificSensor.java
 +++ b/net/minecraft/world/entity/ai/sensing/PiglinSpecificSensor.java
 @@ -26,6 +26,15 @@ import net.minecraft.world.level.block.CampfireBlock;
@@ -276,7 +276,7 @@ index 89d330f44b5ed85072d04dce20d396f51a26b3d3..b678f36f3533761a1bbdee8566bfbc1b
      protected void doTick(final ServerLevel level, final LivingEntity body) {
          Brain<?> brain = body.getBrain();
 -        brain.setMemory(MemoryModuleType.NEAREST_REPELLENT, findNearestRepellent(level, body));
-+        brain.setMemory(MemoryModuleType.NEAREST_REPELLENT, net.caffeinemc.mods.lithium.common.ai.non_poi_block_search.CommonBlockSearchesCheckAndCache.blockPosFindClosestMatch(level, body, 8, 4, IS_VALID_REPELLENT_PREDICATE, true)); // Anonymous - Lithium Optimizes Piglin repellent search.
++        brain.setMemory(MemoryModuleType.NEAREST_REPELLENT, net.caffeinemc.mods.lithium.common.ai.non_poi_block_search.CommonBlockSearchesCheckAndCache.hasNoMatch(level, body, 8, 4, IS_VALID_REPELLENT_PREDICATE, true) ? Optional.empty() : findNearestRepellent(level, body)); // Anonymous - Lithium Optimizes Piglin repellent search.
          Optional<Mob> nemesis = Optional.empty();
          Optional<Hoglin> huntableHoglin = Optional.empty();
          Optional<Hoglin> babyHoglin = Optional.empty();

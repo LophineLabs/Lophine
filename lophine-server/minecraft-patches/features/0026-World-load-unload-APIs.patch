@@ -275,10 +275,10 @@ index 8daf8bb4e34236c0211f51dff50ee07a00d7ec34..18fa27e0292f4f5f56f0ed3dd87896a9
      // CraftBukkit start
      private final ResourceKey<LevelStem> typeKey;
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 7b0e96c91a037100074358783245b35128aad239..be1ebf114da07de59f6b4ee76eb2e061dffea02a 100644
+index e55e7ad666a494b78ed6a2f418e6d64c248c148c..3571d1da8f8c3d9267c651d1980e930aceda9e38 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
-@@ -1741,7 +1741,30 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1754,7 +1754,30 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
          ServerLevel origin = this.level();
          ServerPlayer.RespawnConfig respawnConfig = this.getRespawnConfig();
@@ -310,7 +310,7 @@ index 7b0e96c91a037100074358783245b35128aad239..be1ebf114da07de59f6b4ee76eb2e061
  
          // modified based off PlayerList#respawn
  
-@@ -1792,8 +1815,8 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1805,8 +1828,8 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
                      // now the respawn logic is complete
  
                      // last, call the function callback
