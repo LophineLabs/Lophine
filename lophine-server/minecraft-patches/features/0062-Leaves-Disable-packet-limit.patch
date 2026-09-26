@@ -5,10 +5,10 @@ Subject: [PATCH] Leaves: Disable packet limit
 
 
 diff --git a/net/minecraft/network/Connection.java b/net/minecraft/network/Connection.java
-index 27121340ba518cfb09523fdae7dbd27e13284951..22a81d9d6e8b9e1595d316bd1d6ca10c82ef3301 100644
+index 1e16e7c068404a413f0edfa579fd9b3c5b38205a..5d7d944e3aaf6a6cc4b7f7368012e3ddb6473d3c 100644
 --- a/net/minecraft/network/Connection.java
 +++ b/net/minecraft/network/Connection.java
-@@ -256,8 +256,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -269,8 +269,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
              if (this.stopReadingPackets) {
                  return;
              }

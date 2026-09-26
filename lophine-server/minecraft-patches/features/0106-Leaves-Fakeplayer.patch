@@ -33,7 +33,7 @@ index b938e10fe5b5f3aae1d18ee769827535ed543a9c..7f2ff55dbcc2f8e259590d9a4d1c7eea
          Map<PlayerAdvancements.TriggerInstanceKey, T> listenersForType = advancements.getTriggerMapForType(this);
          if (listenersForType != null && !listenersForType.isEmpty()) {
 diff --git a/net/minecraft/network/Connection.java b/net/minecraft/network/Connection.java
-index 22a81d9d6e8b9e1595d316bd1d6ca10c82ef3301..74f6677b4dcc5220a0ff701c9286f0863c5d907a 100644
+index 5d7d944e3aaf6a6cc4b7f7368012e3ddb6473d3c..f85917ed1d6473d72aa2403aeaa5d4062f00e1d0 100644
 --- a/net/minecraft/network/Connection.java
 +++ b/net/minecraft/network/Connection.java
 @@ -73,7 +73,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
