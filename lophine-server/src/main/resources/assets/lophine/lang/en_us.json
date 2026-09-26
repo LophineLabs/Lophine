@@ -1,6 +1,4 @@
 {
-  "lophine.function.old-feature.should-generate-end-ring": "Should Generate End Ring",
-  "lophine.function.old-feature.should-generate-end-ring.comment": "Whether to generate the End ring.\nThis config does not directly control world generation entirely;\nsome operations will attempt to remove excess blocks after placement.\nThis may cause some performance issues.",
   "carpet.fakeplayer": "Fake Player",
   "carpet.general": "General",
   "carpet.hopper_counter": "Hopper Counter",
@@ -131,6 +129,8 @@
   "lophine.function.old-feature.old_leader_zombie_health": "Use old leader zombie health",
   "lophine.function.old-feature.old_raid_behavior": "Use old raid behavior",
   "lophine.function.old-feature.old_zombie_reinforcement": "Use old zombie reinforcement",
+  "lophine.function.old-feature.should-generate-end-ring": "Should Generate End Ring",
+  "lophine.function.old-feature.should-generate-end-ring.comment": "Whether to generate the End ring.\nThis config does not directly control world generation entirely;\nsome operations will attempt to remove excess blocks after placement.\nThis may cause some performance issues.",
   "lophine.function.old-feature.spawn_invulnerable_time": "Enable spawn invulnerable time",
   "lophine.function.old-feature.villager-void-trade": "Enable villager void trade",
   "lophine.function.protocol": "Protocol",

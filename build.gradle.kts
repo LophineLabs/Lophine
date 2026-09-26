@@ -124,6 +124,83 @@ subprojects {
 
 // Sort all JSON language files under the lang directory by key in ASCII order
 val langDir = layout.projectDirectory.dir("lophine-server/src/main/resources/assets/lophine/lang")
+tasks.register("verifyLangFiles") {
+    group = "lophine"
+    description = "Validate language JSON files against en_us.json"
+    notCompatibleWithConfigurationCache("Inline task action references build script class")
+    inputs.dir(langDir).optional()
+    doLast {
+        val dir = langDir.asFile
+        if (!dir.isDirectory) {
+            throw GradleException("Lang directory not found: $dir")
+        }
+
+        val jsonFiles = dir.listFiles { f -> f.extension == "json" }?.sortedBy { it.name } ?: emptyList()
+        if (jsonFiles.isEmpty()) {
+            throw GradleException("No .json language files found in: $dir")
+        }
+
+        val errors = mutableListOf<String>()
+        val localeEntries = linkedMapOf<String, Map<String, String>>()
+        val slurper = JsonSlurper()
+
+        for (file in jsonFiles) {
+            try {
+                val parsed = slurper.parse(file)
+                if (parsed !is Map<*, *>) {
+                    errors.add("${file.name}: expected a JSON object at the top level")
+                    continue
+                }
+
+                val entries = linkedMapOf<String, String>()
+                for ((key, value) in parsed) {
+                    if (key !is String) {
+                        errors.add("${file.name}: translation keys must be strings")
+                        continue
+                    }
+                    if (value !is String) {
+                        errors.add("${file.name}: '$key' must have a string value")
+                        continue
+                    }
+                    if (value.isBlank()) {
+                        errors.add("${file.name}: '$key' has an empty translation")
+                        continue
+                    }
+                    entries[key] = value
+                }
+                localeEntries[file.nameWithoutExtension] = entries
+            } catch (exception: Exception) {
+                errors.add("${file.name}: invalid JSON (${exception.message ?: exception.javaClass.simpleName})")
+            }
+        }
+
+        val english = localeEntries["en_us"]
+        if (english == null) {
+            errors.add("en_us.json is required as the reference language")
+        } else {
+            for ((locale, entries) in localeEntries) {
+                if (locale == "en_us") continue
+
+                val unknownKeys = (entries.keys - english.keys).sorted()
+                if (unknownKeys.isNotEmpty()) {
+                    val preview = unknownKeys.take(5).joinToString(", ")
+                    val suffix = if (unknownKeys.size > 5) ", ..." else ""
+                    errors.add("$locale.json has ${unknownKeys.size} key(s) missing from en_us.json: $preview$suffix")
+                }
+
+                val missingCount = (english.keys - entries.keys).size
+                logger.lifecycle("$locale.json: ${entries.size}/${english.size} keys translated; $missingCount will fall back to en_us")
+            }
+        }
+
+        if (errors.isNotEmpty()) {
+            throw GradleException("Language file validation failed:\n - ${errors.joinToString("\n - ")}")
+        }
+
+        logger.lifecycle("Verified ${jsonFiles.size} language file(s).")
+    }
+}
+
 tasks.register("sortLangKeys") {
     group = "lophine"
     description = "Sort all JSON language files by key in ASCII (ordinal) order"
