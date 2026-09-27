@@ -26,7 +26,9 @@ public enum Feature {
     MESSAGE,
     QUOTA,
     DEBUG,
-    CORE_EX;
+    CORE_EX,
+    VERSION,
+    DISPLAY_NAME;
 
     @Nullable
     public static Feature fromString(final String s) {

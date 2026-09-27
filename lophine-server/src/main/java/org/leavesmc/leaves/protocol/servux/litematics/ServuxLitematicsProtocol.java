@@ -24,8 +24,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtAccounter;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
@@ -47,6 +45,7 @@ import org.leavesmc.leaves.protocol.core.LeavesProtocol;
 import org.leavesmc.leaves.protocol.core.ProtocolHandler;
 import org.leavesmc.leaves.protocol.core.ProtocolUtils;
 import org.leavesmc.leaves.protocol.servux.PacketSplitter;
+import org.leavesmc.leaves.protocol.servux.ServuxDataByteBuf;
 import org.leavesmc.leaves.protocol.servux.ServuxProtocol;
 import org.leavesmc.leaves.protocol.servux.litematics.placement.SchematicPlacement;
 import org.leavesmc.leaves.protocol.servux.litematics.utils.NbtUtils;
@@ -59,10 +58,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @LeavesProtocol.Register(namespace = "servux")
 public class ServuxLitematicsProtocol implements LeavesProtocol {
 
-    public static final int PROTOCOL_VERSION = 1;
+    public static final int PROTOCOL_VERSION = 2;
 
     private static final CompoundTag metadata = new CompoundTag();
     private static final Map<UUID, Long> playerSession = new ConcurrentHashMap<>();
+    private static final Set<UUID> registeredPlayers = ConcurrentHashMap.newKeySet();
 
     @ProtocolHandler.Init
     public static void init() {
@@ -85,8 +85,7 @@ public class ServuxLitematicsProtocol implements LeavesProtocol {
     public static void encodeServerData(ServerPlayer player, @NotNull ServuxLitematicaPayload packet) {
         if (packet.packetType.equals(ServuxLitematicaPayloadType.PACKET_S2C_NBT_RESPONSE_START)) {
             FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
-            buffer.writeVarInt(packet.getTransactionId());
-            buffer.writeNbt(packet.getCompound());
+            ServuxDataByteBuf.write(buffer, packet.getCompound());
             PacketSplitter.send(ServuxLitematicsProtocol::sendWithSplitter, buffer, player);
         } else {
             ProtocolUtils.sendPayloadPacket(player, packet);
@@ -105,6 +104,13 @@ public class ServuxLitematicsProtocol implements LeavesProtocol {
         sendMetaData(player);
     }
 
+    @ProtocolHandler.PlayerLeave
+    public static void onPlayerLeave(ServerPlayer player) {
+        registeredPlayers.remove(player.getUUID());
+        playerSession.remove(player.getUUID());
+        ServuxLitematicaTasks.onPlayerLeave(player);
+    }
+
     @ProtocolHandler.PayloadReceiver(payload = ServuxLitematicaPayload.class)
     public static void onPacketReceive(ServerPlayer player, ServuxLitematicaPayload payload) {
         if (!hasPermission(player)) {
@@ -112,16 +118,31 @@ public class ServuxLitematicsProtocol implements LeavesProtocol {
         }
 
         switch (payload.packetType) {
-            case PACKET_C2S_METADATA_REQUEST -> sendMetaData(player);
+            case PACKET_C2S_METADATA_REQUEST -> {
+                if (payload.nbt.getIntOr("version", -1) >= PROTOCOL_VERSION && ServuxProtocolConfig.litematicsEnabled) {
+                    registeredPlayers.add(player.getUUID());
+                    sendMetaData(player);
+                }
+            }
+            case PACKET_C2S_UNREGISTER_REPLY -> {
+                registeredPlayers.remove(player.getUUID());
+                playerSession.remove(player.getUUID());
+            }
 
-            case PACKET_C2S_BLOCK_ENTITY_REQUEST -> onBlockEntityRequest(player, payload.getPos());
+            case PACKET_C2S_BLOCK_ENTITY_REQUEST -> {
+                if (isRegistered(player)) onBlockEntityRequest(player, payload.getPos());
+            }
 
-            case PACKET_C2S_ENTITY_REQUEST -> onEntityRequest(player, payload.getEntityId());
+            case PACKET_C2S_ENTITY_REQUEST -> {
+                if (isRegistered(player)) onEntityRequest(player, payload.getEntityId());
+            }
 
-            case PACKET_C2S_BULK_ENTITY_NBT_REQUEST ->
-                    onBulkEntityRequest(player, payload.getChunkPos(), payload.getCompound());
+            case PACKET_C2S_BULK_ENTITY_NBT_REQUEST -> {
+                if (isRegistered(player)) onBulkEntityRequest(player, payload.getChunkPos(), payload.getCompound());
+            }
 
             case PACKET_C2S_NBT_RESPONSE_DATA -> {
+                if (!isRegistered(player)) return;
                 ServuxProtocol.LOGGER.debug("nbt response data");
                 UUID uuid = player.getUUID();
                 Long session = playerSession.getOrDefault(uuid, new Random().nextLong());
@@ -132,27 +153,40 @@ public class ServuxLitematicsProtocol implements LeavesProtocol {
                     return;
                 }
                 playerSession.remove(uuid);
-                fullPacket.readVarInt();
-                Tag tag = FriendlyByteBuf.readNbt(fullPacket, new NbtAccounter(ServuxProtocolConfig.litematicsMaxNbtSize == -1 ? Long.MAX_VALUE : ServuxProtocolConfig.litematicsMaxNbtSize, 512));
-                if (!(tag instanceof CompoundTag)) {
-                    ServuxProtocol.LOGGER.error("cannot read nbt tag from packet");
-                    return;
+                try {
+                    CompoundTag tag = ServuxDataByteBuf.read(fullPacket, ServuxProtocolConfig.litematicsMaxNbtSize);
+                    handleClientPasteRequest(player, tag);
+                } catch (RuntimeException exception) {
+                    ServuxProtocol.LOGGER.warn("Rejected invalid Servux Litematica data from {}", player.getScoreboardName(), exception);
+                } finally {
+                    fullPacket.release();
                 }
-                handleClientPasteRequest(player, (CompoundTag) tag);
+            }
+            case PACKET_C2S_TASK_REQUEST -> {
+                if (isRegistered(player)) ServuxLitematicaTasks.handleRequest(player, payload.nbt);
+            }
+            case PACKET_C2S_TASK_CANCEL -> {
+                if (isRegistered(player)) ServuxLitematicaTasks.cancel(player);
             }
         }
+    }
+
+    private static boolean isRegistered(ServerPlayer player) {
+        return ServuxProtocolConfig.litematicsEnabled && registeredPlayers.contains(player.getUUID());
     }
 
     public static void onBlockEntityRequest(ServerPlayer player, BlockPos pos) {
         if (!hasPermission(player)) {
             return;
         }
+        ServerLevel world = player.level();
         io.papermc.paper.threadedregions.RegionizedServer.getInstance().taskQueue.queueTickTaskQueue(
-                player.level(),
-                ca.spottedleaf.moonrise.common.util.CoordinateUtils.getChunkX(player.position()),
-                ca.spottedleaf.moonrise.common.util.CoordinateUtils.getChunkZ(player.position()),
+                world,
+                pos.getX() >> 4,
+                pos.getZ() >> 4,
                 () -> {
-                    BlockEntity be = player.level().getBlockEntity(pos);
+                    if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(world, pos)) return;
+                    BlockEntity be = world.getBlockEntity(pos);
                     CompoundTag tag = be != null ? be.saveWithFullMetadata(MinecraftServer.getServer().registryAccess()) : new CompoundTag();
                     ServuxLitematicaPayload payload = new ServuxLitematicaPayload(ServuxLitematicaPayloadType.PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE);
                     payload.pos = pos;
@@ -172,7 +206,7 @@ public class ServuxLitematicsProtocol implements LeavesProtocol {
                 ca.spottedleaf.moonrise.common.util.CoordinateUtils.getChunkZ(player.position()),
                 () -> {
                     Entity entity = player.level().getEntity(entityId);
-                    if (entity == null) {
+                    if (entity == null || !ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(entity)) {
                         return;
                     }
                     CompoundTag tag = new CompoundTag();
@@ -193,11 +227,20 @@ public class ServuxLitematicsProtocol implements LeavesProtocol {
     }
 
     public static void onBulkEntityRequest(ServerPlayer player, ChunkPos chunkPos, CompoundTag req) {
-        if (req == null || req.isEmpty()) {
+        if (!isRegistered(player) || req == null || req.isEmpty()) {
             return;
         }
 
         ServerLevel world = player.level();
+        io.papermc.paper.threadedregions.RegionizedServer.getInstance().taskQueue.queueTickTaskQueue(
+                world,
+                chunkPos.x(),
+                chunkPos.z(),
+                () -> sendBulkEntityData(player, world, chunkPos, req)
+        );
+    }
+
+    private static void sendBulkEntityData(ServerPlayer player, ServerLevel world, ChunkPos chunkPos, CompoundTag req) {
         ChunkAccess chunk = world.getChunk(chunkPos.x(), chunkPos.z(), ChunkStatus.FULL, false);
 
         if (chunk == null) {
@@ -209,13 +252,15 @@ public class ServuxLitematicsProtocol implements LeavesProtocol {
             long timeStart = System.currentTimeMillis();
             ListTag tileList = new ListTag();
             ListTag entityList = new ListTag();
-            int minY = req.getIntOr("minY", -64);
-            int maxY = req.getIntOr("maxY", 319);
+            int minY = Math.max(req.getIntOr("minY", world.getMinY()), world.getMinY());
+            int maxY = Math.min(req.getIntOr("maxY", world.getMaxY() - 1), world.getMaxY() - 1);
+            if (maxY < minY) return;
             BlockPos pos1 = new BlockPos(chunkPos.getMinBlockX(), minY, chunkPos.getMinBlockZ());
             BlockPos pos2 = new BlockPos(chunkPos.getMaxBlockX(), maxY, chunkPos.getMaxBlockZ());
             AABB bb = AABB.encapsulatingFullBlocks(pos1, pos2);
             Set<BlockPos> teSet = chunk.getBlockEntitiesPos();
-            List<Entity> entities = world.getEntitiesOfClass(Entity.class, bb, e -> !(e instanceof Player));
+            List<Entity> entities = world.getEntitiesOfClass(Entity.class, bb,
+                    entity -> !(entity instanceof Player) && ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(entity));
             for (BlockPos tePos : teSet) {
                 if ((tePos.getX() < chunkPos.getMinBlockX() || tePos.getX() > chunkPos.getMaxBlockX()) ||
                         (tePos.getZ() < chunkPos.getMinBlockZ() || tePos.getZ() > chunkPos.getMaxBlockZ()) ||
@@ -291,12 +336,17 @@ public class ServuxLitematicsProtocol implements LeavesProtocol {
         PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE(5),
         PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE(6),
         PACKET_C2S_BULK_ENTITY_NBT_REQUEST(7),
+        PACKET_C2S_UNREGISTER_REPLY(8),
         // For Packet Splitter (Oversize Packets, S2C)
         PACKET_S2C_NBT_RESPONSE_START(10),
         PACKET_S2C_NBT_RESPONSE_DATA(11),
         // For Packet Splitter (Oversize Packets, C2S)
         PACKET_C2S_NBT_RESPONSE_START(12),
-        PACKET_C2S_NBT_RESPONSE_DATA(13);
+        PACKET_C2S_NBT_RESPONSE_DATA(13),
+        PACKET_C2S_TASK_REQUEST(14),
+        PACKET_S2C_TASK_RESPONSE(15),
+        PACKET_S2C_TASK_STATUS_SYNC(16),
+        PACKET_C2S_TASK_CANCEL(17);
 
         public final int type;
 
@@ -325,25 +375,27 @@ public class ServuxLitematicsProtocol implements LeavesProtocol {
                     buf.writeVarInt(payload.packetType.type);
                     switch (payload.packetType) {
                         case PACKET_C2S_BLOCK_ENTITY_REQUEST -> {
-                            buf.writeVarInt(payload.transactionId);
                             buf.writeBlockPos(payload.pos);
                         }
                         case PACKET_C2S_ENTITY_REQUEST -> {
-                            buf.writeVarInt(payload.transactionId);
                             buf.writeVarInt(payload.entityId);
                         }
                         case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE -> {
                             buf.writeBlockPos(payload.pos);
-                            buf.writeNbt(payload.nbt);
+                            ServuxDataByteBuf.write(buf, payload.nbt);
                         }
                         case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE -> {
                             buf.writeVarInt(payload.entityId);
-                            buf.writeNbt(payload.nbt);
+                            ServuxDataByteBuf.write(buf, payload.nbt);
                         }
                         case PACKET_C2S_BULK_ENTITY_NBT_REQUEST -> {
                             buf.writeChunkPos(payload.chunkPos);
-                            buf.writeNbt(payload.nbt);
+                            ServuxDataByteBuf.write(buf, payload.nbt);
                         }
+                        case PACKET_C2S_UNREGISTER_REPLY -> ServuxDataByteBuf.write(buf, payload.nbt);
+                        case PACKET_C2S_TASK_REQUEST, PACKET_S2C_TASK_RESPONSE,
+                             PACKET_S2C_TASK_STATUS_SYNC, PACKET_C2S_TASK_CANCEL ->
+                                ServuxDataByteBuf.write(buf, payload.nbt);
                         case PACKET_S2C_NBT_RESPONSE_DATA, PACKET_C2S_NBT_RESPONSE_DATA ->
                                 buf.writeBytes(payload.buffer.readBytes(payload.buffer.readableBytes()));
                         case PACKET_C2S_METADATA_REQUEST, PACKET_S2C_METADATA -> buf.writeNbt(payload.nbt);
@@ -358,25 +410,28 @@ public class ServuxLitematicsProtocol implements LeavesProtocol {
                     ServuxLitematicaPayload payload = new ServuxLitematicaPayload(type);
                     switch (type) {
                         case PACKET_C2S_BLOCK_ENTITY_REQUEST -> {
-                            buf.readVarInt();
                             payload.pos = buf.readBlockPos().immutable();
                         }
                         case PACKET_C2S_ENTITY_REQUEST -> {
-                            buf.readVarInt();
                             payload.entityId = buf.readVarInt();
                         }
                         case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE -> {
                             payload.pos = buf.readBlockPos().immutable();
-                            payload.nbt = buf.readNbt();
+                            payload.nbt = ServuxDataByteBuf.read(buf, 16L * 1024 * 1024);
                         }
                         case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE -> {
                             payload.entityId = buf.readVarInt();
-                            payload.nbt = buf.readNbt();
+                            payload.nbt = ServuxDataByteBuf.read(buf, 16L * 1024 * 1024);
                         }
                         case PACKET_C2S_BULK_ENTITY_NBT_REQUEST -> {
                             payload.chunkPos = buf.readChunkPos();
-                            payload.nbt = buf.readNbt();
+                            payload.nbt = ServuxDataByteBuf.read(buf, ServuxProtocolConfig.litematicsMaxNbtSize);
                         }
+                        case PACKET_C2S_UNREGISTER_REPLY -> ServuxDataByteBuf.skip(buf);
+                        case PACKET_C2S_TASK_REQUEST ->
+                                payload.nbt = ServuxDataByteBuf.read(buf, ServuxProtocolConfig.litematicsMaxNbtSize);
+                        case PACKET_S2C_TASK_RESPONSE, PACKET_S2C_TASK_STATUS_SYNC, PACKET_C2S_TASK_CANCEL ->
+                                payload.nbt = ServuxDataByteBuf.read(buf, 16L * 1024 * 1024);
                         case PACKET_C2S_NBT_RESPONSE_DATA, PACKET_S2C_NBT_RESPONSE_DATA ->
                                 payload.buffer = new FriendlyByteBuf(buf.readBytes(buf.readableBytes()));
                         case PACKET_C2S_METADATA_REQUEST, PACKET_S2C_METADATA -> payload.nbt = buf.readNbt();
@@ -385,7 +440,7 @@ public class ServuxLitematicsProtocol implements LeavesProtocol {
                 }
         );
 
-        public static final int PROTOCOL_VERSION = 1;
+        public static final int PROTOCOL_VERSION = 2;
         private final ServuxLitematicaPayloadType packetType;
         private final int transactionId;
         private int entityId;

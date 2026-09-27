@@ -24,6 +24,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.allay.Allay;
+import net.minecraft.world.entity.npc.villager.Villager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.leavesmc.leaves.protocol.jade.JadeProtocol;
@@ -32,6 +33,7 @@ import org.leavesmc.leaves.protocol.jade.provider.StreamServerDataProvider;
 
 public enum MobBreedingProvider implements StreamServerDataProvider<EntityAccessor, Integer> {
     INSTANCE;
+    private static final int IN_LOVE = -1;
 
     private static final Identifier MC_MOB_BREEDING = JadeProtocol.mc_id("mob_breeding");
 
@@ -43,8 +45,14 @@ public enum MobBreedingProvider implements StreamServerDataProvider<EntityAccess
             if (allay.duplicationCooldown > 0 && allay.duplicationCooldown < Integer.MAX_VALUE) {
                 time = (int) allay.duplicationCooldown;
             }
+        } else if (entity instanceof Villager villager) {
+            time = villager.getAge();
         } else {
-            time = ((Animal) entity).getAge();
+            Animal animal = (Animal) entity;
+            if (animal.isInLove()) {
+                return IN_LOVE;
+            }
+            time = animal.getAge();
         }
         return time > 0 ? time : null;
     }

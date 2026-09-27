@@ -18,6 +18,10 @@
 package org.leavesmc.leaves.protocol.servux;
 
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permission;
+import net.minecraft.server.permissions.PermissionLevel;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Contract;
 import org.leavesmc.leaves.protocol.core.ProtocolUtils;
 import org.slf4j.Logger;
@@ -28,6 +32,11 @@ public class ServuxProtocol {
     public static final String PROTOCOL_ID = "servux";
     public static final Logger LOGGER = LoggerFactory.getLogger(PROTOCOL_ID.toUpperCase());
     public static final String SERVUX_STRING = ProtocolUtils.buildProtocolVersion(PROTOCOL_ID);
+
+    public static boolean hasPermissionLevel(ServerPlayer player, int level) {
+        int safeLevel = Mth.clamp(level, 0, PermissionLevel.OWNERS.id());
+        return player.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.byId(safeLevel)));
+    }
 
     @Contract("_ -> new")
     public static Identifier id(String path) {

@@ -56,10 +56,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServuxStructuresProtocol implements LeavesProtocol {
     private static final Logger LOGGER = LogUtils.getClassLogger();
 
-    public static final int PROTOCOL_VERSION = 2;
+    public static final int PROTOCOL_VERSION = 3;
     private static final int updateInterval = 40;
     private static final Map<Integer, ServerPlayer> players = new ConcurrentHashMap<>();
     private static final Map<UUID, Map<ChunkPos, Timeout>> timeouts = new ConcurrentHashMap<>();
+    private static final Map<UUID, Identifier> playerDimensions = new ConcurrentHashMap<>();
     private static int retainDistance;
 
     @ProtocolHandler.PlayerJoin
@@ -70,7 +71,11 @@ public class ServuxStructuresProtocol implements LeavesProtocol {
     @ProtocolHandler.PayloadReceiver(payload = StructuresPayload.class)
     public static void onPacketReceive(ServerPlayer player, StructuresPayload payload) {
         switch (payload.packetType()) {
-            case PACKET_C2S_STRUCTURES_REGISTER -> onPlayerSubscribed(player);
+            case PACKET_C2S_STRUCTURES_REGISTER -> {
+                if (payload.nbt().getIntOr("version", -1) >= PROTOCOL_VERSION && ServuxProtocolConfig.structureProtocol) {
+                    onPlayerSubscribed(player);
+                }
+            }
             case PACKET_C2S_REQUEST_SPAWN_METADATA -> ServuxHudDataProtocol.refreshSpawnMetadata(player); // move to
             case PACKET_C2S_STRUCTURES_UNREGISTER -> onPlayerLoggedOut(player);
         }
@@ -80,6 +85,7 @@ public class ServuxStructuresProtocol implements LeavesProtocol {
     public static void onPlayerLoggedOut(@NotNull ServerPlayer player) {
         players.remove(player.getId());
         timeouts.remove(player.getUUID());
+        playerDimensions.remove(player.getUUID());
     }
 
     @ProtocolHandler.Ticker
@@ -88,8 +94,13 @@ public class ServuxStructuresProtocol implements LeavesProtocol {
         long tickCounter = System.currentTimeMillis() / 50;
         retainDistance = server.getPlayerList().getViewDistance() + 2;
         for (ServerPlayer player : players.values()) {
-            // TODO DimensionChange
-            refreshTrackedChunks(player, tickCounter);
+            Identifier dimension = player.level().dimension().identifier();
+            Identifier previousDimension = playerDimensions.put(player.getUUID(), dimension);
+            if (previousDimension != null && !previousDimension.equals(dimension)) {
+                initialSyncStructures(player, player.moonrise$getViewDistanceHolder().getViewDistances().sendViewDistance() + 2, tickCounter);
+            } else {
+                refreshTrackedChunks(player, tickCounter);
+            }
         }
     }
 
@@ -104,7 +115,7 @@ public class ServuxStructuresProtocol implements LeavesProtocol {
 
         if (chunkHasStructureReferences(pos.x(), pos.z(), chunk.getLevel())) { // Leaves - Paper 26.1: ChunkPos record accessors
             final Map<ChunkPos, Timeout> map = timeouts.computeIfAbsent(uuid, (u) -> new ConcurrentHashMap<>());
-            map.computeIfAbsent(pos, (p) -> new Timeout(tickCounter - ServuxProtocolConfig.maxDelay));
+            map.computeIfAbsent(pos, (p) -> new Timeout(tickCounter - ServuxProtocolConfig.structureTimeout));
         }
     }
 
@@ -129,6 +140,7 @@ public class ServuxStructuresProtocol implements LeavesProtocol {
     public static void onPlayerSubscribed(@NotNull ServerPlayer player) {
         if (!players.containsKey(player.getId())) {
             players.put(player.getId(), player);
+            playerDimensions.put(player.getUUID(), player.level().dimension().identifier());
         } else {
             LOGGER.warn("{} re-register servux:structures", player.getScoreboardName());
         }
@@ -144,7 +156,7 @@ public class ServuxStructuresProtocol implements LeavesProtocol {
         tag.putString("id", StructuresPayload.CHANNEL.toString());
         tag.putInt("version", PROTOCOL_VERSION);
         tag.putString("servux", ServuxProtocol.SERVUX_STRING);
-        tag.putInt("timeout", ServuxProtocolConfig.maxDelay);
+        tag.putInt("timeout", ServuxProtocolConfig.structureTimeout);
 
         sendPacket(player, new StructuresPayload(StructuresPayloadType.PACKET_S2C_METADATA, tag));
     }
@@ -269,7 +281,7 @@ public class ServuxStructuresProtocol implements LeavesProtocol {
         for (Map.Entry<ChunkPos, Timeout> entry : map.entrySet()) {
             Timeout out = entry.getValue();
 
-            if (out.needsUpdate(ServuxProtocolConfig.maxDelay, tickCounter)) {
+            if (out.needsUpdate(ServuxProtocolConfig.structureTimeout, tickCounter)) {
                 positionsToUpdate.add(entry.getKey());
             }
         }
@@ -317,7 +329,7 @@ public class ServuxStructuresProtocol implements LeavesProtocol {
     public static void sendPacket(ServerPlayer player, StructuresPayload payload) {
         if (payload.packetType() == StructuresPayloadType.PACKET_S2C_STRUCTURE_DATA_START) {
             FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
-            buffer.writeNbt(payload.nbt());
+            ServuxDataByteBuf.write(buffer, payload.nbt());
             PacketSplitter.send(ServuxStructuresProtocol::sendWithSplitter, buffer, player);
         } else {
             ProtocolUtils.sendPayloadPacket(player, payload);

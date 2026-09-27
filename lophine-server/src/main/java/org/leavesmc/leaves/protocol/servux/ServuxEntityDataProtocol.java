@@ -23,6 +23,7 @@ import fun.bm.lophine.config.modules.function.protocol.ServuxProtocolConfig;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
@@ -51,9 +52,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServuxEntityDataProtocol implements LeavesProtocol {
     private static final Logger LOGGER = LogUtils.getClassLogger();
 
-    public static final int PROTOCOL_VERSION = 1;
+    public static final int PROTOCOL_VERSION = 2;
 
     private static final Map<UUID, Long> readingSessionKeys = new ConcurrentHashMap<>();
+    private static final java.util.Set<UUID> registeredPlayers = ConcurrentHashMap.newKeySet();
 
     @ProtocolHandler.PlayerJoin
     public static void onPlayerJoin(ServerPlayer player) {
@@ -63,15 +65,30 @@ public class ServuxEntityDataProtocol implements LeavesProtocol {
     @ProtocolHandler.PlayerLeave
     public static void onPlayerLeave(ServerPlayer player) {
         readingSessionKeys.remove(player.getUUID());
+        registeredPlayers.remove(player.getUUID());
     }
 
     @ProtocolHandler.PayloadReceiver(payload = EntityDataPayload.class)
     public static void onPacketReceive(ServerPlayer player, EntityDataPayload payload) {
         switch (payload.packetType) {
-            case PACKET_C2S_METADATA_REQUEST -> sendMetadata(player);
-            case PACKET_C2S_BLOCK_ENTITY_REQUEST -> onBlockEntityRequest(player, payload.pos);
-            case PACKET_C2S_ENTITY_REQUEST -> onEntityRequest(player, payload.entityId);
+            case PACKET_C2S_METADATA_REQUEST -> {
+                if (payload.nbt.getIntOr("version", -1) >= PROTOCOL_VERSION && ServuxProtocolConfig.entityProtocol) {
+                    registeredPlayers.add(player.getUUID());
+                    sendMetadata(player);
+                }
+            }
+            case PACKET_C2S_UNREGISTER_REPLY -> {
+                registeredPlayers.remove(player.getUUID());
+                readingSessionKeys.remove(player.getUUID());
+            }
+            case PACKET_C2S_BLOCK_ENTITY_REQUEST -> {
+                if (isRegistered(player)) onBlockEntityRequest(player, payload.pos);
+            }
+            case PACKET_C2S_ENTITY_REQUEST -> {
+                if (isRegistered(player)) onEntityRequest(player, payload.entityId);
+            }
             case PACKET_C2S_NBT_RESPONSE_DATA -> {
+                if (!isRegistered(player)) return;
                 UUID uuid = player.getUUID();
                 long readingSessionKey;
 
@@ -86,7 +103,11 @@ public class ServuxEntityDataProtocol implements LeavesProtocol {
 
                 if (fullPacket != null) {
                     readingSessionKeys.remove(uuid);
-                    LOGGER.warn("ServuxEntityDataProtocol,PACKET_C2S_NBT_RESPONSE_DATA NOT Implemented!");
+                    try {
+                        LOGGER.warn("Servux entity data does not accept client-to-server bulk NBT requests from {}", player.getScoreboardName());
+                    } finally {
+                        fullPacket.release();
+                    }
                 }
             }
         }
@@ -105,6 +126,7 @@ public class ServuxEntityDataProtocol implements LeavesProtocol {
     }
 
     public static void onBlockEntityRequest(ServerPlayer player, BlockPos pos) {
+        if (!isRegistered(player) || !ServuxProtocolConfig.entityProtocol) return;
         player.getBukkitEntity().taskScheduler.schedule((LivingEntity nmsEntity) -> {
             if (!TickThread.isTickThreadFor(nmsEntity.level(), pos)) return;
             BlockEntity be = nmsEntity.level().getBlockEntity(pos);
@@ -118,11 +140,26 @@ public class ServuxEntityDataProtocol implements LeavesProtocol {
     }
 
     public static void onEntityRequest(ServerPlayer player, int entityId) {
+        if (!isRegistered(player) || !ServuxProtocolConfig.entityProtocol) return;
         final Vec3 pos = player.position();
         player.getBukkitEntity().taskScheduler.schedule((LivingEntity nmsEntity) -> {
             if (!TickThread.isTickThreadFor(nmsEntity.level(), pos)) return;
             Entity entity = nmsEntity.level().getEntity(entityId);
+            if (entity == null || !TickThread.isTickThreadFor(entity)) return;
             CompoundTag nbt = TagUtil.saveEntityWithoutId(entity);
+
+            if (entity instanceof ServerPlayer target && !target.getUUID().equals(nmsEntity.getUUID())) {
+                if (!ServuxProtocolConfig.nbtAllowPlayerInventory
+                        || !ServuxProtocol.hasPermissionLevel(player, ServuxProtocolConfig.playerInventoryPermissionLevel)) {
+                    nbt.remove("Inventory");
+                    nbt.put("Inventory", new ListTag());
+                }
+                if (!ServuxProtocolConfig.nbtAllowPlayerEnderItems
+                        || !ServuxProtocol.hasPermissionLevel(player, ServuxProtocolConfig.playerEnderItemsPermissionLevel)) {
+                    nbt.remove("EnderItems");
+                    nbt.put("EnderItems", new ListTag());
+                }
+            }
 
             EntityDataPayload payload = new EntityDataPayload(EntityDataPayloadType.PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE);
             payload.entityId = entityId;
@@ -134,11 +171,15 @@ public class ServuxEntityDataProtocol implements LeavesProtocol {
     public static void sendPacket(ServerPlayer player, EntityDataPayload payload) {
         if (payload.packetType == EntityDataPayloadType.PACKET_S2C_NBT_RESPONSE_START) {
             FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
-            buffer.writeNbt(payload.nbt);
+            ServuxDataByteBuf.write(buffer, payload.nbt);
             PacketSplitter.send(ServuxEntityDataProtocol::sendWithSplitter, buffer, player);
         } else {
             ProtocolUtils.sendPayloadPacket(player, payload);
         }
+    }
+
+    private static boolean isRegistered(ServerPlayer player) {
+        return ServuxProtocolConfig.entityProtocol && registeredPlayers.contains(player.getUUID());
     }
 
     private static void sendWithSplitter(ServerPlayer player, FriendlyByteBuf buf) {
@@ -160,6 +201,7 @@ public class ServuxEntityDataProtocol implements LeavesProtocol {
         PACKET_C2S_ENTITY_REQUEST(4),
         PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE(5),
         PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE(6),
+        PACKET_C2S_UNREGISTER_REPLY(7),
         // For Packet Splitter (Oversize Packets, S2C)
         PACKET_S2C_NBT_RESPONSE_START(10),
         PACKET_S2C_NBT_RESPONSE_DATA(11),
@@ -194,21 +236,20 @@ public class ServuxEntityDataProtocol implements LeavesProtocol {
                     buf.writeVarInt(payload.packetType.type);
                     switch (payload.packetType) {
                         case PACKET_C2S_BLOCK_ENTITY_REQUEST -> {
-                            buf.writeVarInt(payload.transactionId);
                             buf.writeBlockPos(payload.pos);
                         }
                         case PACKET_C2S_ENTITY_REQUEST -> {
-                            buf.writeVarInt(payload.transactionId);
                             buf.writeVarInt(payload.entityId);
                         }
                         case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE -> {
                             buf.writeBlockPos(payload.pos);
-                            buf.writeNbt(payload.nbt);
+                            ServuxDataByteBuf.write(buf, payload.nbt);
                         }
                         case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE -> {
                             buf.writeVarInt(payload.entityId);
-                            buf.writeNbt(payload.nbt);
+                            ServuxDataByteBuf.write(buf, payload.nbt);
                         }
+                        case PACKET_C2S_UNREGISTER_REPLY -> ServuxDataByteBuf.write(buf, payload.nbt);
                         case PACKET_S2C_NBT_RESPONSE_DATA, PACKET_C2S_NBT_RESPONSE_DATA ->
                                 buf.writeBytes(payload.buffer.copy());
                         case PACKET_C2S_METADATA_REQUEST, PACKET_S2C_METADATA -> buf.writeNbt(payload.nbt);
@@ -222,27 +263,20 @@ public class ServuxEntityDataProtocol implements LeavesProtocol {
                     EntityDataPayload payload = new EntityDataPayload(type);
                     switch (type) {
                         case PACKET_C2S_BLOCK_ENTITY_REQUEST -> {
-                            buf.readVarInt();
                             payload.pos = buf.readBlockPos().immutable();
                         }
                         case PACKET_C2S_ENTITY_REQUEST -> {
-                            buf.readVarInt();
                             payload.entityId = buf.readVarInt();
                         }
                         case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE -> {
                             payload.pos = buf.readBlockPos().immutable();
-                            CompoundTag nbt = buf.readNbt();
-                            if (nbt != null) {
-                                payload.nbt.merge(nbt);
-                            }
+                            payload.nbt = ServuxDataByteBuf.read(buf, 16L * 1024 * 1024);
                         }
                         case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE -> {
                             payload.entityId = buf.readVarInt();
-                            CompoundTag nbt = buf.readNbt();
-                            if (nbt != null) {
-                                payload.nbt.merge(nbt);
-                            }
+                            payload.nbt = ServuxDataByteBuf.read(buf, 16L * 1024 * 1024);
                         }
+                        case PACKET_C2S_UNREGISTER_REPLY -> ServuxDataByteBuf.skip(buf);
                         case PACKET_S2C_NBT_RESPONSE_DATA, PACKET_C2S_NBT_RESPONSE_DATA -> {
                             payload.buffer = new FriendlyByteBuf(buf.readBytes(buf.readableBytes()));
                             payload.nbt = new CompoundTag();

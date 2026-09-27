@@ -158,7 +158,13 @@ public class REIServerProtocol implements LeavesProtocol {
                 // Leaves - Paper 26.1: tipped_arrow is now an ImbueRecipe (replaced the removed TippedArrowRecipe class).
                 // ImbueRecipe is currently only used for tipped_arrow so a plain type match is safe.
                 case ImbueRecipe ignored -> builder.addAll(Display.ofTippedArrowRecipe((RecipeHolder) holder));
-                // ignore ArmorDyeRecipe, BannerDuplicateRecipe, BookCloningRecipe, ShieldDecorationRecipe, RepairItemRecipe
+                case BookCloningRecipe ignored ->
+                        builder.addAll(BuiltinCraftingRecipeDisplays.ofBookCloning((RecipeHolder) holder));
+                case BannerDuplicateRecipe ignored ->
+                        builder.addAll(BuiltinCraftingRecipeDisplays.ofBannerDuplicate((RecipeHolder) holder));
+                case ShieldDecorationRecipe ignored ->
+                        builder.addAll(BuiltinCraftingRecipeDisplays.ofShieldDecoration((RecipeHolder) holder));
+                // REI's official 26.2 default plugin does not register server fillers for ArmorDyeRecipe or RepairItemRecipe.
                 default -> {
                 }
             }

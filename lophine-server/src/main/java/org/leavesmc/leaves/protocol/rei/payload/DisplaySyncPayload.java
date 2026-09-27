@@ -51,7 +51,7 @@ public record DisplaySyncPayload(
                             RegistryFriendlyByteBuf tmpBuf = new RegistryFriendlyByteBuf(Unpooled.buffer(), buf.registryAccess());
                             try {
                                 codec.encode(tmpBuf, display);
-                            } catch (Exception e) {
+                            } catch (Throwable e) {
                                 tmpBuf.release();
                                 buf.writeBoolean(false);
                                 LophineLogger.LOGGER.warn("Failed to encode display: {}", display, e);

@@ -268,14 +268,27 @@ public class CommunicationManager implements LeavesProtocol {
     public static void putMetaData(final @NotNull ServerPlacement metaData, final @NotNull FriendlyByteBuf buf, final @NotNull ExchangeTarget exchangeTarget) {
         buf.writeUUID(metaData.getId());
 
-        buf.writeUtf(SyncmaticaProtocol.sanitizeFileName(metaData.getName()));
+        String fileName = metaData.getName();
+        if (exchangeTarget.getFeatureSet().hasFeature(Feature.DISPLAY_NAME)) {
+            fileName += ".litematic";
+        }
+        buf.writeUtf(SyncmaticaProtocol.sanitizeFileName(fileName));
         buf.writeUUID(metaData.getHash());
+
+        if (exchangeTarget.getFeatureSet().hasFeature(Feature.DISPLAY_NAME)) {
+            buf.writeUtf(metaData.getDisplayName(), 32767);
+        }
 
         if (exchangeTarget.getFeatureSet().hasFeature(Feature.CORE_EX)) {
             buf.writeUUID(metaData.getOwner().uuid);
             buf.writeUtf(metaData.getOwner().getName());
             buf.writeUUID(metaData.getLastModifiedBy().uuid);
             buf.writeUtf(metaData.getLastModifiedBy().getName());
+        }
+
+        if (exchangeTarget.getFeatureSet().hasFeature(Feature.VERSION)) {
+            buf.writeVarInt(metaData.getLitematicVersion());
+            buf.writeVarInt(metaData.getDataVersion());
         }
 
         putPositionData(metaData, buf, exchangeTarget);
@@ -311,6 +324,10 @@ public class CommunicationManager implements LeavesProtocol {
         final String fileName = SyncmaticaProtocol.sanitizeFileName(buf.readUtf(32767));
         final UUID hash = buf.readUUID();
 
+        final String displayName = exchangeTarget.getFeatureSet().hasFeature(Feature.DISPLAY_NAME)
+                ? buf.readUtf(32767)
+                : null;
+
         PlayerIdentifier owner = PlayerIdentifier.MISSING_PLAYER;
         PlayerIdentifier lastModifiedBy = PlayerIdentifier.MISSING_PLAYER;
 
@@ -320,7 +337,16 @@ public class CommunicationManager implements LeavesProtocol {
             lastModifiedBy = provider.createOrGet(buf.readUUID(), buf.readUtf(32767));
         }
 
-        final ServerPlacement placement = new ServerPlacement(id, fileName, hash, owner);
+        int litematicVersion = -1;
+        int dataVersion = -1;
+        if (exchangeTarget.getFeatureSet().hasFeature(Feature.VERSION)) {
+            litematicVersion = readSchematicVersion(buf, "litematic version");
+            dataVersion = readSchematicVersion(buf, "data version");
+        }
+
+        final ServerPlacement placement = new ServerPlacement(
+                id, fileName, displayName, hash, owner, litematicVersion, dataVersion
+        );
         placement.setLastModifiedBy(lastModifiedBy);
 
         receivePositionData(placement, buf, exchangeTarget);
@@ -353,6 +379,14 @@ public class CommunicationManager implements LeavesProtocol {
             throw new IllegalArgumentException("Invalid " + name + " ordinal: " + ordinal);
         }
         return values[ordinal];
+    }
+
+    private static int readSchematicVersion(final FriendlyByteBuf buf, final String name) {
+        final int version = buf.readVarInt();
+        if (version < -1 || version > 1_000_000) {
+            throw new IllegalArgumentException("Invalid " + name + ": " + version);
+        }
+        return version;
     }
 
     public static void download(final ServerPlacement syncmatic, final ExchangeTarget source) throws NoSuchAlgorithmException, IOException {

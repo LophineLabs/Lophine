@@ -39,8 +39,10 @@ import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.animal.chicken.Chicken;
 import net.minecraft.world.entity.animal.frog.Tadpole;
+import net.minecraft.world.entity.animal.golem.CopperGolem;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.monster.zombie.ZombieVillager;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -111,6 +113,7 @@ public class JadeProtocol implements LeavesProtocol {
         entityDataProviders.register(Tadpole.class, MobGrowthProvider.INSTANCE);
         entityDataProviders.register(Animal.class, MobBreedingProvider.INSTANCE);
         entityDataProviders.register(Allay.class, MobBreedingProvider.INSTANCE);
+        entityDataProviders.register(Villager.class, MobBreedingProvider.INSTANCE);
         entityDataProviders.register(Mob.class, PetArmorProvider.INSTANCE);
 
         entityDataProviders.register(Chicken.class, NextEntityDropProvider.INSTANCE);
@@ -130,8 +133,12 @@ public class JadeProtocol implements LeavesProtocol {
         blockDataProviders.register(CalibratedSculkSensorBlockEntity.class, RedstoneProvider.INSTANCE);
 
         blockDataProviders.register(AbstractFurnaceBlockEntity.class, FurnaceProvider.INSTANCE);
-        blockDataProviders.register(ChiseledBookShelfBlockEntity.class, ChiseledBookshelfProvider.INSTANCE);
+        blockDataProviders.register(ChiseledBookShelfBlockEntity.class, ShelfProvider.INSTANCE);
+        blockDataProviders.register(ShelfBlockEntity.class, ShelfProvider.INSTANCE);
         blockDataProviders.register(TrialSpawnerBlockEntity.class, MobSpawnerCooldownProvider.INSTANCE);
+
+        entityDataProviders.register(CopperGolem.class, WaxedCopperGolemProvider.INSTANCE);
+        entityDataProviders.register(LivingEntity.class, EntityHealthAndArmorProvider.INSTANCE);
 
         itemStorageProviders.register(CampfireBlock.class, CampfireProvider.INSTANCE);
 

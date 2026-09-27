@@ -32,7 +32,10 @@ public class ServerPlacement {
     private final UUID id;
 
     private final String fileName;
+    private String displayName;
     private final UUID hashValue;
+    private int litematicVersion = -1;
+    private int dataVersion = -1;
 
     private PlayerIdentifier owner;
     private PlayerIdentifier lastModifiedBy;
@@ -44,11 +47,26 @@ public class ServerPlacement {
     private SubRegionData subRegionData = new SubRegionData();
 
     public ServerPlacement(final UUID id, final String fileName, final UUID hashValue, final PlayerIdentifier owner) {
+        this(id, fileName, removeExtension(fileName), hashValue, owner, -1, -1);
+    }
+
+    public ServerPlacement(
+            final UUID id,
+            final String fileName,
+            final String displayName,
+            final UUID hashValue,
+            final PlayerIdentifier owner,
+            final int litematicVersion,
+            final int dataVersion
+    ) {
         this.id = id;
         this.fileName = removeExtension(fileName);
+        this.displayName = displayName == null ? this.fileName : displayName;
         this.hashValue = hashValue;
         this.owner = owner;
         lastModifiedBy = owner;
+        this.litematicVersion = litematicVersion;
+        this.dataVersion = dataVersion;
     }
 
     private static String removeExtension(final String fileName) {
@@ -76,7 +94,18 @@ public class ServerPlacement {
                 owner = SyncmaticaProtocol.getPlayerIdentifierProvider().fromJson(obj.get("owner").getAsJsonObject());
             }
 
-            final ServerPlacement newPlacement = new ServerPlacement(id, name, hashValue, owner);
+            final String displayName = obj.has("display_name")
+                    ? obj.get("display_name").getAsString()
+                    : removeExtension(name);
+            final int litematicVersion = obj.has("litematicVersion")
+                    ? obj.get("litematicVersion").getAsInt()
+                    : -1;
+            final int dataVersion = obj.has("dataVersion")
+                    ? obj.get("dataVersion").getAsInt()
+                    : -1;
+            final ServerPlacement newPlacement = new ServerPlacement(
+                    id, name, displayName, hashValue, owner, litematicVersion, dataVersion
+            );
             final ServerPosition pos = ServerPosition.fromJson(obj.get("origin").getAsJsonObject());
             if (pos == null) {
                 return null;
@@ -108,6 +137,24 @@ public class ServerPlacement {
 
     public String getName() {
         return fileName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public int getLitematicVersion() {
+        return litematicVersion;
+    }
+
+    public int getDataVersion() {
+        return dataVersion;
+    }
+
+    public void setMetadata(final String displayName, final int litematicVersion, final int dataVersion) {
+        this.displayName = displayName == null ? this.fileName : displayName;
+        this.litematicVersion = litematicVersion;
+        this.dataVersion = dataVersion;
     }
 
     public UUID getHash() {
@@ -171,7 +218,15 @@ public class ServerPlacement {
         obj.add("id", new JsonPrimitive(id.toString()));
 
         obj.add("file_name", new JsonPrimitive(fileName));
+        obj.add("display_name", new JsonPrimitive(displayName));
         obj.add("hash", new JsonPrimitive(hashValue.toString()));
+
+        if (litematicVersion >= 0) {
+            obj.add("litematicVersion", new JsonPrimitive(litematicVersion));
+        }
+        if (dataVersion >= 0) {
+            obj.add("dataVersion", new JsonPrimitive(dataVersion));
+        }
 
         obj.add("origin", origin.toJson());
         obj.add("rotation", new JsonPrimitive(rotation.name()));

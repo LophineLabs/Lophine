@@ -12,6 +12,27 @@ public class ServuxProtocolConfig {
     @ConfigInfo(name = "entity-protocol", directory = {"data"})
     public static boolean entityProtocol = false;
 
+    @ConfigInfo(name = "tweaks-data-protocol", directory = {"data"})
+    public static boolean tweaksDataProtocol = false;
+
+    @CommandSuggestions(suggest = {"0", "2", "4"})
+    @ConfigInfo(name = "tweaks-permission-level", directory = {"data"})
+    public static int tweaksPermissionLevel = 0;
+
+    @ConfigInfo(name = "nbt-allow-player-inventory", directory = {"data"})
+    public static boolean nbtAllowPlayerInventory = true;
+
+    @ConfigInfo(name = "nbt-allow-player-ender-items", directory = {"data"})
+    public static boolean nbtAllowPlayerEnderItems = true;
+
+    @CommandSuggestions(suggest = {"0", "2", "4"})
+    @ConfigInfo(name = "player-inventory-permission-level", directory = {"data"})
+    public static int playerInventoryPermissionLevel = 2;
+
+    @CommandSuggestions(suggest = {"0", "2", "4"})
+    @ConfigInfo(name = "player-ender-items-permission-level", directory = {"data"})
+    public static int playerEnderItemsPermissionLevel = 2;
+
     @ConfigInfo(name = "hud-logger-protocol")
     public static boolean hudLoggerProtocol = false;
 
@@ -21,8 +42,23 @@ public class ServuxProtocolConfig {
     @ConfigInfo(name = "hud-metadata-share-seed")
     public static boolean hudMetadataShareSeed = false;
 
+    @CommandSuggestions(suggest = {"0", "2", "4"})
+    @ConfigInfo(name = "hud-seed-permission-level")
+    public static int hudSeedPermissionLevel = 2;
+
+    @ConfigInfo(name = "hud-share-weather-status")
+    public static boolean hudShareWeatherStatus = false;
+
+    @CommandSuggestions(suggest = {"0", "2", "4"})
+    @ConfigInfo(name = "hud-weather-permission-level")
+    public static int hudWeatherPermissionLevel = 0;
+
     @ConfigInfo(name = "structure-protocol")
     public static boolean structureProtocol = false;
+
+    @CommandSuggestions(suggest = {"40", "600"})
+    @ConfigInfo(name = "structure-timeout")
+    public static int structureTimeout = 600;
 
     @ConfigInfo(name = "hud-enabled-loggers")
     public static List<String> hudEnabledLoggers = List.of("tps", "mob_caps");
@@ -32,6 +68,10 @@ public class ServuxProtocolConfig {
 
     @ConfigInfo(name = "litematics-enabled", directory = {"litematics"})
     public static boolean litematicsEnabled = false;
+
+    @CommandSuggestions(suggest = {"0", "2", "4"})
+    @ConfigInfo(name = "litematics-task-permission-level", directory = {"litematics"})
+    public static int litematicsTaskPermissionLevel = 0;
 
     @CommandSuggestions(suggest = {"-1", "2097152"})
     @ConfigInfo(name = "litematics-max-nbt-size", directory = {"litematics"})

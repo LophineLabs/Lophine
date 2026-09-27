@@ -17,118 +17,143 @@
 
 package org.leavesmc.leaves.protocol.servux;
 
+import com.mojang.logging.LogUtils;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
-
-// Powered by Servux(https://github.com/sakura-ryoko/servux)
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Network packet splitter code from QuickCarpet by skyrising
- *
- * @author skyrising
- * <p>
- * Updated by Sakura to work with newer versions by changing the Reading Session keys,
- * and using the HANDLER interface to send packets via the Payload system
- * <p>
- * Move to Leaves by violetc
+ * Splits large Servux NBT payloads and bounds the lifetime and size of reassembled client data.
  */
 public class PacketSplitter {
-    public static final int MAX_TOTAL_PER_PACKET_S2C = 1048576;
-    public static final int MAX_PAYLOAD_PER_PACKET_S2C = MAX_TOTAL_PER_PACKET_S2C - 5;
-    public static final int MAX_TOTAL_PER_PACKET_C2S = 32767;
-    public static final int MAX_PAYLOAD_PER_PACKET_C2S = MAX_TOTAL_PER_PACKET_C2S - 5;
-    public static final int DEFAULT_MAX_RECEIVE_SIZE_C2S = 1048576;
-    public static final int DEFAULT_MAX_RECEIVE_SIZE_S2C = 67108864;
+    private static final Logger LOGGER = LogUtils.getClassLogger();
+    private static final long STALE_TIMEOUT_MS = 10_000;
 
-    private static final Map<Long, ReadingSession> READING_SESSIONS = new HashMap<>();
+    public static final int MAX_TOTAL_PER_PACKET_S2C = 1_048_576;
+    public static final int MAX_PAYLOAD_PER_PACKET_S2C = MAX_TOTAL_PER_PACKET_S2C - 5;
+    public static final int MAX_TOTAL_PER_PACKET_C2S = 32_767;
+    public static final int MAX_PAYLOAD_PER_PACKET_C2S = MAX_TOTAL_PER_PACKET_C2S - 5;
+    public static final int DEFAULT_MAX_RECEIVE_SIZE_C2S = 16_777_216;
+    public static final int DEFAULT_MAX_RECEIVE_SIZE_S2C = 16_777_216;
+
+    private static final ConcurrentHashMap<Long, ReadingSession> READING_SESSIONS = new ConcurrentHashMap<>(16, 0.9f, 2);
+    private static final ScheduledExecutorService CLEANER = Executors.newSingleThreadScheduledExecutor(task -> {
+        Thread thread = new Thread(task, "Lophine-Servux-PacketSplitter-Cleaner");
+        thread.setDaemon(true);
+        return thread;
+    });
+
+    static {
+        CLEANER.scheduleAtFixedRate(() -> {
+            long now = System.currentTimeMillis();
+            READING_SESSIONS.forEach((key, session) -> {
+                if (now - session.lastReceivedTime > STALE_TIMEOUT_MS && READING_SESSIONS.remove(key, session)) {
+                    session.release();
+                    LOGGER.warn("Evicted stale Servux packet reassembly session {}", key);
+                }
+            });
+        }, 5, 5, TimeUnit.SECONDS);
+    }
 
     public static boolean send(IPacketSplitterHandler handler, FriendlyByteBuf packet, ServerPlayer player) {
         return send(handler, packet, player, MAX_PAYLOAD_PER_PACKET_S2C);
     }
 
     private static boolean send(IPacketSplitterHandler handler, FriendlyByteBuf packet, ServerPlayer player, int payloadLimit) {
-        int len = packet.writerIndex();
-
+        int length = packet.writerIndex();
         packet.resetReaderIndex();
 
-        for (int offset = 0; offset < len; offset += payloadLimit) {
-            int thisLen = Math.min(len - offset, payloadLimit);
-            FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer(thisLen));
-
-            buf.resetWriterIndex();
-
+        for (int offset = 0; offset < length; offset += payloadLimit) {
+            int sliceLength = Math.min(length - offset, payloadLimit);
+            FriendlyByteBuf slice = new FriendlyByteBuf(Unpooled.buffer(sliceLength));
             if (offset == 0) {
-                buf.writeVarInt(len);
+                slice.writeVarInt(length);
             }
-
-            buf.writeBytes(packet, thisLen);
-            handler.encode(player, buf);
+            slice.writeBytes(packet, sliceLength);
+            handler.encode(player, slice);
         }
 
         packet.release();
-
         return true;
     }
 
     public static FriendlyByteBuf receive(long key, FriendlyByteBuf buf) {
-        return receive(key, buf, DEFAULT_MAX_RECEIVE_SIZE_S2C);
+        return receive(key, buf, DEFAULT_MAX_RECEIVE_SIZE_C2S);
     }
 
     @Nullable
     private static FriendlyByteBuf receive(long key, FriendlyByteBuf buf, int maxLength) {
-        return READING_SESSIONS.computeIfAbsent(key, ReadingSession::new).receive(buf, maxLength);
+        ReadingSession session = READING_SESSIONS.computeIfAbsent(key, ReadingSession::new);
+        try {
+            FriendlyByteBuf full = session.receive(buf, maxLength);
+            if (full != null) {
+                READING_SESSIONS.remove(key, session);
+            }
+            return full;
+        } catch (RuntimeException exception) {
+            if (READING_SESSIONS.remove(key, session)) {
+                session.release();
+            }
+            throw exception;
+        }
     }
 
     public interface IPacketSplitterHandler {
         void encode(ServerPlayer player, FriendlyByteBuf buf);
     }
 
-    /**
-     * I had to fix the `Pair.of` key mappings, because they were removed from MC;
-     * So I made it into a pre-shared random session 'key' between client and server.
-     * Generated using 'long key = Random.create(Util.getMeasuringTimeMs()).nextLong();'
-     * -
-     * It can be shared to the receiving end via a separate packet; or it can just be
-     * generated randomly on the receiving end per an expected Reading Session.
-     * It needs to be stored and changed for every unique session.
-     */
-    private static class ReadingSession {
+    private static final class ReadingSession {
         private final long key;
         private int expectedSize = -1;
         private FriendlyByteBuf received;
+        private volatile long lastReceivedTime = System.currentTimeMillis();
 
         private ReadingSession(long key) {
             this.key = key;
         }
 
         @Nullable
-        private FriendlyByteBuf receive(FriendlyByteBuf data, int maxLength) {
+        private synchronized FriendlyByteBuf receive(FriendlyByteBuf data, int maxLength) {
             data.readerIndex(0);
-            // data = PacketUtils.slice(data);
+            lastReceivedTime = System.currentTimeMillis();
 
-            if (this.expectedSize < 0) {
-                this.expectedSize = data.readVarInt();
-
-                if (this.expectedSize > maxLength) {
-                    throw new IllegalArgumentException("Payload too large");
+            if (expectedSize < 0) {
+                expectedSize = data.readVarInt();
+                if (expectedSize < 0 || expectedSize > maxLength) {
+                    throw new IllegalArgumentException("Servux payload size " + expectedSize + " exceeds the limit");
                 }
-
-                this.received = new FriendlyByteBuf(Unpooled.buffer(this.expectedSize));
+                if (expectedSize > 0 && data.readableBytes() == 0) {
+                    throw new IllegalArgumentException("Servux payload header was not followed by data");
+                }
+                received = new FriendlyByteBuf(Unpooled.buffer(expectedSize));
+                if (expectedSize == 0) {
+                    if (data.isReadable()) {
+                        throw new IllegalArgumentException("Servux empty payload contains trailing data");
+                    }
+                    return received;
+                }
             }
 
-            this.received.writeBytes(data.readBytes(data.readableBytes()));
-
-            if (this.received.writerIndex() >= this.expectedSize) {
-                READING_SESSIONS.remove(this.key);
-                return this.received;
+            int remaining = expectedSize - received.writerIndex();
+            if (data.readableBytes() > remaining) {
+                throw new IllegalArgumentException("Servux payload exceeded its declared size");
             }
+            received.writeBytes(data.readBytes(data.readableBytes()));
+            return received.writerIndex() == expectedSize ? received : null;
+        }
 
-            return null;
+        private synchronized void release() {
+            if (received != null && received.refCnt() > 0) {
+                received.release();
+            }
+            received = null;
         }
     }
 }

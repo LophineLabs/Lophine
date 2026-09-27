@@ -53,7 +53,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @LeavesProtocol.Register(namespace = "servux")
 public class ServuxHudDataProtocol implements LeavesProtocol {
 
-    public static final int PROTOCOL_VERSION = 2;
+    public static final int PROTOCOL_VERSION = 3;
 
     private static final Set<ServerPlayer> players = ConcurrentHashMap.newKeySet();
     private static final int updateInterval = 80;
@@ -93,18 +93,30 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
     public static void onPacketReceive(ServerPlayer player, HudDataPayload payload) {
         switch (payload.packetType) {
             case PACKET_C2S_METADATA_REQUEST -> {
-                players.add(player);
-                sendHudMetadata(player);
+                if (payload.nbt.getIntOr("version", -1) >= PROTOCOL_VERSION) {
+                    players.add(player);
+                    sendHudMetadata(player);
+                }
             }
-            case PACKET_C2S_SPAWN_DATA_REQUEST -> refreshSpawnMetadata(player);
-            case PACKET_C2S_RECIPE_MANAGER_REQUEST -> refreshRecipeManager(player);
-            case PACKET_C2S_DATA_LOGGER_REQUEST -> refreshLoggers(player, payload.nbt);
+            case PACKET_C2S_SPAWN_DATA_REQUEST -> {
+                if (players.contains(player)) refreshSpawnMetadata(player);
+            }
+            case PACKET_C2S_RECIPE_MANAGER_REQUEST -> {
+                if (players.contains(player)) refreshRecipeManager(player);
+            }
+            case PACKET_C2S_DATA_LOGGER_REQUEST -> {
+                if (players.contains(player)) refreshLoggers(player, payload.nbt);
+            }
+            case PACKET_C2S_UNREGISTER_REPLY -> {
+                players.remove(player);
+                loggerPlayers.remove(player);
+            }
         }
     }
 
     public static void sendHudMetadata(ServerPlayer player) {
         CompoundTag metadata = new CompoundTag();
-        metadata.putString("name", "hud_metadata");
+        metadata.putString("name", "hud_data");
         metadata.putString("id", HudDataPayload.CHANNEL.toString());
         metadata.putInt("version", PROTOCOL_VERSION);
         metadata.putString("servux", ServuxProtocol.SERVUX_STRING);
@@ -115,7 +127,7 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
             }
             metadata.put("Loggers", nbt);
         }
-        putWorldData(metadata);
+        putWorldData(metadata, player);
 
         sendPacket(player, new HudDataPayload(HudDataPayloadType.PACKET_S2C_METADATA, metadata));
     }
@@ -124,7 +136,7 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
         CompoundTag metadata = new CompoundTag();
         metadata.putString("id", HudDataPayload.CHANNEL.toString());
         metadata.putString("servux", ServuxProtocol.SERVUX_STRING);
-        putWorldData(metadata);
+        putWorldData(metadata, player);
 
         sendPacket(player, new HudDataPayload(HudDataPayloadType.PACKET_S2C_SPAWN_DATA, metadata));
     }
@@ -151,6 +163,10 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
     }
 
     public static void refreshWeatherData(ServerPlayer player) {
+        if (!ServuxProtocolConfig.hudShareWeatherStatus
+                || !ServuxProtocol.hasPermissionLevel(player, ServuxProtocolConfig.hudWeatherPermissionLevel)) {
+            return;
+        }
         ServerLevel level = MinecraftServer.getServer().overworld();
         if (!level.getGameRules().get(GameRules.ADVANCE_WEATHER)) { // Leaves - Paper 26.1: RULE_WEATHER_CYCLE -> ADVANCE_WEATHER, getBoolean -> get
             return;
@@ -183,15 +199,17 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
         sendPacket(player, new HudDataPayload(HudDataPayloadType.PACKET_S2C_WEATHER_TICK, nbt));
     }
 
-    private static void putWorldData(@NotNull CompoundTag metadata) {
+    private static void putWorldData(@NotNull CompoundTag metadata, ServerPlayer player) {
         ServerLevel level = MinecraftServer.getServer().overworld();
         BlockPos spawnPos = level.getLevelData().getRespawnData().pos();
+        metadata.putString("spawnDimension", level.dimension().identifier().toString());
         metadata.putInt("spawnPosX", spawnPos.getX());
         metadata.putInt("spawnPosY", spawnPos.getY());
         metadata.putInt("spawnPosZ", spawnPos.getZ());
         metadata.putInt("spawnChunkRadius", level.getGameRules().get(GameRules.RESPAWN_RADIUS));
 
-        if (ServuxProtocolConfig.hudMetadataShareSeed) {
+        if (ServuxProtocolConfig.hudMetadataShareSeed
+                && ServuxProtocol.hasPermissionLevel(player, ServuxProtocolConfig.hudSeedPermissionLevel)) {
             metadata.putLong("worldSeed", level.getSeed());
         }
     }
@@ -294,7 +312,7 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
     public static void sendPacket(ServerPlayer player, HudDataPayload payload) {
         if (payload.packetType == HudDataPayloadType.PACKET_S2C_NBT_RESPONSE_START) {
             FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
-            buffer.writeNbt(payload.nbt);
+            ServuxDataByteBuf.write(buffer, payload.nbt);
             PacketSplitter.send(ServuxHudDataProtocol::sendWithSplitter, buffer, player);
         } else {
             ProtocolUtils.sendPayloadPacket(player, payload);
@@ -314,6 +332,7 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
         PACKET_C2S_RECIPE_MANAGER_REQUEST(6),
         PACKET_S2C_DATA_LOGGER_TICK(7),
         PACKET_C2S_DATA_LOGGER_REQUEST(8),
+        PACKET_C2S_UNREGISTER_REPLY(9),
         // For Packet Splitter (Oversize Packets, S2C)
         PACKET_S2C_NBT_RESPONSE_START(10),
         PACKET_S2C_NBT_RESPONSE_DATA(11);
@@ -349,6 +368,7 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
                         case PACKET_C2S_METADATA_REQUEST, PACKET_S2C_METADATA, PACKET_C2S_SPAWN_DATA_REQUEST,
                              PACKET_S2C_SPAWN_DATA, PACKET_S2C_WEATHER_TICK, PACKET_C2S_RECIPE_MANAGER_REQUEST,
                              PACKET_C2S_DATA_LOGGER_REQUEST, PACKET_S2C_DATA_LOGGER_TICK -> buf.writeNbt(payload.nbt());
+                        case PACKET_C2S_UNREGISTER_REPLY -> ServuxDataByteBuf.write(buf, payload.nbt());
                     }
                 },
                 buf -> {
@@ -365,6 +385,10 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
                              PACKET_C2S_RECIPE_MANAGER_REQUEST, PACKET_C2S_DATA_LOGGER_REQUEST,
                              PACKET_S2C_DATA_LOGGER_TICK -> {
                             return new HudDataPayload(type, buf.readNbt());
+                        }
+                        case PACKET_C2S_UNREGISTER_REPLY -> {
+                            ServuxDataByteBuf.skip(buf);
+                            return new HudDataPayload(type, new CompoundTag());
                         }
                     }
                     throw new IllegalStateException("invalid packet type received");

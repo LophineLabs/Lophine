@@ -17,6 +17,7 @@
 
 package org.leavesmc.leaves.protocol;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
@@ -33,6 +34,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -67,7 +69,13 @@ public class LitematicaEasyPlaceProtocol {
             BlockStateProperties.BITES,
             BlockStateProperties.DELAY,
             BlockStateProperties.NOTE,
-            BlockStateProperties.ROTATION_16
+            BlockStateProperties.ROTATION_16,
+            BlockStateProperties.COPPER_GOLEM_POSE
+    );
+
+    private static final ImmutableMap<Property<?>, ? extends Comparable<?>> BLACKLISTED_PROPERTIES = ImmutableMap.of(
+            BlockStateProperties.WATERLOGGED, Boolean.FALSE,
+            BlockStateProperties.POWERED, Boolean.FALSE
     );
 
     public static BlockState applyPlacementProtocol(BlockState state, BlockPlaceContext context) {
@@ -142,6 +150,19 @@ public class LitematicaEasyPlaceProtocol {
             LOGGER.warn("Exception trying to apply placement protocol value", e);
         }
 
+        for (Property<?> blacklistedProperty : BLACKLISTED_PROPERTIES.keySet()) {
+            if (state.hasProperty(blacklistedProperty)) {
+                state = applyBlacklistedProperty(state, blacklistedProperty);
+            }
+        }
+
+        if (state.hasProperty(BlockStateProperties.WATERLOGGED)
+                && ((oldState.hasProperty(BlockStateProperties.WATERLOGGED)
+                && oldState.getValue(BlockStateProperties.WATERLOGGED))
+                || oldState.getFluidState().getType().isSame(Fluids.WATER))) {
+            state = state.setValue(BlockStateProperties.WATERLOGGED, true);
+        }
+
         if (state.getBlock() instanceof RepeaterBlock repeaterBlock) {
             state = state.setValue(RepeaterBlock.LOCKED, repeaterBlock.isLocked(context.getWorld(), context.getPos(), state));
         }
@@ -151,6 +172,16 @@ public class LitematicaEasyPlaceProtocol {
         } else {
             return null;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends Comparable<T>> BlockState applyBlacklistedProperty(
+            BlockState state,
+            Property<?> property
+    ) {
+        Property<T> typedProperty = (Property<T>) property;
+        T value = (T) BLACKLISTED_PROPERTIES.get(property);
+        return state.setValue(typedProperty, value);
     }
 
     private static BlockState applyDirectionProperty(BlockState state, UseContext context, EnumProperty<Direction> property, int protocolValue) {
