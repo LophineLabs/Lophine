@@ -5,10 +5,10 @@ Subject: [PATCH] Fixes around entity brain and memories
 
 
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
-index e99f96ba89c92ee5f1408f8698d71a364f59599d..340ea355c53475740d77be53af773356d9348850 100644
+index 0a4da783f905112b2bd2217805aa9312f1bb1c41..1f84a99b2e44657882fc56ec0756a4b1074d9145 100644
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
-@@ -300,6 +300,11 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
+@@ -301,6 +301,11 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
          if (Objects.equals(currentTarget, target)) {
              return false;
          }

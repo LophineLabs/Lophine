@@ -18,10 +18,10 @@ index 89017af09ce32e7a66014fc3aeb50155921252a5..b862779b48176dd7e67a2f1a3e7f24bc
          }
      }
 diff --git a/src/main/java/org/bukkit/command/SimpleCommandMap.java b/src/main/java/org/bukkit/command/SimpleCommandMap.java
-index ad1330d87223dfcf3c9da40aa5ece8c21141f0d6..22edf161ba1ca8c31140e25e8c4fe1503c44dba8 100644
+index f373e0f920ea1c8b160385e88e13153463ed3024..03234506e57b6275b4f14b007213e7e5c7ef950f 100644
 --- a/src/main/java/org/bukkit/command/SimpleCommandMap.java
 +++ b/src/main/java/org/bukkit/command/SimpleCommandMap.java
-@@ -34,7 +34,7 @@ public class SimpleCommandMap implements CommandMap {
+@@ -41,7 +41,7 @@ public class SimpleCommandMap implements CommandMap {
          final ReloadCommand reload = new ReloadCommand("reload");
          this.knownCommands.put("bukkit:reload", reload);
          this.knownCommands.put("bukkit:rl", reload);

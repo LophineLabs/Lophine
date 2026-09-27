@@ -274,7 +274,7 @@ index 96efd4e9dc86c6005fe8c4d1bfcf6e25ff13cb1a..9b5736327af2ead2b6d367c780fc01ab
          LOGGER.info("Default game type: {}", properties.gameMode.get());
          // Paper start - Unix domain socket support
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
-index 660b87fde64153d1b1a74774315acbe56cc9f811..4affcb7845a61edbcb483119bf459b70fe23891e 100644
+index ef8c1e81327dd3dd3535bb86920f2522f00b0b35..8e7029b560a99003858f09319f89a04f9c458bbb 100644
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
 @@ -971,7 +971,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
@@ -286,7 +286,7 @@ index 660b87fde64153d1b1a74774315acbe56cc9f811..4affcb7845a61edbcb483119bf459b70
          org.spigotmc.AsyncCatcher.catchOp("entity track"); // Spigot
          // Paper start - ignore and warn about illegal addEntity calls instead of crashing server
          if (!entity.valid || entity.level() != this.level || entity.moonrise$getTrackedEntity() != null) { // Folia - region threading
-@@ -1277,6 +1277,13 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
+@@ -1311,6 +1311,13 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
                  ServerPlayer player = conn.getPlayer();
                  if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(player)) {
                      this.removePlayer(player);
@@ -300,7 +300,7 @@ index 660b87fde64153d1b1a74774315acbe56cc9f811..4affcb7845a61edbcb483119bf459b70
                  }
              }
          }
-@@ -1408,6 +1415,13 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
+@@ -1442,6 +1449,13 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
                      }
                  } else {
                      this.removePlayer(player);

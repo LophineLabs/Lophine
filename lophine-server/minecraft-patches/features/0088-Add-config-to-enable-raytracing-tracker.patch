@@ -5,10 +5,10 @@ Subject: [PATCH] Add config to enable raytracing tracker
 
 
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
-index ee2ed8dab9abbd137b728904038e7db3fc809de8..660b87fde64153d1b1a74774315acbe56cc9f811 100644
+index f5601ee683c9daef74ab34c96b70d990ac6cf534..ef8c1e81327dd3dd3535bb86920f2522f00b0b35 100644
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
-@@ -1370,7 +1370,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
+@@ -1404,7 +1404,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
                  double distanceSquared = deltaToPlayerX * deltaToPlayerX + deltaToPlayerZ * deltaToPlayerZ; // Paper
                  double rangeSquared = visibleRange * visibleRange;
                  // Paper start - Configurable entity tracking range by Y

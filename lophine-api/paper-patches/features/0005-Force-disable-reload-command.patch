@@ -5,10 +5,10 @@ Subject: [PATCH] Force disable reload command
 
 
 diff --git a/src/main/java/org/bukkit/command/SimpleCommandMap.java b/src/main/java/org/bukkit/command/SimpleCommandMap.java
-index 22edf161ba1ca8c31140e25e8c4fe1503c44dba8..50384eb221ad96e766b91335ff57b082410885e9 100644
+index 03234506e57b6275b4f14b007213e7e5c7ef950f..2c58d5e0e1f7f807198b4e2cb1b8322783cf60eb 100644
 --- a/src/main/java/org/bukkit/command/SimpleCommandMap.java
 +++ b/src/main/java/org/bukkit/command/SimpleCommandMap.java
-@@ -31,9 +31,9 @@ public class SimpleCommandMap implements CommandMap {
+@@ -38,9 +38,9 @@ public class SimpleCommandMap implements CommandMap {
      }
  
      private void setDefaultCommands() {

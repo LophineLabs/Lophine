@@ -5,10 +5,10 @@ Subject: [PATCH] Luminol Config System
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 5dd1b8be52aab8e3566e53ce6f5d692d4830d15e..3e64044313062c31f76781cf78b284f33a3906fd 100644
+index 11418aae31946d70cdf70b1d6ddd47c8ea984e8f..e693c22965af6970a42ddafdcbc17bf9829b2c06 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-@@ -3021,6 +3021,17 @@ public final class CraftServer implements Server {
+@@ -3024,6 +3024,17 @@ public final class CraftServer implements Server {
          this.console.addPluginAllowingSleep(plugin.getName(), value);
      }
  

@@ -97,10 +97,10 @@
 +    }
 +    // Leaves end - leaves plugin
 +    // Lophine end
-     implementation("ca.spottedleaf:leafpile:1.2.2")
-     implementation("org.jline:jline-terminal-ffm:3.27.1") // use ffm on java 22+
-     implementation("org.jline:jline-terminal-jni:3.27.1") // fall back to jni on java 21
-@@ -189,21 +_,21 @@
+     implementation(platform("ca.spottedleaf.leafpile:bom:1.2.4"))
+     implementation("ca.spottedleaf.leafpile:profiler")
+     implementation("ca.spottedleaf.leafpile:common")
+@@ -193,21 +_,21 @@
          val git = Git(rootProject.layout.projectDirectory.path)
          val mcVersion = rootProject.providers.gradleProperty("mcVersion").get()
          val build = System.getenv("BUILD_NUMBER") ?: null
@@ -128,7 +128,7 @@
              "Build-Number" to (build ?: ""),
              "Build-Time" to buildTime.toString(),
              "Git-Branch" to gitBranch,
-@@ -214,6 +_,20 @@
+@@ -218,6 +_,20 @@
          }
      }
  }
