@@ -8,7 +8,7 @@ As a part of : Leaves (https://github.com/LeavesMC/Leaves/blob/9d2bd3f7b0a48f00d
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index b24d453cb6ff599df9e742e507eaeb2beffa32aa..196c540c950fd79ed2e942a638beda257937eb5e 100644
+index a0d48b35d15ea80079ebb8226e618df85f3d6293..7525be0811ca194a9f832a4aa94f9acd0b42157b 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -3151,7 +3151,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -21,7 +21,7 @@ index b24d453cb6ff599df9e742e507eaeb2beffa32aa..196c540c950fd79ed2e942a638beda25
                  }
                  // Paper end - Fix merchant inventory not closing on entity removal
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index c143e18e35d2a32a53f0f6411b83ed598300392e..b7beafb9fc187604a39e300f128cd3633797a674 100644
+index 0354486424363f6b997721c173672025946854e5..ca4f02b24f1604b4b9983d88a29bf0627d073ead 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -558,7 +558,7 @@ public abstract class PlayerList {

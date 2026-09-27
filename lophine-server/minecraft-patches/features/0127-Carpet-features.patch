@@ -268,7 +268,7 @@ index 11d177e486958727f880f073550ae5db7e233dcd..e489da1acbb77c003951b608856ea706
                  } else {
                      LOGGER.warn("Player {} was dropping items too fast in creative mode, ignoring.", this.player.getPlainTextName());
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 9bbae1060588d4dfa06352ceb067c0481c665ff1..10d7cd83571280a6c82477814e64aaca6c712f46 100644
+index 0d2bf539ae276709310e5875c9531ae726e31314..8c0772791543c027fe36c2259b01c052b4bfa068 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -280,7 +280,7 @@ public abstract class PlayerList {

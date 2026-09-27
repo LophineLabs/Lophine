@@ -8,7 +8,7 @@ As part of: Purpur (https://github.com/PurpurMC/Purpur/blob/dc46f46d28dcdcaf33bb
 Licensed under: MIT (https://github.com/PurpurMC/Purpur/blob/dc46f46d28dcdcaf33bb533f9571a107db98c1d7/LICENSE)
 
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index a98c9b287885e2c353cf75dbb7f004cf67c0d802..1dcb4fe3e2c250554e4f065caf21b37ea659e621 100644
+index 3cdfb5f74885c13c597b48600deaa70e8d71370e..d3beec9bf2d3d6fd05e0acbf63c9cfeb5d7b3230 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -961,6 +961,10 @@ public abstract class PlayerList {

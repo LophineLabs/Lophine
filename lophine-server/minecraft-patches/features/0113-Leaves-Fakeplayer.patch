@@ -315,7 +315,7 @@ index 6bca982627cf6a865820df75be2814a7289f98dc..b6f752a134ac7192375053d8bf93e39c
              }
          }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index d463f308f5907d79cd3b4563a61bc6ca7e0657e9..4dd680e405b7d53add36244b1398e03f38dd104c 100644
+index e3119dbad4fbfef05db75a1f9f58477670b62968..668a49e6c1e7ccef6b6df81cb2e7e954a4d30ff3 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -243,6 +243,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -483,7 +483,7 @@ index 12190f2a2856b0d0cf95144d0b1622f1b9600bf6..be01f06d4ee02854345842c97382e8b6
  
      // Paper start - utility method for common conversion back to the game profile
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 1f0e83b56e7b2c4815771aa569b76a59427f0c8c..622ee5324931f3f4f064889b7a3af84253c7a48d 100644
+index 8a079fac172c4b170d73c50ef70bf7bbb805c891..bc9041cd9fee91fdb9c5fb6f57bef47fad6aeae9 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -321,6 +321,19 @@ public abstract class PlayerList {
@@ -554,7 +554,7 @@ index 1f0e83b56e7b2c4815771aa569b76a59427f0c8c..622ee5324931f3f4f064889b7a3af842
      }
  
      public void broadcast(
-@@ -1367,7 +1397,13 @@ public abstract class PlayerList {
+@@ -1370,7 +1400,13 @@ public abstract class PlayerList {
      }
  
      public @Nullable ServerPlayer getPlayer(final UUID uuid) {
