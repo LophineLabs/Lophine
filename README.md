@@ -73,7 +73,7 @@ repositories {
 }
 
 dependencies {
-  compileOnly("fun.bm.lophine:lophine-api:26.2.build.+")
+  compileOnly("fun.bm.lophine:lophine-api:26.3.build.+")
 }
 
 java {
@@ -95,7 +95,7 @@ java {
 <dependency>
   <groupId>fun.bm.lophine</groupId>
   <artifactId>lophine-api</artifactId>
-  <version>[26.2.build,)</version>
+  <version>[26.3.build,)</version>
 </dependency>
 </dependencies>
 ```
