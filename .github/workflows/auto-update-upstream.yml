@@ -14,6 +14,8 @@ jobs:
       UPSTREAM_URLS: |
         https://github.com/PaperMC/Folia.git
         https://github.com/LophineLabs/Folia.git
+      # 要跟踪的上游分支，留空则使用上游仓库默认分支（HEAD）
+      UPSTREAM_BRANCH: ""
       REF: "foliaRef"
       TITLE: "Update Upstream (Folia)"
       REF_COMMIT: "auto-update/upstream"
@@ -35,12 +37,15 @@ jobs:
             LOCAL_REF=$(grep '^${{ env.REF }}=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
           fi
           echo "Local ref: $LOCAL_REF"
+          # UPSTREAM_BRANCH 为空时回退到 HEAD（上游默认分支）
+          REF_SPEC="${{ env.UPSTREAM_BRANCH }}"
+          REF_SPEC="${REF_SPEC:-HEAD}"
           # 遍历所有上游仓库，任一有更新则不跳过
           SKIP=true
           while IFS= read -r url; do
             url=$(echo "$url" | tr -d '[:space:]')
             if [ -z "$url" ]; then continue; fi
-            UPSTREAM_REF=$(git ls-remote "$url" HEAD | cut -f1)
+            UPSTREAM_REF=$(git ls-remote "$url" "$REF_SPEC" | cut -f1)
             echo "Upstream [$url] ref: $UPSTREAM_REF"
             if [ "$LOCAL_REF" != "$UPSTREAM_REF" ]; then
               SKIP=false
@@ -137,7 +142,11 @@ jobs:
               URL_ARGS="$URL_ARGS --url=$url"
             fi
           done <<< "${{ env.UPSTREAM_URLS }}"
-          java -jar tool/build/libs/*.jar --repo=${{ github.workspace }}/repo $URL_ARGS
+          BRANCH_ARGS=""
+          if [ -n "${{ env.UPSTREAM_BRANCH }}" ]; then
+            BRANCH_ARGS="--branch=${{ env.UPSTREAM_BRANCH }}"
+          fi
+          java -jar tool/build/libs/*.jar --repo=${{ github.workspace }}/repo $URL_ARGS $BRANCH_ARGS
 
       - name: Get upstream commit messages
         if: steps.uptodate.outputs.skip != 'true'
