@@ -7,7 +7,7 @@ As part of: Leaf (https://github.com/Winds-Studio/Leaf)
 Licensed under: GPL-3.0 (https://github.com/Winds-Studio/Leaf/blob/7f3e240bbe0970683c40279a7a65f0fde47503b6/licenses/GPL-3.0.txt)
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftChunk.java b/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
-index c1954a651c2527e4ff6911326244ac7f8a076dd6..9d1bc627564f013ac6cfd0fc846a8033d030a371 100644
+index c1954a651c2527e4ff6911326244ac7f8a076dd6..525b91a16d4e65ee8a00db8377daef287499f45c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
 @@ -191,7 +191,14 @@ public class CraftChunk implements Chunk {
@@ -19,7 +19,7 @@ index c1954a651c2527e4ff6911326244ac7f8a076dd6..9d1bc627564f013ac6cfd0fc846a8033
 +        if (this.level.paperConfig().entities.spawning.allChunksAreSlimeChunks) {
 +            return true;
 +        }
-+        return org.dreeam.leaf.config.modules.misc.SecureSeed.enabled
++        return me.earthme.luminol.config.modules.function.SecureSeedConfig.enabled
 +            ? level.getChunk(this.getX(), this.getZ()).isSlimeChunk()
 +            : WorldgenRandom.seedSlimeChunk(this.getX(), this.getZ(), this.getWorld().getSeed(), level.spigotConfig.slimeSeed).nextInt(10) == 0; // Paper;
 +        // Leaf end - Matter - Secure Seed
@@ -27,7 +27,7 @@ index c1954a651c2527e4ff6911326244ac7f8a076dd6..9d1bc627564f013ac6cfd0fc846a8033
  
      @Override
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 033050751d3e65f9f64b35191c9da8125daf66d8..267f9784272f37ff457abc5bba7478ab814aa957 100644
+index 033050751d3e65f9f64b35191c9da8125daf66d8..bc440fbe6d77e15f43d4d494df87e135abee528b 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -1268,7 +1268,11 @@ public final class CraftServer implements Server {
@@ -36,7 +36,7 @@ index 033050751d3e65f9f64b35191c9da8125daf66d8..267f9784272f37ff457abc5bba7478ab
          if (worldGenSettings == null) {
 -            WorldOptions worldOptions = new WorldOptions(creator.seed(), creator.generateStructures(), creator.bonusChest());
 +            // Leaf start - Matter - Secure Seed
-+            WorldOptions worldOptions = org.dreeam.leaf.config.modules.misc.SecureSeed.enabled
++            WorldOptions worldOptions = me.earthme.luminol.config.modules.function.SecureSeedConfig.enabled
 +                ? new WorldOptions(creator.seed(), su.plo.matter.Globals.createRandomWorldSeed(), creator.generateStructures(), creator.bonusChest())
 +                : new WorldOptions(creator.seed(), creator.generateStructures(), creator.bonusChest());
 +            // Leaf end - Matter - Secure Seed
