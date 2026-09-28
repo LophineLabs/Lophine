@@ -8,10 +8,10 @@ As a part of : Leaves (https://github.com/LeavesMC/Leaves)
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/net/minecraft/world/level/block/ShulkerBoxBlock.java b/net/minecraft/world/level/block/ShulkerBoxBlock.java
-index f347e27ac957c1cdcaaf29f61fdc2ca4bdc36dbb..0dc80ee92f2aed4c8ca4bc60f4b189af764fe81d 100644
+index 2cba07459806b6b1c9a0aee47f94727fc7529910..f9f68812bcfa095387e2a74400b095690ed9ae83 100644
 --- a/net/minecraft/world/level/block/ShulkerBoxBlock.java
 +++ b/net/minecraft/world/level/block/ShulkerBoxBlock.java
-@@ -185,7 +185,11 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
+@@ -173,7 +173,11 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
      protected int getAnalogOutputSignal(final BlockState state, final Level level, final BlockPos pos, final Direction direction) {
          // Lophine start - catch update suppression crash
          try {

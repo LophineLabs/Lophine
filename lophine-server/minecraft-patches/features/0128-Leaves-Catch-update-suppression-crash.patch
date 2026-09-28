@@ -36,10 +36,10 @@ index 20fa23988efbfb50c664fa48cc823adbe8e6ce58..1a95ccd745f4789225d711ab6fe497c6
                          throw PacketUtils.makeReportedException(e, this.packet, this.listener);
                      }
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 0cd91aebd4aed08c5e456d38e97d95d12d299040..cc5fd9a6dd723c97ab0f61ee19e64e617e0c5f0a 100644
+index f9f7ae3cfe960be2ac305958b288036499ec207c..cd56cae73a21800b8a8663836b050784e7fb3c79 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -2004,11 +2004,30 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1988,11 +1988,30 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              try {
                  foliaProfiler.startTimer(level.tickTimerId); try { // Folia - profiler
                  level.tick(haveTime, region); // Folia - region threading
@@ -74,10 +74,10 @@ index 0cd91aebd4aed08c5e456d38e97d95d12d299040..cc5fd9a6dd723c97ab0f61ee19e64e61
  
              profiler.pop();
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 8024ff2b9194e43f23b5dea7e96ffe624a9a91ac..c53d2258dba5d3a51f55cad7ee513949822eaf0b 100644
+index eea53cec46db9ebc3f17102992c66afcdecad317..6286d38af0111ff813e8c8c13d1af2dffad68c7e 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -957,7 +957,18 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -959,7 +959,18 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
                                      // Kaiiju end
  
                                      profiler.push("tick");
@@ -98,10 +98,10 @@ index 8024ff2b9194e43f23b5dea7e96ffe624a9a91ac..c53d2258dba5d3a51f55cad7ee513949
                                  }
                              }
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 624f637e7a4fb8297d42e9944011e3c83245949e..ac6561a1552f7a2f724fefe0aa1507dbd9a703ef 100644
+index d648b66dace7188b54d93e4a18b5eb5e30176719..733b47fd1befdb85f58af0a841163ff740a62179 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
-@@ -1111,6 +1111,12 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1121,6 +1121,12 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
              // Folia - region threading - move to main tick loop where we can detect duplicates
              // CraftBukkit end
@@ -115,10 +115,10 @@ index 624f637e7a4fb8297d42e9944011e3c83245949e..ac6561a1552f7a2f724fefe0aa1507db
              CrashReport report = CrashReport.forThrowable(t, "Ticking player");
              CrashReportCategory category = report.addCategory("Player being ticked");
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 398526aada6bc5e99b341265f2ba074f29bbd29b..c236d128a7ae1a82f2e2081b9e71a8e2a4ee5043 100644
+index 694597d3c5df89e994c855ac89019953f42a5994..f7aa06905ec1e2b80e5b56bb8dd860bde5b116d6 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -1524,8 +1524,18 @@ public abstract class Entity
+@@ -1562,8 +1562,18 @@ public abstract class Entity
              }
  
              if (shouldVibrate) {
@@ -140,10 +140,10 @@ index 398526aada6bc5e99b341265f2ba074f29bbd29b..c236d128a7ae1a82f2e2081b9e71a8e2
              return true;
          } else {
 diff --git a/net/minecraft/world/level/block/ShulkerBoxBlock.java b/net/minecraft/world/level/block/ShulkerBoxBlock.java
-index ccc3a380f892d1238952a224c7cbb15938cbfd92..f347e27ac957c1cdcaaf29f61fdc2ca4bdc36dbb 100644
+index 9e10485bfe0dcb0225ae4911bbedd5ae24d79c4d..2cba07459806b6b1c9a0aee47f94727fc7529910 100644
 --- a/net/minecraft/world/level/block/ShulkerBoxBlock.java
 +++ b/net/minecraft/world/level/block/ShulkerBoxBlock.java
-@@ -183,7 +183,16 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
+@@ -171,7 +171,16 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
  
      @Override
      protected int getAnalogOutputSignal(final BlockState state, final Level level, final BlockPos pos, final Direction direction) {
@@ -162,7 +162,7 @@ index ccc3a380f892d1238952a224c7cbb15938cbfd92..f347e27ac957c1cdcaaf29f61fdc2ca4
  
      public @Nullable DyeColor getColor() {
 diff --git a/net/minecraft/world/level/block/state/StateHolder.java b/net/minecraft/world/level/block/state/StateHolder.java
-index 47a4aa4a45978dfec52ea995d197022f4fe32808..2a5a32ea8757ef9d03d5a9a9cb68be63a31e789a 100644
+index cbdef9d6325a3f9ace1e739d85b747b55f728ee4..76ad6035d02982568adf049bb053d2a603189195 100644
 --- a/net/minecraft/world/level/block/state/StateHolder.java
 +++ b/net/minecraft/world/level/block/state/StateHolder.java
 @@ -117,7 +117,16 @@ public abstract class StateHolder<O, S> implements ca.spottedleaf.moonrise.patch
@@ -184,10 +184,10 @@ index 47a4aa4a45978dfec52ea995d197022f4fe32808..2a5a32ea8757ef9d03d5a9a9cb68be63
      }
  
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index 46ddc47e3c760d1182165e34e31613730200c428..eb5a554a3274c1ddff2557742f3f497589884d76 100644
+index 22f693573d70cf4f60d10ea17e6f04110868a265..161cbdf64043289d560d368b9d43d8d46b27a21e 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
-@@ -401,6 +401,8 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -400,6 +400,8 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
          }
  
          Block newBlock = state.getBlock();
@@ -196,7 +196,7 @@ index 46ddc47e3c760d1182165e34e31613730200c428..eb5a554a3274c1ddff2557742f3f4975
          this.heightmaps.get(Heightmap.Types.MOTION_BLOCKING).update(localX, y, localZ, state);
          this.heightmaps.get(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES).update(localX, y, localZ, state);
          this.heightmaps.get(Heightmap.Types.OCEAN_FLOOR).update(localX, y, localZ, state);
-@@ -469,6 +471,11 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -468,6 +470,11 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
  
          this.markUnsaved();
          return oldState;
