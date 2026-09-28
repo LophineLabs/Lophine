@@ -52,7 +52,7 @@ public class RegionFormatConfig {
 
     public static void closeFlusherIfEnabled() {
         if (blinearFlusher != null) {
-            MinecraftServer.LOGGER.info("Shutting down buffered linear flusher threads");
+            MinecraftServer.LOGGER.info("Shutting down buffered linear flusher threads for 60 seconds");
 
             blinearFlusher.shutdown();
         }
