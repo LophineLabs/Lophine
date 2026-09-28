@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
@@ -194,7 +195,8 @@ public class EntitiesCounterUtil {
                 // Paper end - Only count natural spawns
                 BlockPos blockPos = entity.blockPosition();
                 chunkGetter.query(ChunkPos.pack(blockPos), chunk -> {
-                    MobSpawnSettings.MobSpawnCost mobSpawnCost = NaturalSpawner.getRoughBiome(blockPos, chunk).getMobSettings().getMobSpawnCost(entity.getType());
+                    MobSpawnSettings naturalMobSpawns = level.environmentAttributes().getValue(EnvironmentAttributes.NATURAL_MOB_SPAWNS, blockPos);
+                    MobSpawnSettings.MobSpawnCost mobSpawnCost = naturalMobSpawns.getMobSpawnCost(entity.getType());
                     if (mobSpawnCost != null) {
                         potentialCalculator.addCharge(entity.blockPosition(), mobSpawnCost.charge());
                     }
@@ -225,7 +227,8 @@ public class EntitiesCounterUtil {
 
                 BlockPos pos = entity.blockPosition();
                 chunkGetter.query(ChunkPos.pack(pos), chunk -> {
-                    MobSpawnSettings.MobSpawnCost mobSpawnCost = NaturalSpawner.getRoughBiome(pos, chunk).getMobSettings().getMobSpawnCost(entity.getType());
+                    MobSpawnSettings naturalMobSpawns = level.environmentAttributes().getValue(EnvironmentAttributes.NATURAL_MOB_SPAWNS, pos);
+                    MobSpawnSettings.MobSpawnCost mobSpawnCost = naturalMobSpawns.getMobSpawnCost(entity.getType());
                     if (mobSpawnCost != null) {
                         potentialCalculator.addCharge(entity.blockPosition(), mobSpawnCost.charge());
                     }
