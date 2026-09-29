@@ -18,7 +18,7 @@ public class EndIslandGenerator {
             }
 
             float k = 100.0F - Mth.sqrt(i) * 8;
-            return clamp(k, -100.0F, 80.0F);
+            return Mth.clamp(k, -100.0F, 80.0F);
         }
         return -100.0F;
     }
@@ -29,25 +29,23 @@ public class EndIslandGenerator {
 
         ChunkPos chunkPos = chunk.getPos();
         int sectionXMin = chunkPos.x() << 1;
+        int sectionXMax = sectionXMin + 1;
         int sectionZMin = chunkPos.z() << 1;
+        int sectionZMax = sectionZMin + 1;
         int minY = chunk.getMinY();
         int maxY = chunk.getMaxY();
-        for (int sectionX = sectionXMin; sectionX < sectionXMin + 2; sectionX++) {
-            for (int sectionZ = sectionZMin; sectionZ < sectionZMin + 2; sectionZ++) {
+        for (int sectionX = sectionXMin; sectionX <= sectionXMax; sectionX++) {
+            for (int sectionZ = sectionZMin; sectionZ <= sectionZMax; sectionZ++) {
                 float doffs = fun.bm.lophine.utils.EndIslandGenerator.getDefaultDoffs(sectionX, sectionZ);
                 if (doffs != doffs) {
-                    int blockXMin = sectionX << 3;
-                    int blockZMin = sectionZ << 3;
-                    BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-                    for (int blockX = blockXMin; blockX < blockXMin + 8; blockX++) {
-                        for (int blockZ = blockZMin; blockZ < blockZMin + 8; blockZ++) {
-                            for (int blockY = minY; blockY < maxY; blockY++) {
-                                pos.set(blockX, blockY, blockZ);
-                                BlockState state = chunk.getBlockState(pos);
-                                if (state.is(Blocks.END_STONE)) {
-                                    chunk.setBlockState(pos, Blocks.AIR.defaultBlockState());
-                                }
-                            }
+                    int minX = sectionX << 3;
+                    int maxX = minX + 7;
+                    int minZ = sectionZ << 3;
+                    int maxZ = minZ + 7;
+                    for (BlockPos pos : BlockPos.betweenClosed(minX, minY, minZ, maxX, maxY, maxZ)) {
+                        BlockState state = chunk.getBlockState(pos);
+                        if (state.is(Blocks.END_STONE)) {
+                            chunk.setBlockState(pos, Blocks.AIR.defaultBlockState());
                         }
                     }
                 }
@@ -67,13 +65,5 @@ public class EndIslandGenerator {
             }
         }
         return inRing;
-    }
-
-    public static float clamp(float value, float min, float max) {
-        if (OldFeatureConfig.shouldGenerateEndRing) {
-            return Math.min(max, Math.max(min, value));
-        } else {
-            return Mth.clamp(value, min, max);
-        }
     }
 }
