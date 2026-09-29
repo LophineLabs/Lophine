@@ -5,7 +5,7 @@ Subject: [PATCH] Add Vanilla-like experience Config
 
 
 diff --git a/ca/spottedleaf/moonrise/paper/PaperHooks.java b/ca/spottedleaf/moonrise/paper/PaperHooks.java
-index 76e94e91b548edcfc51b056b4204d271a10cb9f9..ea095830a78261b4916a56835fd909c03c34ea75 100644
+index 03085e7ff54e70302ced15a62ea1586c9ac90348..c528c7414f8de6fed012da54c5831b2f68046398 100644
 --- a/ca/spottedleaf/moonrise/paper/PaperHooks.java
 +++ b/ca/spottedleaf/moonrise/paper/PaperHooks.java
 @@ -204,6 +204,11 @@ public class PaperHooks extends BaseChunkSystemHooks implements PlatformHooks {
