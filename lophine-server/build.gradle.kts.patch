@@ -6,7 +6,7 @@
      idea
 -    id("io.papermc.paperweight.core")
 +    id("fun.bm.comfreyweight.core")
-     id("io.papermc.fill.gradle") version "1.0.12"
+     id("io.papermc.fill.gradle") version "1.0.14"
  }
  
  val paperMavenPublicUrl = "https://repo.papermc.io/repository/maven-public/"
