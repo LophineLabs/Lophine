@@ -35,6 +35,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -101,8 +102,12 @@ public class HopperCounter {
         }
     }
 
-    public List<Component> format(MinecraftServer server, boolean realTime) {
-        long ticks = Math.max(realTime ? (System.currentTimeMillis() - startMillis) / 50 : server.overworld().getGameTime() - startTick, -1);
+    public List<Component> format(ServerLevel level, boolean realTime) {
+        MinecraftServer server = level == null ? MinecraftServer.getServer() : level.getServer();
+        if (level == null) {
+            level = server.overworld();
+        }
+        long ticks = Math.max(realTime ? (System.currentTimeMillis() - startMillis) / 50 : level.getGameTime() - startTick, -1);
         String colorName = ServerI18nUtil.getLocalizedText("color.minecraft." + color.getName());
         String minText = ServerI18nUtil.getLocalizedText("lophine.hopper_counter.format.min");
         String realTimeText = realTime ? ServerI18nUtil.getLocalizedText("lophine.hopper_counter.format.real_time") : "";

@@ -115,7 +115,7 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
                         lines.add(line);
                     }
                 }
-                case "counter" -> lines.addAll(buildCounterLines(server, option));
+                case "counter" -> lines.addAll(buildCounterLines(player.level(), option));
                 default -> {
                 }
             }
@@ -180,7 +180,7 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
         return line;
     }
 
-    private static List<net.minecraft.network.chat.Component> buildCounterLines(MinecraftServer server, String option) {
+    private static List<net.minecraft.network.chat.Component> buildCounterLines(ServerLevel level, String option) {
         List<net.minecraft.network.chat.Component> lines = new ArrayList<>();
         String colors = option == null || option.isBlank() ? "white" : option;
         for (String rawColor : colors.split(",")) {
@@ -196,7 +196,7 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
             if (counter == null) {
                 continue;
             }
-            for (Component component : counter.format(server, false)) {
+            for (Component component : counter.format(level, false)) {
                 lines.add(PaperAdventure.asVanilla(component));
             }
         }
