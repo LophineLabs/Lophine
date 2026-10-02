@@ -252,7 +252,7 @@ index 4b018c64d3123bb7a0687491d2ac3a535302890c..0e4d6c9a35d29c240a0cf30694211ea3
  
      private static Map<EquipmentSlot, Float> createForAllSlots(final List<EquipmentSlot> slots, final float dropChance) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index cb40a236e9ba4b2073205c5d4aa3f1eef0f29c2f..5c5720cad738ad55a9b223f7b0c51bbd6067a541 100644
+index f7c4c3d7b25eb99e0e2b0d19a6f799032fb131c8..6024ac1d4f1ed66f10f767db13760cfb8c65f8f5 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -3604,7 +3604,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -274,7 +274,7 @@ index cb40a236e9ba4b2073205c5d4aa3f1eef0f29c2f..5c5720cad738ad55a9b223f7b0c51bbd
                      return true;
                  }
 diff --git a/net/minecraft/world/entity/decoration/ArmorStand.java b/net/minecraft/world/entity/decoration/ArmorStand.java
-index 0ebb87ce71cccc73a60945552d0f4ac000291dd6..714bde58ef37d1fae8f3ad9486a7c95825038069 100644
+index 1bb456abad2e36fc415e2ab9ef60d8ce3b0c63d9..9fd30fd2dfb78b1c6c7233d610b65c59e966728b 100644
 --- a/net/minecraft/world/entity/decoration/ArmorStand.java
 +++ b/net/minecraft/world/entity/decoration/ArmorStand.java
 @@ -484,7 +484,7 @@ public class ArmorStand extends LivingEntity {

@@ -8,10 +8,10 @@ As part of: Leaves (https://github.com/LeavesMC/Leaves/blob/4ade1001e4dd19c47d95
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/net/minecraft/world/level/dimension/end/EnderDragonFight.java b/net/minecraft/world/level/dimension/end/EnderDragonFight.java
-index cf6b3705d2950df8c0e4e76cf3163a4422b5cd09..cc1f4fb6c4e01888cb32aab10dcc486523a76d3b 100644
+index 56648e26cdb0f5ba13db9bf5dc75d70bc911b1e7..0e8ba61877997c0a7b842c4e0002fc2d4e38c31a 100644
 --- a/net/minecraft/world/level/dimension/end/EnderDragonFight.java
 +++ b/net/minecraft/world/level/dimension/end/EnderDragonFight.java
-@@ -322,7 +322,67 @@ public class EnderDragonFight extends SavedData {
+@@ -324,7 +324,67 @@ public class EnderDragonFight extends SavedData {
          return false;
      }
  
@@ -79,7 +79,7 @@ index cf6b3705d2950df8c0e4e76cf3163a4422b5cd09..cc1f4fb6c4e01888cb32aab10dcc4865
          ChunkPos chunkOrigin = ChunkPos.containing(this.origin);
  
          for (int x = -8 + chunkOrigin.x(); x <= 8 + chunkOrigin.x(); x++) {
-@@ -628,8 +688,12 @@ public class EnderDragonFight extends SavedData {
+@@ -631,8 +691,12 @@ public class EnderDragonFight extends SavedData {
          }
          return false; // CraftBukkit - return value
      }

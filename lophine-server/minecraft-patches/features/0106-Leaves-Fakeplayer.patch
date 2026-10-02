@@ -614,7 +614,7 @@ index 55f40b089dcd5e99aeddfd62b77a51de02f429d0..b701d311d1c42de014c6308826b1633e
              case SERVER_AND_CLIENT -> true;
              case AUTHORITATIVE_SIDE -> this.isLocalInstanceAuthoritative();
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index fc74620e5be51da93da985dd5d6179df7c2c1668..496f5bd214dabed49fa6510532ea6318e93d0fd6 100644
+index d91287bc8a4a733fb66eb278fcdb5ce4b9922eda..021d6ff756ce2d16557106c77ffc3e32b623ddcf 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -2009,7 +2009,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
