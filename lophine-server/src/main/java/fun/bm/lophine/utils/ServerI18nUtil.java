@@ -352,8 +352,8 @@ public class ServerI18nUtil {
     }
 
     public static @NotNull String getLocalizedTextOrDefault(String key, String defaultValue) {
-        String current = Language.getInstance().getOrDefault(key, defaultValue);
-        if (!current.isBlank()) return current;
+        String current = Language.getInstance().getOrDefault(key, null);
+        if (current != null) return current;
         return Language.DEFAULT_INSTANCE.getOrDefault(key, defaultValue);
     }
 

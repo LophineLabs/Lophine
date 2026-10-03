@@ -7,8 +7,9 @@ import fun.bm.lophine.command.counter.CounterSubCommand;
 import fun.bm.lophine.utils.ServerI18nUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.DyeColor;
+import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.command.ArgumentNode;
 import org.leavesmc.leaves.command.CommandContext;
@@ -25,7 +26,8 @@ public class DisplayCommand extends CounterSubCommand {
     }
 
     public static void displayCounter(CommandContext context, @NotNull HopperCounter counter, boolean realTime) {
-        for (Component component : counter.format(MinecraftServer.getServer(), realTime)) {
+        Entity entity = context.getSource().getExecutor();
+        for (Component component : counter.format(entity == null ? null : entity instanceof ServerPlayer sp ? sp.level() : null, realTime)) {
             context.getSender().sendMessage(component);
         }
     }

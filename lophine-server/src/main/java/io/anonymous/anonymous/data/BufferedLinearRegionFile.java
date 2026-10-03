@@ -2,6 +2,7 @@ package io.anonymous.anonymous.data;
 
 import ca.spottedleaf.concurrentutil.util.ConcurrentUtil;
 import ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO;
+import ca.spottedleaf.moonrise.patches.chunk_system.storage.ChunkSystemChunkBuffer;
 import com.github.luben.zstd.Zstd;
 import com.github.luben.zstd.ZstdInputStream;
 import net.jpountz.lz4.LZ4Compressor;
@@ -820,6 +821,8 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
     @Override
     public void write(@NotNull ChunkPos pos, ByteBuffer buf) throws IOException {
         this.writeChunk(pos.x(), pos.z(), buf);
+
+        this.flushInternal(); // align the mca's implementation and requirements of moonrise
     }
 
     // MCC 的玩意,这东西也用不上给Linear了()
@@ -846,11 +849,14 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
 
     @Override
     public MoonriseRegionFileIO.RegionDataController.WriteData moonrise$startWrite(CompoundTag data, ChunkPos pos) {
-        final DataOutputStream out = this.getChunkDataOutputStream(pos);
+        final ChunkBufferHelper internalBuffer = new ChunkBufferHelper(pos);
+        internalBuffer.moonrise$setWriteOnClose(false);
+
+        final DataOutputStream out = new DataOutputStream(internalBuffer);
 
         return new MoonriseRegionFileIO.RegionDataController.WriteData(
                 data, MoonriseRegionFileIO.RegionDataController.WriteData.WriteResult.WRITE,
-                out, regionFile -> out.close()
+                out, internalBuffer::moonrise$write
         );
     }
 
@@ -940,8 +946,9 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
         }
     }
 
-    private class ChunkBufferHelper extends ByteArrayOutputStream {
+    private class ChunkBufferHelper extends ByteArrayOutputStream implements ChunkSystemChunkBuffer {
         private final ChunkPos pos;
+        private boolean writeOnClose = true;
 
         private ChunkBufferHelper(ChunkPos pos) {
             // chunk NBT payloads are tens to hundreds of KiB: BAOS's default 32 bytes
@@ -952,11 +959,29 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
 
         @Override
         public void close() throws IOException {
-            ByteBuffer bytebuffer = ByteBuffer.wrap(this.buf, 0, this.count);
+            if (this.writeOnClose) {
+                ByteBuffer bytebuffer = ByteBuffer.wrap(this.buf, 0, this.count);
 
-            BufferedLinearRegionFile.this.writeChunk(this.pos.x(), this.pos.z(), bytebuffer);
+                BufferedLinearRegionFile.this.writeChunk(this.pos.x(), this.pos.z(), bytebuffer);
+                BufferedLinearRegionFile.this.flushInternal();
+            }
+        }
 
-            BufferedLinearRegionFile.this.flushInternal();
+        @Override
+        public boolean moonrise$getWriteOnClose() {
+            return this.writeOnClose;
+        }
+
+        @Override
+        public void moonrise$setWriteOnClose(boolean value) {
+            this.writeOnClose = value;
+        }
+
+        @Override
+        public void moonrise$write(io.anonymous.anonymous.data.RegionFile regionFile) throws IOException {
+            ByteBuffer data = ByteBuffer.wrap(this.buf, 0, this.count);
+
+            regionFile.write(this.pos, data);
         }
     }
 

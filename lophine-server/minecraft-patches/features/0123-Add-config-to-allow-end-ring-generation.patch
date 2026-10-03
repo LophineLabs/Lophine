@@ -21,27 +21,20 @@ index f0529d233b791e226cec469b2efebcffd02c6d58..7f15624445c5467ee9de9e7754e8e3d7
  
                  return chunk;
 diff --git a/net/minecraft/world/level/levelgen/densityfunction/generator/EndIslandFunction.java b/net/minecraft/world/level/levelgen/densityfunction/generator/EndIslandFunction.java
-index 04060959dc10bae58d39d41c3d30138e1eecc36d..81cddc78b9e9f05681f53fcfe48286dc9109f081 100644
+index 04060959dc10bae58d39d41c3d30138e1eecc36d..93de0e8e7f9eab4dece1ee11ecd0deb7fb009375 100644
 --- a/net/minecraft/world/level/levelgen/densityfunction/generator/EndIslandFunction.java
 +++ b/net/minecraft/world/level/levelgen/densityfunction/generator/EndIslandFunction.java
-@@ -21,7 +21,7 @@ public record EndIslandFunction() implements DensityFunction {
+@@ -21,7 +21,9 @@ public record EndIslandFunction() implements DensityFunction {
          int chunkZ = sectionZ / 2;
          int subSectionX = sectionX % 2;
          int subSectionZ = sectionZ % 2;
 -        float doffs = -100.0F;
 +        float doffs = fun.bm.lophine.utils.EndIslandGenerator.getDefaultDoffs(sectionX, sectionZ); // Lophine - modify end ring generation
++
++        if (doffs != doffs) return doffs; // Lophine - return if is NaN
  
          for (int xo = -12; xo <= 12; xo++) {
              for (int zo = -12; zo <= 12; zo++) {
-@@ -32,7 +32,7 @@ public record EndIslandFunction() implements DensityFunction {
-                     float xd = subSectionX - xo * 2;
-                     float zd = subSectionZ - zo * 2;
-                     float newDoffs = 100.0F - Mth.sqrt(xd * xd + zd * zd) * islandSize;
--                    newDoffs = Mth.clamp(newDoffs, -100.0F, 80.0F);
-+                    newDoffs = fun.bm.lophine.utils.EndIslandGenerator.clamp(newDoffs, -100.0F, 80.0F); // Lophine - modify end ring generation
-                     doffs = Math.max(doffs, newDoffs);
-                 }
-             }
 diff --git a/net/minecraft/world/level/levelgen/feature/EndIslandFeature.java b/net/minecraft/world/level/levelgen/feature/EndIslandFeature.java
 index eadcfa9c95923f100a7a1636a3b5489051dcc561..2f3800a2e41e6375201da9e6734e78288554f689 100644
 --- a/net/minecraft/world/level/levelgen/feature/EndIslandFeature.java

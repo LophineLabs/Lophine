@@ -551,7 +551,7 @@ index 219d4071619168f3442d0beeee70795416eb8b94..bdf6fbea0f29e3b63b054954fbf635a1
          // Leaves end - fakeplayer support
  
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 496f5bd214dabed49fa6510532ea6318e93d0fd6..a4385d326db1d6da71f6d3a9c7a39ebaa7b0c8e4 100644
+index 021d6ff756ce2d16557106c77ffc3e32b623ddcf..a489e198f43c64968ee74447cb9b6c1c8baacbab 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -276,7 +276,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -561,5 +561,5 @@ index 496f5bd214dabed49fa6510532ea6318e93d0fd6..a4385d326db1d6da71f6d3a9c7a39eba
 -    private BlockPos lastPos;
 +    protected BlockPos lastPos;
      private Optional<BlockPos> lastClimbablePos = Optional.empty();
-     private @Nullable DamageSource lastDamageSource;
+     protected @Nullable DamageSource lastDamageSource; // Paper - Backport MC-311924 fix
      private long lastDamageStamp = Long.MIN_VALUE; // Folia - region threading
