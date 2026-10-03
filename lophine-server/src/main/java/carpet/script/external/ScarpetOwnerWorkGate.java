@@ -10,14 +10,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-/** Only admission metadata is synchronized; native work and snapshots run on their owner. */
+/**
+ * Only admission metadata is synchronized; native work and snapshots run on their owner.
+ */
 final class ScarpetOwnerWorkGate {
     private final java.util.Map<CompletableFuture<?>, ScarpetNativeWork.Token> accepted = new IdentityHashMap<>();
     private int pauses;
     private CompletableFuture<Void> opened = CompletableFuture.completedFuture(null);
 
-    synchronized boolean paused() { return pauses != 0; }
-    synchronized CompletableFuture<Void> whenOpen() { return opened; }
+    synchronized boolean paused() {
+        return pauses != 0;
+    }
+
+    synchronized CompletableFuture<Void> whenOpen() {
+        return opened;
+    }
 
     void track(CompletableFuture<?> actual) {
         synchronized (this) {
@@ -25,7 +32,9 @@ final class ScarpetOwnerWorkGate {
             accepted.put(actual, ScarpetNativeWork.dependencyOf(actual));
         }
         actual.whenComplete((ignored, failure) -> {
-            synchronized (ScarpetOwnerWorkGate.this) { accepted.remove(actual); }
+            synchronized (ScarpetOwnerWorkGate.this) {
+                accepted.remove(actual);
+            }
         });
     }
 
@@ -42,18 +51,22 @@ final class ScarpetOwnerWorkGate {
         synchronized (this) {
             if (pauses++ == 0) opened = new CompletableFuture<>();
             pending = CompletableFuture.allOf(accepted.entrySet().stream()
-                .filter(entry -> {
-                    var known=ScarpetNativeWork.knownDependencyOf(entry.getKey());
-                    return !authorizedChild || !ScarpetNativeWork.currentDependsOn(known==null?entry.getValue():known);
-                })
-                .map(entry -> mandatoryCleanup ? entry.getKey().handle((ignored, failure) -> null) : entry.getKey())
-                .toArray(CompletableFuture[]::new));
+                    .filter(entry -> {
+                        var known = ScarpetNativeWork.knownDependencyOf(entry.getKey());
+                        return !authorizedChild || !ScarpetNativeWork.currentDependsOn(known == null ? entry.getValue() : known);
+                    })
+                    .map(entry -> mandatoryCleanup ? entry.getKey().handle((ignored, failure) -> null) : entry.getKey())
+                    .toArray(CompletableFuture[]::new));
         }
         var result = new CompletableFuture<T>();
         var lifetime = new Snapshot<T>(result, this::release);
-        try { lifetime.follow(pending.thenCompose(ignored -> owner.apply(snapshot)), true); }
-        catch (Throwable failure) { lifetime.fail(failure); }
-        finally { lifetime.exit(); }
+        try {
+            lifetime.follow(pending.thenCompose(ignored -> owner.apply(snapshot)), true);
+        } catch (Throwable failure) {
+            lifetime.fail(failure);
+        } finally {
+            lifetime.exit();
+        }
         return result;
     }
 
@@ -66,7 +79,9 @@ final class ScarpetOwnerWorkGate {
         if (resume != null) resume.complete(null);
     }
 
-    /** A cancelled caller does not release a reservation still executing its real nested tail. */
+    /**
+     * A cancelled caller does not release a reservation still executing its real nested tail.
+     */
     private static final class Snapshot<T> {
         private final CompletableFuture<T> result;
         private final Runnable release;
@@ -75,11 +90,17 @@ final class ScarpetOwnerWorkGate {
         private T value;
         private Throwable failure;
 
-        Snapshot(CompletableFuture<T> result, Runnable release) { this.result = result; this.release = release; }
+        Snapshot(CompletableFuture<T> result, Runnable release) {
+            this.result = result;
+            this.release = release;
+        }
 
         @SuppressWarnings("unchecked")
         void follow(CompletionStage<?> stage, boolean outer) {
-            synchronized (this) { if (!seen.add(stage)) return; pending++; }
+            synchronized (this) {
+                if (!seen.add(stage)) return;
+                pending++;
+            }
             var once = new AtomicBoolean();
             try {
                 stage.whenComplete((nested, thrown) -> {
@@ -87,11 +108,16 @@ final class ScarpetOwnerWorkGate {
                     try {
                         if (thrown != null) fail(thrown);
                         else {
-                            if (outer) synchronized (this) { value = (T) nested; }
+                            if (outer) synchronized (this) {
+                                value = (T) nested;
+                            }
                             if (nested instanceof CompletionStage<?> child) follow(child, false);
                         }
-                    } catch (Throwable problem) { fail(problem); }
-                    finally { exit(); }
+                    } catch (Throwable problem) {
+                        fail(problem);
+                    } finally {
+                        exit();
+                    }
                 });
             } catch (Throwable problem) {
                 fail(problem);
@@ -99,7 +125,9 @@ final class ScarpetOwnerWorkGate {
             }
         }
 
-        synchronized void fail(Throwable problem) { if (failure == null) failure = problem; }
+        synchronized void fail(Throwable problem) {
+            if (failure == null) failure = problem;
+        }
 
         void exit() {
             T completed;
@@ -107,11 +135,17 @@ final class ScarpetOwnerWorkGate {
             synchronized (this) {
                 if (--pending < 0) throw new IllegalStateException("Player snapshot tail closed twice");
                 if (pending != 0) return;
-                seen.clear(); completed = value; problem = failure;
+                seen.clear();
+                completed = value;
+                problem = failure;
             }
-            try { release.run(); }
-            catch (Throwable thrown) { if (problem == null) problem = thrown; }
-            if (problem == null) result.complete(completed); else result.completeExceptionally(problem);
+            try {
+                release.run();
+            } catch (Throwable thrown) {
+                if (problem == null) problem = thrown;
+            }
+            if (problem == null) result.complete(completed);
+            else result.completeExceptionally(problem);
         }
     }
 }

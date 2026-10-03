@@ -7,8 +7,7 @@ import java.util.Map;
 import java.util.Random;
 
 // extracted from import net.minecraft.util.math.noise.SimplexNoiseSampler
-public class SimplexNoiseSampler extends PerlinNoiseSampler
-{
+public class SimplexNoiseSampler extends PerlinNoiseSampler {
     private static final double sqrt3 = Math.sqrt(3.0D);
     private static final double SKEW_FACTOR_2D;
     private static final double UNSKEW_FACTOR_2D;
@@ -16,30 +15,23 @@ public class SimplexNoiseSampler extends PerlinNoiseSampler
     public static SimplexNoiseSampler instance = new SimplexNoiseSampler(new Random(0));
     public static Map<Long, SimplexNoiseSampler> samplers = new Long2ObjectOpenHashMap<>();
 
-    public static SimplexNoiseSampler getSimplex(long aLong)
-    {
-        if (samplers.size() > 256)
-        {
+    public static SimplexNoiseSampler getSimplex(long aLong) {
+        if (samplers.size() > 256) {
             samplers.clear();
         }
         return samplers.computeIfAbsent(aLong, seed -> new SimplexNoiseSampler(new Random(seed)));
     }
 
-    public SimplexNoiseSampler(Random random)
-    {
+    public SimplexNoiseSampler(Random random) {
         super(random);
     }
 
-    private double grad(int hash, double x, double y, double z, double d)
-    {
+    private double grad(int hash, double x, double y, double z, double d) {
         double e = d - x * x - y * y - z * z;
         double g;
-        if (e < 0.0D)
-        {
+        if (e < 0.0D) {
             g = 0.0D;
-        }
-        else
-        {
+        } else {
             e *= e;
             g = e * e * PerlinNoiseSampler.dot3d(PerlinNoiseSampler.gradients3d[hash], x, y, z);
         }
@@ -48,8 +40,7 @@ public class SimplexNoiseSampler extends PerlinNoiseSampler
     }
 
     @Override
-    public double sample2d(double x, double y)
-    {
+    public double sample2d(double x, double y) {
         x = x / 2;
         y = y / 2;
         double d = (x + y) * SKEW_FACTOR_2D;
@@ -62,13 +53,10 @@ public class SimplexNoiseSampler extends PerlinNoiseSampler
         double k = y - g;
         byte n;
         byte o;
-        if (h > k)
-        {
+        if (h > k) {
             n = 1;
             o = 0;
-        }
-        else
-        {
+        } else {
             n = 0;
             o = 1;
         }
@@ -90,8 +78,7 @@ public class SimplexNoiseSampler extends PerlinNoiseSampler
     }
 
     @Override
-    public double sample3d(double d, double e, double f)
-    {
+    public double sample3d(double d, double e, double f) {
         d = d / 2;
         e = e / 2;
         f = f / 2;
@@ -114,28 +101,22 @@ public class SimplexNoiseSampler extends PerlinNoiseSampler
         byte ac;
         byte ad;
         byte bc;
-        if (q >= r)
-        {
-            if (r >= s)
-            {
+        if (q >= r) {
+            if (r >= s) {
                 z = 1;
                 aa = 0;
                 ab = 0;
                 ac = 1;
                 ad = 1;
                 bc = 0;
-            }
-            else if (q >= s)
-            {
+            } else if (q >= s) {
                 z = 1;
                 aa = 0;
                 ab = 0;
                 ac = 1;
                 ad = 0;
                 bc = 1;
-            }
-            else
-            {
+            } else {
                 z = 0;
                 aa = 0;
                 ab = 1;
@@ -143,27 +124,21 @@ public class SimplexNoiseSampler extends PerlinNoiseSampler
                 ad = 0;
                 bc = 1;
             }
-        }
-        else if (r < s)
-        {
+        } else if (r < s) {
             z = 0;
             aa = 0;
             ab = 1;
             ac = 0;
             ad = 1;
             bc = 1;
-        }
-        else if (q < s)
-        {
+        } else if (q < s) {
             z = 0;
             aa = 1;
             ab = 0;
             ac = 0;
             ad = 1;
             bc = 1;
-        }
-        else
-        {
+        } else {
             z = 0;
             aa = 1;
             ab = 0;
@@ -195,8 +170,7 @@ public class SimplexNoiseSampler extends PerlinNoiseSampler
         return 16.0D * (bt + bu + bv + bw) + 0.5;
     }
 
-    static
-    {
+    static {
         SKEW_FACTOR_2D = 0.5D * (sqrt3 - 1.0D);
         UNSKEW_FACTOR_2D = (3.0D - sqrt3) / 6.0D;
     }

@@ -3,7 +3,6 @@
 package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
-import java.util.List;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
@@ -13,7 +12,11 @@ import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 
-/** A server container stored in the bundle's standard CONTAINER component. */
+import java.util.List;
+
+/**
+ * A server container stored in the bundle's standard CONTAINER component.
+ */
 public final class AmsLargeBundleContainer extends SimpleContainer {
     private final ItemStack bundle;
     private final Player owner;
@@ -35,20 +38,24 @@ public final class AmsLargeBundleContainer extends SimpleContainer {
         return new net.minecraft.world.SimpleMenuProvider((id, inventory, owner) -> {
             final AmsLargeBundleContainer contents = new AmsLargeBundleContainer(stack, owner);
             return "9x3".equals(GeneralCompatConfig.largeBundle) ? net.minecraft.world.inventory.ChestMenu.threeRows(id, inventory, contents)
-                : net.minecraft.world.inventory.ChestMenu.sixRows(id, inventory, contents);
+                    : net.minecraft.world.inventory.ChestMenu.sixRows(id, inventory, contents);
         }, stack.getHoverName());
     }
 
-    private record Open(net.minecraft.core.BlockPos position, net.minecraft.world.MenuProvider provider) {}
+    private record Open(net.minecraft.core.BlockPos position, net.minecraft.world.MenuProvider provider) {
+    }
 
     public static java.util.concurrent.CompletableFuture<Void> open(final net.minecraft.server.level.ServerLevel world,
-        final net.minecraft.server.level.ServerPlayer player, final ItemStack stack) {
+                                                                    final net.minecraft.server.level.ServerPlayer player, final ItemStack stack) {
         return AmsNativeCommandEffects.nativeReceipt(world.getServer(), () ->
-            AmsNativeCommandEffects.then(AmsNativeCommandEffects.owned(player, () -> new Open(player.blockPosition().immutable(), menuProvider(stack))), read ->
-                AmsNativeCommandEffects.then(AmsNativeCommandEffects.world(world, read.position(), () -> {
-                    world.playSound(player, read.position(), net.minecraft.sounds.SoundEvents.BUNDLE_DROP_CONTENTS, net.minecraft.sounds.SoundSource.PLAYERS, 1.5F, 1.35F);
-                    return (Void)null;
-                }), ignored -> AmsNativeCommandEffects.owned(player, () -> { player.openMenu(read.provider()); return (Void)null; }))));
+                AmsNativeCommandEffects.then(AmsNativeCommandEffects.owned(player, () -> new Open(player.blockPosition().immutable(), menuProvider(stack))), read ->
+                        AmsNativeCommandEffects.then(AmsNativeCommandEffects.world(world, read.position(), () -> {
+                            world.playSound(player, read.position(), net.minecraft.sounds.SoundEvents.BUNDLE_DROP_CONTENTS, net.minecraft.sounds.SoundSource.PLAYERS, 1.5F, 1.35F);
+                            return (Void) null;
+                        }), ignored -> AmsNativeCommandEffects.owned(player, () -> {
+                            player.openMenu(read.provider());
+                            return (Void) null;
+                        }))));
     }
 
     @Override
@@ -66,7 +73,7 @@ public final class AmsLargeBundleContainer extends SimpleContainer {
 
     public static boolean canInsert(final ItemStack stack) {
         return !stack.isEmpty() && !(stack.getItem() instanceof BundleItem)
-            && !(Block.byItem(stack.getItem()) instanceof ShulkerBoxBlock);
+                && !(Block.byItem(stack.getItem()) instanceof ShulkerBoxBlock);
     }
 
     @Override

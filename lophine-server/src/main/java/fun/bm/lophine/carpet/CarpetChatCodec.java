@@ -2,9 +2,10 @@ package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import io.netty.buffer.ByteBuf;
-import java.util.function.BooleanSupplier;
 import net.minecraft.network.Utf8String;
 import net.minecraft.network.codec.StreamCodec;
+
+import java.util.function.BooleanSupplier;
 
 public final class CarpetChatCodec {
     private CarpetChatCodec() {
@@ -16,7 +17,7 @@ public final class CarpetChatCodec {
 
     public static StreamCodec<ByteBuf, String> command(StreamCodec<ByteBuf, String> original) {
         return dynamic(original, () -> GeneralCompatConfig.chatMessageLengthLimitUnlocked
-            || me.earthme.luminol.config.modules.fixes.LongCommandSupportConfig.enabled, 32767);
+                || me.earthme.luminol.config.modules.fixes.LongCommandSupportConfig.enabled, 32767);
     }
 
     private static StreamCodec<ByteBuf, String> dynamic(StreamCodec<ByteBuf, String> original, BooleanSupplier enabled, int limit) {

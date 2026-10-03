@@ -4,40 +4,25 @@ import carpet.script.CarpetContext;
 import carpet.script.CarpetScriptHost;
 import carpet.script.external.Carpet;
 import carpet.script.external.Vanilla;
-import carpet.script.value.BooleanValue;
-import carpet.script.value.EntityValue;
-import carpet.script.value.ListValue;
-import carpet.script.value.MapValue;
-import carpet.script.value.NumericValue;
-import carpet.script.value.StringValue;
-import carpet.script.value.Value;
-import carpet.script.value.ValueConversions;
+import carpet.script.value.*;
 import com.sun.management.OperatingSystemMXBean;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.gamerules.GameRule;
 import net.minecraft.world.level.gamerules.GameRuleTypeVisitor;
 import net.minecraft.world.level.gamerules.GameRules;
-import net.minecraft.world.level.border.WorldBorder;
-import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec2;
 
 import java.lang.management.ManagementFactory;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 
-public class SystemInfo
-{
+public class SystemInfo {
     @SuppressWarnings("DoubleBraceInitialization")
-    private static final Map<String, Function<CarpetContext, Value>> options = new HashMap<>()
-    {{
+    private static final Map<String, Function<CarpetContext, Value>> options = new HashMap<>() {{
         put("app_name", c ->
         {
             String name = c.host.getName();
@@ -54,8 +39,7 @@ public class SystemInfo
         put("world_folder", c -> {
             Path serverPath = c.server().getWorldPath(LevelResource.ROOT);
             int nodeCount = serverPath.getNameCount();
-            if (nodeCount < 2)
-            {
+            if (nodeCount < 2) {
                 return Value.NULL;
             }
             String tlf = serverPath.getName(nodeCount - 2).toString();
@@ -100,24 +84,21 @@ public class SystemInfo
         put("server_whitelisted", c -> BooleanValue.of(c.server().isEnforceWhitelist()));
         put("server_whitelist", c -> {
             MapValue whitelist = new MapValue(Collections.emptyList());
-            for (String s : c.server().getPlayerList().getWhiteListNames())
-            {
+            for (String s : c.server().getPlayerList().getWhiteListNames()) {
                 whitelist.append(StringValue.of(s));
             }
             return whitelist;
         });
         put("server_banned_players", c -> {
             MapValue whitelist = new MapValue(Collections.emptyList());
-            for (String s : c.server().getPlayerList().getBans().getUserList())
-            {
+            for (String s : c.server().getPlayerList().getBans().getUserList()) {
                 whitelist.append(StringValue.of(s));
             }
             return whitelist;
         });
         put("server_banned_ips", c -> {
             MapValue whitelist = new MapValue(Collections.emptyList());
-            for (String s : c.server().getPlayerList().getIpBans().getUserList())
-            {
+            for (String s : c.server().getPlayerList().getIpBans().getUserList()) {
                 whitelist.append(StringValue.of(s));
             }
             return whitelist;
@@ -130,8 +111,7 @@ public class SystemInfo
             int currentReportedTick = c.server().getTickCount() - 1;
             List<Value> ticks = new ArrayList<>(100);
             long[] tickArray = c.server().getTickTimesNanos();
-            for (int i = currentReportedTick + 100; i > currentReportedTick; i--)
-            {
+            for (int i = currentReportedTick + 100; i > currentReportedTick; i--) {
                 ticks.add(new NumericValue(tickArray[i % 100] / 1000000.0));
             }
             return ListValue.wrap(ticks);
@@ -143,11 +123,9 @@ public class SystemInfo
         put("java_cpu_count", c -> new NumericValue(Runtime.getRuntime().availableProcessors()));
         put("java_version", c -> StringValue.of(System.getProperty("java.version")));
         put("java_bits", c -> {
-            for (String property : new String[]{"sun.arch.data.model", "com.ibm.vm.bitmode", "os.arch"})
-            {
+            for (String property : new String[]{"sun.arch.data.model", "com.ibm.vm.bitmode", "os.arch"}) {
                 String value = System.getProperty(property);
-                if (value != null && value.contains("64"))
-                {
+                if (value != null && value.contains("64")) {
                     return new NumericValue(64);
                 }
             }
@@ -167,12 +145,12 @@ public class SystemInfo
         put("world_gamerules", c -> {
             Map<Value, Value> rules = new HashMap<>();
             GameRules gameRules = c.level().getGameRules();
-            gameRules.visitGameRuleTypes(new GameRuleTypeVisitor()
-            {
+            gameRules.visitGameRuleTypes(new GameRuleTypeVisitor() {
                 @Override
                 public void visitBoolean(GameRule<Boolean> gameRule) {
                     rules.put(StringValue.of(gameRule.id()), BooleanValue.of(gameRules.get(gameRule)));
                 }
+
                 @Override
                 public void visitInteger(GameRule<Integer> gameRule) {
                     rules.put(StringValue.of(gameRule.id()), NumericValue.of(gameRules.get(gameRule)));
@@ -192,13 +170,11 @@ public class SystemInfo
         put("scarpet_version", c -> StringValue.of(Carpet.getCarpetVersion()));
     }};
 
-    public static Value get(String what, CarpetContext cc)
-    {
+    public static Value get(String what, CarpetContext cc) {
         return options.getOrDefault(what, c -> null).apply(cc);
     }
 
-    public static Value getAll()
-    {
+    public static Value getAll() {
         return ListValue.wrap(options.keySet().stream().map(StringValue::of));
     }
 

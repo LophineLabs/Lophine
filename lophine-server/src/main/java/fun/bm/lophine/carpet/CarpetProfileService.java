@@ -1,27 +1,30 @@
 package fun.bm.lophine.carpet;
 
 import io.papermc.paper.threadedregions.RegionizedServer;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
-/** Independent native timer sampling over complete global tick windows. */
+import java.util.*;
+
+/**
+ * Independent native timer sampling over complete global tick windows.
+ */
 public final class CarpetProfileService {
     private static volatile Request pending;
     private static volatile Session current;
 
-    private CarpetProfileService() {}
+    private CarpetProfileService() {
+    }
 
-    private record Request(CommandSourceStack source, int ticks, boolean entities) {}
+    private record Request(CommandSourceStack source, int ticks, boolean entities) {
+    }
+
     private static final class Session {
         final Request request;
         final CarpetProfileObserver.Session sampling;
         int remaining;
+
         Session(Request request, long now) {
             this.request = request;
             this.remaining = request.ticks();
@@ -35,7 +38,9 @@ public final class CarpetProfileService {
         return 1;
     }
 
-    /** Called at the actual global tick head before its first measured phase. */
+    /**
+     * Called at the actual global tick head before its first measured phase.
+     */
     public static void startGlobalTick() {
         if (pending != null) {
             if (current != null) CarpetProfileObserver.finish(current.sampling, System.nanoTime());
@@ -45,7 +50,9 @@ public final class CarpetProfileService {
         }
     }
 
-    /** Called at actual global tick tail, after closing the global Full Tick scope. */
+    /**
+     * Called at actual global tick tail, after closing the global Full Tick scope.
+     */
     public static void endGlobalTick() {
         Session session = current;
         if (session == null || --session.remaining > 0) return;
@@ -53,7 +60,11 @@ public final class CarpetProfileService {
         finish(session, CarpetProfileObserver.finish(session.sampling, System.nanoTime()));
     }
 
-    public static void reset() { pending = null; current = null; CarpetProfileObserver.reset(); }
+    public static void reset() {
+        pending = null;
+        current = null;
+        CarpetProfileObserver.reset();
+    }
 
     private static void finish(Session session, CarpetProfileObserver.Result result) {
         Map<String, Long> sections = new HashMap<>(), selfSections = new HashMap<>();
@@ -67,7 +78,8 @@ public final class CarpetProfileService {
                 String name = timer.getKey();
                 var timing = timer.getValue();
                 if (name.equals("Full Tick")) {
-                    if (isGlobal) global += timing.nanos(); else regional += timing.nanos();
+                    if (isGlobal) global += timing.nanos();
+                    else regional += timing.nanos();
                 }
                 if (!isGlobal && name.equals("In Between Tick")) between += timing.nanos();
                 String section = region.key().dimension() + " - " + name;
@@ -84,11 +96,11 @@ public final class CarpetProfileService {
         }
         double divider = 1.0 / session.request.ticks();
         send(session.request.source(), Component.literal(String.format(Locale.ROOT,
-            "Average tick work: regions %.3fms, global %.3fms, between ticks %.3fms/global tick (%d ticks, %d region records)",
-            regional * divider / 1.0E6, global * divider / 1.0E6, between * divider / 1.0E6, session.request.ticks(), regions)));
+                "Average tick work: regions %.3fms, global %.3fms, between ticks %.3fms/global tick (%d ticks, %d region records)",
+                regional * divider / 1.0E6, global * divider / 1.0E6, between * divider / 1.0E6, session.request.ticks(), regions)));
         send(session.request.source(), Component.literal(String.format(Locale.ROOT,
-            "Wall clock: %.3fms/global tick; regional work runs in parallel. Window endpoints are clipped; section times are inclusive.",
-            (result.endNanos() - result.startNanos()) * divider / 1.0E6)));
+                "Wall clock: %.3fms/global tick; regional work runs in parallel. Window endpoints are clipped; section times are inclusive.",
+                (result.endNanos() - result.startNanos()) * divider / 1.0E6)));
         if (session.request.entities()) {
             send(session.request.source(), Component.literal("Top 10 counts:"));
             showTop(session, counts, divider, "");
@@ -99,11 +111,11 @@ public final class CarpetProfileService {
                 if (entityType(entry.getKey().substring(entry.getKey().indexOf(" - ") + 3)) != null) continue;
                 double ms = entry.getValue() * divider / 1.0E6;
                 if (ms > 0.01) send(session.request.source(), Component.literal(String.format(Locale.ROOT,
-                    "%s: %.3fms (self %.3fms)", entry.getKey(), ms, selfSections.get(entry.getKey()) * divider / 1.0E6)));
+                        "%s: %.3fms (self %.3fms)", entry.getKey(), ms, selfSections.get(entry.getKey()) * divider / 1.0E6)));
             }
             for (var entry : counters.entrySet().stream().sorted(Map.Entry.comparingByKey()).toList()) {
                 send(session.request.source(), Component.literal(String.format(Locale.ROOT,
-                    "%s: %.3f/global tick", entry.getKey(), entry.getValue() * divider)));
+                        "%s: %.3f/global tick", entry.getKey(), entry.getValue() * divider)));
             }
         }
     }

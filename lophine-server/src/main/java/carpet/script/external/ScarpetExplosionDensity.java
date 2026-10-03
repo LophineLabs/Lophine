@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 package carpet.script.external;
 
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -17,77 +14,154 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-/** Old-world collision data is captured by its owner; native shapes read the original entity on its current owner. */
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+
+/**
+ * Old-world collision data is captured by its owner; native shapes read the original entity on its current owner.
+ */
 public final class ScarpetExplosionDensity {
-    public record Entry(BlockState state, VoxelShape shape) {}
-    private record Prepared(Snapshot snapshot, Float cached) {}
+    public record Entry(BlockState state, VoxelShape shape) {
+    }
+
+    private record Prepared(Snapshot snapshot, Float cached) {
+    }
+
     private static final class Missing extends RuntimeException {
         final BlockPos position;
-        Missing(BlockPos position) { super(null, null, false, false); this.position = position.immutable(); }
+
+        Missing(BlockPos position) {
+            super(null, null, false, false);
+            this.position = position.immutable();
+        }
     }
+
     private static final class Snapshot implements BlockGetter {
         final Map<Long, Entry> blocks = new HashMap<>();
         final Map<Long, VoxelShape> shapeUpdates = new HashMap<>();
         final Set<BlockPos> required = new LinkedHashSet<>();
         final int height, minY;
         boolean collecting;
-        Snapshot(int height, int minY) { this.height = height; this.minY = minY; }
-        Entry entry(BlockPos position) {
-            if (collecting) { required.add(position.immutable()); return new Entry(null, null); }
-            Entry found = blocks.get(position.asLong()); if (found == null) throw new Missing(position); return found;
+
+        Snapshot(int height, int minY) {
+            this.height = height;
+            this.minY = minY;
         }
-        @Override public BlockState getBlockState(BlockPos position) { BlockState state = entry(position).state(); return state == null ? Blocks.VOID_AIR.defaultBlockState() : state; }
-        @Override public BlockState getBlockStateIfLoaded(BlockPos position) { return getBlockState(position); }
-        @Override public FluidState getFluidIfLoaded(BlockPos position) { return getFluidState(position); }
-        @Override public FluidState getFluidState(BlockPos position) { return getBlockState(position).getFluidState(); }
-        @Override public BlockEntity getBlockEntity(BlockPos position) { throw new IllegalStateException("A contextual explosion shape requested a foreign mutable block entity"); }
-        @Override public int getHeight() { return height; }
-        @Override public int getMinY() { return minY; }
+
+        Entry entry(BlockPos position) {
+            if (collecting) {
+                required.add(position.immutable());
+                return new Entry(null, null);
+            }
+            Entry found = blocks.get(position.asLong());
+            if (found == null) throw new Missing(position);
+            return found;
+        }
+
+        @Override
+        public BlockState getBlockState(BlockPos position) {
+            BlockState state = entry(position).state();
+            return state == null ? Blocks.VOID_AIR.defaultBlockState() : state;
+        }
+
+        @Override
+        public BlockState getBlockStateIfLoaded(BlockPos position) {
+            return getBlockState(position);
+        }
+
+        @Override
+        public FluidState getFluidIfLoaded(BlockPos position) {
+            return getFluidState(position);
+        }
+
+        @Override
+        public FluidState getFluidState(BlockPos position) {
+            return getBlockState(position).getFluidState();
+        }
+
+        @Override
+        public BlockEntity getBlockEntity(BlockPos position) {
+            throw new IllegalStateException("A contextual explosion shape requested a foreign mutable block entity");
+        }
+
+        @Override
+        public int getHeight() {
+            return height;
+        }
+
+        @Override
+        public int getMinY() {
+            return minY;
+        }
     }
-    private ScarpetExplosionDensity() {}
+
+    private ScarpetExplosionDensity() {
+    }
+
     public static CompletableFuture<Float> compute(ServerExplosion explosion, Entity target) {
         return ScarpetExplosionActors.entity(target, target::getBoundingBox).thenCompose(bounds ->
-            ScarpetExplosionActors.world(explosion.level(), BlockPos.containing(explosion.center()), () -> {
-                Float cached = explosion.carpetCachedDensity(bounds);
-                Snapshot snapshot = new Snapshot(explosion.level().getHeight(), explosion.level().getMinY());
-                return new Prepared(snapshot, cached);
-            }).thenCompose(prepared -> {
-                if (prepared.cached() != null) return CompletableFuture.completedFuture(prepared.cached());
-                Snapshot snapshot = prepared.snapshot();
-                return ScarpetExplosionActors.entity(target, () -> {
-                    snapshot.collecting = true;
-                    try { getSeenFraction(explosion.center(), target, snapshot, new BlockPos.MutableBlockPos()); }
-                    finally { snapshot.collecting = false; }
-                    return null;
-                }).thenCompose(ignored -> fill(explosion, snapshot, snapshot.required)).thenCompose(ignored -> evaluate(explosion, target, bounds, snapshot));
-            }));
+                ScarpetExplosionActors.world(explosion.level(), BlockPos.containing(explosion.center()), () -> {
+                    Float cached = explosion.carpetCachedDensity(bounds);
+                    Snapshot snapshot = new Snapshot(explosion.level().getHeight(), explosion.level().getMinY());
+                    return new Prepared(snapshot, cached);
+                }).thenCompose(prepared -> {
+                    if (prepared.cached() != null) return CompletableFuture.completedFuture(prepared.cached());
+                    Snapshot snapshot = prepared.snapshot();
+                    return ScarpetExplosionActors.entity(target, () -> {
+                        snapshot.collecting = true;
+                        try {
+                            getSeenFraction(explosion.center(), target, snapshot, new BlockPos.MutableBlockPos());
+                        } finally {
+                            snapshot.collecting = false;
+                        }
+                        return null;
+                    }).thenCompose(ignored -> fill(explosion, snapshot, snapshot.required)).thenCompose(ignored -> evaluate(explosion, target, bounds, snapshot));
+                }));
     }
+
     private static CompletableFuture<Void> fill(ServerExplosion explosion, Snapshot snapshot, Collection<BlockPos> positions) {
         List<BlockPos> captured = List.copyOf(positions);
         BlockPos center = BlockPos.containing(explosion.center());
-        int minX=center.getX()>>4, maxX=minX, minZ=center.getZ()>>4, maxZ=minZ;
-        for (BlockPos position : captured) { minX=Math.min(minX,position.getX()>>4); maxX=Math.max(maxX,position.getX()>>4); minZ=Math.min(minZ,position.getZ()>>4); maxZ=Math.max(maxZ,position.getZ()>>4); }
-        Supplier<Void> owned = ScarpetRuntime.captureNativeContinuation(() -> { for (BlockPos position : captured) snapshot.blocks.put(position.asLong(), explosion.carpetCollisionEntry(position)); return null; });
+        int minX = center.getX() >> 4, maxX = minX, minZ = center.getZ() >> 4, maxZ = minZ;
+        for (BlockPos position : captured) {
+            minX = Math.min(minX, position.getX() >> 4);
+            maxX = Math.max(maxX, position.getX() >> 4);
+            minZ = Math.min(minZ, position.getZ() >> 4);
+            maxZ = Math.max(maxZ, position.getZ() >> 4);
+        }
+        Supplier<Void> owned = ScarpetRuntime.captureNativeContinuation(() -> {
+            for (BlockPos position : captured)
+                snapshot.blocks.put(position.asLong(), explosion.carpetCollisionEntry(position));
+            return null;
+        });
         CompletableFuture<Void> done = fun.bm.lophine.carpet.CarpetRegionLease.runValue(explosion.level(), minX, minZ, maxX, maxZ, lease -> owned.get());
-        ScarpetNativeWork.record(done); return done;
+        ScarpetNativeWork.record(done);
+        return done;
     }
+
     private static CompletableFuture<Float> evaluate(ServerExplosion explosion, Entity target, AABB bounds, Snapshot snapshot) {
         return ScarpetExplosionActors.entity(target, () -> {
-            if (!target.getBoundingBox().equals(bounds)) return new Object[] {null, null};
-            try { return new Object[] {Float.valueOf(getSeenFraction(explosion.center(), target, snapshot, new BlockPos.MutableBlockPos())), null}; }
-            catch (Missing missing) { return new Object[] {null, missing.position}; }
+            if (!target.getBoundingBox().equals(bounds)) return new Object[]{null, null};
+            try {
+                return new Object[]{Float.valueOf(getSeenFraction(explosion.center(), target, snapshot, new BlockPos.MutableBlockPos())), null};
+            } catch (Missing missing) {
+                return new Object[]{null, missing.position};
+            }
         }).thenCompose(result -> {
-            if (result[0] != null) return ScarpetExplosionActors.world(explosion.level(), BlockPos.containing(explosion.center()), () -> {
-                explosion.carpetStoreDensity(bounds, (Float)result[0], snapshot.shapeUpdates); return (Float)result[0];
-            });
+            if (result[0] != null)
+                return ScarpetExplosionActors.world(explosion.level(), BlockPos.containing(explosion.center()), () -> {
+                    explosion.carpetStoreDensity(bounds, (Float) result[0], snapshot.shapeUpdates);
+                    return (Float) result[0];
+                });
             if (result[1] == null) return compute(explosion, target);
-            return fill(explosion, snapshot, List.of((BlockPos)result[1])).thenCompose(ignored -> evaluate(explosion, target, bounds, snapshot));
+            return fill(explosion, snapshot, List.of((BlockPos) result[1])).thenCompose(ignored -> evaluate(explosion, target, bounds, snapshot));
         });
     }
 
     private static boolean clipsAnything(final Vec3 from, final Vec3 to,
-                                  final ca.spottedleaf.moonrise.patches.collisions.CollisionUtil.LazyEntityCollisionContext context,
-                                  final Snapshot snapshot, final BlockPos.MutableBlockPos currPos) {
+                                         final ca.spottedleaf.moonrise.patches.collisions.CollisionUtil.LazyEntityCollisionContext context,
+                                         final Snapshot snapshot, final BlockPos.MutableBlockPos currPos) {
         // assume that context.delegated = false
         final double adjX = ca.spottedleaf.moonrise.patches.collisions.CollisionUtil.COLLISION_EPSILON * (from.x - to.x);
         final double adjY = ca.spottedleaf.moonrise.patches.collisions.CollisionUtil.COLLISION_EPSILON * (from.y - to.y);
@@ -116,9 +190,9 @@ public final class ScarpetExplosionDensity {
         final double dyDouble = Math.signum(diffY);
         final double dzDouble = Math.signum(diffZ);
 
-        final int dx = (int)dxDouble;
-        final int dy = (int)dyDouble;
-        final int dz = (int)dzDouble;
+        final int dx = (int) dxDouble;
+        final int dy = (int) dyDouble;
+        final int dz = (int) dzDouble;
 
         final double normalizedDiffX = diffX == 0.0 ? Double.MAX_VALUE : dxDouble / diffX;
         final double normalizedDiffY = diffY == 0.0 ? Double.MAX_VALUE : dyDouble / diffY;
@@ -128,7 +202,7 @@ public final class ScarpetExplosionDensity {
         double normalizedCurrY = normalizedDiffY * (diffY > 0.0 ? (1.0 - Mth.frac(fromYAdj)) : Mth.frac(fromYAdj));
         double normalizedCurrZ = normalizedDiffZ * (diffZ > 0.0 ? (1.0 - Mth.frac(fromZAdj)) : Mth.frac(fromZAdj));
 
-        for (;;) {
+        for (; ; ) {
             currPos.set(currX, currY, currZ);
 
             // ClipContext.Block.COLLIDER -> BlockBehaviour.BlockStateBase::getCollisionShape
@@ -139,7 +213,7 @@ public final class ScarpetExplosionDensity {
 
             Entry entry = snapshot.entry(currPos);
             BlockState blockState = entry.state();
-            if (!snapshot.collecting && blockState != null && !((ca.spottedleaf.moonrise.patches.collisions.block.CollisionBlockState)blockState).moonrise$emptyContextCollisionShape()) {
+            if (!snapshot.collecting && blockState != null && !((ca.spottedleaf.moonrise.patches.collisions.block.CollisionBlockState) blockState).moonrise$emptyContextCollisionShape()) {
                 VoxelShape collision = entry.shape();
                 if (collision == null) {
                     collision = blockState.getCollisionShape(snapshot, currPos, context);
@@ -176,7 +250,7 @@ public final class ScarpetExplosionDensity {
     }
 
     private static float getSeenFraction(final Vec3 source, final Entity target,
-                                   final Snapshot snapshot, final BlockPos.MutableBlockPos blockPos) {
+                                         final Snapshot snapshot, final BlockPos.MutableBlockPos blockPos) {
         final AABB boundingBox = target.getBoundingBox();
         final double diffX = boundingBox.maxX - boundingBox.minX;
         final double diffY = boundingBox.maxY - boundingBox.minY;
@@ -219,6 +293,6 @@ public final class ScarpetExplosionDensity {
             }
         }
 
-        return (float)missedRays / (float)totalRays;
+        return (float) missedRays / (float) totalRays;
     }
 }

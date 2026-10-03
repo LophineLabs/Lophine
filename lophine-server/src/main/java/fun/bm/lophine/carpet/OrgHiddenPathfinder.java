@@ -5,7 +5,6 @@ package fun.bm.lophine.carpet;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
@@ -20,7 +19,10 @@ import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.NonNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class OrgHiddenPathfinder {
@@ -252,7 +254,9 @@ public class OrgHiddenPathfinder {
         this.onStop();
     }
 
-    public void onStart() { OrgHiddenPlayerActions.path(getFakePlayer(), java.util.List.copyOf(nodes)); }
+    public void onStart() {
+        OrgHiddenPlayerActions.path(getFakePlayer(), java.util.List.copyOf(nodes));
+    }
 
     public void onStop() {
         OrgHiddenPlayerActions.path(getFakePlayer(), java.util.List.of());

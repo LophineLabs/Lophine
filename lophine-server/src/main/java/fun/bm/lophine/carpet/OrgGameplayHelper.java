@@ -1,8 +1,6 @@
 package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
-import java.util.ArrayList;
-import java.util.function.Supplier;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -13,39 +11,67 @@ import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 
-/** Scoped server-side adaptations of Carpet Org Addition gameplay rules. */
+import java.util.ArrayList;
+import java.util.function.Supplier;
+
+/**
+ * Scoped server-side adaptations of Carpet Org Addition gameplay rules.
+ */
 public final class OrgGameplayHelper {
     private static final ScopedValue<Boolean> TOOL_NO_BREAK = ScopedValue.newInstance();
     private static final ScopedValue<ServerPlayer> BLOCK_BREAKER = ScopedValue.newInstance();
     private static final ScopedValue<Boolean> SHULKER_STACKING = ScopedValue.newInstance();
     private static final ScopedValue<Boolean> ORG_ACTION = ScopedValue.newInstance();
 
-    private OrgGameplayHelper() {}
+    private OrgGameplayHelper() {
+    }
 
-    /** Native rule flags plus the original physical breaker reference; the reference is metadata until its owner runs. */
-    public record NativeRuleScopes(boolean toolNoBreak, ServerPlayer breaker, boolean shulkerStacking, boolean channelingTrident, boolean orgAction) {
+    /**
+     * Native rule flags plus the original physical breaker reference; the reference is metadata until its owner runs.
+     */
+    public record NativeRuleScopes(boolean toolNoBreak, ServerPlayer breaker, boolean shulkerStacking,
+                                   boolean channelingTrident, boolean orgAction) {
         public NativeRuleScopes(boolean toolNoBreak, ServerPlayer breaker, boolean shulkerStacking, boolean channelingTrident) {
             this(toolNoBreak, breaker, shulkerStacking, channelingTrident, false);
         }
+
         public <T> T call(Supplier<T> operation) {
             return ScopedValue.where(TOOL_NO_BREAK, toolNoBreak).where(BLOCK_BREAKER, breaker)
-                .where(SHULKER_STACKING, shulkerStacking).where(GeneralCompatConfig.CHANNELING_TRIDENT, channelingTrident)
-                .where(ORG_ACTION, orgAction).call(operation::get);
+                    .where(SHULKER_STACKING, shulkerStacking).where(GeneralCompatConfig.CHANNELING_TRIDENT, channelingTrident)
+                    .where(ORG_ACTION, orgAction).call(operation::get);
         }
-        /** An external delayed command keeps rule flags and has no physical routing owner from the callback it outlives. */
-        public NativeRuleScopes withoutPhysicalRouting() { return new NativeRuleScopes(toolNoBreak, null, shulkerStacking, channelingTrident, false); }
+
+        /**
+         * An external delayed command keeps rule flags and has no physical routing owner from the callback it outlives.
+         */
+        public NativeRuleScopes withoutPhysicalRouting() {
+            return new NativeRuleScopes(toolNoBreak, null, shulkerStacking, channelingTrident, false);
+        }
     }
+
     public static NativeRuleScopes captureNativeRuleScopes() {
         return new NativeRuleScopes(TOOL_NO_BREAK.orElse(false), (BLOCK_BREAKER.isBound() ? BLOCK_BREAKER.get() : null), SHULKER_STACKING.orElse(true), GeneralCompatConfig.CHANNELING_TRIDENT.orElse(false), ORG_ACTION.orElse(false));
     }
-    public static boolean insideOrgAction() { return ORG_ACTION.orElse(false); }
-    public static <T> T withOrgAction(Supplier<T> operation) { return ScopedValue.where(ORG_ACTION, true).call(operation::get); }
-    public static void withOrgAction(Runnable operation) { ScopedValue.where(ORG_ACTION, true).run(operation); }
-    public static <T> T withoutPhysicalRouting(Supplier<T> operation) { return captureNativeRuleScopes().withoutPhysicalRouting().call(operation); }
+
+    public static boolean insideOrgAction() {
+        return ORG_ACTION.orElse(false);
+    }
+
+    public static <T> T withOrgAction(Supplier<T> operation) {
+        return ScopedValue.where(ORG_ACTION, true).call(operation::get);
+    }
+
+    public static void withOrgAction(Runnable operation) {
+        ScopedValue.where(ORG_ACTION, true).run(operation);
+    }
+
+    public static <T> T withoutPhysicalRouting(Supplier<T> operation) {
+        return captureNativeRuleScopes().withoutPhysicalRouting().call(operation);
+    }
 
     public static boolean isToolNoBreak(ItemStack stack, Player player) {
         return GeneralCompatConfig.noToolBreak && (TOOL_NO_BREAK.orElse(false)
-            || fragileMendingItem(stack, player));
+                || fragileMendingItem(stack, player));
     }
 
     public static boolean suppressToolAttributes(ItemStack stack, Player player) {
@@ -97,11 +123,14 @@ public final class OrgGameplayHelper {
 
     public static boolean stackableShulker(ItemStack stack) {
         return GeneralCompatConfig.shulkerBoxStackable && isShulkerBox(stack)
-            && stack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).nonEmptyItemCopyStream().findAny().isEmpty();
+                && stack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).nonEmptyItemCopyStream().findAny().isEmpty();
     }
 
-    /** Consumption is deferred until Bukkit's resurrection event succeeds. */
-    public record InventoryDeathProtection(ItemStack stack, Runnable consume) {}
+    /**
+     * Consumption is deferred until Bukkit's resurrection event succeeds.
+     */
+    public record InventoryDeathProtection(ItemStack stack, Runnable consume) {
+    }
 
     public static InventoryDeathProtection findInventoryDeathProtection(Player player) {
         String mode = GeneralCompatConfig.betterTotemOfUndying;
@@ -119,8 +148,8 @@ public final class OrgGameplayHelper {
         for (int pass = 0; pass < 2; pass++) {
             for (ItemStack shulker : player.getInventory().getNonEquipmentItems()) {
                 if (shulker.isEmpty() || !isShulkerBox(shulker)
-                    || (pass == 0) != (shulker.getCount() == 1)
-                    || (pass == 1 && player.getInventory().getFreeSlot() < 0)) continue;
+                        || (pass == 0) != (shulker.getCount() == 1)
+                        || (pass == 1 && player.getInventory().getFreeSlot() < 0)) continue;
                 ItemContainerContents contents = shulker.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
                 ArrayList<ItemStack> items = new ArrayList<>(contents.itemCopies().toList());
                 for (ItemStack item : items) {
@@ -131,7 +160,8 @@ public final class OrgGameplayHelper {
                         edited.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(items));
                         if (edited != shulker) {
                             player.getInventory().add(edited);
-                            if (!edited.isEmpty()) player.drop(edited, false, net.minecraft.util.Prediction.SERVER_ONLY);
+                            if (!edited.isEmpty())
+                                player.drop(edited, false, net.minecraft.util.Prediction.SERVER_ONLY);
                         }
                         player.getInventory().setChanged();
                     });

@@ -3,8 +3,6 @@
 package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -12,10 +10,14 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 public final class TisFakePlayerRules {
     private static final ConcurrentMap<String, String> LAST_DANGEROUS_INPUT = new ConcurrentHashMap<>();
 
-    private TisFakePlayerRules() { }
+    private TisFakePlayerRules() {
+    }
 
     public static String spawnName(String name) {
         String prefix = GeneralCompatConfig.fakePlayerNamePrefix;
@@ -28,21 +30,23 @@ public final class TisFakePlayerRules {
     // Call on the source player's owner, because creative mode is mutable player state.
     public static boolean canSpawnRemotely(CommandSourceStack source, ServerPlayer sender, ServerLevel level, Vec3 position) {
         if (CarpetCommandPermissions.canUse(source, GeneralCompatConfig.fakePlayerRemoteSpawning)
-            || Commands.LEVEL_GAMEMASTERS.check(source.permissions()) || sender != null && sender.gameMode.isCreative()) {
+                || Commands.LEVEL_GAMEMASTERS.check(source.permissions()) || sender != null && sender.gameMode.isCreative()) {
             return true;
         }
         return source.getLevel() == level && position.distanceTo(source.getPosition()) < 16.0;
     }
 
-    /** Command changes require repeated confirmation for a name fragment outside vanilla syntax. Config loads pass null. */
+    /**
+     * Command changes require repeated confirmation for a name fragment outside vanilla syntax. Config loads pass null.
+     */
     public static synchronized boolean validateNameSetting(String rule, String value, CommandSourceStack source) {
         if (source == null) return true;
         if (!"#none".equals(value) && !value.matches("[a-zA-Z_0-9]{1,16}")) {
             String previous = LAST_DANGEROUS_INPUT.put(rule, value);
             boolean accepted = value.equals(previous);
             tell(source, "Name fragment '" + value + "' for " + rule
-                + " contains unsupported characters or length. "
-                + (accepted ? "Repeated value accepted." : "Submit the same value again to apply it."), !accepted);
+                    + " contains unsupported characters or length. "
+                    + (accepted ? "Repeated value accepted." : "Submit the same value again to apply it."), !accepted);
             if (!accepted) return false;
         }
         LAST_DANGEROUS_INPUT.remove(rule);

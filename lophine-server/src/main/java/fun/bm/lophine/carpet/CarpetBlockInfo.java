@@ -1,10 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 package fun.bm.lophine.carpet;
 
-import java.util.ArrayList;
-import java.util.List;
-
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -23,22 +19,22 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.Vec3;
 
-public class CarpetBlockInfo
-{
-    public static List<Component> blockInfo(BlockPos pos, ServerLevel world)
-    {
+import java.util.ArrayList;
+import java.util.List;
+
+public class CarpetBlockInfo {
+    public static List<Component> blockInfo(BlockPos pos, ServerLevel world) {
         BlockState state = world.getBlockState(pos);
         Block block = state.getBlock();
         String metastring = "";
         final Registry<Block> blocks = world.registryAccess().lookupOrThrow(Registries.BLOCK);
-        for (net.minecraft.world.level.block.state.properties.Property<?> iproperty : state.getProperties())
-        {
-            metastring += ", "+iproperty.getName() + '='+state.getValue(iproperty);
+        for (net.minecraft.world.level.block.state.properties.Property<?> iproperty : state.getProperties()) {
+            metastring += ", " + iproperty.getName() + '=' + state.getValue(iproperty);
         }
         List<Component> lst = new ArrayList<>();
         lst.add(CarpetMessenger.s(""));
         lst.add(CarpetMessenger.s("====================================="));
-        lst.add(CarpetMessenger.s(String.format("Block info for %s%s (id %d%s):", blocks.getKey(block),metastring, blocks.getId(block), metastring )));
+        lst.add(CarpetMessenger.s(String.format("Block info for %s%s (id %d%s):", blocks.getKey(block), metastring, blocks.getId(block), metastring)));
         lst.add(CarpetMessenger.s(String.format(" - Map colour: %s", CarpetBlockColors.mapColourName.get(state.getMapColor(world, pos)))));
         lst.add(CarpetMessenger.s(String.format(" - Sound type: %s", CarpetBlockColors.soundName.get(state.getSoundType()))));
         lst.add(CarpetMessenger.s(""));
@@ -47,10 +43,10 @@ public class CarpetBlockInfo
         lst.add(CarpetMessenger.s(String.format(" - Is liquid: %s", state.is(Blocks.WATER) || state.is(Blocks.LAVA))));
         lst.add(CarpetMessenger.s(""));
         lst.add(CarpetMessenger.s(String.format(" - Light in: %d, above: %d",
-                Math.max(world.getBrightness(LightLayer.BLOCK, pos),world.getBrightness(LightLayer.SKY, pos)) ,
-                Math.max(world.getBrightness(LightLayer.BLOCK, pos.above()),world.getBrightness(LightLayer.SKY, pos.above())))));
+                Math.max(world.getBrightness(LightLayer.BLOCK, pos), world.getBrightness(LightLayer.SKY, pos)),
+                Math.max(world.getBrightness(LightLayer.BLOCK, pos.above()), world.getBrightness(LightLayer.SKY, pos.above())))));
         lst.add(CarpetMessenger.s(String.format(" - Brightness in: %.2f, above: %.2f", world.getLightLevelDependentMagicValue(pos), world.getLightLevelDependentMagicValue(pos.above()))));
-        lst.add(CarpetMessenger.s(String.format(" - Is opaque: %s", state.isSolid() )));
+        lst.add(CarpetMessenger.s(String.format(" - Is opaque: %s", state.isSolid())));
         //lst.add(CarpetMessenger.s(String.format(" - Light opacity: %d", state.getOpacity(world,pos))));
         //lst.add(CarpetMessenger.s(String.format(" - Emitted light: %d", state.getLightValue())));
         //lst.add(CarpetMessenger.s(String.format(" - Picks neighbour light value: %s", state.useNeighborBrightness(world, pos))));
@@ -73,41 +69,36 @@ public class CarpetBlockInfo
         return lst;
     }
 
-    private static Component wander_chances(BlockPos pos, ServerLevel worldIn)
-    {
+    private static Component wander_chances(BlockPos pos, ServerLevel worldIn) {
         PathfinderMob creature = new ZombifiedPiglin(EntityTypes.ZOMBIFIED_PIGLIN, worldIn);
         creature.finalizeSpawn(worldIn, worldIn.getCurrentDifficultyAt(pos), EntitySpawnReason.NATURAL, null);
         creature.snapTo(pos, 0.0F, 0.0F);
         RandomStrollGoal wander = new RandomStrollGoal(creature, 0.8D);
         int success = 0;
-        for (int i=0; i<1000; i++)
-        {
+        for (int i = 0; i < 1000; i++) {
 
             Vec3 vec = DefaultRandomPos.getPos(creature, 10, 7); // TargetFinder.findTarget(creature, 10, 7);
-            if (vec == null)
-            {
+            if (vec == null) {
                 continue;
             }
             success++;
         }
         long total_ticks = 0;
-        for (int trie=0; trie<1000; trie++)
-        {
+        for (int trie = 0; trie < 1000; trie++) {
             int i;
-            for (i=1;i<30*20*60; i++) //*60 used to be 5 hours, limited to 30 mins
+            for (i = 1; i < 30 * 20 * 60; i++) //*60 used to be 5 hours, limited to 30 mins
             {
-                if (wander.canUse())
-                {
+                if (wander.canUse()) {
                     break;
                 }
             }
-            total_ticks += 3*i;
+            total_ticks += 3 * i;
         }
         creature.discard(); // discarded // remove(Entity.RemovalReason.field_26999); // 2nd option - DISCARDED
-        long total_time = (total_ticks)/1000/20;
+        long total_time = (total_ticks) / 1000 / 20;
         return CarpetMessenger.s(String.format(" - Wander chance above: %.1f%%\n - Average standby above: %s",
-                (100.0F*success)/1000,
-                ((total_time>5000)?"INFINITY":(total_time +" s"))
+                (100.0F * success) / 1000,
+                ((total_time > 5000) ? "INFINITY" : (total_time + " s"))
         ));
     }
 }

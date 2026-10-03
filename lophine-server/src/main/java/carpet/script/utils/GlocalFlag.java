@@ -1,20 +1,18 @@
 package carpet.script.utils;
 
 import org.jspecify.annotations.Nullable;
+
 import java.util.function.Supplier;
 
-public class GlocalFlag extends ThreadLocal<Boolean>
-{
+public class GlocalFlag extends ThreadLocal<Boolean> {
     private final boolean initial;
 
-    public GlocalFlag(boolean initial)
-    {
+    public GlocalFlag(boolean initial) {
         this.initial = initial;
     }
 
     @Override
-    public Boolean initialValue()
-    {
+    public Boolean initialValue() {
         return initial;
     }
 
@@ -25,48 +23,36 @@ public class GlocalFlag extends ThreadLocal<Boolean>
      * @param <T>    - returned value of that action, whatever that might be
      * @return result of the action
      */
-    public <T> T getWhileDisabled(Supplier<T> action)
-    {
+    public <T> T getWhileDisabled(Supplier<T> action) {
         return whileValueReturn(!initial, action);
     }
 
-    private <T> T whileValueReturn(boolean what, Supplier<T> action)
-    {
+    private <T> T whileValueReturn(boolean what, Supplier<T> action) {
         T result;
         boolean previous;
-        synchronized (this)
-        {
+        synchronized (this) {
             previous = get();
             set(what);
         }
-        try
-        {
+        try {
             result = action.get();
-        }
-        finally
-        {
+        } finally {
             set(previous);
         }
         return result;
     }
 
-    public <T> @Nullable T runIfEnabled(Supplier<T> action)
-    {
-        synchronized (this)
-        {
-            if (get() != initial)
-            {
+    public <T> @Nullable T runIfEnabled(Supplier<T> action) {
+        synchronized (this) {
+            if (get() != initial) {
                 return null;
             }
             set(!initial);
         }
         T result;
-        try
-        {
+        try {
             result = action.get();
-        }
-        finally
-        {
+        } finally {
             set(initial);
         }
         return result;

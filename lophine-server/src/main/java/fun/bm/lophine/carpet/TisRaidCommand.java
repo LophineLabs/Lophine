@@ -9,6 +9,14 @@ import com.mojang.brigadier.CommandDispatcher;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import fun.bm.lophine.protocol.CarpetLoggerProtocol;
 import io.papermc.paper.threadedregions.RegionizedServer;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.raid.Raid;
+import net.minecraft.world.entity.raid.Raider;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,13 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.raid.Raid;
-import net.minecraft.world.entity.raid.Raider;
 
 public final class TisRaidCommand {
     private static final AtomicReference<Session> SESSION = new AtomicReference<>();
@@ -39,14 +40,14 @@ public final class TisRaidCommand {
     public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
         registerLogger();
         dispatcher.register(Commands.literal("raid")
-            .requires(source -> CarpetCommandPermissions.canUse(source, GeneralCompatConfig.commandRaid))
-            .then(Commands.literal("list").executes(context -> list(context.getSource(), false))
-                .then(Commands.literal("full").executes(context -> list(context.getSource(), true))))
-            .then(Commands.literal("tracking").executes(context -> report(context.getSource(), false))
-                .then(Commands.literal("start").executes(context -> start(context.getSource(), false)))
-                .then(Commands.literal("stop").executes(context -> stop(context.getSource())))
-                .then(Commands.literal("restart").executes(context -> start(context.getSource(), true)))
-                .then(Commands.literal("realtime").executes(context -> report(context.getSource(), true)))));
+                .requires(source -> CarpetCommandPermissions.canUse(source, GeneralCompatConfig.commandRaid))
+                .then(Commands.literal("list").executes(context -> list(context.getSource(), false))
+                        .then(Commands.literal("full").executes(context -> list(context.getSource(), true))))
+                .then(Commands.literal("tracking").executes(context -> report(context.getSource(), false))
+                        .then(Commands.literal("start").executes(context -> start(context.getSource(), false)))
+                        .then(Commands.literal("stop").executes(context -> stop(context.getSource())))
+                        .then(Commands.literal("restart").executes(context -> start(context.getSource(), true)))
+                        .then(Commands.literal("realtime").executes(context -> report(context.getSource(), true)))));
     }
 
     private static int list(final CommandSourceStack source, final boolean full) {
@@ -73,7 +74,7 @@ public final class TisRaidCommand {
     }
 
     private static void snapshotRaid(final ServerLevel level, final int id, final Raid raid, final boolean full,
-        final CompletableFuture<List<String>> result) {
+                                     final CompletableFuture<List<String>> result) {
         BlockPos center = raid.getCenter();
         RegionizedServer.getInstance().taskQueue.queueTickTaskQueue(level, center.getX() >> 4, center.getZ() >> 4, () -> {
             try {
@@ -88,8 +89,8 @@ public final class TisRaidCommand {
                 Raid.CarpetRaidView view = raid.carpetView();
                 List<String> lines = new ArrayList<>();
                 lines.add(level.dimension().identifier() + " - Raid #" + id + "; status " + view.status()
-                    + "; center " + view.center().toShortString() + "; raid omen " + view.omenLevel()
-                    + "; waves " + view.currentWave() + "/" + view.waveCount() + "; raiders " + view.raiders().size());
+                        + "; center " + view.center().toShortString() + "; raid omen " + view.omenLevel()
+                        + "; waves " + view.currentWave() + "/" + view.waveCount() + "; raiders " + view.raiders().size());
                 List<CompletableFuture<String>> raiders = new ArrayList<>();
                 for (Raider raider : view.raiders()) {
                     CompletableFuture<String> description = new CompletableFuture<>();
@@ -97,7 +98,7 @@ public final class TisRaidCommand {
                     boolean scheduled = raider.getBukkitEntity().taskScheduler.schedule(entity -> {
                         try {
                             description.complete((raider == view.captain() ? "[Captain] " : "") + raider.getDisplayName().getString()
-                                + " (" + raider.getStringUUID() + ") at " + raider.position());
+                                    + " (" + raider.getStringUUID() + ") at " + raider.position());
                         } catch (Throwable failure) {
                             description.completeExceptionally(failure);
                         }
@@ -108,7 +109,8 @@ public final class TisRaidCommand {
                     if (failure != null) result.completeExceptionally(failure);
                     else {
                         if (full) for (var raider : raiders) lines.add(" - " + raider.join());
-                        else if (!raiders.isEmpty()) lines.add(String.join(" | ", raiders.stream().map(CompletableFuture::join).toList()));
+                        else if (!raiders.isEmpty())
+                            lines.add(String.join(" | ", raiders.stream().map(CompletableFuture::join).toList()));
                         result.complete(List.copyOf(lines));
                     }
                 });
@@ -147,24 +149,25 @@ public final class TisRaidCommand {
 
     private static int report(final CommandSourceStack source, final boolean realtime) {
         Session active = SESSION.get();
-        if (active == null) TisRaycastCommand.feedback(source, TisTranslations.message(source, "tracker.tracking_not_started", TisTranslations.text("tracker.tracker_name_full", TisTranslations.text("tracker.raid.name"))));
+        if (active == null)
+            TisRaycastCommand.feedback(source, TisTranslations.message(source, "tracker.tracking_not_started", TisTranslations.text("tracker.tracker_name_full", TisTranslations.text("tracker.raid.name"))));
         else print(source, active, realtime);
         return 1;
     }
 
     private static void print(final CommandSourceStack source, final Session session, final boolean realtime) {
         long ticks = Math.max(1L, realtime ? (System.currentTimeMillis() - session.startMillis) / 50L
-            : CarpetServerClock.gameTime() - session.startTick);
+                : CarpetServerClock.gameTime() - session.startTick);
         Map<String, Long> raiders = snapshot(session.raiders), reasons = snapshot(session.invalidated);
         long totalRaiders = raiders.values().stream().mapToLong(Long::longValue).sum();
         long totalInvalidated = reasons.values().stream().mapToLong(Long::longValue).sum();
         TisRaycastCommand.feedback(source, "Raid tracker: " + ticks + " " + (realtime ? "real-time" : "in-game") + " ticks; generated "
-            + rate(session.generated.get(), ticks) + "; raiders " + rate(totalRaiders, ticks));
+                + rate(session.generated.get(), ticks) + "; raiders " + rate(totalRaiders, ticks));
         raiders.forEach((type, count) -> TisRaycastCommand.feedback(source,
-            " - " + type + ": " + rate(count, ticks) + ", " + percent(count, totalRaiders)));
+                " - " + type + ": " + rate(count, ticks) + ", " + percent(count, totalRaiders)));
         if (reasons.isEmpty()) TisRaycastCommand.feedback(source, "Invalidation reasons: none");
         else reasons.forEach((reason, count) -> TisRaycastCommand.feedback(source,
-            " - " + reason + ": " + rate(count, ticks) + ", " + percent(count, totalInvalidated)));
+                " - " + reason + ": " + rate(count, ticks) + ", " + percent(count, totalInvalidated)));
     }
 
     private static Map<String, Long> snapshot(final Map<String, LongAdder> counters) {
@@ -181,7 +184,9 @@ public final class TisRaidCommand {
         return String.format(java.util.Locale.ROOT, "%.1f%%", total == 0L ? 0.0 : count * 100.0 / total);
     }
 
-    public static void stopAtShutdown() { SESSION.set(null); }
+    public static void stopAtShutdown() {
+        SESSION.set(null);
+    }
 
     public static void onGenerated() {
         Session active = SESSION.get();
@@ -190,7 +195,8 @@ public final class TisRaidCommand {
 
     public static void onNewRaider(final Raider raider) {
         Session active = SESSION.get();
-        if (active != null) active.raiders.computeIfAbsent(raider.getType().toShortString(), ignored -> new LongAdder()).increment();
+        if (active != null)
+            active.raiders.computeIfAbsent(raider.getType().toShortString(), ignored -> new LongAdder()).increment();
     }
 
     public static void onInvalidated(final ServerLevel level, final Raid raid, final String reason) {
@@ -212,7 +218,8 @@ public final class TisRaidCommand {
     }
 
     private static void log(final String message) {
-        if (CarpetLoggerProtocol.hasSubscribers("raid")) CarpetLoggerProtocol.log("raid", option -> List.of(Component.literal(message)));
+        if (CarpetLoggerProtocol.hasSubscribers("raid"))
+            CarpetLoggerProtocol.log("raid", option -> List.of(Component.literal(message)));
     }
 
     private static final class Session {
@@ -221,6 +228,9 @@ public final class TisRaidCommand {
         private final Map<String, LongAdder> raiders = new ConcurrentHashMap<>();
         private final Map<String, LongAdder> invalidated = new ConcurrentHashMap<>();
 
-        private Session(final long startTick, final long startMillis) { this.startTick = startTick; this.startMillis = startMillis; }
+        private Session(final long startTick, final long startMillis) {
+            this.startTick = startTick;
+            this.startMillis = startMillis;
+        }
     }
 }

@@ -70,7 +70,8 @@ public class TISCMProtocol implements LeavesProtocol {
         switch (packetType.get()) {
             case HI -> handleHi(player, payload.nbt());
             case SUPPORTED_S2C_PACKETS -> handleSupportedS2CPackets(player, payload.nbt());
-            case SPEED_TEST_UPLOAD_PAYLOAD -> fun.bm.lophine.carpet.TisSpeedTestCommand.handleUpload(player, payload.nbt());
+            case SPEED_TEST_UPLOAD_PAYLOAD ->
+                    fun.bm.lophine.carpet.TisSpeedTestCommand.handleUpload(player, payload.nbt());
             case SPEED_TEST_PING -> fun.bm.lophine.carpet.TisSpeedTestCommand.handlePing(player, payload.nbt());
             default -> {
             }

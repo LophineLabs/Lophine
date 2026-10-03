@@ -6,17 +6,26 @@ import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/** Actual lease ticket lifetime: acquisition, actor exit and every returned asynchronous tail. */
+/**
+ * Actual lease ticket lifetime: acquisition, actor exit and every returned asynchronous tail.
+ */
 final class CarpetRegionLeaseLifecycle {
     private final Runnable release;
     private final Set<CompletionStage<?>> observed = Collections.newSetFromMap(new IdentityHashMap<>());
     private boolean acquired, started, actorFinished, closed, released;
     private int tails;
 
-    CarpetRegionLeaseLifecycle(Runnable release) { this.release = release; }
+    CarpetRegionLeaseLifecycle(Runnable release) {
+        this.release = release;
+    }
 
-    synchronized boolean isClosed() { return closed; }
-    synchronized boolean hasStarted() { return started; }
+    synchronized boolean isClosed() {
+        return closed;
+    }
+
+    synchronized boolean hasStarted() {
+        return started;
+    }
 
     synchronized boolean appendTicket(Runnable metadata) {
         if (closed) return false;
@@ -32,13 +41,20 @@ final class CarpetRegionLeaseLifecycle {
 
     void acquired() {
         Runnable cleanup;
-        synchronized (this) { acquired = true; cleanup = takeRelease(); }
+        synchronized (this) {
+            acquired = true;
+            cleanup = takeRelease();
+        }
         if (cleanup != null) cleanup.run();
     }
 
     void actorFinished() {
         Runnable cleanup;
-        synchronized (this) { actorFinished = true; closed = true; cleanup = takeRelease(); }
+        synchronized (this) {
+            actorFinished = true;
+            closed = true;
+            cleanup = takeRelease();
+        }
         if (cleanup != null) cleanup.run();
     }
 
@@ -55,7 +71,10 @@ final class CarpetRegionLeaseLifecycle {
 
     void close() {
         Runnable cleanup;
-        synchronized (this) { closed = true; cleanup = takeRelease(); }
+        synchronized (this) {
+            closed = true;
+            cleanup = takeRelease();
+        }
         if (cleanup != null) cleanup.run();
     }
 
@@ -70,8 +89,11 @@ final class CarpetRegionLeaseLifecycle {
         try {
             stage.whenComplete((nested, failure) -> {
                 if (!ended.compareAndSet(false, true)) return;
-                try { if (failure == null) follow(nested); }
-                finally { tailFinished(); }
+                try {
+                    if (failure == null) follow(nested);
+                } finally {
+                    tailFinished();
+                }
             });
         } catch (Throwable failure) {
             if (ended.compareAndSet(false, true)) tailFinished();
@@ -88,7 +110,9 @@ final class CarpetRegionLeaseLifecycle {
         if (cleanup != null) cleanup.run();
     }
 
-    /** Called only under this metadata monitor; actual ticket work starts after it is released. */
+    /**
+     * Called only under this metadata monitor; actual ticket work starts after it is released.
+     */
     private Runnable takeRelease() {
         if (!closed || !acquired || started && !actorFinished || tails != 0 || released) return null;
         released = true;

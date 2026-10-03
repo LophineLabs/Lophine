@@ -16,19 +16,19 @@
 
 package carpet.script.external.version.util.version;
 
-import java.util.function.Predicate;
-
 import carpet.script.external.version.api.VersionParsingException;
 import carpet.script.external.version.api.metadata.version.VersionPredicate;
+
+import java.util.function.Predicate;
 
 /**
  * @deprecated Internal API, do not use
  */
 @Deprecated
 public final class SemanticVersionPredicateParser {
-	public static Predicate<SemanticVersionImpl> create(String text) throws VersionParsingException {
-		VersionPredicate predicate = VersionPredicate.parse(text);
+    public static Predicate<SemanticVersionImpl> create(String text) throws VersionParsingException {
+        VersionPredicate predicate = VersionPredicate.parse(text);
 
-		return v -> predicate.test(v);
-	}
+        return v -> predicate.test(v);
+    }
 }

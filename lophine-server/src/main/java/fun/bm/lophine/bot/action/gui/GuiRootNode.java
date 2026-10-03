@@ -1,6 +1,5 @@
 package fun.bm.lophine.bot.action.gui;
 
-import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
 import fun.bm.lophine.config.modules.function.FakeplayerConfig;
 import net.minecraft.world.item.Item;
 

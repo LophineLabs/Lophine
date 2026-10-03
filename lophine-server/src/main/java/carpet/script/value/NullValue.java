@@ -1,119 +1,101 @@
 package carpet.script.value;
 
-import java.util.ArrayList;
-
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
+
+import java.util.ArrayList;
 
 public class NullValue extends NumericValue // TODO check nonsingleton code
 {
     public static final NullValue NULL = new NullValue();
 
     @Override
-    public String getString()
-    {
+    public String getString() {
         return "null";
     }
 
     @Override
-    public String getPrettyString()
-    {
+    public String getPrettyString() {
         return "null";
     }
 
     @Override
-    public boolean getBoolean()
-    {
+    public boolean getBoolean() {
         return false;
     }
 
     @Override
-    public Value clone()
-    {
+    public Value clone() {
         return new NullValue();
     }
 
-    protected NullValue()
-    {
+    protected NullValue() {
         super(0);
     }
 
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         return o instanceof Value value && value.isNull();
     }
 
     @Override
-    public Value slice(long fromDesc, Long toDesc)
-    {
+    public Value slice(long fromDesc, Long toDesc) {
         return Value.NULL;
     }
 
     @Override
-    public NumericValue opposite()
-    {
+    public NumericValue opposite() {
         return Value.NULL;
     }
 
     @Override
-    public int length()
-    {
+    public int length() {
         return 0;
     }
 
     @Override
-    public int compareTo(Value o)
-    {
+    public int compareTo(Value o) {
         return o.isNull() ? 0 : -1;
     }
 
     @Override
-    public Value in(Value value)
-    {
+    public Value in(Value value) {
         return Value.NULL;
     }
 
     @Override
-    public String getTypeString()
-    {
+    public String getTypeString() {
         return "null";
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return 0;
     }
 
     @Override
-    public Tag toTag(boolean force, RegistryAccess regs)
-    {
-        if (!force)
-        {
+    public Tag toTag(boolean force, RegistryAccess regs) {
+        if (!force) {
             throw new NBTSerializableValue.IncompatibleTypeException(this);
         }
         return StringTag.valueOf("null");
     }
 
     @Override
-    public Value split(Value delimiter)
-    {
+    public Value split(Value delimiter) {
         return ListValue.wrap(new ArrayList<>());
     }
 
     @Override
-    public JsonElement toJson()
-    {
+    public JsonElement toJson() {
         return JsonNull.INSTANCE;
     }
 
     @Override
-    public boolean isNull()
-    {
+    public boolean isNull() {
         return true;
     }
 }

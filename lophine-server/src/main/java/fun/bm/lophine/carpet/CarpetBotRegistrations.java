@@ -1,22 +1,25 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 package fun.bm.lophine.carpet;
 
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** One short metadata transaction reserves and publishes both fake-player identity keys. */
+/**
+ * One short metadata transaction reserves and publishes both fake-player identity keys.
+ */
 public final class CarpetBotRegistrations<T> {
     private final Map<UUID, T> uuids = new ConcurrentHashMap<>();
     private final Map<String, T> names = new ConcurrentHashMap<>();
     private final Set<UUID> pendingUuids = new HashSet<>();
     private final Set<String> pendingNames = new HashSet<>();
 
-    public Map<UUID, T> byUuid() { return java.util.Collections.unmodifiableMap(uuids); }
-    public Map<String, T> byName() { return java.util.Collections.unmodifiableMap(names); }
+    public Map<UUID, T> byUuid() {
+        return java.util.Collections.unmodifiableMap(uuids);
+    }
+
+    public Map<String, T> byName() {
+        return java.util.Collections.unmodifiableMap(names);
+    }
 
     public synchronized Reservation reserve(UUID uuid, String name) {
         String key = name.toLowerCase(Locale.ROOT);
@@ -37,7 +40,11 @@ public final class CarpetBotRegistrations<T> {
         private final UUID uuid;
         private final String name;
         private boolean closed;
-        private Reservation(UUID uuid, String name) { this.uuid = uuid; this.name = name; }
+
+        private Reservation(UUID uuid, String name) {
+            this.uuid = uuid;
+            this.name = name;
+        }
 
         public void publish(T value) {
             synchronized (CarpetBotRegistrations.this) {
@@ -48,7 +55,8 @@ public final class CarpetBotRegistrations<T> {
             }
         }
 
-        @Override public void close() {
+        @Override
+        public void close() {
             synchronized (CarpetBotRegistrations.this) {
                 if (closed) return;
                 closed = true;

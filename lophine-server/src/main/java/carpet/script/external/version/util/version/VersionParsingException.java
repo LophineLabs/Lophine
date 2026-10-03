@@ -16,23 +16,25 @@
 
 package carpet.script.external.version.util.version;
 
-/** @deprecated Replaced by {@link carpet.script.external.version.api.VersionParsingException} */
+/**
+ * @deprecated Replaced by {@link carpet.script.external.version.api.VersionParsingException}
+ */
 @SuppressWarnings("serial")
 @Deprecated
 public class VersionParsingException extends Exception {
-	public VersionParsingException() {
-		super();
-	}
+    public VersionParsingException() {
+        super();
+    }
 
-	public VersionParsingException(Throwable t) {
-		super(t);
-	}
+    public VersionParsingException(Throwable t) {
+        super(t);
+    }
 
-	public VersionParsingException(String s) {
-		super(s);
-	}
+    public VersionParsingException(String s) {
+        super(s);
+    }
 
-	public VersionParsingException(String s, Throwable t) {
-		super(s, t);
-	}
+    public VersionParsingException(String s, Throwable t) {
+        super(s, t);
+    }
 }

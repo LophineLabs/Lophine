@@ -1,11 +1,12 @@
 package fun.bm.lophine.carpet;
 
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class CarpetDistanceCalculator {
     private static final Map<String, Vec3> START_POINTS = new ConcurrentHashMap<>();
@@ -13,7 +14,9 @@ public final class CarpetDistanceCalculator {
     private CarpetDistanceCalculator() {
     }
 
-    public static boolean hasStartingPoint(CommandSourceStack source) { return START_POINTS.containsKey(source.getTextName()); }
+    public static boolean hasStartingPoint(CommandSourceStack source) {
+        return START_POINTS.containsKey(source.getTextName());
+    }
 
     public static int setStart(CommandSourceStack source, Vec3 pos) {
         START_POINTS.put(source.getTextName(), pos);

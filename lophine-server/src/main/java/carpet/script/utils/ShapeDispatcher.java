@@ -8,19 +8,7 @@ import carpet.script.external.Carpet;
 import carpet.script.external.Vanilla;
 import carpet.script.language.Sys;
 import carpet.script.utils.shapes.ShapeDirection;
-import carpet.script.value.AbstractListValue;
-import carpet.script.value.BlockValue;
-import carpet.script.value.BooleanValue;
-import carpet.script.value.EntityValue;
-import carpet.script.value.FormattedTextValue;
-import carpet.script.value.ListValue;
-import carpet.script.value.MapValue;
-import carpet.script.value.NBTSerializableValue;
-import carpet.script.value.NumericValue;
-import carpet.script.value.StringValue;
-import carpet.script.value.Value;
-import carpet.script.value.ValueConversions;
-
+import carpet.script.value.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import net.minecraft.core.BlockPos;
@@ -30,21 +18,10 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.ByteTag;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.DoubleTag;
-import net.minecraft.nbt.FloatTag;
-import net.minecraft.nbt.IntTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.nbt.NumericTag;
+import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -57,65 +34,43 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-
 import org.jspecify.annotations.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static java.util.Map.entry;
 
-public class ShapeDispatcher
-{
-    public record ShapeWithConfig(ExpiringShape shape, Map<String, Value> config)
-    {
+public class ShapeDispatcher {
+    public record ShapeWithConfig(ExpiringShape shape, Map<String, Value> config) {
     }
 
     public static ShapeWithConfig fromFunctionArgs(
             MinecraftServer server, ServerLevel world,
             List<Value> lv,
             Set<ServerPlayer> playerSet
-    )
-    {
-        if (lv.size() < 3)
-        {
+    ) {
+        if (lv.size() < 3) {
             throw new InternalExpressionException("'draw_shape' takes at least three parameters, shape name, duration, and its params");
         }
         String shapeType = lv.get(0).getString();
         Value duration = NumericValue.asNumber(lv.get(1), "duration");
         Map<String, Value> params;
-        if (lv.size() == 3)
-        {
+        if (lv.size() == 3) {
             Value paramValue = lv.get(2);
-            if (paramValue instanceof final MapValue map)
-            {
+            if (paramValue instanceof final MapValue map) {
                 params = new HashMap<>();
                 map.getMap().forEach((key, value) -> params.put(key.getString(), value));
-            }
-            else if (paramValue instanceof final ListValue list)
-            {
+            } else if (paramValue instanceof final ListValue list) {
                 params = parseParams(list.getItems());
-            }
-            else
-            {
+            } else {
                 throw new InternalExpressionException("Parameters for 'draw_shape' need to be defined either in a list or a map");
             }
-        }
-        else
-        {
+        } else {
             List<Value> paramList = new ArrayList<>();
-            for (int i = 2; i < lv.size(); i++)
-            {
+            for (int i = 2; i < lv.size(); i++) {
                 paramList.add(lv.get(i));
             }
             params = ShapeDispatcher.parseParams(paramList);
@@ -123,23 +78,17 @@ public class ShapeDispatcher
         params.putIfAbsent("dim", new StringValue(world.dimension().identifier().toString()));
         params.putIfAbsent("duration", duration);
 
-        if (params.containsKey("player"))
-        {
+        if (params.containsKey("player")) {
             Value players = params.get("player");
             List<Value> playerVals;
-            if (players instanceof final ListValue list)
-            {
+            if (players instanceof final ListValue list) {
                 playerVals = list.getItems();
-            }
-            else
-            {
+            } else {
                 playerVals = Collections.singletonList(players);
             }
-            for (Value pVal : playerVals)
-            {
+            for (Value pVal : playerVals) {
                 ServerPlayer player = EntityValue.getPlayerByValue(server, pVal);
-                if (player == null)
-                {
+                if (player == null) {
                     throw new InternalExpressionException("'player' parameter needs to represent an existing player, not " + pVal.getString());
                 }
                 playerSet.add(player);
@@ -149,23 +98,18 @@ public class ShapeDispatcher
         return new ShapeWithConfig(ShapeDispatcher.create(server, shapeType, params), params);
     }
 
-    public static void sendShape(Collection<ServerPlayer> players, List<ShapeWithConfig> shapes, RegistryAccess regs)
-    {
+    public static void sendShape(Collection<ServerPlayer> players, List<ShapeWithConfig> shapes, RegistryAccess regs) {
         List<ServerPlayer> clientPlayers = new ArrayList<>();
         List<ServerPlayer> alternativePlayers = new ArrayList<>();
-        for (ServerPlayer player : players)
-        {
+        for (ServerPlayer player : players) {
             (carpet.script.external.ScarpetRuntime.atEntity(player, () -> Carpet.isValidCarpetPlayer(player)) ? clientPlayers : alternativePlayers).add(player);
         }
-        if (!clientPlayers.isEmpty())
-        {
+        if (!clientPlayers.isEmpty()) {
             ListTag tag = new ListTag();
             int tagcount = 0;
-            for (ShapeWithConfig s : shapes)
-            {
+            for (ShapeWithConfig s : shapes) {
                 tag.add(ExpiringShape.toTag(s.config(), regs));  // 4000 shapes limit boxes
-                if (tagcount++ > 1000)
-                {
+                if (tagcount++ > 1000) {
                     tagcount = 0;
                     Tag finalTag = tag;
                     clientPlayers.forEach(p -> Vanilla.sendScarpetShapesDataToPlayer(p, finalTag));
@@ -173,42 +117,36 @@ public class ShapeDispatcher
                 }
             }
             Tag finalTag = tag;
-            if (!tag.isEmpty())
-            {
+            if (!tag.isEmpty()) {
                 clientPlayers.forEach(p -> Vanilla.sendScarpetShapesDataToPlayer(p, finalTag));
             }
         }
-        if (!alternativePlayers.isEmpty())
-        {
+        if (!alternativePlayers.isEmpty()) {
             List<Consumer<ServerPlayer>> alternatives = new ArrayList<>();
             shapes.forEach(s -> alternatives.add(s.shape().alternative()));
-            alternativePlayers.forEach(p -> carpet.script.external.ScarpetRuntime.atEntity(p, () -> { alternatives.forEach(a -> a.accept(p)); return null; }));
+            alternativePlayers.forEach(p -> carpet.script.external.ScarpetRuntime.atEntity(p, () -> {
+                alternatives.forEach(a -> a.accept(p));
+                return null;
+            }));
         }
     }
 
-    public static ParticleOptions getParticleData(String name, RegistryAccess regs)
-    {
-        try
-        {
+    public static ParticleOptions getParticleData(String name, RegistryAccess regs) {
+        try {
             return ParticleParser.getEffect(name, regs);
-        }
-        catch (IllegalArgumentException e)
-        {
+        } catch (IllegalArgumentException e) {
             throw new ThrowStatement(name, Throwables.UNKNOWN_PARTICLE);
         }
     }
 
-    public static Map<String, Value> parseParams(List<Value> items)
-    {
+    public static Map<String, Value> parseParams(List<Value> items) {
         // parses params from API function
-        if (items.size() % 2 == 1)
-        {
+        if (items.size() % 2 == 1) {
             throw new InternalExpressionException("Shape parameters list needs to be of even size");
         }
         Map<String, Value> param = new HashMap<>();
         int i = 0;
-        while (i < items.size())
-        {
+        while (i < items.size()) {
             String name = items.get(i).getString();
             Value val = items.get(i + 1);
             param.put(name, val);
@@ -217,34 +155,28 @@ public class ShapeDispatcher
         return param;
     }
 
-    public static ExpiringShape create(MinecraftServer server, String shapeType, Map<String, Value> userParams)
-    {
+    public static ExpiringShape create(MinecraftServer server, String shapeType, Map<String, Value> userParams) {
         userParams.put("shape", new StringValue(shapeType));
         userParams.keySet().forEach(key -> {
             Param param = Param.of.get(key);
-            if (param == null)
-            {
+            if (param == null) {
                 throw new InternalExpressionException("Unknown feature for shape: " + key);
             }
             userParams.put(key, param.validate(userParams, server, userParams.get(key)));
         });
         BiFunction<Map<String, Value>, RegistryAccess, ExpiringShape> factory = ExpiringShape.shapeProviders.get(shapeType);
-        if (factory == null)
-        {
+        if (factory == null) {
             throw new InternalExpressionException("Unknown shape: " + shapeType);
         }
         return factory.apply(userParams, server.registryAccess());
     }
 
     // client
-    public static @Nullable ExpiringShape fromTag(CompoundTag tag, Level level)
-    {
+    public static @Nullable ExpiringShape fromTag(CompoundTag tag, Level level) {
         Map<String, Value> options = new HashMap<>();
-        for (String key : tag.keySet())
-        {
+        for (String key : tag.keySet()) {
             Param decoder = Param.of.get(key);
-            if (decoder == null)
-            {
+            if (decoder == null) {
                 CarpetScriptServer.LOG.info("Unknown parameter for shape: {}", key);
                 return null;
             }
@@ -252,30 +184,24 @@ public class ShapeDispatcher
             options.put(key, decodedValue);
         }
         Value shapeValue = options.get("shape");
-        if (shapeValue == null)
-        {
+        if (shapeValue == null) {
             CarpetScriptServer.LOG.info("Shape id missing in {}", String.join(", ", tag.keySet()));
             return null;
         }
         BiFunction<Map<String, Value>, RegistryAccess, ExpiringShape> factory = ExpiringShape.shapeProviders.get(shapeValue.getString());
-        if (factory == null)
-        {
+        if (factory == null) {
             CarpetScriptServer.LOG.info("Unknown shape: {}", shapeValue.getString());
             return null;
         }
-        try
-        {
+        try {
             return factory.apply(options, level.registryAccess());
-        }
-        catch (InternalExpressionException exc)
-        {
+        } catch (InternalExpressionException exc) {
             CarpetScriptServer.LOG.info("", exc);
         }
         return null;
     }
 
-    public abstract static class ExpiringShape
-    {
+    public abstract static class ExpiringShape {
         public static final ImmutableMap<String, BiFunction<Map<String, Value>, RegistryAccess, ExpiringShape>> shapeProviders = ImmutableMap.<String, BiFunction<Map<String, Value>, RegistryAccess, ExpiringShape>>builder().
                 put("line", creator(Line::new)).
                 put("box", creator(Box::new)).
@@ -287,8 +213,7 @@ public class ShapeDispatcher
                 put("item", creator(() -> new DisplayedSprite(true))).
                 build();
 
-        private static BiFunction<Map<String, Value>, RegistryAccess, ExpiringShape> creator(Supplier<ExpiringShape> shapeFactory)
-        {
+        private static BiFunction<Map<String, Value>, RegistryAccess, ExpiringShape> creator(Supplier<ExpiringShape> shapeFactory) {
             return (o, regs) -> {
                 ExpiringShape shape = shapeFactory.get();
                 shape.fromOptions(o, regs);
@@ -314,39 +239,32 @@ public class ShapeDispatcher
         protected boolean seethrough;
 
 
-        protected ExpiringShape()
-        {
+        protected ExpiringShape() {
         }
 
-        public static CompoundTag toTag(Map<String, Value> params, RegistryAccess regs)
-        {
+        public static CompoundTag toTag(Map<String, Value> params, RegistryAccess regs) {
             CompoundTag tag = new CompoundTag();
             params.forEach((k, v) -> {
                 Tag valTag = Param.of.get(k).toTag(v, regs);
-                if (valTag != null)
-                {
+                if (valTag != null) {
                     tag.put(k, valTag);
                 }
             });
             return tag;
         }
 
-        private void fromOptions(Map<String, Value> options, RegistryAccess regs)
-        {
+        private void fromOptions(Map<String, Value> options, RegistryAccess regs) {
             Set<String> optionalParams = optionalParams();
             Set<String> requiredParams = requiredParams();
             Set<String> all = Sets.union(optionalParams, requiredParams);
-            if (!all.containsAll(options.keySet()))
-            {
+            if (!all.containsAll(options.keySet())) {
                 throw new InternalExpressionException("Received unexpected parameters for shape: " + Sets.difference(options.keySet(), all));
             }
-            if (!options.keySet().containsAll(requiredParams))
-            {
+            if (!options.keySet().containsAll(requiredParams)) {
                 throw new InternalExpressionException("Missing required parameters for shape: " + Sets.difference(requiredParams, options.keySet()));
             }
             options.keySet().forEach(k -> {
-                if (!this.canTake(k))
-                {
+                if (!this.canTake(k)) {
                     throw new InternalExpressionException("Parameter " + k + " doesn't apply for shape " + options.get("shape").getString());
                 }
             });
@@ -359,8 +277,7 @@ public class ShapeDispatcher
         }
 
 
-        protected void init(Map<String, Value> options, RegistryAccess regs)
-        {
+        protected void init(Map<String, Value> options, RegistryAccess regs) {
 
             duration = NumericValue.asNumber(options.get("duration")).getInt();
 
@@ -381,22 +298,19 @@ public class ShapeDispatcher
             this.a = (color & 0xFF) / 255.0F;
 
             debug = false;
-            if (options.containsKey("debug"))
-            {
+            if (options.containsKey("debug")) {
                 debug = options.get("debug").getBoolean();
             }
 
             seethrough = false;
-            if (options.containsKey("debug"))
-            {
+            if (options.containsKey("debug")) {
                 seethrough = options.get("seethrough").getBoolean();
             }
 
             key = 0;
             followEntity = -1;
             shapeDimension = ResourceKey.create(Registries.DIMENSION, Identifier.parse(options.get("dim").getString()));
-            if (options.containsKey("follow"))
-            {
+            if (options.containsKey("follow")) {
                 followEntity = NumericValue.asNumber(options.getOrDefault("follow", optional.get("follow"))).getInt();
                 snapTo = options.getOrDefault("snap", optional.get("snap")).getString().toLowerCase(Locale.ROOT);
                 snapX = snapTo.contains("x");
@@ -408,13 +322,11 @@ public class ShapeDispatcher
             }
         }
 
-        public int getExpiry()
-        {
+        public int getExpiry() {
             return duration;
         }
 
-        public Vec3 toAbsolute(Entity e, Vec3 vec, float partialTick)
-        {
+        public Vec3 toAbsolute(Entity e, Vec3 vec, float partialTick) {
             return vec.add(
                     snapX ? (discreteX ? Mth.floor(e.getX()) : Mth.lerp(partialTick, e.xo, e.getX())) : 0.0,
                     snapY ? (discreteY ? Mth.floor(e.getY()) : Mth.lerp(partialTick, e.yo, e.getY())) : 0.0,
@@ -422,24 +334,19 @@ public class ShapeDispatcher
             );
         }
 
-        public Vec3 relativiseRender(Level world, Vec3 vec, float partialTick)
-        {
-            if (followEntity < 0)
-            {
+        public Vec3 relativiseRender(Level world, Vec3 vec, float partialTick) {
+            if (followEntity < 0) {
                 return vec;
             }
             Entity e = world.getEntity(followEntity);
-            if (e == null)
-            {
+            if (e == null) {
                 return vec;
             }
             return toAbsolute(e, vec, partialTick);
         }
 
-        public Vec3 vecFromValue(Value value)
-        {
-            if (!(value instanceof final ListValue list))
-            {
+        public Vec3 vecFromValue(Value value) {
+            if (!(value instanceof final ListValue list)) {
                 throw new InternalExpressionException("decoded value of " + value.getPrettyString() + " is not a triple");
             }
             List<Value> elements = list.getItems();
@@ -450,27 +357,23 @@ public class ShapeDispatcher
             );
         }
 
-        protected ParticleOptions replacementParticle(RegistryAccess regs)
-        {
+        protected ParticleOptions replacementParticle(RegistryAccess regs) {
             boolean bg = fa == 0;
-            return new DustParticleOptions(ARGB.colorFromFloat(1.0f, (bg ?r:fr), (bg ?r:fr), (bg ?r:fr)), 1);
+            return new DustParticleOptions(ARGB.colorFromFloat(1.0f, (bg ? r : fr), (bg ? r : fr), (bg ? r : fr)), 1);
         }
 
 
         public abstract Consumer<ServerPlayer> alternative();
 
-        public long key(RegistryAccess regs)
-        {
-            if (key != 0)
-            {
+        public long key(RegistryAccess regs) {
+            if (key != 0) {
                 return key;
             }
             key = calcKey(regs);
             return key;
         }
 
-        protected long calcKey(RegistryAccess regs)
-        { // using FNV-1a algorithm
+        protected long calcKey(RegistryAccess regs) { // using FNV-1a algorithm
             long hash = -3750763034362895579L;
             hash ^= shapeDimension.hashCode();
             hash *= 1099511628211L;
@@ -481,15 +384,13 @@ public class ShapeDispatcher
             hash ^= Boolean.hashCode(debug);
             hash ^= Boolean.hashCode(seethrough);
             hash *= 1099511628211L;
-            if (followEntity >= 0)
-            {
+            if (followEntity >= 0) {
                 hash ^= snapTo.hashCode();
                 hash *= 1099511628211L;
             }
             hash ^= Float.hashCode(lineWidth);
             hash *= 1099511628211L;
-            if (fa != 0.0)
-            {
+            if (fa != 0.0) {
                 hash = 31 * hash + fillColor;
                 hash *= 1099511628211L;
             }
@@ -500,8 +401,7 @@ public class ShapeDispatcher
         private static final double ydif = new Random('y').nextDouble();
         private static final double zdif = new Random('z').nextDouble();
 
-        int vec3dhash(Vec3 vec)
-        {
+        int vec3dhash(Vec3 vec) {
             return vec.add(xdif, ydif, zdif).hashCode();
         }
 
@@ -517,25 +417,21 @@ public class ShapeDispatcher
                 "snap", new StringValue("xyz")
         );
 
-        protected Set<String> requiredParams()
-        {
+        protected Set<String> requiredParams() {
             return required;
         }
 
         // list of params that can be there, with defaults
-        protected Set<String> optionalParams()
-        {
+        protected Set<String> optionalParams() {
             return optional.keySet();
         }
 
-        private boolean canTake(String param)
-        {
+        private boolean canTake(String param) {
             return requiredParams().contains(param) || optionalParams().contains(param);
         }
     }
 
-    public static class DisplayedText extends ExpiringShape
-    {
+    public static class DisplayedText extends ExpiringShape {
         private final Set<String> required = Set.of("pos", "text");
         private final Map<String, Value> optional = Map.ofEntries(
                 entry("facing", new StringValue("player")),
@@ -551,19 +447,16 @@ public class ShapeDispatcher
                 entry("doublesided", new NumericValue(0)));
 
         @Override
-        protected Set<String> requiredParams()
-        {
+        protected Set<String> requiredParams() {
             return Sets.union(super.requiredParams(), required);
         }
 
         @Override
-        protected Set<String> optionalParams()
-        {
+        protected Set<String> optionalParams() {
             return Sets.union(super.optionalParams(), optional.keySet());
         }
 
-        public DisplayedText()
-        {
+        public DisplayedText() {
         }
 
         Vec3 pos;
@@ -584,14 +477,12 @@ public class ShapeDispatcher
         boolean doublesided;
 
         @Override
-        protected void init(Map<String, Value> options, RegistryAccess regs)
-        {
+        protected void init(Map<String, Value> options, RegistryAccess regs) {
             super.init(options, regs);
             pos = vecFromValue(options.get("pos"));
             value = ((FormattedTextValue) options.get("text")).getText();
             text = value.getString();
-            if (options.containsKey("value"))
-            {
+            if (options.containsKey("value")) {
                 value = ((FormattedTextValue) options.get("value")).getText();
             }
             textcolor = rgba2argb(color);
@@ -599,21 +490,16 @@ public class ShapeDispatcher
             String dir = options.getOrDefault("facing", optional.get("facing")).getString();
             facing = ShapeDirection.fromString(dir);
             align = 0;
-            if (options.containsKey("align"))
-            {
+            if (options.containsKey("align")) {
                 String alignStr = options.get("align").getString();
-                if ("right".equalsIgnoreCase(alignStr))
-                {
+                if ("right".equalsIgnoreCase(alignStr)) {
                     align = 1;
-                }
-                else if ("left".equalsIgnoreCase(alignStr))
-                {
+                } else if ("left".equalsIgnoreCase(alignStr)) {
                     align = -1;
                 }
             }
             doublesided = false;
-            if (options.containsKey("doublesided"))
-            {
+            if (options.containsKey("doublesided")) {
                 doublesided = options.get("doublesided").getBoolean();
             }
 
@@ -627,8 +513,7 @@ public class ShapeDispatcher
             size = NumericValue.asNumber(options.getOrDefault("size", optional.get("size"))).getFloat();
         }
 
-        private int rgba2argb(int color)
-        {
+        private int rgba2argb(int color) {
             int r = Math.max(1, color >> 24 & 0xFF);
             int g = Math.max(1, color >> 16 & 0xFF);
             int b = Math.max(1, color >> 8 & 0xFF);
@@ -637,15 +522,13 @@ public class ShapeDispatcher
         }
 
         @Override
-        public Consumer<ServerPlayer> alternative()
-        {
+        public Consumer<ServerPlayer> alternative() {
             return s -> {
             };
         }
 
         @Override
-        public long calcKey(RegistryAccess regs)
-        {
+        public long calcKey(RegistryAccess regs) {
             long hash = super.calcKey(regs);
             hash ^= 5;
             hash *= 1099511628211L;
@@ -653,8 +536,7 @@ public class ShapeDispatcher
             hash *= 1099511628211L;
             hash ^= text.hashCode();
             hash *= 1099511628211L;
-            if (facing != null)
-            {
+            if (facing != null) {
                 hash ^= facing.hashCode();
             }
             hash *= 1099511628211L;
@@ -681,8 +563,7 @@ public class ShapeDispatcher
         }
     }
 
-    public static class DisplayedSprite extends ExpiringShape
-    {
+    public static class DisplayedSprite extends ExpiringShape {
         private final Set<String> required = Set.of("pos");
         private final Map<String, Value> optional = Map.ofEntries(
                 entry("facing", new StringValue("north")),
@@ -695,19 +576,16 @@ public class ShapeDispatcher
         private final boolean isitem;
 
         @Override
-        protected Set<String> requiredParams()
-        {
+        protected Set<String> requiredParams() {
             return Sets.union(Sets.union(super.requiredParams(), required), Set.of(isitem ? "item" : "block"));
         }
 
         @Override
-        protected Set<String> optionalParams()
-        {
+        protected Set<String> optionalParams() {
             return Sets.union(Sets.union(super.optionalParams(), optional.keySet()), isitem ? Set.of("variant") : Set.of());
         }
 
-        public DisplayedSprite(boolean i)
-        {
+        public DisplayedSprite(boolean i) {
             isitem = i;
         }
 
@@ -731,34 +609,27 @@ public class ShapeDispatcher
         String itemTransformType;
 
         @Override
-        protected void init(Map<String, Value> options, RegistryAccess regs)
-        {
+        protected void init(Map<String, Value> options, RegistryAccess regs) {
             super.init(options, regs);
             pos = vecFromValue(options.get("pos"));
-            if (!this.isitem)
-            {
+            if (!this.isitem) {
                 BlockValue block = (BlockValue) options.get("block");
                 blockState = block.getBlockState();
                 blockEntity = block.getData();
-            }
-            else
-            {
-                this.item = ItemStack.CODEC.parse(regs.createSerializationContext(NbtOps.INSTANCE), ((NBTSerializableValue) options.get("item")).getCompoundTag() ).getOrThrow(s -> new InternalExpressionException("Failed to parse item stack data: " + s));
+            } else {
+                this.item = ItemStack.CODEC.parse(regs.createSerializationContext(NbtOps.INSTANCE), ((NBTSerializableValue) options.get("item")).getCompoundTag()).getOrThrow(s -> new InternalExpressionException("Failed to parse item stack data: " + s));
             }
             blockLight = NumericValue.asNumber(options.getOrDefault("blocklight", optional.get("blocklight"))).getInt();
-            if (blockLight > 15)
-            {
+            if (blockLight > 15) {
                 blockLight = 15;
             }
             skyLight = NumericValue.asNumber(options.getOrDefault("skylight", optional.get("skylight"))).getInt();
-            if (skyLight > 15)
-            {
+            if (skyLight > 15) {
                 skyLight = 15;
             }
 
             itemTransformType = "none";
-            if (options.containsKey("variant"))
-            {
+            if (options.containsKey("variant")) {
                 itemTransformType = options.get("variant").getString().toLowerCase(Locale.ROOT);
             }
 
@@ -775,21 +646,16 @@ public class ShapeDispatcher
         }
 
         @Override
-        public Consumer<ServerPlayer> alternative()
-        {
+        public Consumer<ServerPlayer> alternative() {
             return p -> {
                 ParticleOptions particle;
                 Registry<Block> blocks = p.level().getServer().registryAccess().lookupOrThrow(Registries.BLOCK);
-                if (this.isitem)
-                {
-                    if (Block.byItem(this.item.getItem()).defaultBlockState().isAir())
-                    {
+                if (this.isitem) {
+                    if (Block.byItem(this.item.getItem()).defaultBlockState().isAir()) {
                         return;
                     }
                     particle = getParticleData("block_marker " + blocks.getKey(Block.byItem(this.item.getItem())), p.level().registryAccess());
-                }
-                else
-                {
+                } else {
                     particle = getParticleData("block_marker " + blocks.getKey(this.blockState.getBlock()), p.level().registryAccess());
                 }
 
@@ -799,8 +665,7 @@ public class ShapeDispatcher
         }
 
         @Override
-        public long calcKey(RegistryAccess regs)
-        {
+        public long calcKey(RegistryAccess regs) {
             long hash = super.calcKey(regs);
             hash ^= 7;
             hash *= 1099511628211L;
@@ -808,8 +673,7 @@ public class ShapeDispatcher
             hash *= 1099511628211L;
             hash ^= vec3dhash(pos);
             hash *= 1099511628211L;
-            if (facing != null)
-            {
+            if (facing != null) {
                 hash ^= facing.hashCode();
             }
             hash *= 1099511628211L;
@@ -829,13 +693,11 @@ public class ShapeDispatcher
             hash *= 1099511628211L;
             hash ^= Float.hashCode(blockLight);
             hash *= 1099511628211L;
-            if (blockEntity != null)
-            {
+            if (blockEntity != null) {
                 hash ^= blockEntity.toString().hashCode();
             }
             hash *= 1099511628211L;
-            if (blockState != null)
-            {
+            if (blockState != null) {
                 hash ^= blockState.hashCode();
             }
             hash *= 1099511628211L;
@@ -849,46 +711,39 @@ public class ShapeDispatcher
     }
 
 
-    public static class Box extends ExpiringShape
-    {
+    public static class Box extends ExpiringShape {
         private final Set<String> required = Set.of("from", "to");
         private final Map<String, Value> optional = Map.of();
 
         @Override
-        protected Set<String> requiredParams()
-        {
+        protected Set<String> requiredParams() {
             return Sets.union(super.requiredParams(), required);
         }
 
         @Override
-        protected Set<String> optionalParams()
-        {
+        protected Set<String> optionalParams() {
             return Sets.union(super.optionalParams(), optional.keySet());
         }
 
-        public Box()
-        {
+        public Box() {
         }
 
         Vec3 from;
         Vec3 to;
 
         @Override
-        protected void init(Map<String, Value> options, RegistryAccess regs)
-        {
+        protected void init(Map<String, Value> options, RegistryAccess regs) {
             super.init(options, regs);
             from = vecFromValue(options.get("from"));
             to = vecFromValue(options.get("to"));
         }
 
         @Override
-        public Consumer<ServerPlayer> alternative()
-        {
+        public Consumer<ServerPlayer> alternative() {
             double density = Math.max(2.0, from.distanceTo(to) / 50 / (a + 0.1));
             return p ->
             {
-                if (p.level().dimension() == shapeDimension)
-                {
+                if (p.level().dimension() == shapeDimension) {
                     particleMesh(
                             Collections.singletonList(p),
                             replacementParticle(p.level().registryAccess()),
@@ -901,8 +756,7 @@ public class ShapeDispatcher
         }
 
         @Override
-        public long calcKey(RegistryAccess regs)
-        {
+        public long calcKey(RegistryAccess regs) {
             long hash = super.calcKey(regs);
             hash ^= 1;
             hash *= 1099511628211L;
@@ -914,8 +768,7 @@ public class ShapeDispatcher
         }
 
         public static int particleMesh(List<ServerPlayer> playerList, ParticleOptions particle, double density,
-                                       Vec3 from, Vec3 to)
-        {
+                                       Vec3 from, Vec3 to) {
             double x1 = from.x;
             double y1 = from.y;
             double z1 = from.z;
@@ -940,11 +793,9 @@ public class ShapeDispatcher
         }
     }
 
-    public static class Polyface extends ExpiringShape
-    {
+    public static class Polyface extends ExpiringShape {
         @Override
-        public long calcKey(RegistryAccess regs)
-        {
+        public long calcKey(RegistryAccess regs) {
             long hash = super.calcKey(regs);
             hash ^= 6;
             hash *= 1099511628211L;
@@ -952,8 +803,7 @@ public class ShapeDispatcher
             hash *= 1099511628211L;
             hash ^= relative.hashCode();
             hash *= 1099511628211L;
-            for (Vec3 i : vertexList)
-            {
+            for (Vec3 i : vertexList) {
                 hash ^= vec3dhash(i);
                 hash *= 1099511628211L;
             }
@@ -970,10 +820,8 @@ public class ShapeDispatcher
         final Random random = new Random();
         boolean doublesided;
 
-        ArrayList<Vec3> getAlterPoint(ServerPlayer p)
-        {
-            if (alterPoint != null)
-            {
+        ArrayList<Vec3> getAlterPoint(ServerPlayer p) {
+            if (alterPoint != null) {
                 return alterPoint;
             }
             alterPoint = new ArrayList<>();
@@ -1041,21 +889,16 @@ public class ShapeDispatcher
             return alterPoint;
         }
 
-        void alterDrawTriangles(Vec3 a, Vec3 b, Vec3 c)
-        {
+        void alterDrawTriangles(Vec3 a, Vec3 b, Vec3 c) {
             Vec3 bb = b.subtract(a);
             Vec3 cc = c.subtract(a);
-            for (int i = 0; i / 8 < bb.cross(cc).length(); i++)
-            {
+            for (int i = 0; i / 8 < bb.cross(cc).length(); i++) {
                 double x = random.nextDouble();
                 double y = random.nextDouble();
                 alterPoint.add(a.add(bb.scale(x / 2)).add(cc.scale(y / 2)));
-                if (x + y < 1)
-                {
+                if (x + y < 1) {
                     alterPoint.add(a.add(bb.scale((x + 1) / 2)).add(cc.scale(y / 2)));
-                }
-                else
-                {
+                } else {
                     x = 1 - x;
                     y = 1 - y;
                     alterPoint.add(a.add(bb.scale(x / 2)).add(cc.scale((y + 1) / 2)));
@@ -1064,18 +907,14 @@ public class ShapeDispatcher
         }
 
         @Override
-        public Consumer<ServerPlayer> alternative()
-        {
+        public Consumer<ServerPlayer> alternative() {
             return p -> {
-                if (p.level().dimension() != this.shapeDimension)
-                {
+                if (p.level().dimension() != this.shapeDimension) {
                     return;
                 }
-                if (fa > 0.0f)
-                {
+                if (fa > 0.0f) {
                     ParticleOptions locparticledata = new DustParticleOptions(ARGB.colorFromFloat(1.0f, fr, fg, fb), 1);
-                    for (Vec3 v : getAlterPoint(p))
-                    {
+                    for (Vec3 v : getAlterPoint(p)) {
                         p.level().sendParticles(p, locparticledata, true, true,
                                 v.x, v.y, v.z, 1,
                                 0.0, 0.0, 0.0, 0.0);
@@ -1093,14 +932,12 @@ public class ShapeDispatcher
         );
 
         @Override
-        protected Set<String> requiredParams()
-        {
+        protected Set<String> requiredParams() {
             return Sets.union(super.requiredParams(), required);
         }
 
         @Override
-        protected Set<String> optionalParams()
-        {
+        protected Set<String> optionalParams() {
             return Sets.union(super.optionalParams(), optional.keySet());
         }
 
@@ -1110,61 +947,42 @@ public class ShapeDispatcher
         boolean inneredges;
 
         @Override
-        protected void init(Map<String, Value> options, RegistryAccess regs)
-        {
+        protected void init(Map<String, Value> options, RegistryAccess regs) {
             super.init(options, regs);
 
             doublesided = options.getOrDefault("doublesided", optional.get("doublesided")).getBoolean();
 
-            if (options.get("points") instanceof final AbstractListValue abl)
-            {
+            if (options.get("points") instanceof final AbstractListValue abl) {
                 abl.forEach(x -> vertexList.add(vecFromValue(x)));
             }
             String modeOption = options.getOrDefault("mode", optional.get("mode")).getString();
             inneredges = options.getOrDefault("inner", optional.get("inner")).getBoolean();
-            if (vertexList.size() < 3)
-            {
+            if (vertexList.size() < 3) {
                 throw new IllegalArgumentException("Unexpected vertex list size: " + vertexList.size());
-            }
-            else if (vertexList.size() < 4)
-            {
+            } else if (vertexList.size() < 4) {
                 inneredges = false;
             }
-            if ("polygon".equals(modeOption))
-            {
+            if ("polygon".equals(modeOption)) {
                 this.mode = 6;
-            }
-            else if ("strip".equals(modeOption))
-            {
+            } else if ("strip".equals(modeOption)) {
                 this.mode = 5;
-            }
-            else if ("triangles".equals(modeOption))
-            {
+            } else if ("triangles".equals(modeOption)) {
                 this.mode = 4;
-                if (vertexList.size() % 3 != 0)
-                {
+                if (vertexList.size() % 3 != 0) {
                     throw new IllegalArgumentException("Unexpected vertex list size: " + vertexList.size());
                 }
             }
-            if (options.getOrDefault("relative", optional.get("relative")) instanceof final AbstractListValue abl)
-            {
+            if (options.getOrDefault("relative", optional.get("relative")) instanceof final AbstractListValue abl) {
                 Iterator<Value> it = abl.iterator();
-                for (long i = 0L; i < vertexList.size(); i++)
-                {
+                for (long i = 0L; i < vertexList.size(); i++) {
                     relative.add(it.hasNext() && it.next().getBoolean());//if part of it got defined.
                 }
-            }
-            else if (options.getOrDefault("relative", optional.get("relative")) instanceof final BooleanValue boolv)
-            {
-                for (long i = 0L; i < vertexList.size(); i++)
-                {
+            } else if (options.getOrDefault("relative", optional.get("relative")) instanceof final BooleanValue boolv) {
+                for (long i = 0L; i < vertexList.size(); i++) {
                     relative.add(boolv.getBoolean());//if it is a boolean.
                 }
-            }
-            else
-            {
-                for (long i = 0L; i < vertexList.size(); i++)
-                {
+            } else {
+                for (long i = 0L; i < vertexList.size(); i++) {
                     relative.add(true);//if there is nothing defined at all.
                 }
             }
@@ -1172,25 +990,21 @@ public class ShapeDispatcher
         }
     }
 
-    public static class Line extends ExpiringShape
-    {
+    public static class Line extends ExpiringShape {
         private final Set<String> required = Set.of("from", "to");
         private final Map<String, Value> optional = Map.of();
 
         @Override
-        protected Set<String> requiredParams()
-        {
+        protected Set<String> requiredParams() {
             return Sets.union(super.requiredParams(), required);
         }
 
         @Override
-        protected Set<String> optionalParams()
-        {
+        protected Set<String> optionalParams() {
             return Sets.union(super.optionalParams(), optional.keySet());
         }
 
-        private Line()
-        {
+        private Line() {
             super();
         }
 
@@ -1198,21 +1012,18 @@ public class ShapeDispatcher
         Vec3 to;
 
         @Override
-        protected void init(Map<String, Value> options, RegistryAccess regs)
-        {
+        protected void init(Map<String, Value> options, RegistryAccess regs) {
             super.init(options, regs);
             from = vecFromValue(options.get("from"));
             to = vecFromValue(options.get("to"));
         }
 
         @Override
-        public Consumer<ServerPlayer> alternative()
-        {
+        public Consumer<ServerPlayer> alternative() {
             double density = Math.max(2.0, from.distanceTo(to) / 50) / (a + 0.1);
             return p ->
             {
-                if (p.level().dimension() == shapeDimension)
-                {
+                if (p.level().dimension() == shapeDimension) {
                     drawParticleLine(
                             Collections.singletonList(p),
                             replacementParticle(p.level().registryAccess()),
@@ -1225,8 +1036,7 @@ public class ShapeDispatcher
         }
 
         @Override
-        public long calcKey(RegistryAccess regs)
-        {
+        public long calcKey(RegistryAccess regs) {
             long hash = super.calcKey(regs);
             hash ^= 2;
             hash *= 1099511628211L;
@@ -1238,25 +1048,21 @@ public class ShapeDispatcher
         }
     }
 
-    public static class Sphere extends ExpiringShape
-    {
+    public static class Sphere extends ExpiringShape {
         private final Set<String> required = Set.of("center", "radius");
         private final Map<String, Value> optional = Map.of("level", Value.ZERO);
 
         @Override
-        protected Set<String> requiredParams()
-        {
+        protected Set<String> requiredParams() {
             return Sets.union(super.requiredParams(), required);
         }
 
         @Override
-        protected Set<String> optionalParams()
-        {
+        protected Set<String> optionalParams() {
             return Sets.union(super.optionalParams(), optional.keySet());
         }
 
-        private Sphere()
-        {
+        private Sphere() {
             super();
         }
 
@@ -1266,22 +1072,19 @@ public class ShapeDispatcher
         int subdivisions;
 
         @Override
-        protected void init(Map<String, Value> options, RegistryAccess regs)
-        {
+        protected void init(Map<String, Value> options, RegistryAccess regs) {
             super.init(options, regs);
             center = vecFromValue(options.get("center"));
             radius = NumericValue.asNumber(options.get("radius")).getFloat();
             level = NumericValue.asNumber(options.getOrDefault("level", optional.get("level"))).getInt();
             subdivisions = level;
-            if (subdivisions <= 0)
-            {
+            if (subdivisions <= 0) {
                 subdivisions = Math.max(10, (int) (10 * Math.sqrt(radius)));
             }
         }
 
         @Override
-        public Consumer<ServerPlayer> alternative()
-        {
+        public Consumer<ServerPlayer> alternative() {
             return p ->
             {
                 int partno = Math.min(1000, 20 * subdivisions);
@@ -1295,8 +1098,7 @@ public class ShapeDispatcher
                 double ccy = ccenter.y;
                 double ccz = ccenter.z;
 
-                for (int i = 0; i < partno; i++)
-                {
+                for (int i = 0; i < partno; i++) {
                     float theta = (float) Math.asin(rand.nextDouble() * 2.0 - 1.0);
                     float phi = (float) (2 * Math.PI * rand.nextDouble());
 
@@ -1311,8 +1113,7 @@ public class ShapeDispatcher
         }
 
         @Override
-        public long calcKey(RegistryAccess regs)
-        {
+        public long calcKey(RegistryAccess regs) {
             long hash = super.calcKey(regs);
             hash ^= 3;
             hash *= 1099511628211L;
@@ -1326,8 +1127,7 @@ public class ShapeDispatcher
         }
     }
 
-    public static class Cylinder extends ExpiringShape
-    {
+    public static class Cylinder extends ExpiringShape {
         private final Set<String> required = Set.of("center", "radius");
         private final Map<String, Value> optional = Map.of(
                 "level", Value.ZERO,
@@ -1336,14 +1136,12 @@ public class ShapeDispatcher
         );
 
         @Override
-        protected Set<String> requiredParams()
-        {
+        protected Set<String> requiredParams() {
             return Sets.union(super.requiredParams(), required);
         }
 
         @Override
-        protected Set<String> optionalParams()
-        {
+        protected Set<String> optionalParams() {
             return Sets.union(super.optionalParams(), optional.keySet());
         }
 
@@ -1354,21 +1152,18 @@ public class ShapeDispatcher
         int subdivisions;
         Direction.Axis axis;
 
-        private Cylinder()
-        {
+        private Cylinder() {
             super();
         }
 
         @Override
-        protected void init(Map<String, Value> options, RegistryAccess regs)
-        {
+        protected void init(Map<String, Value> options, RegistryAccess regs) {
             super.init(options, regs);
             center = vecFromValue(options.get("center"));
             radius = NumericValue.asNumber(options.get("radius")).getFloat();
             level = NumericValue.asNumber(options.getOrDefault("level", optional.get("level"))).getInt();
             subdivisions = level;
-            if (subdivisions <= 0)
-            {
+            if (subdivisions <= 0) {
                 subdivisions = Math.max(10, (int) (10 * Math.sqrt(radius)));
             }
             height = NumericValue.asNumber(options.getOrDefault("height", optional.get("height"))).getFloat();
@@ -1377,8 +1172,7 @@ public class ShapeDispatcher
 
 
         @Override
-        public Consumer<ServerPlayer> alternative()
-        {
+        public Consumer<ServerPlayer> alternative() {
             return p ->
             {
                 int partno = (int) Math.min(1000, Math.sqrt(20 * subdivisions * (1 + height)));
@@ -1392,22 +1186,17 @@ public class ShapeDispatcher
                 double ccy = ccenter.y;
                 double ccz = ccenter.z;
 
-                if (axis == Direction.Axis.Y)
-                {
-                    for (int i = 0; i < partno; i++)
-                    {
+                if (axis == Direction.Axis.Y) {
+                    for (int i = 0; i < partno; i++) {
                         float d = rand.nextFloat() * height;
                         float phi = (float) (2 * Math.PI * rand.nextDouble());
                         double x = radius * Mth.cos(phi);
                         double y = d;
                         double z = radius * Mth.sin(phi);
-                        world.sendParticles(p, particle, true, true,x + ccx, y + ccy, z + ccz, 1, 0.0, 0.0, 0.0, 0.0);
+                        world.sendParticles(p, particle, true, true, x + ccx, y + ccy, z + ccz, 1, 0.0, 0.0, 0.0, 0.0);
                     }
-                }
-                else if (axis == Direction.Axis.X)
-                {
-                    for (int i = 0; i < partno; i++)
-                    {
+                } else if (axis == Direction.Axis.X) {
+                    for (int i = 0; i < partno; i++) {
                         float d = rand.nextFloat() * height;
                         float phi = (float) (2 * Math.PI * rand.nextDouble());
                         double x = d;
@@ -1415,11 +1204,9 @@ public class ShapeDispatcher
                         double z = radius * Mth.sin(phi);
                         world.sendParticles(p, particle, true, true, x + ccx, y + ccy, z + ccz, 1, 0.0, 0.0, 0.0, 0.0);
                     }
-                }
-                else  // Z
+                } else  // Z
                 {
-                    for (int i = 0; i < partno; i++)
-                    {
+                    for (int i = 0; i < partno; i++) {
                         float d = rand.nextFloat() * height;
                         float phi = (float) (2 * Math.PI * rand.nextDouble());
                         double x = radius * Mth.sin(phi);
@@ -1432,8 +1219,7 @@ public class ShapeDispatcher
         }
 
         @Override
-        public long calcKey(RegistryAccess regs)
-        {
+        public long calcKey(RegistryAccess regs) {
             long hash = super.calcKey(regs);
             hash ^= 4;
             hash *= 1099511628211L;
@@ -1450,8 +1236,7 @@ public class ShapeDispatcher
     }
 
 
-    public abstract static class Param
-    {
+    public abstract static class Param {
         public static final ImmutableMap<String, Param> of = ImmutableMap.<String, Param>builder()
                 .put("mode", new StringChoiceParam("mode", "polygon", "strip", "triangles"))
                 .put("relative", new OptionalBoolListParam("relative"))
@@ -1471,11 +1256,9 @@ public class ShapeDispatcher
                         "GUI",
                         "GROUND",
                         "FIXED",
-                        "ON_SHELF")
-                {
+                        "ON_SHELF") {
                     @Override
-                    public Value validate(Map<String, Value> o, MinecraftServer s, Value v)
-                    {
+                    public Value validate(Map<String, Value> o, MinecraftServer s, Value v) {
                         return super.validate(o, s, new StringValue(v.getString().toUpperCase(Locale.ROOT)));
                     }
                 })
@@ -1495,13 +1278,10 @@ public class ShapeDispatcher
                 .put("level", new PositiveIntParam("level"))
                 .put("height", new FloatParam("height"))
                 .put("width", new FloatParam("width"))
-                .put("scale", new Vec3Param("scale", false)
-                {
+                .put("scale", new Vec3Param("scale", false) {
                     @Override
-                    public Value validate(java.util.Map<String, Value> options, MinecraftServer server, Value value)
-                    {
-                        if (value instanceof final NumericValue vn)
-                        {
+                    public Value validate(java.util.Map<String, Value> options, MinecraftServer server, Value value) {
+                        if (value instanceof final NumericValue vn) {
                             value = ListValue.of(vn, vn, vn);
                         }
                         return super.validate(options, server, value);
@@ -1529,8 +1309,7 @@ public class ShapeDispatcher
 
         protected String id;
 
-        protected Param(String id)
-        {
+        protected Param(String id) {
             this.id = id;
         }
 
@@ -1541,95 +1320,75 @@ public class ShapeDispatcher
         public abstract Value decode(Tag tag, Level level);
     }
 
-    public static class OptionalBoolListParam extends Param
-    {
-        public OptionalBoolListParam(String id)
-        {
+    public static class OptionalBoolListParam extends Param {
+        public OptionalBoolListParam(String id) {
             super(id);
         }
 
         @Override
-        public Tag toTag(Value value, final RegistryAccess regs)
-        {
+        public Tag toTag(Value value, final RegistryAccess regs) {
             return value.toTag(true, regs);
         }
 
         @Override
-        public Value decode(Tag tag, Level level)
-        {
-            if (tag instanceof final ListTag list)
-            {
+        public Value decode(Tag tag, Level level) {
+            if (tag instanceof final ListTag list) {
                 return ListValue.wrap(list.stream().map(x -> BooleanValue.of(((NumericTag) x).doubleValue() != 0)));
             }
-            if (tag instanceof final ByteTag booltag)
-            {
+            if (tag instanceof final ByteTag booltag) {
                 return BooleanValue.of(booltag.byteValue() != 0);
             }
             return Value.NULL;
         }
 
         @Override
-        public Value validate(Map<String, Value> options, MinecraftServer server, Value value)
-        {
-            if (value instanceof final AbstractListValue lv)
-            {
+        public Value validate(Map<String, Value> options, MinecraftServer server, Value value) {
+            if (value instanceof final AbstractListValue lv) {
                 return ListValue.wrap(lv.unpack().stream().map(Value::getBoolean).map(BooleanValue::of));
             }
-            if (value instanceof BooleanValue || value.isNull())
-            {
+            if (value instanceof BooleanValue || value.isNull()) {
                 return value;
             }
             return BooleanValue.of(value.getBoolean());
         }
     }
 
-    public abstract static class StringParam extends Param
-    {
-        protected StringParam(String id)
-        {
+    public abstract static class StringParam extends Param {
+        protected StringParam(String id) {
             super(id);
         }
 
         @Override
-        public Tag toTag(Value value, final RegistryAccess regs)
-        {
+        public Tag toTag(Value value, final RegistryAccess regs) {
             return StringTag.valueOf(value.getString());
         }
 
         @Override
-        public Value decode(Tag tag, Level level)
-        {
+        public Value decode(Tag tag, Level level) {
             return new StringValue(tag.asString().get());
         }
     }
 
-    public static class BlockParam extends Param
-    {
+    public static class BlockParam extends Param {
 
-        protected BlockParam(String id)
-        {
+        protected BlockParam(String id) {
             super(id);
         }
 
         @Override
-        public Value validate(Map<String, Value> options, MinecraftServer server, Value value)
-        {
-            if (value instanceof BlockValue)
-            {
+        public Value validate(Map<String, Value> options, MinecraftServer server, Value value) {
+            if (value instanceof BlockValue) {
                 return value;
             }
             return BlockValue.fromString(value.getString(), server.overworld());
         }
 
         @Override
-        public @Nullable Tag toTag(Value value, final RegistryAccess regs)
-        {
-            if (value instanceof final BlockValue blv)
-            {
+        public @Nullable Tag toTag(Value value, final RegistryAccess regs) {
+            if (value instanceof final BlockValue blv) {
                 CompoundTag com = NbtUtils.writeBlockState(blv.getBlockState());
                 CompoundTag dataTag = blv.getData();
-                if (dataTag != null)
-                {
+                if (dataTag != null) {
                     com.put("TileEntityData", dataTag);
                 }
                 return com;
@@ -1638,325 +1397,261 @@ public class ShapeDispatcher
         }
 
         @Override
-        public Value decode(Tag tag, Level level)
-        {
+        public Value decode(Tag tag, Level level) {
             BlockState bs = NbtUtils.readBlockState(level.holderLookup(Registries.BLOCK), (CompoundTag) tag);
             CompoundTag compoundTag2 = null;
-            if (((CompoundTag) tag).contains("TileEntityData"))
-            {
+            if (((CompoundTag) tag).contains("TileEntityData")) {
                 compoundTag2 = ((CompoundTag) tag).getCompound("TileEntityData").get();
             }
             return new BlockValue(bs, compoundTag2);
         }
     }
 
-    public static class ItemParam extends Param
-    {
+    public static class ItemParam extends Param {
 
-        protected ItemParam(String id)
-        {
+        protected ItemParam(String id) {
             super(id);
         }
 
         @Override
-        public Value validate(Map<String, Value> options, MinecraftServer server, Value value)
-        {
+        public Value validate(Map<String, Value> options, MinecraftServer server, Value value) {
             ItemStack item = ValueConversions.getItemStackFromValue(value, true, server.registryAccess());
             return new NBTSerializableValue(ItemStack.CODEC.encodeStart(server.registryAccess().createSerializationContext(NbtOps.INSTANCE), item).getOrThrow(s -> new InternalExpressionException("Failed to parse item stack data: " + s)));
         }
 
         @Override
-        public Tag toTag(Value value, final RegistryAccess regs)
-        {
+        public Tag toTag(Value value, final RegistryAccess regs) {
             return ((NBTSerializableValue) value).getTag();
         }
 
         @Override
-        public Value decode(Tag tag, Level level)
-        {
+        public Value decode(Tag tag, Level level) {
             return new NBTSerializableValue(tag);
         }
     }
 
-    public static class TextParam extends StringParam
-    {
-        protected TextParam(String id)
-        {
+    public static class TextParam extends StringParam {
+        protected TextParam(String id) {
             super(id);
         }
 
         @Override
-        public Value validate(Map<String, Value> options, MinecraftServer server, Value value)
-        {
+        public Value validate(Map<String, Value> options, MinecraftServer server, Value value) {
             return value;
         }
     }
 
-    public static class FormattedTextParam extends StringParam
-    {
+    public static class FormattedTextParam extends StringParam {
 
-        protected FormattedTextParam(String id)
-        {
+        protected FormattedTextParam(String id) {
             super(id);
         }
 
         @Override
-        public Value validate(Map<String, Value> options, MinecraftServer server, Value value)
-        {
-            if (!(value instanceof FormattedTextValue))
-            {
+        public Value validate(Map<String, Value> options, MinecraftServer server, Value value) {
+            if (!(value instanceof FormattedTextValue)) {
                 value = new FormattedTextValue(Component.literal(value.getString()));
             }
             return value;
         }
 
         @Override
-        public Tag toTag(Value value, final RegistryAccess regs)
-        {
-            if (!(value instanceof FormattedTextValue))
-            {
+        public Tag toTag(Value value, final RegistryAccess regs) {
+            if (!(value instanceof FormattedTextValue)) {
                 value = new FormattedTextValue(Component.literal(value.getString()));
             }
             return ((FormattedTextValue) value).serialize(regs);
         }
 
         @Override
-        public Value decode(Tag tag, Level level)
-        {
+        public Value decode(Tag tag, Level level) {
             return FormattedTextValue.deserialize(tag, level.registryAccess());
         }
     }
 
 
-    public static class StringChoiceParam extends StringParam
-    {
+    public static class StringChoiceParam extends StringParam {
         private final Set<String> options;
 
-        public StringChoiceParam(String id, String... options)
-        {
+        public StringChoiceParam(String id, String... options) {
             super(id);
             this.options = Sets.newHashSet(options);
         }
 
         @Override
-        public @Nullable Value validate(Map<String, Value> options, MinecraftServer server, Value value)
-        {
-            if (this.options.contains(value.getString()))
-            {
+        public @Nullable Value validate(Map<String, Value> options, MinecraftServer server, Value value) {
+            if (this.options.contains(value.getString())) {
                 return value;
             }
             return null;
         }
     }
 
-    public static class DimensionParam extends StringParam
-    {
-        protected DimensionParam()
-        {
+    public static class DimensionParam extends StringParam {
+        protected DimensionParam() {
             super("dim");
         }
 
         @Override
-        public Value validate(Map<String, Value> options, MinecraftServer server, Value value)
-        {
+        public Value validate(Map<String, Value> options, MinecraftServer server, Value value) {
             return value;
         }
     }
 
-    public static class ShapeParam extends StringParam
-    {
-        protected ShapeParam()
-        {
+    public static class ShapeParam extends StringParam {
+        protected ShapeParam() {
             super("shape");
         }
 
         @Override
-        public Value validate(Map<String, Value> options, MinecraftServer server, Value value)
-        {
+        public Value validate(Map<String, Value> options, MinecraftServer server, Value value) {
             String shape = value.getString();
-            if (!ExpiringShape.shapeProviders.containsKey(shape))
-            {
+            if (!ExpiringShape.shapeProviders.containsKey(shape)) {
                 throw new InternalExpressionException("Unknown shape: " + shape);
             }
             return value;
         }
     }
 
-    public abstract static class NumericParam extends Param
-    {
-        protected NumericParam(String id)
-        {
+    public abstract static class NumericParam extends Param {
+        protected NumericParam(String id) {
             super(id);
         }
 
         @Override
-        public Value validate(Map<String, Value> options, MinecraftServer server, Value value)
-        {
-            if (!(value instanceof NumericValue))
-            {
+        public Value validate(Map<String, Value> options, MinecraftServer server, Value value) {
+            if (!(value instanceof NumericValue)) {
                 throw new InternalExpressionException("'" + id + "' needs to be a number");
             }
             return value;
         }
     }
 
-    public static class BoolParam extends NumericParam
-    {
-        protected BoolParam(String id)
-        {
+    public static class BoolParam extends NumericParam {
+        protected BoolParam(String id) {
             super(id);
         }
 
         @Override
-        public Tag toTag(Value value, final RegistryAccess regs)
-        {
+        public Tag toTag(Value value, final RegistryAccess regs) {
             return ByteTag.valueOf(value.getBoolean());
         }
 
         @Override
-        public Value decode(Tag tag, Level level)
-        {
+        public Value decode(Tag tag, Level level) {
             return BooleanValue.of(((ByteTag) tag).byteValue() > 0);
         }
     }
 
-    public static class FloatParam extends NumericParam
-    {
-        protected FloatParam(String id)
-        {
+    public static class FloatParam extends NumericParam {
+        protected FloatParam(String id) {
             super(id);
         }
 
         @Override
-        public Value decode(Tag tag, Level level)
-        {
+        public Value decode(Tag tag, Level level) {
             return new NumericValue(((FloatTag) tag).floatValue());
         }
 
         @Override
-        public Tag toTag(Value value, final RegistryAccess regs)
-        {
+        public Tag toTag(Value value, final RegistryAccess regs) {
             return FloatTag.valueOf(NumericValue.asNumber(value, id).getFloat());
         }
     }
 
-    public abstract static class PositiveParam extends NumericParam
-    {
-        protected PositiveParam(String id)
-        {
+    public abstract static class PositiveParam extends NumericParam {
+        protected PositiveParam(String id) {
             super(id);
         }
 
         @Override
-        public Value validate(Map<String, Value> options, MinecraftServer server, Value value)
-        {
+        public Value validate(Map<String, Value> options, MinecraftServer server, Value value) {
             Value ret = super.validate(options, server, value);
-            if (((NumericValue) ret).getDouble() <= 0)
-            {
+            if (((NumericValue) ret).getDouble() <= 0) {
                 throw new InternalExpressionException("'" + id + "' should be positive");
             }
             return ret;
         }
     }
 
-    public static class PositiveFloatParam extends PositiveParam
-    {
-        protected PositiveFloatParam(String id)
-        {
+    public static class PositiveFloatParam extends PositiveParam {
+        protected PositiveFloatParam(String id) {
             super(id);
         }
 
         @Override
-        public Value decode(Tag tag, Level level)
-        {
+        public Value decode(Tag tag, Level level) {
             return new NumericValue(((FloatTag) tag).floatValue());
         }
 
         @Override
-        public Tag toTag(Value value, final RegistryAccess regs)
-        {
+        public Tag toTag(Value value, final RegistryAccess regs) {
             return FloatTag.valueOf(NumericValue.asNumber(value, id).getFloat());
         }
 
     }
 
-    public static class PositiveIntParam extends PositiveParam
-    {
-        protected PositiveIntParam(String id)
-        {
+    public static class PositiveIntParam extends PositiveParam {
+        protected PositiveIntParam(String id) {
             super(id);
         }
 
         @Override
-        public Value decode(Tag tag, Level level)
-        {
+        public Value decode(Tag tag, Level level) {
             return new NumericValue(((IntTag) tag).intValue());
         }
 
         @Override
-        public Tag toTag(Value value, final RegistryAccess regs)
-        {
+        public Tag toTag(Value value, final RegistryAccess regs) {
             return IntTag.valueOf(NumericValue.asNumber(value, id).getInt());
         }
 
     }
 
-    public static class NonNegativeIntParam extends NumericParam
-    {
-        protected NonNegativeIntParam(String id)
-        {
+    public static class NonNegativeIntParam extends NumericParam {
+        protected NonNegativeIntParam(String id) {
             super(id);
         }
 
         @Override
-        public Value decode(Tag tag, Level level)
-        {
+        public Value decode(Tag tag, Level level) {
             return new NumericValue(((IntTag) tag).intValue());
         }
 
         @Override
-        public Tag toTag(Value value, final RegistryAccess regs)
-        {
+        public Tag toTag(Value value, final RegistryAccess regs) {
             return IntTag.valueOf(NumericValue.asNumber(value, id).getInt());
         }
 
         @Override
-        public Value validate(Map<String, Value> options, MinecraftServer server, Value value)
-        {
+        public Value validate(Map<String, Value> options, MinecraftServer server, Value value) {
             Value ret = super.validate(options, server, value);
-            if (((NumericValue) ret).getDouble() < 0)
-            {
+            if (((NumericValue) ret).getDouble() < 0) {
                 throw new InternalExpressionException("'" + id + "' should be non-negative");
             }
             return ret;
         }
     }
 
-    public static class NonNegativeFloatParam extends NumericParam
-    {
-        protected NonNegativeFloatParam(String id)
-        {
+    public static class NonNegativeFloatParam extends NumericParam {
+        protected NonNegativeFloatParam(String id) {
             super(id);
         }
 
         @Override
-        public Value decode(Tag tag, Level level)
-        {
+        public Value decode(Tag tag, Level level) {
             return new NumericValue(((FloatTag) tag).floatValue());
         }
 
         @Override
-        public Tag toTag(Value value, final RegistryAccess regs)
-        {
+        public Tag toTag(Value value, final RegistryAccess regs) {
             return FloatTag.valueOf(NumericValue.asNumber(value, id).getFloat());
         }
 
         @Override
-        public Value validate(Map<String, Value> options, MinecraftServer server, Value value)
-        {
+        public Value validate(Map<String, Value> options, MinecraftServer server, Value value) {
             Value ret = super.validate(options, server, value);
-            if (((NumericValue) ret).getDouble() < 0)
-            {
+            if (((NumericValue) ret).getDouble() < 0) {
                 throw new InternalExpressionException("'" + id + "' should be non-negative");
             }
             return ret;
@@ -1964,28 +1659,22 @@ public class ShapeDispatcher
     }
 
 
-    public static class Vec3Param extends Param
-    {
+    public static class Vec3Param extends Param {
         private final boolean roundsUpForBlocks;
 
-        protected Vec3Param(String id, boolean doesRoundUpForBlocks)
-        {
+        protected Vec3Param(String id, boolean doesRoundUpForBlocks) {
             super(id);
             roundsUpForBlocks = doesRoundUpForBlocks;
         }
 
         @Override
-        public Value validate(Map<String, Value> options, MinecraftServer server, Value value)
-        {
+        public Value validate(Map<String, Value> options, MinecraftServer server, Value value) {
             return validate(this, options, value, roundsUpForBlocks);
         }
 
-        public static Value validate(Param p, Map<String, Value> options, Value value, boolean roundsUp)
-        {
-            if (value instanceof final BlockValue bv)
-            {
-                if (options.containsKey("follow"))
-                {
+        public static Value validate(Param p, Map<String, Value> options, Value value, boolean roundsUp) {
+            if (value instanceof final BlockValue bv) {
+                if (options.containsKey("follow")) {
                     throw new InternalExpressionException(p.id + " parameter cannot use blocks as positions for relative positioning due to 'follow' attribute being present");
                 }
                 BlockPos pos = bv.getPos();
@@ -1996,26 +1685,20 @@ public class ShapeDispatcher
                         new NumericValue(pos.getZ() + offset)
                 );
             }
-            if (value instanceof final ListValue list)
-            {
+            if (value instanceof final ListValue list) {
                 List<Value> values = list.getItems();
-                if (values.size() != 3)
-                {
+                if (values.size() != 3) {
                     throw new InternalExpressionException("'" + p.id + "' requires 3 numerical values");
                 }
-                for (Value component : values)
-                {
-                    if (!(component instanceof NumericValue))
-                    {
+                for (Value component : values) {
+                    if (!(component instanceof NumericValue)) {
                         throw new InternalExpressionException("'" + p.id + "' requires 3 numerical values");
                     }
                 }
                 return value;
             }
-            if (value instanceof final EntityValue ev)
-            {
-                if (options.containsKey("follow"))
-                {
+            if (value instanceof final EntityValue ev) {
+                if (options.containsKey("follow")) {
                     throw new InternalExpressionException(p.id + " parameter cannot use entity as positions for relative positioning due to 'follow' attribute being present");
                 }
                 Entity e = ev.getEntity();
@@ -2030,8 +1713,7 @@ public class ShapeDispatcher
         }
 
         @Override
-        public Value decode(Tag tag, Level level)
-        {
+        public Value decode(Tag tag, Level level) {
             ListTag ctag = (ListTag) tag;
             return ListValue.of(
                     new NumericValue(ctag.getDouble(0).orElseThrow()),
@@ -2041,8 +1723,7 @@ public class ShapeDispatcher
         }
 
         @Override
-        public Tag toTag(Value value, final RegistryAccess regs)
-        {
+        public Tag toTag(Value value, final RegistryAccess regs) {
             List<Value> lv = ((ListValue) value).getItems();
             ListTag tag = new ListTag();
             tag.add(DoubleTag.valueOf(NumericValue.asNumber(lv.get(0), "x").getDouble()));
@@ -2052,35 +1733,28 @@ public class ShapeDispatcher
         }
     }
 
-    public static class PointsParam extends Param
-    {
-        public PointsParam(String id)
-        {
+    public static class PointsParam extends Param {
+        public PointsParam(String id) {
             super(id);
         }
 
         @Override
-        public Value validate(Map<String, Value> options, MinecraftServer server, Value value)
-        {
-            if (!(value instanceof final ListValue list))
-            {
+        public Value validate(Map<String, Value> options, MinecraftServer server, Value value) {
+            if (!(value instanceof final ListValue list)) {
                 throw new InternalExpressionException(id + " parameter should be a list");
             }
             List<Value> points = new ArrayList<>();
-            for (Value point : list.getItems())
-            {
+            for (Value point : list.getItems()) {
                 points.add(Vec3Param.validate(this, options, point, false));
             }
             return ListValue.wrap(points);
         }
 
         @Override
-        public Value decode(Tag tag, Level level)
-        {
+        public Value decode(Tag tag, Level level) {
             ListTag ltag = (ListTag) tag;
             List<Value> points = new ArrayList<>();
-            for (int i = 0, ll = ltag.size(); i < ll; i++)
-            {
+            for (int i = 0, ll = ltag.size(); i < ll; i++) {
                 ListTag ptag = ltag.getList(i).orElseThrow();
                 points.add(ListValue.of(
                         new NumericValue(ptag.getDouble(0).orElseThrow()),
@@ -2092,12 +1766,10 @@ public class ShapeDispatcher
         }
 
         @Override
-        public Tag toTag(Value pointsValue, final RegistryAccess regs)
-        {
+        public Tag toTag(Value pointsValue, final RegistryAccess regs) {
             List<Value> lv = ((ListValue) pointsValue).getItems();
             ListTag ltag = new ListTag();
-            for (Value value : lv)
-            {
+            for (Value value : lv) {
                 List<Value> coords = ((ListValue) value).getItems();
                 ListTag tag = new ListTag();
                 tag.add(DoubleTag.valueOf(NumericValue.asNumber(coords.get(0), "x").getDouble()));
@@ -2110,79 +1782,64 @@ public class ShapeDispatcher
     }
 
 
-    public static class ColorParam extends NumericParam
-    {
-        protected ColorParam(String id)
-        {
+    public static class ColorParam extends NumericParam {
+        protected ColorParam(String id) {
             super(id);
         }
 
         @Override
-        public Value decode(Tag tag, Level level)
-        {
+        public Value decode(Tag tag, Level level) {
             return new NumericValue(((IntTag) tag).intValue());
         }
 
         @Override
-        public Tag toTag(Value value, final RegistryAccess regs)
-        {
+        public Tag toTag(Value value, final RegistryAccess regs) {
             return IntTag.valueOf(NumericValue.asNumber(value, id).getInt());
         }
     }
 
-    public static class EntityParam extends Param
-    {
+    public static class EntityParam extends Param {
 
-        protected EntityParam(String id)
-        {
+        protected EntityParam(String id) {
             super(id);
         }
 
         @Override
-        public Tag toTag(Value value, final RegistryAccess regs)
-        {
+        public Tag toTag(Value value, final RegistryAccess regs) {
             return IntTag.valueOf(NumericValue.asNumber(value, id).getInt());
         }
 
         @Override
-        public Value validate(Map<String, Value> options, MinecraftServer server, Value value)
-        {
-            if (value instanceof final EntityValue ev)
-            {
+        public Value validate(Map<String, Value> options, MinecraftServer server, Value value) {
+            if (value instanceof final EntityValue ev) {
                 return new NumericValue(ev.getEntity().getId());
             }
             ServerPlayer player = EntityValue.getPlayerByValue(server, value);
-            if (player == null)
-            {
+            if (player == null) {
                 throw new InternalExpressionException(id + " parameter needs to represent an entity or player");
             }
             return new NumericValue(player.getId());
         }
 
         @Override
-        public Value decode(Tag tag, Level level)
-        {
+        public Value decode(Tag tag, Level level) {
             return new NumericValue(((IntTag) tag).intValue());
         }
     }
 
-    private static boolean isStraight(Vec3 from, Vec3 to, double density)
-    {
-        if ((from.x == to.x && from.y == to.y) || (from.x == to.x && from.z == to.z) || (from.y == to.y && from.z == to.z))
-        {
+    private static boolean isStraight(Vec3 from, Vec3 to, double density) {
+        if ((from.x == to.x && from.y == to.y) || (from.x == to.x && from.z == to.z) || (from.y == to.y && from.z == to.z)) {
             return from.distanceTo(to) / density > 20;
         }
         return false;
     }
 
-    private static int drawOptimizedParticleLine(List<ServerPlayer> playerList, ParticleOptions particle, Vec3 from, Vec3 to, double density)
-    {
+    private static int drawOptimizedParticleLine(List<ServerPlayer> playerList, ParticleOptions particle, Vec3 from, Vec3 to, double density) {
         double distance = from.distanceTo(to);
         int particles = (int) (distance / density);
         Vec3 towards = to.subtract(from);
         int parts = 0;
-        for (ServerPlayer player : playerList)
-        {
+        for (ServerPlayer player : playerList) {
             ServerLevel world = player.level();
             world.sendParticles(player, particle, true, true,
                     towards.x / 2 + from.x, towards.y / 2 + from.y, towards.z / 2 + from.z, particles / 3,
@@ -2194,12 +1851,10 @@ public class ShapeDispatcher
             parts += particles / 3 + 2;
         }
         int divider = 6;
-        while (particles / divider > 1)
-        {
+        while (particles / divider > 1) {
             int center = (divider * 2) / 3;
             int dev = 2 * divider;
-            for (ServerPlayer player : playerList)
-            {
+            for (ServerPlayer player : playerList) {
                 ServerLevel world = player.level();
                 world.sendParticles(player, particle, true, true,
                         towards.x / center + from.x, towards.y / center + from.y, towards.z / center + from.z, particles / divider,
@@ -2214,31 +1869,27 @@ public class ShapeDispatcher
         return parts;
     }
 
-    public static int drawParticleLine(List<ServerPlayer> players, ParticleOptions particle, Vec3 from, Vec3 to, double density)
-    {
+    public static int drawParticleLine(List<ServerPlayer> players, ParticleOptions particle, Vec3 from, Vec3 to, double density) {
         if (players.isEmpty()) return 0;
         if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThread()) {
             int total = 0;
-            for (ServerPlayer player : players) total += carpet.script.external.ScarpetRuntime.atEntity(player,
-                () -> drawParticleLine(List.of(player), particle, from, to, density));
+            for (ServerPlayer player : players)
+                total += carpet.script.external.ScarpetRuntime.atEntity(player,
+                        () -> drawParticleLine(List.of(player), particle, from, to, density));
             return total;
         }
         double distance = from.distanceToSqr(to);
-        if (distance == 0)
-        {
+        if (distance == 0) {
             return 0;
         }
         int pcount = 0;
-        if (distance < 100)
-        {
+        if (distance < 100) {
             RandomSource rand = players.get(0).level().getRandom();
             int particles = (int) (distance / density) + 1;
             Vec3 towards = to.subtract(from);
-            for (int i = 0; i < particles; i++)
-            {
+            for (int i = 0; i < particles; i++) {
                 Vec3 at = from.add(towards.scale(rand.nextDouble()));
-                for (ServerPlayer player : players)
-                {
+                for (ServerPlayer player : players) {
                     player.level().sendParticles(player, particle, true, true,
                             at.x, at.y, at.z, 1,
                             0.0, 0.0, 0.0, 0.0);
@@ -2248,18 +1899,15 @@ public class ShapeDispatcher
             return pcount;
         }
 
-        if (isStraight(from, to, density))
-        {
+        if (isStraight(from, to, density)) {
             return drawOptimizedParticleLine(players, particle, from, to, density);
         }
         Vec3 incvec = to.subtract(from).scale(2 * density / Math.sqrt(distance));
 
         for (Vec3 delta = new Vec3(0.0, 0.0, 0.0);
              delta.lengthSqr() < distance;
-             delta = delta.add(incvec.scale(Sys.randomizer.nextFloat())))
-        {
-            for (ServerPlayer player : players)
-            {
+             delta = delta.add(incvec.scale(Sys.randomizer.nextFloat()))) {
+            for (ServerPlayer player : players) {
                 player.level().sendParticles(player, particle, true, true,
                         delta.x + from.x, delta.y + from.y, delta.z + from.z, 1,
                         0.0, 0.0, 0.0, 0.0);

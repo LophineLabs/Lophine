@@ -90,7 +90,7 @@ public class UpdateSuppressionException extends RuntimeException {
             if (!"false".equals(fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.amsUpdateSuppressionCrashFix)) {
                 var server = net.minecraft.server.MinecraftServer.getServer();
                 if (server != null) fun.bm.lophine.carpet.CarpetMessenger.print_server_message(server,
-                    net.minecraft.network.chat.Component.literal(getMessage()).withStyle(net.minecraft.ChatFormatting.YELLOW));
+                        net.minecraft.network.chat.Component.literal(getMessage()).withStyle(net.minecraft.ChatFormatting.YELLOW));
             }
         }
     }

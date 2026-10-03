@@ -3,11 +3,6 @@
 package fun.bm.lophine.carpet;
 //Author: theosib
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.concurrent.ThreadLocalRandom;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -16,24 +11,29 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RedstoneWireBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
-public class CarpetRedstoneWireTurbo
-{
+
+public class CarpetRedstoneWireTurbo {
     private static final Direction[] SHAPE_ORDER = {Direction.WEST, Direction.EAST, Direction.NORTH, Direction.SOUTH, Direction.DOWN, Direction.UP};
     /*
      * This is Helper class for RedstoneWireBlock.  It implements a minimially-invasive
      * bolt-on accelerator that performs a breadth-first search through redstone wire blocks
      * in order to more efficiently and deterministicly compute new redstone wire power levels
-     * and determine the order in which other blocks should be updated.  
+     * and determine the order in which other blocks should be updated.
      *
      * Features:
-     * - Changes to RedstoneWireBlock are very limited, no other classes are affected, and the 
+     * - Changes to RedstoneWireBlock are very limited, no other classes are affected, and the
      *   choice between old and new redstone wire update algorithms is switchable on-line.
-     * - The vanilla implementation relied on World.notifyNeighborsOfStateChange for redstone 
-     *   wire blocks to communicate power level changes to each other, generating 36 block 
+     * - The vanilla implementation relied on World.notifyNeighborsOfStateChange for redstone
+     *   wire blocks to communicate power level changes to each other, generating 36 block
      *   updates per call.  This improved implementation propagates power level changes directly
-     *   between redstone wire blocks.  Redstone wire power levels are therefore computed more quickly, 
-     *   and block updates are sent only to non-redstone blocks, many of which may perform an 
+     *   between redstone wire blocks.  Redstone wire power levels are therefore computed more quickly,
+     *   and block updates are sent only to non-redstone blocks, many of which may perform an
      *   action when informed of a change in redstone power level.  (Note:  Block updates are not
      *   the same as state changes to redstone wire.  Wire block states are updated as soon
      *   as they are computed.)
@@ -44,33 +44,33 @@ public class CarpetRedstoneWireTurbo
      *   manner, radiating out from the initial trigger (a block update to a redstone wire
      *   from something other than redstone wire).
      * - Updates are scheduled both deterministicly and in an intuitive order, addressing bug
-     *   MC-11193. 
+     *   MC-11193.
      * - All redstone behavior that used to be locational now works the same in all locations.
      * - All behaviors of redstone wire that used to be orientational now work the same in all
      *   orientations, as long as orientation can be determined; random otherwise.  Some other
      *   redstone components still update directionally (e.g. switches), and this code can't
      *   compensate for that.
-     * - Information that is otherwise computed over and over again or which is expensive to 
-     *   to compute is cached for faster lookup.  This includes coordinates of block position 
-     *   neighbors and block states that won't change behind our backs during the execution of 
+     * - Information that is otherwise computed over and over again or which is expensive to
+     *   to compute is cached for faster lookup.  This includes coordinates of block position
+     *   neighbors and block states that won't change behind our backs during the execution of
      *   this search algorithm.
-     * - Redundant block updates (both to redstone wire and to other blocks) are heavily 
+     * - Redundant block updates (both to redstone wire and to other blocks) are heavily
      *   consolidated.  For worst-case scenarios (depowering of redstone wire) this results
-     *   in a reduction of block updates by as much as 95% (factor of 1/21).  Due to overheads, 
+     *   in a reduction of block updates by as much as 95% (factor of 1/21).  Due to overheads,
      *   empirical testing shows a speedup better than 10x.  This addresses bug MC-81098.
      *
      * Extensive testing has been performed to ensure that existing redstone contraptions still
      * behave as expected.  Results of early testing that identified undesirable behavior changes
      * were addressed.  Additionally, real-time performance testing revealed compute inefficiencies
-     * With earlier implementations of this accelerator.  Some compatibility adjustments and 
-     * performance optimizations resulted in harmless increases in block updates above the 
+     * With earlier implementations of this accelerator.  Some compatibility adjustments and
+     * performance optimizations resulted in harmless increases in block updates above the
      * theoretical minimum.
-     * 
+     *
      * Only a single redstone machine was found to break:  An instant dropper line hack that
-     * relies on powered rails and quasiconnectivity but doesn't work in all directions.  The 
+     * relies on powered rails and quasiconnectivity but doesn't work in all directions.  The
      * replacement is to lay redstone wire directly on top of the dropper line, which now works
      * reliably in any direction.
-     * 
+     *
      * There are numerous other optimization that can be made, but those will be provided later in
      * separate updates.  This version is designed to be minimalistic.
      *
@@ -79,16 +79,16 @@ public class CarpetRedstoneWireTurbo
      *   OreoLamp, Xcom6000, tryashtar, RedCMD, Smokey95Dog, EDDxample, Rays Works,
      *   Nodnam, BlockyPlays, Grumm, NeunEinser, HelVince.
      */
-     
-     
+
+
     /* Reference to RedstoneWireBlock object, which uses this accelerator */
     private final RedstoneWireBlock wire;
-     
-     
+
+
     /*
      * Implementation:
-     *  
-     * RedstoneWire Blocks are updated in concentric rings or "layers" radiating out from the 
+     *
+     * RedstoneWire Blocks are updated in concentric rings or "layers" radiating out from the
      * initial block update that came from a call to RedstoneWireBlock.neighborChanged().
      * All nodes put in Layer N are those with Manattan distance N from the trigger
      * position, reachable through connected redstone wire blocks.
@@ -97,11 +97,11 @@ public class CarpetRedstoneWireTurbo
      * Layer 1 contains the immediate neighbors of that position.
      * Layer N contains the neighbors of blocks in layer N-1, not including
      *    those in previous layers.
-     * 
+     *
      * Layers enforce an update order that is a function of Manhattan distance
-     * from the initial coordinates input to neighborChanged.  The same 
-     * coordinates may appear in multiple layers, but redundant updates are minimized.  
-     * Block updates are sent layer-by-layer.  If multiple of a block's neighbors experience 
+     * from the initial coordinates input to neighborChanged.  The same
+     * coordinates may appear in multiple layers, but redundant updates are minimized.
+     * Block updates are sent layer-by-layer.  If multiple of a block's neighbors experience
      * redstone wire changes before its layer is processed, then those updates will be merged.
      * If a block's update has been sent, but its neighboring redstone changes
      * after that, then another update will be sent.  This preserves compatibility with
@@ -116,14 +116,14 @@ public class CarpetRedstoneWireTurbo
     private List<UpdateNode> updateQueue0 = new ArrayList<>();
     private List<UpdateNode> updateQueue1 = new ArrayList<>();
     private List<UpdateNode> updateQueue2 = new ArrayList<>();
-     
-     
+
+
     public CarpetRedstoneWireTurbo(RedstoneWireBlock wire) {
         this.wire = wire;
     }
- 
-     
-    /* 
+
+
+    /*
      * Compute neighbors of a block.  When a redstone wire value changes, previously it called
      * World.notifyNeighborsOfStateChange.  That lists immediately neighboring blocks in
      * west, east, down, up, north, south order.  For each of those neighbors, their own
@@ -131,48 +131,48 @@ public class CarpetRedstoneWireTurbo
      * redundant; for instance the west neighbor of a block's east neighbor.
      *
      * Note that this ordering is only used to create the initial list of neighbors.  Once
-     * the direction of signal flow is identified, the ordering of updates is completely 
+     * the direction of signal flow is identified, the ordering of updates is completely
      * reorganized.
-    */
+     */
     public static BlockPos[] computeAllNeighbors(final BlockPos pos) {
         final int x = pos.getX();
         final int y = pos.getY();
         final int z = pos.getZ();
         final BlockPos[] n = new BlockPos[24];
- 
+
         // Immediate neighbors, in the same order as 
         // World.notifyNeighborsOfStateChange, etc.:
         // west, east, down, up, north, south
-        n[ 0] = new BlockPos(x-1, y  , z  ); 
-        n[ 1] = new BlockPos(x+1, y  , z  ); 
-        n[ 2] = new BlockPos(x  , y-1, z  ); 
-        n[ 3] = new BlockPos(x  , y+1, z  ); 
-        n[ 4] = new BlockPos(x  , y  , z-1); 
-        n[ 5] = new BlockPos(x  , y  , z+1); 
-     
+        n[0] = new BlockPos(x - 1, y, z);
+        n[1] = new BlockPos(x + 1, y, z);
+        n[2] = new BlockPos(x, y - 1, z);
+        n[3] = new BlockPos(x, y + 1, z);
+        n[4] = new BlockPos(x, y, z - 1);
+        n[5] = new BlockPos(x, y, z + 1);
+
         // Neighbors of neighbors, in the same order,
         // except that duplicates are not included
-        n[ 6] = new BlockPos(x-2, y  , z  );  
-        n[ 7] = new BlockPos(x-1, y-1, z  );
-        n[ 8] = new BlockPos(x-1, y+1, z  );
-        n[ 9] = new BlockPos(x-1, y  , z-1);
-        n[10] = new BlockPos(x-1, y  , z+1);
-        n[11] = new BlockPos(x+2, y  , z  );
-        n[12] = new BlockPos(x+1, y-1, z  );
-        n[13] = new BlockPos(x+1, y+1, z  );
-        n[14] = new BlockPos(x+1, y  , z-1);
-        n[15] = new BlockPos(x+1, y  , z+1);
-        n[16] = new BlockPos(x  , y-2, z  );
-        n[17] = new BlockPos(x  , y-1, z-1);
-        n[18] = new BlockPos(x  , y-1, z+1);
-        n[19] = new BlockPos(x  , y+2, z  );
-        n[20] = new BlockPos(x  , y+1, z-1);
-        n[21] = new BlockPos(x  , y+1, z+1);
-        n[22] = new BlockPos(x  , y  , z-2);
-        n[23] = new BlockPos(x  , y  , z+2);
+        n[6] = new BlockPos(x - 2, y, z);
+        n[7] = new BlockPos(x - 1, y - 1, z);
+        n[8] = new BlockPos(x - 1, y + 1, z);
+        n[9] = new BlockPos(x - 1, y, z - 1);
+        n[10] = new BlockPos(x - 1, y, z + 1);
+        n[11] = new BlockPos(x + 2, y, z);
+        n[12] = new BlockPos(x + 1, y - 1, z);
+        n[13] = new BlockPos(x + 1, y + 1, z);
+        n[14] = new BlockPos(x + 1, y, z - 1);
+        n[15] = new BlockPos(x + 1, y, z + 1);
+        n[16] = new BlockPos(x, y - 2, z);
+        n[17] = new BlockPos(x, y - 1, z - 1);
+        n[18] = new BlockPos(x, y - 1, z + 1);
+        n[19] = new BlockPos(x, y + 2, z);
+        n[20] = new BlockPos(x, y + 1, z - 1);
+        n[21] = new BlockPos(x, y + 1, z + 1);
+        n[22] = new BlockPos(x, y, z - 2);
+        n[23] = new BlockPos(x, y, z + 2);
         return n;
     }
- 
+
     /*
      * We only want redstone wires to update redstone wires that are
      * immediately adjacent.  Some more distant updates can result
@@ -184,30 +184,30 @@ public class CarpetRedstoneWireTurbo
      * in any of the 24 neighboring positions.
      */
     private static final boolean[] update_redstone = {
-        true, true, false, false, true, true,     // 0 to 5
-        false, true, true, false, false, false, // 6 to 11
-        true, true, false, false, false, true,  // 12 to 17
-        true, false, true, true, false, false}; // 18 to 23
- 
+            true, true, false, false, true, true,     // 0 to 5
+            false, true, true, false, false, false, // 6 to 11
+            true, true, false, false, false, true,  // 12 to 17
+            true, false, true, true, false, false}; // 18 to 23
+
     // Internal numbering for cardinal directions
     private static final int North = 0;
     private static final int East = 1;
     private static final int South = 2;
     private static final int West = 3;
- 
+
     // Names for debug print statements
     private static final char[] dirname = {'N', 'E', 'S', 'W'};
- 
-    /* 
+
+    /*
      * These lookup tables completely remap neighbor positions into a left-to-right
-     * ordering, based on the cardinal direction that is determined to be forward.  
+     * ordering, based on the cardinal direction that is determined to be forward.
      * See below for more explanation.
      */
     private static final int[] forward_is_north = {2, 3, 16, 19, 0, 4, 1, 5, 7, 8, 17, 20, 12, 13, 18, 21, 6, 9, 22, 14, 11, 10, 23, 15};
-    private static final int[] forward_is_east  = {2, 3, 16, 19, 4, 1, 5, 0, 17, 20, 12, 13, 18, 21, 7, 8, 22, 14, 11, 15, 23, 9, 6, 10};
+    private static final int[] forward_is_east = {2, 3, 16, 19, 4, 1, 5, 0, 17, 20, 12, 13, 18, 21, 7, 8, 22, 14, 11, 15, 23, 9, 6, 10};
     private static final int[] forward_is_south = {2, 3, 16, 19, 1, 5, 0, 4, 12, 13, 18, 21, 7, 8, 17, 20, 11, 15, 23, 10, 6, 14, 22, 9};
-    private static final int[] forward_is_west =  {2, 3, 16, 19, 5, 0, 4, 1, 18, 21, 7, 8, 17, 20, 12, 13, 23, 10, 6, 9, 22, 15, 11, 14};
- 
+    private static final int[] forward_is_west = {2, 3, 16, 19, 5, 0, 4, 1, 18, 21, 7, 8, 17, 20, 12, 13, 23, 10, 6, 9, 22, 15, 11, 14};
+
     /* For any orientation, we end up with the update order defined below.  This order is relative to any redstone wire block
      * that is itself having an update computed, and this center position is marked with C.
      * - The update position marked 0 is computed first, and the one marked 23 is last.
@@ -215,7 +215,7 @@ public class CarpetRedstoneWireTurbo
      * - The first updates are scheduled for the four positions below and above C.
      * - Then updates are scheduled for the four horizontal neighbors of C, followed by the positions below and above those neighbors.
      * - Finally, updates are scheduled for the remaining positions with Manhattan distance 2 from C (at the same Y coordinate).
-     * - For a given horizontal distance from C, updates are scheduled starting from directly left and stepping clockwise to directly 
+     * - For a given horizontal distance from C, updates are scheduled starting from directly left and stepping clockwise to directly
      *   right.  The remaining positions behind C are scheduled counterclockwise so as to maintain the left-to-right ordering.
      * - If C is in layer N of the update schedule, then all 24 positions may be scheduled for layer N+1.  For redstone wire, no
      *   updates are scheduled for positions that cannot directly connect.  Additionally, the four positions above and below C
@@ -231,12 +231,12 @@ public class CarpetRedstoneWireTurbo
      *   having priority over the right branch of a left branch, which has priority over the left branch of a right branch, followed
      *   by the right branch of a right branch.  And so forth.  Since redstone power reduces to zero after a path distance of 15,
      *   that imposes a practical limit on the branching.  Note that the branching is not tracked explicitly -- relative forward
-     *   directions dictate relative sort order, which maintains the proper global ordering.  This also makes it unnecessary to be 
+     *   directions dictate relative sort order, which maintains the proper global ordering.  This also makes it unnecessary to be
      *   concerned about branches meeting up with each other.
      *
      *     ^
      *     |
-     *  Forward 
+     *  Forward
      *                           <-- Left   Right -->
      *
      *                                    18
@@ -250,23 +250,23 @@ public class CarpetRedstoneWireTurbo
      *     |
      *     V
      */
- 
+
     // This allows the above remapping tables to be looked up by cardial direction index
     private static final int[][] reordering = {forward_is_north, forward_is_east, forward_is_south, forward_is_west};
-     
+
     /*
-     * Input:  Array of UpdateNode objects in an order corresponding to the positions 
+     * Input:  Array of UpdateNode objects in an order corresponding to the positions
      *         computed by computeAllNeighbors above.
      * Output: Array of UpdateNode objects oriented using the above remapping tables
      *         corresponding to the identified heading (direction of information flow).
      */
     private static void orientNeighbors(final UpdateNode[] src, final UpdateNode[] dst, final int heading) {
         final int[] re = reordering[heading];
-        for (int i=0; i<24; i++) {
+        for (int i = 0; i < 24; i++) {
             dst[i] = src[re[i]];
         }
     }
- 
+
     /*
      * Structure to keep track of redstone wire blocks and
      * neighbors that will receive updates.
@@ -275,7 +275,7 @@ public class CarpetRedstoneWireTurbo
         public enum Type {
             UNKNOWN, REDSTONE, OTHER
         }
-         
+
         BlockState currentState;       // Keep track of redstone wire value
         UpdateNode[] neighbor_nodes;    // References to neighbors (directed graph edges)
         BlockPos self;                  // UpdateNode's own position
@@ -285,15 +285,15 @@ public class CarpetRedstoneWireTurbo
         boolean visited;                // To keep track of information flow direction, visited restone wire is marked
         int xbias, zbias;               // Remembers directionality of ancestor nodes; helps eliminate directional ambiguities.
     }
-     
-     
+
+
     /*
      * Keep track of all block positions discovered during search and their current states.
      * We want to remember one entry for each position.
      */
     private final Map<BlockPos, UpdateNode> nodeCache = new HashMap<>();
- 
- 
+
+
     /*
      * For a newly created UpdateNode object, determine what type of block it is.
      */
@@ -301,7 +301,7 @@ public class CarpetRedstoneWireTurbo
         final BlockPos pos = upd1.self;
         final BlockState oldState = worldIn.getBlockState(pos);
         upd1.currentState = oldState;
- 
+
         // Some neighbors of redstone wire are other kinds of blocks.
         // These need to receive block updates to inform them that
         // redstone wire values have changed.                              
@@ -310,13 +310,13 @@ public class CarpetRedstoneWireTurbo
             // Mark this block as not redstone wire and therefore
             // requiring updates
             upd1.type = UpdateNode.Type.OTHER;
-             
+
             // Non-redstone blocks may propagate updates, but those updates
             // are not handled by this accelerator.  Therefore, we do not
             // expand this position's neighbors.
             return;
         }
- 
+
         // One job of RedstoneWireBlock.neighborChanged is to convert 
         // redstone wires to items if the block beneath was removed.
         // With this accelerator, RedstoneWireBlock.neighborChanged
@@ -328,21 +328,21 @@ public class CarpetRedstoneWireTurbo
             // Pop off the redstone dust
             Block.dropResources(oldState, worldIn, pos);
             worldIn.removeBlock(pos, false);
-             
+
             // Mark this position as not being redstone wire
             upd1.type = UpdateNode.Type.OTHER;
-             
+
             // Note: Sending updates to air blocks leads to an empty method.
             // Testing shows this to be faster than explicitly avoiding updates to
             // air blocks.
             return;
         }
- 
+
         // If the above conditions fail, then this is a redstone wire block.
         upd1.type = UpdateNode.Type.REDSTONE;
     }
- 
- 
+
+
     /*
      * Given which redstone wire blocks have been visited and not visited
      * around the position currently being updated, compute the cardinal
@@ -355,13 +355,13 @@ public class CarpetRedstoneWireTurbo
         // rx and rz can only take on values -1, 0, and 1, so we can
         // compute a code number that allows us to use a single switch
         // to determine the heading.
-        final int code = (rx + 1) + 3*(rz + 1);
+        final int code = (rx + 1) + 3 * (rz + 1);
         switch (code) {
             case 0: {
                 // Both rx and rz are -1 (northwest)
                 // Randomly choose one to be forward.
                 final int j = ThreadLocalRandom.current().nextInt(0, 1);
-                return (j==0) ? North : West;
+                return (j == 0) ? North : West;
             }
             case 1: {
                 // rx=0, rz=-1
@@ -372,7 +372,7 @@ public class CarpetRedstoneWireTurbo
                 // rx=1, rz=-1 (northeast)
                 // Choose randomly between north and east
                 final int j = ThreadLocalRandom.current().nextInt(0, 1);
-                return (j==0) ? North : East;
+                return (j == 0) ? North : East;
             }
             case 3: {
                 // rx=-1, rz=0
@@ -394,7 +394,7 @@ public class CarpetRedstoneWireTurbo
                 // rx=-1, rz=1 (southwest)
                 // Choose randomly between south and west
                 final int j = ThreadLocalRandom.current().nextInt(0, 1);
-                return (j==0) ? South : West;
+                return (j == 0) ? South : West;
             }
             case 7: {
                 // rx=0, rz=1
@@ -405,34 +405,34 @@ public class CarpetRedstoneWireTurbo
                 // rx=1, rz=1 (southeast)
                 // Choose randomly between south and east
                 final int j = ThreadLocalRandom.current().nextInt(0, 1);
-                return (j==0) ? South : East;
+                return (j == 0) ? South : East;
             }
         }
- 
+
         // We should never get here
         return ThreadLocalRandom.current().nextInt(0, 4);
     }
- 
+
     // Select whether to use updateSurroundingRedstone from RedstoneWireBlock (old)
     // or this helper class (new)
     private static final boolean old_current_change = false;
- 
+
     /*
      * Process a node whose neighboring redstone wire has experienced value changes.
      */
     private void updateNode(final Level worldIn, final UpdateNode upd1, final int layer) {
         final BlockPos pos = upd1.self;
- 
+
         // Mark this redstone wire as having been visited so that it can be used
         // to calculate direction of information flow.
         upd1.visited = true;
- 
+
         // Look up the last known state.
         // Due to the way other redstone components are updated, we do not
         // have to worry about a state changing behind our backs.  The rare
         // exception is handled by scheduleReentrantNeighborChanged.
         final BlockState oldState = upd1.currentState;
-     
+
         // Ask the wire block to compute its power level from its neighbors.
         // This will also update the wire's power level and return a new
         // state if it has changed.  When a wire power level is changed, 
@@ -448,17 +448,17 @@ public class CarpetRedstoneWireTurbo
             // significant performance boost.
             newState = this.calculateCurrentChanges(worldIn, upd1);
         }
- 
+
         // Only inform neighors if the state has changed
         if (newState != oldState) {
             // Store the new state
             upd1.currentState = newState;
- 
+
             // Inform neighbors of the change
             propagateChanges(worldIn, upd1, layer);
         }
     }
- 
+
     /*
      * This identifies the neighboring positions of a new UpdateNode object,
      * determines their types, and links those to into the graph.  Then based on
@@ -467,17 +467,17 @@ public class CarpetRedstoneWireTurbo
      */
     private void findNeighbors(final Level worldIn, final UpdateNode upd1) {
         final BlockPos pos = upd1.self;
- 
+
         // Get the list of neighbor coordinates
         final BlockPos[] neighbors = computeAllNeighbors(pos);
- 
+
         // Temporary array of neighbors in cardinal ordering
         final UpdateNode[] neighbor_nodes = new UpdateNode[24];
- 
+
         // Target array of neighbors sorted left-to-right
         upd1.neighbor_nodes = new UpdateNode[24];
- 
-        for (int i=0; i<24; i++) {
+
+        for (int i = 0; i < 24; i++) {
             // Look up each neighbor in the node cache
             final BlockPos pos2 = neighbors[i];
             UpdateNode upd2 = nodeCache.get(pos2);
@@ -490,7 +490,7 @@ public class CarpetRedstoneWireTurbo
                 nodeCache.put(pos2, upd2);
                 identifyNode(worldIn, upd2);
             }
- 
+
             // For non-redstone blocks, any of the 24 neighboring positions
             // should receive a block update.  However, some block coordinates
             // may contain a redstone wire that does not directly connect to the
@@ -500,7 +500,7 @@ public class CarpetRedstoneWireTurbo
                 neighbor_nodes[i] = upd2;
             }
         }
- 
+
         // Determine the directions from which the redstone signal may have come from.  This
         // checks for redstone wire at the same Y level and also Y+1 and Y-1, relative to the
         // block being expanded.
@@ -508,20 +508,20 @@ public class CarpetRedstoneWireTurbo
         final boolean fromEast = (neighbor_nodes[1].visited || neighbor_nodes[12].visited || neighbor_nodes[13].visited);
         final boolean fromNorth = (neighbor_nodes[4].visited || neighbor_nodes[17].visited || neighbor_nodes[20].visited);
         final boolean fromSouth = (neighbor_nodes[5].visited || neighbor_nodes[18].visited || neighbor_nodes[21].visited);
- 
+
         int cx = 0, cz = 0;
         if (fromWest) cx += 1;
         if (fromEast) cx -= 1;
         if (fromNorth) cz += 1;
         if (fromSouth) cz -= 1;
- 
+
         int heading;
-        if (cx==0 && cz==0) {
+        if (cx == 0 && cz == 0) {
             // If there is no clear direction, try to inherit the heading from ancestor nodes.
             heading = computeHeading(upd1.xbias, upd1.zbias);
- 
+
             // Propagate that heading to descendent nodes.
-            for (int i=0; i<24; i++) {
+            for (int i = 0; i < 24; i++) {
                 final UpdateNode nn = neighbor_nodes[i];
                 if (nn != null) {
                     nn.xbias = upd1.xbias;
@@ -536,9 +536,9 @@ public class CarpetRedstoneWireTurbo
                 if (upd1.zbias != 0) cx = 0;
             }
             heading = computeHeading(cx, cz);
-             
+
             // Propagate that heading to descendent nodes.
-            for (int i=0; i<24; i++) {
+            for (int i = 0; i < 24; i++) {
                 final UpdateNode nn = neighbor_nodes[i];
                 if (nn != null) {
                     nn.xbias = cx;
@@ -546,12 +546,12 @@ public class CarpetRedstoneWireTurbo
                 }
             }
         }
- 
+
         // Reorder neighboring UpdateNode objects according to the forward direction
         // determined above.
         orientNeighbors(neighbor_nodes, upd1.neighbor_nodes, heading);
     }
- 
+
     /*
      * For any redstone wire block in layer N, inform neighbors to recompute their states
      * in layers N+1 and N+2;
@@ -561,40 +561,40 @@ public class CarpetRedstoneWireTurbo
             // If this node has not been expanded yet, find its neigbors
             findNeighbors(worldIn, upd1);
         }
- 
+
         final BlockPos pos = upd1.self;
         final int x = pos.getX();
         final int y = pos.getY();
         final int z = pos.getZ();
- 
+
         // Make sure there are enough layers in the list
         //while (updateLayers.size() <= layer+2) updateLayers.add(new ArrayList<UpdateNode>());
- 
+
         // All neighbors may be scheduled for layer N+1
         final int layer1 = layer + 1;
- 
+
         // If the node being updated (upd1) has already been expanded, then merely
         // schedule updates to its neighbors.
-        for (int i=0; i<24; i++) {
+        for (int i = 0; i < 24; i++) {
             final UpdateNode upd2 = upd1.neighbor_nodes[i];
- 
+
             // This test ensures that an UpdateNode is never scheduled to the same layer
             // more than once.  Also, skip non-connecting redstone wire blocks
             if (upd2 != null && layer1 > upd2.layer) {
                 upd2.layer = layer1;
                 updateQueue1.add(upd2);
- 
+
                 // Keep track of which block updated this neighbor
                 upd2.parent = pos;
             }
         }
- 
+
         // Nodes above and below are scheduled ALSO for layer N+2
         final int layer2 = layer + 2;
- 
+
         // Repeat of the loop above, but only for the first four (above and below) neighbors
         // and for layer N+2;
-        for (int i=0; i<4; i++) {
+        for (int i = 0; i < 4; i++) {
             final UpdateNode upd2 = upd1.neighbor_nodes[i];
             if (upd2 != null && layer2 > upd2.layer) {
                 upd2.layer = layer2;
@@ -603,8 +603,8 @@ public class CarpetRedstoneWireTurbo
             }
         }
     }
- 
- 
+
+
     // The breadth-first search below will send block updates to blocks
     // that are not redstone wire.  If one of those updates results in 
     // a distant redstone wire getting an update, then this.neighborChanged
@@ -612,10 +612,10 @@ public class CarpetRedstoneWireTurbo
     // it is necessary to properly integrate those updates into the 
     // on-going search through redstone wire.  Thus, we make the layer
     // currently being processed visible at the object level.
-     
+
     // The current layer being processed by the breadth-first search
     private int currentWalkLayer = 0;
- 
+
     private void shiftQueue() {
         final List<UpdateNode> t = updateQueue0;
         t.clear();
@@ -623,27 +623,27 @@ public class CarpetRedstoneWireTurbo
         updateQueue1 = updateQueue2;
         updateQueue2 = t;
     }
- 
+
     /*
      * Perform a breadth-first (layer by layer) traversal through redstone
      * wire blocks, propagating value changes to neighbors in an order
-     * that is a function of distance from the initial call to 
+     * that is a function of distance from the initial call to
      * this.neighborChanged.
      */
     private void breadthFirstWalk(final Level worldIn) {
         shiftQueue();
         currentWalkLayer = 1;
- 
+
         // Loop over all layers
-        while (updateQueue0.size()>0 || updateQueue1.size()>0) {
+        while (updateQueue0.size() > 0 || updateQueue1.size() > 0) {
             // Get the set of blocks in this layer
             final List<UpdateNode> thisLayer = updateQueue0;
             //if (thisLayer.size() < 1) {
-                //shiftQueue();
-                //currentWalkLayer++;
-                //continue;
+            //shiftQueue();
+            //currentWalkLayer++;
+            //continue;
             //}
- 
+
             // Loop over all blocks in the layer.  Recall that
             // this is a List, preserving the insertion order of
             // left-to-right based on direction of information flow.
@@ -657,7 +657,7 @@ public class CarpetRedstoneWireTurbo
                     // If this block is not redstone wire, send a block update.
                     // Redstone wire blocks get state updates, but they don't
                     // need block updates.  Only non-redstone neighbors need updates.
-                     
+
                     // The following function is called "neighborChanged" in the latest
                     // deobfuscated names.  World.func_190524_a is called from
                     // World.notifyNeighborsOfStateChange, and 
@@ -682,22 +682,22 @@ public class CarpetRedstoneWireTurbo
                     worldIn.getBlockState(upd.self).handleNeighborChanged(worldIn, upd.self, wire, null, false);
                 }
             }
- 
+
             // Move on to the next layer
             shiftQueue();
             currentWalkLayer++;
         }
- 
+
         currentWalkLayer = 0;
     }
- 
- 
+
+
     /*
      * Normally, when Minecraft is computing redstone wire power changes, and a wire power level
      * change sends a block update to a neighboring functional component (e.g. piston, repeater, etc.),
      * those updates are queued.  Only once all redstone wire updates are complete will any component
      * action generate any further block updates to redstone wire.  Instant repeater lines, for instance,
-     * will process all wire updates for one redstone line, after which the pistons will zero-tick, 
+     * will process all wire updates for one redstone line, after which the pistons will zero-tick,
      * after which the next redstone line performs all of its updates.  Thus, each wire is processed in its
      * own discrete wave.
      *
@@ -706,7 +706,7 @@ public class CarpetRedstoneWireTurbo
      * (1) A redstone wire is conducting a signal.
      * (2) Partway through that wave of updates, a neighbor is updated that causes an update to a completely
      *     separate redstone wire.
-     * (3) This results in a call to RedstoneWireBlock.neighborChanged for that other wire, in the middle of 
+     * (3) This results in a call to RedstoneWireBlock.neighborChanged for that other wire, in the middle of
      *     an already on-going propagation through the first wire.
      *
      * The vanilla code, being depth-first, would end up fully processing the second wire before going back
@@ -717,8 +717,7 @@ public class CarpetRedstoneWireTurbo
      * order to continue processing both the first and second wire in the order of distance from the initial
      * trigger.
      */
-    private BlockState scheduleReentrantNeighborChanged(final Level worldIn, final BlockPos pos, final BlockState newState, final BlockPos source)
-    {
+    private BlockState scheduleReentrantNeighborChanged(final Level worldIn, final BlockPos pos, final BlockState newState, final BlockPos source) {
         if (source != null) {
             // If the cause of the redstone wire update is known, we can use that to help determine
             // direction of information flow.
@@ -732,7 +731,7 @@ public class CarpetRedstoneWireTurbo
                 nodeCache.put(source, src);
             }
         }
- 
+
         // Find or generate a node for the redstone block position receiving the update
         UpdateNode upd = nodeCache.get(pos);
         if (upd == null) {
@@ -744,12 +743,12 @@ public class CarpetRedstoneWireTurbo
             nodeCache.put(pos, upd);
         }
         upd.currentState = newState;
- 
+
         // Receiving this block update may mean something in the world changed.
         // Therefore we clear the cached block info about all neighbors of
         // the position receiving the update and then re-identify what they are.
         if (upd.neighbor_nodes != null) {
-            for (int i=0; i<24; i++) {
+            for (int i = 0; i < 24; i++) {
                 final UpdateNode upd2 = upd.neighbor_nodes[i];
                 if (upd2 == null) continue;
                 upd2.type = UpdateNode.Type.UNKNOWN;
@@ -757,41 +756,40 @@ public class CarpetRedstoneWireTurbo
                 identifyNode(worldIn, upd2);
             }
         }
- 
+
         // The block at 'pos' is a redstone wire and has been updated already by calling
         // wire.calculateCurrentChanges, so we don't schedule that.  However, we do need
         // to schedule its neighbors.  By passing the current value of 'currentWalkLayer' to
         // propagateChanges, the neighbors of 'pos' are schedule for layers currentWalkLayer+1
         // and currentWalkLayer+2.
         propagateChanges(worldIn, upd, currentWalkLayer);
- 
+
         // Return here.  The call stack will unwind back to the first call to
         // updateSurroundingRedstone, whereupon the new updates just scheduled will
         // be propagated.  This also facilitates elimination of superfluous and
         // redundant block updates.
         return newState;
     }
- 
+
     /*
      * New version of pre-existing updateSurroundingRedstone, which is called from
-     * wire.updateSurroundingRedstone, which is called from wire.neighborChanged and a 
-     * few other methods in RedstoneWireBlock.  This sets off the breadth-first 
+     * wire.updateSurroundingRedstone, which is called from wire.neighborChanged and a
+     * few other methods in RedstoneWireBlock.  This sets off the breadth-first
      * walk through all redstone dust connected to the initial position triggered.
      */
-    public BlockState updateSurroundingRedstone(final Level worldIn, final BlockPos pos, final BlockState state, final BlockPos source)
-    {
+    public BlockState updateSurroundingRedstone(final Level worldIn, final BlockPos pos, final BlockState state, final BlockPos source) {
         // Check this block's neighbors and see if its power level needs to change
         // Use the calculateCurrentChanges method in RedstoneWireBlock since we have no
         // cached block states at this point.
         final BlockState newState = wire.calculateCurrentChanges(worldIn, pos, state);
-         
+
         // If no change, exit
         if (newState == state) {
             return state;
         }
- 
+
         // Check to see if this update was received during an on-going breadth first search
-        if (currentWalkLayer>0 || nodeCache.size()>0) {
+        if (currentWalkLayer > 0 || nodeCache.size() > 0) {
             // As breadthFirstWalk progresses, it sends block updates to neighbors.  Some of those
             // neighbors may affect the world so as to cause yet another redstone wire block to receive
             // an update.  If that happens, we need to integrate those redstone wire updates into the
@@ -799,7 +797,7 @@ public class CarpetRedstoneWireTurbo
             return scheduleReentrantNeighborChanged(worldIn, pos, newState, source);
         }
         // If there are no on-going walks through redstone wire, then start a new walk.
- 
+
         // If the source of the block update to the redstone wire at 'pos' is known, we can use
         // that to help determine the direction of information flow.
         if (source != null) {
@@ -810,52 +808,51 @@ public class CarpetRedstoneWireTurbo
             nodeCache.put(source, src);
             identifyNode(worldIn, src);
         }
- 
+
         // Create a node representing the block at 'pos', and then propagate updates
         // to its neighbors.  As stated above, the call to wire.calculateCurrentChanges
         // already performs the update to the block at 'pos', so it is not added to the schedule.
         final UpdateNode upd = new UpdateNode();
         upd.self = pos;
-        upd.parent = source!=null ? source : pos;
+        upd.parent = source != null ? source : pos;
         upd.currentState = newState;
         upd.type = UpdateNode.Type.REDSTONE;
         upd.visited = true;
         nodeCache.put(pos, upd);
         propagateChanges(worldIn, upd, 0);
-     
+
         // Perform the walk over all directly reachable redstone wire blocks, propagating wire value 
         // updates in a breadth first order out from the initial update received for the block at 'pos'.
         breadthFirstWalk(worldIn);
- 
+
         // With the whole search completed, clear the list of all known blocks.
         // We do not want to keep around state information that may be changed by other code.
         // In theory, we could cache the neighbor block positions, but that is a separate
         // optimization.
         nodeCache.clear();
- 
+
         return newState;
     }
- 
- 
+
+
     // For any array of neighbors in an UpdateNode object, these are always
     // the indices of the four immediate neighbors at the same Y coordinate.
-    private static final int[] rs_neighbors =    {4, 5, 6, 7};
+    private static final int[] rs_neighbors = {4, 5, 6, 7};
     private static final int[] rs_neighbors_up = {9, 11, 13, 15};
     private static final int[] rs_neighbors_dn = {8, 10, 12, 14};
- 
+
     /*
      * Updated calculateCurrentChanges that is optimized for speed and uses
      * the UpdateNode's neighbor array to find the redstone states of neighbors
      * that might power it.
      */
-    private BlockState calculateCurrentChanges(final Level worldIn, final UpdateNode upd)
-    {
+    private BlockState calculateCurrentChanges(final Level worldIn, final UpdateNode upd) {
         BlockState state = upd.currentState;
         final int i = state.getValue(RedstoneWireBlock.POWER);
         int j = 0;
         j = getMaxCurrentStrength(upd, j);
         int l = 0;
- 
+
         io.papermc.paper.threadedregions.TickRegionScheduler.getCurrentRegionizedWorldData().shouldSignal = false;
         // Unfortunately, World.isBlockIndirectlyGettingPowered is complicated,
         // and I'm not ready to try to replicate even more functionality from
@@ -863,61 +860,64 @@ public class CarpetRedstoneWireTurbo
         // suffer the performance hit of this very expensive call.  If there
         // is consistency to what this call returns, we may be able to cache it.
         final int k;
-        try { k = worldIn.getBestNeighborSignal(upd.self); }
-        finally { io.papermc.paper.threadedregions.TickRegionScheduler.getCurrentRegionizedWorldData().shouldSignal = true; }
- 
+        try {
+            k = worldIn.getBestNeighborSignal(upd.self);
+        } finally {
+            io.papermc.paper.threadedregions.TickRegionScheduler.getCurrentRegionizedWorldData().shouldSignal = true;
+        }
+
         // The variable 'k' holds the maximum redstone power value of any adjacent blocks.
         // If 'k' has the highest level of all neighbors, then the power level of this 
         // redstone wire will be set to 'k'.  If 'k' is already 15, then nothing inside the 
         // following loop can affect the power level of the wire.  Therefore, the loop is 
         // skipped if k is already 15. 
-        if (k<15) {
+        if (k < 15) {
             if (upd.neighbor_nodes == null) {
                 // If this node's neighbors are not known, expand the node
                 findNeighbors(worldIn, upd);
             }
- 
+
             // These remain constant, so pull them out of the loop.
             // Regardless of which direction is forward, the UpdateNode for the
             // position directly above the node being calculated is always
             // at index 1.
             UpdateNode center_up = upd.neighbor_nodes[1];
             boolean center_up_is_cube = center_up.currentState.isRedstoneConductor(worldIn, center_up.self);  //isSimpleFUllBLock
- 
-            for (int m=0; m<4; m++) {
+
+            for (int m = 0; m < 4; m++) {
                 // Get the neighbor array index of each of the four cardinal
                 // neighbors.
                 int n = rs_neighbors[m];
- 
+
                 // Get the max redstone power level of each of the cardinal
                 // neighbors
                 UpdateNode neighbor = upd.neighbor_nodes[n];
                 l = getMaxCurrentStrength(neighbor, l);
- 
+
                 // Also check the positions above and below the cardinal
                 // neighbors
                 boolean neighbor_is_cube = neighbor.currentState.isRedstoneConductor(worldIn, neighbor.self);  //isSimpleFUllBLock
                 if (!neighbor_is_cube) {
                     UpdateNode neighbor_down = upd.neighbor_nodes[rs_neighbors_dn[m]];
                     l = getMaxCurrentStrength(neighbor_down, l);
-                } else
-                if (!center_up_is_cube) {
+                } else if (!center_up_is_cube) {
                     UpdateNode neighbor_up = upd.neighbor_nodes[rs_neighbors_up[m]];
                     l = getMaxCurrentStrength(neighbor_up, l);
                 }
             }
         }
- 
+
         // The new code sets this redstonewire block's power level to the highest neighbor
         // minus 1.  This usually results in wire power levels dropping by 2 at a time.
         // This optimization alone has no impact on opdate order, only the number of updates.
-        j = l-1;
-             
+        j = l - 1;
+
         // If 'l' turns out to be zero, then j will be set to -1, but then since 'k' will
         // always be in the range of 0 to 15, the following if will correct that.
-        if (k>j) j=k;
- 
-        if (i != j) j = org.bukkit.craftbukkit.event.CraftEventFactory.callRedstoneChange(worldIn, upd.self, i, j).getNewCurrent();
+        if (k > j) j = k;
+
+        if (i != j)
+            j = org.bukkit.craftbukkit.event.CraftEventFactory.callRedstoneChange(worldIn, upd.self, i, j).getNewCurrent();
         if (i != j) {
             // If the power level has changed from its previous value, compute a new state
             // and set it in the world.  
@@ -932,7 +932,7 @@ public class CarpetRedstoneWireTurbo
                 if (worldIn.setBlock(upd.self, state, Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_CLIENTS))
                     updateNeighborShapes(worldIn, upd.self, state);
         }
- 
+
         return state;
     }
 
@@ -965,7 +965,7 @@ public class CarpetRedstoneWireTurbo
      * Optimized function to compute a redstone wire's power level based on cached
      * state.
      */
-    private static int getMaxCurrentStrength(final UpdateNode upd, final int strength) {   
+    private static int getMaxCurrentStrength(final UpdateNode upd, final int strength) {
         if (upd.type != UpdateNode.Type.REDSTONE) return strength;
         final int i = upd.currentState.getValue(RedstoneWireBlock.POWER);
         return i > strength ? i : strength;

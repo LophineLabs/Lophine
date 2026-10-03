@@ -3,24 +3,8 @@ package carpet.script.utils;
 import carpet.script.CarpetScriptServer;
 import carpet.script.external.Vanilla;
 import com.google.common.collect.ImmutableList;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderGetter;
-import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.Pools;
 import net.minecraft.data.worldgen.ProcessorLists;
@@ -48,16 +32,7 @@ import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
-import net.minecraft.world.level.levelgen.feature.CoralClawFeature;
-import net.minecraft.world.level.levelgen.feature.CoralTreeFeature;
-import net.minecraft.world.level.levelgen.feature.CuboidPlacement;
-import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.NoOpFeature;
-import net.minecraft.world.level.levelgen.feature.OverlayFeature;
-import net.minecraft.world.level.levelgen.feature.SimpleBlockFeature;
-import net.minecraft.world.level.levelgen.feature.SimpleRandomSelectorFeature;
-import net.minecraft.world.level.levelgen.feature.TreeFeature;
-import net.minecraft.world.level.levelgen.feature.WeightedRandomSelectorFeature;
+import net.minecraft.world.level.levelgen.feature.*;
 import net.minecraft.world.level.levelgen.feature.featuresize.TwoLayersFeatureSize;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.BlobFoliagePlacer;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FancyFoliagePlacer;
@@ -65,38 +40,36 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 import net.minecraft.world.level.levelgen.feature.stateproviders.RandomBlockProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.RotatedBlockProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.RuleBasedStateProvider;
-import net.minecraft.world.level.levelgen.heightproviders.ConstantHeight;
-import net.minecraft.world.level.levelgen.placement.BlockPredicateFilter;
-import net.minecraft.world.level.levelgen.placement.OffsetPlacement;
-import net.minecraft.world.level.levelgen.placement.RandomChancePlacement;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.levelgen.structure.Structure;
-import net.minecraft.world.level.levelgen.structure.StructureType;
-import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
-import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
-import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.feature.treedecorators.BeehiveDecorator;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.FancyTrunkPlacer;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.StraightTrunkPlacer;
+import net.minecraft.world.level.levelgen.heightproviders.ConstantHeight;
+import net.minecraft.world.level.levelgen.placement.BlockPredicateFilter;
+import net.minecraft.world.level.levelgen.placement.OffsetPlacement;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-import net.minecraft.world.level.levelgen.structure.StructureStart;
+import net.minecraft.world.level.levelgen.placement.RandomChancePlacement;
+import net.minecraft.world.level.levelgen.structure.*;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
+import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
-
 import org.jspecify.annotations.Nullable;
 
-public class FeatureGenerator
-{
-    public static @Nullable Boolean plop(String featureName, ServerLevel world, BlockPos pos)
-    {
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+public class FeatureGenerator {
+    public static @Nullable Boolean plop(String featureName, ServerLevel world, BlockPos pos) {
         Function<ServerLevel, Thing> custom = featureMap.get(featureName);
         if (custom != null) {
             Thing operation = carpet.script.external.ScarpetRuntime.atBlock(world, pos, () -> custom.apply(world));
             Structure structure = operation.structure();
-            if (structure != null) return plopAnywhere(structure, world, pos, world.getChunkSource().getGenerator(), operation.wireOnly());
+            if (structure != null)
+                return plopAnywhere(structure, world, pos, world.getChunkSource().getGenerator(), operation.wireOnly());
             return carpet.script.external.ScarpetRuntime.withArea(world, (pos.getX() - 128) >> 4, (pos.getZ() - 128) >> 4,
-                (pos.getX() + 128) >> 4, (pos.getZ() + 128) >> 4, () -> operation.plop(world, pos));
+                    (pos.getX() + 128) >> 4, (pos.getZ() + 128) >> 4, () -> operation.plop(world, pos));
         }
         Identifier id = Identifier.parse(featureName);
         Structure structure = world.registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(id);
@@ -104,63 +77,50 @@ public class FeatureGenerator
         StructureType<?> type = world.registryAccess().lookupOrThrow(Registries.STRUCTURE_TYPE).getValue(id);
         if (type != null) {
             Structure standard = carpet.script.external.ScarpetRuntime.atBlock(world, pos, () -> getDefaultFeature(type, world, pos));
-            if (standard != null) return plopAnywhere(standard, world, pos, world.getChunkSource().getGenerator(), false);
+            if (standard != null)
+                return plopAnywhere(standard, world, pos, world.getChunkSource().getGenerator(), false);
         }
         return carpet.script.external.ScarpetRuntime.withArea(world, (pos.getX() - 128) >> 4, (pos.getZ() - 128) >> 4,
-            (pos.getX() + 128) >> 4, (pos.getZ() + 128) >> 4, () -> plopOwned(featureName, world, pos));
+                (pos.getX() + 128) >> 4, (pos.getZ() + 128) >> 4, () -> plopOwned(featureName, world, pos));
     }
 
-    private static synchronized @Nullable Boolean plopOwned(String featureName, ServerLevel world, BlockPos pos)
-    {
+    private static synchronized @Nullable Boolean plopOwned(String featureName, ServerLevel world, BlockPos pos) {
         Function<ServerLevel, Thing> custom = featureMap.get(featureName);
-        if (custom != null)
-        {
+        if (custom != null) {
             return custom.apply(world).plop(world, pos);
         }
         Identifier id = Identifier.parse(featureName);
         Structure structure = world.registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(id);
-        if (structure != null)
-        {
+        if (structure != null) {
             return plopAnywhere(structure, world, pos, world.getChunkSource().getGenerator(), false);
         }
 
         Feature configuredFeature = world.registryAccess().lookupOrThrow(Registries.FEATURE).getValue(id);
-        if (configuredFeature != null)
-        {
+        if (configuredFeature != null) {
             ThreadLocal<Boolean> checks = Vanilla.skipGenerationChecks(world);
             checks.set(true);
-            try
-            {
+            try {
                 return configuredFeature.place(world, world.getChunkSource().getGenerator(), world.getRandom(), pos);
-            }
-            finally
-            {
+            } finally {
                 checks.set(false);
             }
         }
         Optional<StructureType<?>> structureType = world.registryAccess().lookupOrThrow(Registries.STRUCTURE_TYPE).getOptional(id);
-        if (structureType.isPresent())
-        {
+        if (structureType.isPresent()) {
             Structure configuredStandard = getDefaultFeature(structureType.get(), world, pos);
-            if (configuredStandard != null)
-            {
+            if (configuredStandard != null) {
                 return plopAnywhere(configuredStandard, world, pos, world.getChunkSource().getGenerator(), false);
             }
         }
         Feature feature = world.registryAccess().lookupOrThrow(Registries.FEATURE).getValue(id);
-        if (feature != null)
-        {
+        if (feature != null) {
             Feature configuredStandard = getDefaultFeature(feature, world, pos, true);
-            if (configuredStandard != null)
-            {
+            if (configuredStandard != null) {
                 ThreadLocal<Boolean> checks = Vanilla.skipGenerationChecks(world);
                 checks.set(true);
-                try
-                {
+                try {
                     return configuredStandard.place(world, world.getChunkSource().getGenerator(), world.getRandom(), pos);
-                }
-                finally
-                {
+                } finally {
                     checks.set(false);
                 }
             }
@@ -168,104 +128,101 @@ public class FeatureGenerator
         return null;
     }
 
-    public static @Nullable Structure resolveConfiguredStructure(String name, ServerLevel world, BlockPos pos)
-    {
+    public static @Nullable Structure resolveConfiguredStructure(String name, ServerLevel world, BlockPos pos) {
         Identifier id = Identifier.parse(name);
         Structure configuredStructureFeature = world.registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(id);
-        if (configuredStructureFeature != null)
-        {
+        if (configuredStructureFeature != null) {
             return configuredStructureFeature;
         }
         StructureType<?> structureFeature = world.registryAccess().lookupOrThrow(Registries.STRUCTURE_TYPE).getValue(id);
-        if (structureFeature == null)
-        {
+        if (structureFeature == null) {
             return null;
         }
         return getDefaultFeature(structureFeature, world, pos);
     }
 
-    public static boolean plopGrid(Structure structureFeature, ServerLevel world, BlockPos pos)
-    {
+    public static boolean plopGrid(Structure structureFeature, ServerLevel world, BlockPos pos) {
         return plopAnywhere(structureFeature, world, pos, world.getChunkSource().getGenerator(), true);
     }
 
     @FunctionalInterface
-    private interface Thing
-    {
+    private interface Thing {
         Boolean plop(ServerLevel world, BlockPos pos);
-        default Structure structure() { return null; }
-        default boolean wireOnly() { return false; }
+
+        default Structure structure() {
+            return null;
+        }
+
+        default boolean wireOnly() {
+            return false;
+        }
     }
 
-    private static Thing simplePlop(Feature feature)
-    {
+    private static Thing simplePlop(Feature feature) {
         return (w, p) -> {
             ThreadLocal<Boolean> checks = Vanilla.skipGenerationChecks(w);
             checks.set(true);
-            try
-            {
+            try {
                 return feature.place(w, w.getChunkSource().getGenerator(), w.getRandom(), p);
-            }
-            finally
-            {
+            } finally {
                 checks.set(false);
             }
         };
     }
 
-    private static Thing simpleTree(TreeFeature.Builder config)
-    {
+    private static Thing simpleTree(TreeFeature.Builder config) {
         //config.ignoreFluidCheck();
         return simplePlop(config.build());
     }
 
-    private static Thing spawnCustomStructure(Structure structure)
-    {
+    private static Thing spawnCustomStructure(Structure structure) {
         return setupCustomStructure(structure, false);
     }
 
-    private static Thing setupCustomStructure(Structure structure, boolean wireOnly)
-    {
+    private static Thing setupCustomStructure(Structure structure, boolean wireOnly) {
         return new Thing() {
-            @Override public Boolean plop(ServerLevel world, BlockPos pos) { return plopAnywhere(structure, world, pos, world.getChunkSource().getGenerator(), wireOnly); }
-            @Override public Structure structure() { return structure; }
-            @Override public boolean wireOnly() { return wireOnly; }
+            @Override
+            public Boolean plop(ServerLevel world, BlockPos pos) {
+                return plopAnywhere(structure, world, pos, world.getChunkSource().getGenerator(), wireOnly);
+            }
+
+            @Override
+            public Structure structure() {
+                return structure;
+            }
+
+            @Override
+            public boolean wireOnly() {
+                return wireOnly;
+            }
         };
     }
 
-    private static Structure getDefaultFeature(StructureType<?> structure, ServerLevel world, BlockPos pos)
-    {
+    private static Structure getDefaultFeature(StructureType<?> structure, ServerLevel world, BlockPos pos) {
         // would be nice to have a way to grab structures of this type for position
         // TODO allow old types, like vaillage, or bastion
         Holder<Biome> existingBiome = world.getBiome(pos);
         Structure result = null;
         for (Structure confstr : world.registryAccess().lookupOrThrow(Registries.STRUCTURE).entrySet().stream().
-                filter(cS -> cS.getValue().type() == structure).map(Map.Entry::getValue).toList())
-        {
+                filter(cS -> cS.getValue().type() == structure).map(Map.Entry::getValue).toList()) {
             result = confstr;
-            if (confstr.biomes().contains(existingBiome))
-            {
+            if (confstr.biomes().contains(existingBiome)) {
                 return result;
             }
         }
         return result;
     }
 
-    private static @Nullable Feature getDefaultFeature(Feature feature, ServerLevel world, BlockPos pos, boolean tryHard)
-    {
+    private static @Nullable Feature getDefaultFeature(Feature feature, ServerLevel world, BlockPos pos, boolean tryHard) {
         List<HolderSet<PlacedFeature>> configuredStepFeatures = world.getBiome(pos).value().getGenerationSettings().features();
-        for (HolderSet<PlacedFeature> step : configuredStepFeatures)
-        {
-            for (Holder<PlacedFeature> provider : step)
-            {
-                if (provider.value().feature().value() == feature)
-                {
+        for (HolderSet<PlacedFeature> step : configuredStepFeatures) {
+            for (Holder<PlacedFeature> provider : step) {
+                if (provider.value().feature().value() == feature) {
                     return provider.value().feature().value();
                 }
             }
         }
-        if (!tryHard)
-        {
+        if (!tryHard) {
             return null;
         }
         return world.registryAccess().lookupOrThrow(Registries.FEATURE).entrySet().stream().
@@ -274,8 +231,7 @@ public class FeatureGenerator
     }
 
 
-    public static StructureStart shouldStructureStartAt(ServerLevel world, BlockPos pos, Structure structure, boolean computeBox)
-    {
+    public static StructureStart shouldStructureStartAt(ServerLevel world, BlockPos pos, Structure structure, boolean computeBox) {
         ServerChunkCache chunkSource = world.getChunkSource();
         RandomState seed = chunkSource.randomState();
         ChunkGenerator generator = chunkSource.getGenerator();
@@ -283,31 +239,25 @@ public class FeatureGenerator
         List<StructurePlacement> structureConfig = structureState.getPlacementsForStructure(Holder.direct(structure));
         ChunkPos chunkPos = ChunkPos.containing(pos);
         boolean couldPlace = structureConfig.stream().anyMatch(p -> p.isStructureChunk(structureState, chunkPos.x(), chunkPos.z()));
-        if (!couldPlace)
-        {
+        if (!couldPlace) {
             return null;
         }
 
         HolderSet<Biome> structureBiomes = structure.biomes();
 
-        if (!computeBox)
-        {
+        if (!computeBox) {
             //Holder<Biome> genBiome = generator.getBiomeSource().getNoiseBiome(QuartPos.fromBlock(pos.getX()), QuartPos.fromBlock(pos.getY()), QuartPos.fromBlock(pos.getZ()), seed.sampler());
             if (structure.findValidGenerationPoint(new Structure.GenerationContext(
                     world.registryAccess(), generator, generator.getBiomeSource(), seed.createClimateSampler(SamplerContext.EMPTY_UNCACHED),
                     seed, world.getStructureTemplateManager(), world.getSeed(), chunkPos, world, structureBiomes::contains
-            )).isPresent())
-            {
+            )).isPresent()) {
                 return StructureStart.INVALID_START;
             }
-        }
-        else
-        {
+        } else {
             StructureStart filledStructure = structure.generate(Holder.direct(structure), world.dimension(),
                     world.registryAccess(), generator, generator.getBiomeSource(), seed.createClimateSampler(SamplerContext.EMPTY_UNCACHED), seed, world.getStructureTemplateManager(),
                     world.getSeed(), chunkPos, 0, world, structureBiomes::contains);
-            if (filledStructure != null && filledStructure.isValid())
-            {
+            if (filledStructure != null && filledStructure.isValid()) {
                 return filledStructure;
             }
         }
@@ -316,9 +266,8 @@ public class FeatureGenerator
 
     private static RuleBasedStateProvider belowTrees = RuleBasedStateProvider.ifTrueThenProvide(BlockPredicate.not(BlockPredicate.matchesTag(BlockTags.CANNOT_REPLACE_BELOW_TREE_TRUNK)), Blocks.DIRT);
 
-    private static TreeFeature.Builder createTree(Block block, Block block2, int i, int j, int k, int l)
-    {
-        return new TreeFeature.Builder(BlockStateProvider.of(block), new StraightTrunkPlacer(i, j, k), BlockStateProvider.of(block2), new BlobFoliagePlacer(ConstantInt.of(l), ConstantInt.of(0), 3), new TwoLayersFeatureSize(1, 0, 1), Holder.direct( belowTrees));
+    private static TreeFeature.Builder createTree(Block block, Block block2, int i, int j, int k, int l) {
+        return new TreeFeature.Builder(BlockStateProvider.of(block), new StraightTrunkPlacer(i, j, k), BlockStateProvider.of(block2), new BlobFoliagePlacer(ConstantInt.of(l), ConstantInt.of(0), 3), new TwoLayersFeatureSize(1, 0, 1), Holder.direct(belowTrees));
     }
 
     // from AquaticFeatures
@@ -372,28 +321,27 @@ public class FeatureGenerator
                                             case 1 -> PlacementUtils.inlinePlaced(new CoralClawFeature(
                                                     PlacementUtils.inlinePlaced(coralType, coralPlacement))
                                             );
-                                                default -> PlacementUtils.inlinePlaced(
-                                                        coralType,
-                                                        OffsetPlacement.vertical(UniformInt.of(-3, -1)),
-                                                        new CuboidPlacement(
-                                                                UniformInt.of(3, 5),
-                                                                UniformInt.of(3, 5),
-                                                                false,
-                                                                false
-                                                        ),
-                                                        new RandomChancePlacement(0.9f),
-                                                        coralPlacement
-                                                );
+                                            default -> PlacementUtils.inlinePlaced(
+                                                    coralType,
+                                                    OffsetPlacement.vertical(UniformInt.of(-3, -1)),
+                                                    new CuboidPlacement(
+                                                            UniformInt.of(3, 5),
+                                                            UniformInt.of(3, 5),
+                                                            false,
+                                                            false
+                                                    ),
+                                                    new RandomChancePlacement(0.9f),
+                                                    coralPlacement
+                                            );
                                         }
-                                        )
+                                )
                                 .toList()
                 )
         );
     }
 
     @SuppressWarnings("DoubleBraceInitialization")
-    public static final Map<String, Function<ServerLevel, Thing>> featureMap = new HashMap<>()
-    {{
+    public static final Map<String, Function<ServerLevel, Thing>> featureMap = new HashMap<>() {{
 
         // TODO remove this using what place feature is using
         put("oak_bees", l -> simpleTree(createTree(Blocks.OAK_LOG, Blocks.OAK_LEAVES, 4, 2, 0, 2).ignoreVines().decorators(List.of(new BeehiveDecorator(1.00F)))));
@@ -403,9 +351,9 @@ public class FeatureGenerator
         put("coral_tree", l -> simplePlop(coral(l, 0)));
 
         put("coral_claw", l -> simplePlop(coral(l, 1)));
-        put("coral_mushroom", l -> simplePlop(coral(l , 2)));
+        put("coral_mushroom", l -> simplePlop(coral(l, 2)));
 
-        put("coral", l -> simplePlop( l.registryAccess().lookupOrThrow(Registries.FEATURE).getOrThrow(AquaticFeatures.WARM_OCEAN_VEGETATION).value()));
+        put("coral", l -> simplePlop(l.registryAccess().lookupOrThrow(Registries.FEATURE).getOrThrow(AquaticFeatures.WARM_OCEAN_VEGETATION).value()));
 
         put("bastion_remnant_units", l -> {
             RegistryAccess regs = l.registryAccess();
@@ -526,28 +474,24 @@ public class FeatureGenerator
     }};
 
 
-    public static boolean plopAnywhere(Structure structure, ServerLevel world, BlockPos pos, ChunkGenerator generator, boolean wireOnly)
-    {
+    public static boolean plopAnywhere(Structure structure, ServerLevel world, BlockPos pos, ChunkGenerator generator, boolean wireOnly) {
         StructureStart start = structure.generate(Holder.direct(structure), world.dimension(), world.registryAccess(), generator,
-            generator.getBiomeSource(), world.getChunkSource().randomState().createClimateSampler(SamplerContext.EMPTY_UNCACHED),
-            world.getChunkSource().randomState(), world.getStructureTemplateManager(), world.getSeed(), ChunkPos.containing(pos), 0, world, biome -> true);
+                generator.getBiomeSource(), world.getChunkSource().randomState().createClimateSampler(SamplerContext.EMPTY_UNCACHED),
+                world.getChunkSource().randomState(), world.getStructureTemplateManager(), world.getSeed(), ChunkPos.containing(pos), 0, world, biome -> true);
         if (start == StructureStart.INVALID_START) return false;
         BoundingBox area = start.getBoundingBox();
         int minX = Math.min(pos.getX() >> 4, (area.minX() - 32) >> 4), minZ = Math.min(pos.getZ() >> 4, (area.minZ() - 32) >> 4);
         int maxX = Math.max(pos.getX() >> 4, (area.maxX() + 32) >> 4), maxZ = Math.max(pos.getZ() >> 4, (area.maxZ() + 32) >> 4);
         return carpet.script.external.ScarpetRuntime.withArea(world, minX, minZ, maxX, maxZ,
-            () -> placePreparedStructure(structure, world, pos, generator, wireOnly, start));
+                () -> placePreparedStructure(structure, world, pos, generator, wireOnly, start));
     }
 
-    private static boolean placePreparedStructure(Structure structure, ServerLevel world, BlockPos pos, ChunkGenerator generator, boolean wireOnly, StructureStart start)
-    {
+    private static boolean placePreparedStructure(Structure structure, ServerLevel world, BlockPos pos, ChunkGenerator generator, boolean wireOnly, StructureStart start) {
         ThreadLocal<Boolean> checks = Vanilla.skipGenerationChecks(world);
         checks.set(true);
-        try
-        {
+        try {
 
-            if (start == StructureStart.INVALID_START)
-            {
+            if (start == StructureStart.INVALID_START) {
                 return false;
             }
             RandomSource rand = RandomSource.create(world.getRandom().nextInt());
@@ -559,8 +503,7 @@ public class FeatureGenerator
 
             BoundingBox box = start.getBoundingBox();
 
-            if (!wireOnly)
-            {
+            if (!wireOnly) {
                 Registry<Structure> registry3 = world.registryAccess().lookupOrThrow(Registries.STRUCTURE);
                 world.setCurrentlyGenerating(() -> {
                     Objects.requireNonNull(structure);
@@ -572,28 +515,20 @@ public class FeatureGenerator
             int i = Math.max(box.getXSpan(), box.getZSpan()) / 16 + 1;
 
             //int i = getRadius();
-            for (int k1 = j - i; k1 <= j + i; ++k1)
-            {
-                for (int l1 = k - i; l1 <= k + i; ++l1)
-                {
-                    if (k1 == j && l1 == k)
-                    {
+            for (int k1 = j - i; k1 <= j + i; ++k1) {
+                for (int l1 = k - i; l1 <= k + i; ++l1) {
+                    if (k1 == j && l1 == k) {
                         continue;
                     }
-                    if (box.intersects(k1 << 4, l1 << 4, (k1 << 4) + 15, (l1 << 4) + 15))
-                    {
+                    if (box.intersects(k1 << 4, l1 << 4, (k1 << 4) + 15, (l1 << 4) + 15)) {
                         world.getChunk(k1, l1).addReferenceForStructure(structure, chId);
                     }
                 }
             }
-        }
-        catch (Exception booboo)
-        {
+        } catch (Exception booboo) {
             CarpetScriptServer.LOG.error("Unknown Exception while plopping structure: {}", booboo, booboo);
             return false;
-        }
-        finally
-        {
+        } finally {
             checks.set(false);
         }
         return true;

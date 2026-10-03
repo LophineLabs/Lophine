@@ -3,12 +3,6 @@
 package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.protocol.CarpetLoggerProtocol;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -23,24 +17,42 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
 public final class TisProjectileVisualizer {
     public static final String TAG = "##TISCM_VISPROJ_LOGGER##";
     private static final ThreadLocal<Entity> CONSTRUCTING = new ThreadLocal<>();
     private static final Map<UUID, Entity> VISUALIZERS = new ConcurrentHashMap<>();
     private static final AtomicLong GENERATION = new AtomicLong();
 
-    private TisProjectileVisualizer() { }
+    private TisProjectileVisualizer() {
+    }
 
     public static void constructing(Entity entity) {
-        if (CarpetLoggerProtocol.hasSubscribers("projectiles")) CONSTRUCTING.set(entity); else CONSTRUCTING.remove();
+        if (CarpetLoggerProtocol.hasSubscribers("projectiles")) CONSTRUCTING.set(entity);
+        else CONSTRUCTING.remove();
     }
+
     public static Entity takeEntity(String logger) {
         if (!"projectiles".equals(logger)) return null;
-        Entity entity = CONSTRUCTING.get(); CONSTRUCTING.remove();
+        Entity entity = CONSTRUCTING.get();
+        CONSTRUCTING.remove();
         return entity;
     }
-    public static void bind(Entity entity, CarpetTrajectoryLogger logger) { if (entity != null) entity.carpetTisTrajectory = logger; }
-    public static boolean isVisualizer(Entity entity) { return entity instanceof Snowball && entity.entityTags().contains(TAG); }
+
+    public static void bind(Entity entity, CarpetTrajectoryLogger logger) {
+        if (entity != null) entity.carpetTisTrajectory = logger;
+    }
+
+    public static boolean isVisualizer(Entity entity) {
+        return entity instanceof Snowball && entity.entityTags().contains(TAG);
+    }
+
     public static void hit(Projectile entity, HitResult result) {
         if (entity.carpetTisTrajectory != null) entity.carpetTisTrajectory.hit(result);
     }
@@ -61,12 +73,16 @@ public final class TisProjectileVisualizer {
         GENERATION.incrementAndGet();
         var entities = List.copyOf(VISUALIZERS.values());
         VISUALIZERS.clear();
-        for (Entity entity : entities) entity.getBukkitEntity().taskScheduler.schedule(owner -> {
-            if (!owner.isRemoved()) owner.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD);
-        }, null, 1L);
+        for (Entity entity : entities)
+            entity.getBukkitEntity().taskScheduler.schedule(owner -> {
+                if (!owner.isRemoved()) owner.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD);
+            }, null, 1L);
     }
 
-    public static void reset() { clear(); CONSTRUCTING.remove(); }
+    public static void reset() {
+        clear();
+        CONSTRUCTING.remove();
+    }
 
     public static void visualize(ServerLevel world, List<Vec3> positions, Vec3 hit) {
         long generation = GENERATION.get();
@@ -74,9 +90,10 @@ public final class TisProjectileVisualizer {
         for (int i = 0; i < positions.size(); ++i) {
             Vec3 point = positions.get(i);
             chunks.computeIfAbsent(net.minecraft.world.level.ChunkPos.pack(BlockPos.containing(point)), key -> new ArrayList<>())
-                .add(new NamedPosition(point, Integer.toString(i)));
+                    .add(new NamedPosition(point, Integer.toString(i)));
         }
-        if (hit != null) chunks.computeIfAbsent(net.minecraft.world.level.ChunkPos.pack(BlockPos.containing(hit)), key -> new ArrayList<>()).add(new NamedPosition(hit, "Hit"));
+        if (hit != null)
+            chunks.computeIfAbsent(net.minecraft.world.level.ChunkPos.pack(BlockPos.containing(hit)), key -> new ArrayList<>()).add(new NamedPosition(hit, "Hit"));
         for (var entry : chunks.entrySet()) {
             var chunk = net.minecraft.world.level.ChunkPos.unpack(entry.getKey());
             List<NamedPosition> points = List.copyOf(entry.getValue());
@@ -96,14 +113,20 @@ public final class TisProjectileVisualizer {
         }
     }
 
-    private record NamedPosition(Vec3 position, String name) { }
+    private record NamedPosition(Vec3 position, String name) {
+    }
 
     public record Hit(Vec3 position, String kind, String target) {
         public static Hit capture(HitResult result) {
-            if (result instanceof BlockHitResult block) return new Hit(result.getLocation(), "block", block.getBlockPos().toShortString());
-            if (result instanceof EntityHitResult entity) return new Hit(result.getLocation(), "entity", BuiltInRegistries.ENTITY_TYPE.getKey(entity.getEntity().getType()).toString());
+            if (result instanceof BlockHitResult block)
+                return new Hit(result.getLocation(), "block", block.getBlockPos().toShortString());
+            if (result instanceof EntityHitResult entity)
+                return new Hit(result.getLocation(), "entity", BuiltInRegistries.ENTITY_TYPE.getKey(entity.getEntity().getType()).toString());
             return new Hit(result.getLocation(), "?", "");
         }
-        public String text() { return "Hit: " + kind + " " + target + "\n" + CarpetTrajectoryLogger.coordinates(position, true); }
+
+        public String text() {
+            return "Hit: " + kind + " " + target + "\n" + CarpetTrajectoryLogger.coordinates(position, true);
+        }
     }
 }

@@ -13,13 +13,6 @@ import carpet.script.value.MapValue;
 import carpet.script.value.StringValue;
 import fun.bm.lophine.carpet.CarpetRuleRegistry;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.LongAdder;
-import java.util.function.Consumer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -29,22 +22,48 @@ import org.jspecify.annotations.Nullable;
 import org.leavesmc.leaves.bot.ServerBot;
 import org.leavesmc.leaves.protocol.CarpetServerProtocol;
 
-/** Platform bridge for the unabridged upstream Scarpet module. */
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.LongAdder;
+import java.util.function.Consumer;
+
+/**
+ * Platform bridge for the unabridged upstream Scarpet module.
+ */
 public final class Carpet {
     private static final List<Consumer<CarpetExpression>> EXTENSIONS = new CopyOnWriteArrayList<>();
     private static CarpetEventServer.Event ruleChanges;
     private static volatile String configuredAppStore;
-    public static Map<String, Component> getScarpetHeaders() { return ScarpetRuntime.HEADERS; }
-    public static Map<String, Component> getScarpetFooters() { return ScarpetRuntime.FOOTERS; }
-    public static void updateScarpetHUDs(MinecraftServer server, List<ServerPlayer> players) {
-        for (ServerPlayer player : players) player.getBukkitEntity().taskScheduler.schedule(owned ->
-            fun.bm.lophine.protocol.CarpetLoggerProtocol.sendScarpetHud((ServerPlayer) owned), null, 1L);
+
+    public static Map<String, Component> getScarpetHeaders() {
+        return ScarpetRuntime.HEADERS;
     }
-    public static Component Messenger_compose(Object... messages) { return ScarpetMessenger.c(messages); }
+
+    public static Map<String, Component> getScarpetFooters() {
+        return ScarpetRuntime.FOOTERS;
+    }
+
+    public static void updateScarpetHUDs(MinecraftServer server, List<ServerPlayer> players) {
+        for (ServerPlayer player : players)
+            player.getBukkitEntity().taskScheduler.schedule(owned ->
+                    fun.bm.lophine.protocol.CarpetLoggerProtocol.sendScarpetHud((ServerPlayer) owned), null, 1L);
+    }
+
+    public static Component Messenger_compose(Object... messages) {
+        return ScarpetMessenger.c(messages);
+    }
+
     public static void Messenger_message(CommandSourceStack source, Object... messages) {
         if (source != null) ScarpetRuntime.send(source, ScarpetMessenger.c(messages), false);
     }
-    public static ThreadLocal<Boolean> getImpendingFillSkipUpdates() { return ScarpetRuntime.FILL_SKIP_UPDATES; }
+
+    public static ThreadLocal<Boolean> getImpendingFillSkipUpdates() {
+        return ScarpetRuntime.FILL_SKIP_UPDATES;
+    }
+
     public static Runnable startProfilerSection(String name) {
         long start = System.nanoTime();
         return () -> {
@@ -52,25 +71,55 @@ public final class Carpet {
             ScarpetRuntime.PROFILE_CALLS.computeIfAbsent(name, key -> new LongAdder()).increment();
         };
     }
+
     public static void MinecraftServer_addScriptServer(MinecraftServer server, CarpetScriptServer scriptServer) {
         ScarpetRuntime.of(server).setScriptServer(scriptServer);
     }
-    public static boolean isValidCarpetPlayer(ServerPlayer player) { return CarpetServerProtocol.isValidCarpetPlayer(player); }
-    public static String getPlayerStatus(ServerPlayer player) { return CarpetServerProtocol.getPlayerStatus(player); }
+
+    public static boolean isValidCarpetPlayer(ServerPlayer player) {
+        return CarpetServerProtocol.isValidCarpetPlayer(player);
+    }
+
+    public static String getPlayerStatus(ServerPlayer player) {
+        return CarpetServerProtocol.getPlayerStatus(player);
+    }
+
     public static MapValue getAllCarpetRules() {
         MapValue values = new MapValue(Collections.emptyList());
-        for (String name : CarpetRuleRegistry.names()) values.put(new StringValue(name), new StringValue(CarpetRuleRegistry.get(name).value().toString()));
+        for (String name : CarpetRuleRegistry.names())
+            values.put(new StringValue(name), new StringValue(CarpetRuleRegistry.get(name).value().toString()));
         return values;
     }
-    public static String getCarpetVersion() { return "26.3"; }
-    @Nullable public static String isModdedPlayer(Player player) {
+
+    public static String getCarpetVersion() {
+        return "26.3";
+    }
+
+    @Nullable
+    public static String isModdedPlayer(Player player) {
         return player instanceof ServerBot bot ? bot.carpetShadow ? "shadow" : "fake" : null;
     }
-    public static void registerExtensionAPI(Consumer<CarpetExpression> extension) { EXTENSIONS.add(extension); }
-    public static void handleExtensionsAPI(CarpetExpression expression) { EXTENSIONS.forEach(extension -> extension.accept(expression)); }
-    public static boolean getFillUpdates() { return GeneralCompatConfig.fillUpdates; }
-    public static boolean isDebugEnabled() { return GeneralCompatConfig.superSecretSetting; }
-    public static @Nullable Path fetchGlobalPath(MinecraftServer server) { return null; }
+
+    public static void registerExtensionAPI(Consumer<CarpetExpression> extension) {
+        EXTENSIONS.add(extension);
+    }
+
+    public static void handleExtensionsAPI(CarpetExpression expression) {
+        EXTENSIONS.forEach(extension -> extension.accept(expression));
+    }
+
+    public static boolean getFillUpdates() {
+        return GeneralCompatConfig.fillUpdates;
+    }
+
+    public static boolean isDebugEnabled() {
+        return GeneralCompatConfig.superSecretSetting;
+    }
+
+    public static @Nullable Path fetchGlobalPath(MinecraftServer server) {
+        return null;
+    }
+
     public static void assertRequirementMet(CarpetScriptHost host, String mod, String condition) {
         try {
             VersionPredicate predicate = VersionPredicate.parse(condition);
@@ -81,9 +130,11 @@ public final class Carpet {
         }
         throw new LoadException(String.format("%s requires a version of mod '%s' matching '%s', which is missing!", host.getVisualName(), mod, condition));
     }
+
     public static void initCarpetEvents() {
         ruleChanges = new CarpetEventServer.Event("carpet_rule_changes", 2, true) {
-            @Override public void handleAny(Object... args) {
+            @Override
+            public void handleAny(Object... args) {
                 String name = (String) args[0];
                 String value = (String) args[1];
                 CommandSourceStack source = (CommandSourceStack) args[2];
@@ -91,6 +142,7 @@ public final class Carpet {
             }
         };
     }
+
     public static void ruleChanged(CommandSourceStack source, String name, Object value) {
         applyRuleSideEffects(source, name, value);
         if (ruleChanges != null && ruleChanges.isNeeded()) ruleChanges.handleAny(name, value.toString(), source);
@@ -117,6 +169,7 @@ public final class Carpet {
             case "4" -> net.minecraft.commands.Commands.LEVEL_OWNERS;
             default -> throw new IllegalArgumentException("Invalid Scarpet ACE level");
         };
-        if (!required.check(source.permissions())) throw new IllegalArgumentException("You must have the permission level you are giving Scarpet");
+        if (!required.check(source.permissions()))
+            throw new IllegalArgumentException("You must have the permission level you are giving Scarpet");
     }
 }

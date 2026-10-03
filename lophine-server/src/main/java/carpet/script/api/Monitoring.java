@@ -3,14 +3,10 @@ package carpet.script.api;
 import carpet.script.CarpetContext;
 import carpet.script.Expression;
 import carpet.script.exception.InternalExpressionException;
-import carpet.script.external.Vanilla;
 import carpet.script.utils.SystemInfo;
-import carpet.script.value.ListValue;
-import carpet.script.value.MapValue;
-import carpet.script.value.NumericValue;
-import carpet.script.value.StringValue;
-import carpet.script.value.Value;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import carpet.script.value.*;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.MobCategory;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,28 +15,19 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.level.NaturalSpawner;
-
-public class Monitoring
-{
+public class Monitoring {
     private static final Map<String, MobCategory> MOB_CATEGORY_MAP = Arrays.stream(MobCategory.values()).collect(Collectors.toMap(MobCategory::getName, Function.identity()));
 
-    public static void apply(Expression expression)
-    {
+    public static void apply(Expression expression) {
         expression.addContextFunction("system_info", -1, (c, t, lv) ->
         {
-            if (lv.isEmpty())
-            {
+            if (lv.isEmpty()) {
                 return SystemInfo.getAll();
             }
-            if (lv.size() == 1)
-            {
+            if (lv.size() == 1) {
                 String what = lv.get(0).getString();
                 Value res = SystemInfo.get(what, (CarpetContext) c);
-                if (res == null)
-                {
+                if (res == null) {
                     throw new InternalExpressionException("Unknown option for 'system_info': " + what);
                 }
                 return res;
@@ -53,17 +40,14 @@ public class Monitoring
             CarpetContext cc = (CarpetContext) c;
             ServerLevel world = cc.level();
             var info = fun.bm.lophine.carpet.CarpetMobcaps.dimension(world.dimension().identifier().toString());
-            if (info == null)
-            {
+            if (info == null) {
                 return Value.NULL;
             }
             Map<MobCategory, Integer> mobcounts = info.counts();
             int chunks = info.chunks();
-            if (lv.isEmpty())
-            {
+            if (lv.isEmpty()) {
                 Map<Value, Value> retDict = new HashMap<>();
-                for (MobCategory category : mobcounts.keySet())
-                {
+                for (MobCategory category : mobcounts.keySet()) {
                     int currentCap = info.limits().getOrDefault(category, 0);
                     retDict.put(
                             new StringValue(category.getSerializedName().toLowerCase(Locale.ROOT)),
@@ -76,8 +60,7 @@ public class Monitoring
             }
             String catString = lv.get(0).getString();
             MobCategory cat = MOB_CATEGORY_MAP.get(catString.toLowerCase(Locale.ROOT));
-            if (cat == null)
-            {
+            if (cat == null) {
                 throw new InternalExpressionException("Unreconized mob category: " + catString);
             }
             return ListValue.of(

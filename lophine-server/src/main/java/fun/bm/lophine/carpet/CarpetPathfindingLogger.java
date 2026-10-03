@@ -3,9 +3,6 @@
 package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.protocol.CarpetLoggerProtocol;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
@@ -17,14 +14,26 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
+
 public final class CarpetPathfindingLogger {
     private static final Scope INACTIVE = new Scope(null, null, List.of(), 0);
-    private CarpetPathfindingLogger() { }
-    public static void registerLogger() { CarpetLoggerProtocol.registerLogger("pathfinding", "20", List.of("2", "5", "10"), false); }
+
+    private CarpetPathfindingLogger() {
+    }
+
+    public static void registerLogger() {
+        CarpetLoggerProtocol.registerLogger("pathfinding", "20", List.of("2", "5", "10"), false);
+    }
+
     public static Scope start(Mob mob, Set<BlockPos> targets) {
-        if (!CarpetLoggerProtocol.hasSubscribers("pathfinding") || !(mob.level() instanceof ServerLevel world)) return INACTIVE;
+        if (!CarpetLoggerProtocol.hasSubscribers("pathfinding") || !(mob.level() instanceof ServerLevel world))
+            return INACTIVE;
         return new Scope(world, mob.position(), targets.stream().map(Vec3::atBottomCenterOf).toList(), System.nanoTime());
     }
+
     public static final class Scope implements AutoCloseable {
         final ServerLevel world;
         final Vec3 origin;
@@ -33,9 +42,24 @@ public final class CarpetPathfindingLogger {
         boolean successful;
         boolean completed;
         boolean closed;
-        Scope(ServerLevel world, Vec3 origin, List<Vec3> targets, long start) { this.world = world; this.origin = origin; this.targets = targets; this.start = start; }
-        public Path result(Path result) { if (this != INACTIVE) { successful = result != null; completed = true; } return result; }
-        @Override public void close() {
+
+        Scope(ServerLevel world, Vec3 origin, List<Vec3> targets, long start) {
+            this.world = world;
+            this.origin = origin;
+            this.targets = targets;
+            this.start = start;
+        }
+
+        public Path result(Path result) {
+            if (this != INACTIVE) {
+                successful = result != null;
+                completed = true;
+            }
+            return result;
+        }
+
+        @Override
+        public void close() {
             if (this == INACTIVE || closed) return;
             closed = true;
             if (!completed) return;
@@ -45,14 +69,19 @@ public final class CarpetPathfindingLogger {
                     String option = CarpetLoggerProtocol.subscriptions(player.getScoreboardName()).get("pathfinding");
                     if (option == null) continue;
                     final int threshold;
-                    try { threshold = Integer.parseInt(option); } catch (NumberFormatException invalid) { continue; }
+                    try {
+                        threshold = Integer.parseInt(option);
+                    } catch (NumberFormatException invalid) {
+                        continue;
+                    }
                     if (duration < threshold) continue;
                     player.getBukkitEntity().taskScheduler.schedule(current -> {
                         ServerPlayer owner = (ServerPlayer) current;
                         if (owner.level() != world) return;
-                        for (Vec3 target : targets) if (owner.position().distanceToSqr(origin) <= 1000.0 || owner.position().distanceToSqr(target) <= 1000.0) {
-                            draw(owner, origin, target, duration, threshold, successful);
-                        }
+                        for (Vec3 target : targets)
+                            if (owner.position().distanceToSqr(origin) <= 1000.0 || owner.position().distanceToSqr(target) <= 1000.0) {
+                                draw(owner, origin, target, duration, threshold, successful);
+                            }
                     }, null, 1L);
                 }
             });
@@ -63,7 +92,7 @@ public final class CarpetPathfindingLogger {
         float ratio = milliseconds / Math.max(1, threshold);
         ParticleOptions color = new DustParticleOptions(ratio < 2.0 ? 0xFFFF00 : ratio < 4.0 ? 0xFF7700 : 0xFF0000, 1.0F);
         player.connection.send(new ClientboundLevelParticlesPacket(successful ? ParticleTypes.HAPPY_VILLAGER : ParticleTypes.ANGRY_VILLAGER,
-            true, true, target.x, target.y, target.z, 0.5F, 0.5F, 0.5F, 0.0F, 5));
+                true, true, target.x, target.y, target.z, 0.5F, 0.5F, 0.5F, 0.0F, 5));
         double distanceSquared = from.distanceToSqr(target);
         if (distanceSquared == 0.0) return;
         Vec3 increment = target.subtract(from).normalize();

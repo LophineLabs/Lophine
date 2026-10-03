@@ -5,20 +5,28 @@ package fun.bm.lophine.carpet;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.storage.LevelResource;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.ConcurrentHashMap;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.storage.LevelResource;
 
-/** The shared first world-directory access performs the upstream whole-directory migration. */
+/**
+ * The shared first world-directory access performs the upstream whole-directory migration.
+ */
 public final class OrgWorldFormat {
     private static final ConcurrentHashMap<Path, Attempt> ATTEMPTS = new ConcurrentHashMap<>();
-    private static final class Attempt { boolean acquired; }
-    private OrgWorldFormat() {}
+
+    private static final class Attempt {
+        boolean acquired;
+    }
+
+    private OrgWorldFormat() {
+    }
 
     public static Path directory(MinecraftServer server) {
         return directory(server.getWorldPath(LevelResource.ROOT));
@@ -62,7 +70,9 @@ public final class OrgWorldFormat {
         }
     }
 
-    /** Upstream IOUtils.write preserves an existing version file until replacement succeeds. */
+    /**
+     * Upstream IOUtils.write preserves an existing version file until replacement succeeds.
+     */
     private static void writeVersion(Path file, String content) throws IOException {
         Path temporary = Files.createTempFile(file.getParent(), "data_version-", ".tmp");
         boolean original = Files.exists(file);
@@ -82,8 +92,11 @@ public final class OrgWorldFormat {
             Files.deleteIfExists(backup);
         } catch (IOException failure) {
             if (original && Files.exists(backup)) {
-                try { Files.move(backup, file, StandardCopyOption.REPLACE_EXISTING); }
-                catch (IOException recovery) { failure.addSuppressed(recovery); }
+                try {
+                    Files.move(backup, file, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException recovery) {
+                    failure.addSuppressed(recovery);
+                }
             }
             Files.deleteIfExists(temporary);
             throw failure;

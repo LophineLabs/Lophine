@@ -3,9 +3,6 @@
 package fun.bm.lophine.carpet;
 
 import ca.spottedleaf.moonrise.common.util.TickThread;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,11 +12,11 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 final class CarpetPlayerTracer {
     private CarpetPlayerTracer() {
@@ -27,7 +24,8 @@ final class CarpetPlayerTracer {
 
     static List<Entity> nearby(final ServerPlayer player, final AABB box, final Predicate<Entity> predicate) {
         TickThread.ensureTickThread(player, "Carpet action query must own its player");
-        if (!CarpetPlayerTargetArea.Bounds.query(box).loaded(player.level())) throw new CarpetPlayerTargetArea.Pending();
+        if (!CarpetPlayerTargetArea.Bounds.query(box).loaded(player.level()))
+            throw new CarpetPlayerTargetArea.Pending();
         return player.level().getEntities(player, box, entity -> {
             if (!TickThread.isTickThreadFor(entity)) throw new CarpetPlayerTargetArea.Pending();
             return predicate.test(entity);
@@ -45,10 +43,12 @@ final class CarpetPlayerTracer {
                 this.getBlockStateIfLoaded(pos);
                 return level.getBlockEntity(pos);
             }
+
             @Override
             public BlockState getBlockState(BlockPos pos) {
                 return this.getBlockStateIfLoaded(pos);
             }
+
             @Override
             public BlockState getBlockStateIfLoaded(BlockPos pos) {
                 if (!TickThread.isTickThreadFor(level, pos)) throw new CarpetPlayerTargetArea.Pending();
@@ -56,17 +56,29 @@ final class CarpetPlayerTracer {
                 if (loaded == null) throw new CarpetPlayerTargetArea.Pending();
                 return loaded;
             }
+
             @Override
-            public FluidState getFluidState(BlockPos pos) { return this.getBlockState(pos).getFluidState(); }
+            public FluidState getFluidState(BlockPos pos) {
+                return this.getBlockState(pos).getFluidState();
+            }
+
             @Override
-            public FluidState getFluidIfLoaded(BlockPos pos) { return this.getFluidState(pos); }
+            public FluidState getFluidIfLoaded(BlockPos pos) {
+                return this.getFluidState(pos);
+            }
+
             @Override
-            public int getHeight() { return level.getHeight(); }
+            public int getHeight() {
+                return level.getHeight();
+            }
+
             @Override
-            public int getMinY() { return level.getMinY(); }
+            public int getMinY() {
+                return level.getMinY();
+            }
         };
         BlockHitResult blockHit = local.clip(new ClipContext(start, end, ClipContext.Block.OUTLINE,
-            fluids ? ClipContext.Fluid.ANY : ClipContext.Fluid.NONE, player));
+                fluids ? ClipContext.Fluid.ANY : ClipContext.Fluid.NONE, player));
         double targetDistance = start.distanceToSqr(blockHit.getLocation());
         Entity target = null;
         Vec3 targetHit = null;

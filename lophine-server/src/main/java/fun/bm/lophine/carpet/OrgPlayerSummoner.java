@@ -10,9 +10,13 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.server.MinecraftServer;
 import org.leavesmc.leaves.bot.ServerBot;
 
-/** The upstream rule broadcasts the summoner on successful spawn; it does not change player identity. */
+/**
+ * The upstream rule broadcasts the summoner on successful spawn; it does not change player identity.
+ */
 public final class OrgPlayerSummoner {
-    private OrgPlayerSummoner() {}
+    private OrgPlayerSummoner() {
+    }
+
     public static void spawned(ServerBot bot, Component summoner, boolean silence) {
         if (!GeneralCompatConfig.displayPlayerSummoner || summoner == null || silence) return;
         TickThread.ensureTickThread(bot, "Org spawn announcement requires the fake owner");
@@ -21,14 +25,17 @@ public final class OrgPlayerSummoner {
         broadcast(bot.level().getServer(), message);
         MinecraftServer.LOGGER.info("{} has summoned {} at {} [{}]", summoner.getString(), bot.getScoreboardName(), bot.level().dimension().identifier(), bot.blockPosition().toShortString());
     }
+
     public static void batch(MinecraftServer server, Component summoner, int count) {
         if (!GeneralCompatConfig.displayPlayerSummoner || count == 0) return;
         broadcast(server, announcement(summoner).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
     }
+
     private static net.minecraft.network.chat.MutableComponent announcement(Component summoner) {
         return Component.literal(String.format(java.util.Locale.ROOT,
-            OrgRuleTranslations.text("carpet-org-addition.rule.message.displayPlayerSummoner", "Summoner: %s"), summoner.getString()));
+                OrgRuleTranslations.text("carpet-org-addition.rule.message.displayPlayerSummoner", "Summoner: %s"), summoner.getString()));
     }
+
     private static void broadcast(MinecraftServer server, Component message) {
         OrgCommandNativeEffects.broadcast(server, message);
     }

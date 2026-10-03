@@ -3,14 +3,18 @@ package fun.bm.lophine.carpet;
 
 import carpet.script.external.Carpet;
 import carpet.script.external.ScarpetRuntime;
+import net.minecraft.server.MinecraftServer;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import net.minecraft.server.MinecraftServer;
 
-/** Applies file reloads through the same VM side effects as accepted native rule commands. */
+/**
+ * Applies file reloads through the same VM side effects as accepted native rule commands.
+ */
 public final class CarpetConfigLifecycle {
-    private CarpetConfigLifecycle() {}
+    private CarpetConfigLifecycle() {
+    }
 
     public static Map<String, Object> snapshot() {
         Map<String, Object> values = new LinkedHashMap<>();
@@ -24,7 +28,7 @@ public final class CarpetConfigLifecycle {
         var source = server.createCommandSourceStack();
         Map<String, Object> values = snapshot();
         boolean commandsChanged = values.entrySet().stream().anyMatch(entry -> !Objects.equals(previous.get(entry.getKey()), entry.getValue())
-            && (entry.getKey().startsWith("command") || entry.getKey().startsWith("playerCommand") || entry.getKey().startsWith("tick")
+                && (entry.getKey().startsWith("command") || entry.getKey().startsWith("playerCommand") || entry.getKey().startsWith("tick")
                 || entry.getKey().endsWith("Permission") || entry.getKey().equals("carpetCommandPermissionLevel") || entry.getKey().equals("perfPermissionLevel")));
         if (commandsChanged) for (var player : server.getPlayerList().getPlayers()) {
             player.getBukkitEntity().taskScheduler.schedule(actor -> server.getCommands().sendCommands((net.minecraft.server.level.ServerPlayer) actor), null, 1L);
@@ -38,7 +42,8 @@ public final class CarpetConfigLifecycle {
             });
             return null;
         }).whenComplete((ignored, failure) -> {
-            if (failure != null) carpet.script.CarpetScriptServer.LOG.error("Scarpet configuration reload callback failed", failure);
+            if (failure != null)
+                carpet.script.CarpetScriptServer.LOG.error("Scarpet configuration reload callback failed", failure);
         });
     }
 }

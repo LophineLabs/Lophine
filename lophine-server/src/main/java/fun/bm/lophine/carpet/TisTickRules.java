@@ -5,8 +5,9 @@ package fun.bm.lophine.carpet;
 
 import com.mojang.brigadier.suggestion.Suggestions;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
-import java.util.List;
 import net.minecraft.commands.CommandSourceStack;
+
+import java.util.List;
 
 public final class TisTickRules {
     private TisTickRules() {
@@ -19,16 +20,30 @@ public final class TisTickRules {
         return CarpetCommandPermissions.canUse(source, permission);
     }
 
-    public static boolean enhance() { return GeneralCompatConfig.tickCommandCarpetfied || GeneralCompatConfig.tickCommandEnhance; }
-    public static boolean toggleFreeze() { return GeneralCompatConfig.tickCommandCarpetfied || GeneralCompatConfig.tickFreezeCommandToggleable; }
-    public static boolean deepFreeze() { return GeneralCompatConfig.tickCommandCarpetfied || GeneralCompatConfig.tickFreezeDeepCommand; }
-    public static boolean profiler() { return GeneralCompatConfig.tickCommandCarpetfied || GeneralCompatConfig.tickProfilerCommandsReintroduced; }
-    public static boolean warp() { return GeneralCompatConfig.tickCommandCarpetfied || GeneralCompatConfig.tickWarpCommandAsAnAlias; }
+    public static boolean enhance() {
+        return GeneralCompatConfig.tickCommandCarpetfied || GeneralCompatConfig.tickCommandEnhance;
+    }
+
+    public static boolean toggleFreeze() {
+        return GeneralCompatConfig.tickCommandCarpetfied || GeneralCompatConfig.tickFreezeCommandToggleable;
+    }
+
+    public static boolean deepFreeze() {
+        return GeneralCompatConfig.tickCommandCarpetfied || GeneralCompatConfig.tickFreezeDeepCommand;
+    }
+
+    public static boolean profiler() {
+        return GeneralCompatConfig.tickCommandCarpetfied || GeneralCompatConfig.tickProfilerCommandsReintroduced;
+    }
+
+    public static boolean warp() {
+        return GeneralCompatConfig.tickCommandCarpetfied || GeneralCompatConfig.tickWarpCommandAsAnAlias;
+    }
 
     public static Suggestions filterSuggestions(final String text, final Suggestions suggestions) {
         String command = text.startsWith("/") ? text.substring(1) : text;
         if ((command.startsWith("tick sprint ") || warp() && command.startsWith("tick warp ")) && !enhance()
-            && command.chars().filter(character -> character == ' ').count() == 2L) {
+                && command.chars().filter(character -> character == ' ').count() == 2L) {
             List<String> unavailable = List.of("status", "health", "entities");
             return new Suggestions(suggestions.getRange(), suggestions.getList().stream().filter(suggestion -> !unavailable.contains(suggestion.getText())).toList());
         }

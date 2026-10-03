@@ -1,14 +1,13 @@
 package carpet.script.external;
 
 import carpet.script.CarpetScriptServer;
-import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
-import fun.bm.lophine.carpet.CarpetCommandPermissions;
-import org.leavesmc.leaves.protocol.CarpetServerProtocol;
 import carpet.script.EntityEventsGroup;
 import carpet.script.value.MapValue;
 import carpet.script.value.StringValue;
 import carpet.script.value.Value;
 import com.mojang.brigadier.CommandDispatcher;
+import fun.bm.lophine.carpet.CarpetCommandPermissions;
+import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSigningContext;
@@ -19,12 +18,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ChunkMap;
-import net.minecraft.server.level.DistanceManager;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.level.ServerPlayerGameMode;
-import net.minecraft.server.level.Ticket;
+import net.minecraft.server.level.*;
 import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.TaskChainer;
@@ -50,112 +44,93 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
-import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
-import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
+import org.leavesmc.leaves.protocol.CarpetServerProtocol;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalLong;
 import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 
-public class Vanilla
-{
-    public static void MinecraftServer_forceTick(MinecraftServer server, BooleanSupplier sup)
-    {
+public class Vanilla {
+    public static void MinecraftServer_forceTick(MinecraftServer server, BooleanSupplier sup) {
         ScarpetRuntime.awaitNextTick(server);
     }
 
-    public static void ChunkMap_relightChunk(ChunkMap chunkMap, ChunkPos pos)
-    {
+    public static void ChunkMap_relightChunk(ChunkMap chunkMap, ChunkPos pos) {
         //((ThreadedAnvilChunkStorageInterface) chunkMap).relightChunk(pos);
     }
 
-    public static Map<String, Integer> ChunkMap_regenerateChunkRegion(ChunkMap chunkMap, List<ChunkPos> requestedChunks)
-    {
+    public static Map<String, Integer> ChunkMap_regenerateChunkRegion(ChunkMap chunkMap, List<ChunkPos> requestedChunks) {
         return Map.of(); //return ((ThreadedAnvilChunkStorageInterface) chunkMap).regenerateChunkRegion(requestedChunks);
     }
 
-    public static int NaturalSpawner_MAGIC_NUMBER()
-    {
+    public static int NaturalSpawner_MAGIC_NUMBER() {
         return 17 * 17;
     }
 
-    public static PotentialCalculator SpawnState_getPotentialCalculator(NaturalSpawner.SpawnState spawnState)
-    {
+    public static PotentialCalculator SpawnState_getPotentialCalculator(NaturalSpawner.SpawnState spawnState) {
         return spawnState.carpetGetPotentialCalculator();
     }
 
-    public static void Objective_setCriterion(Objective objective, ObjectiveCriteria criterion)
-    {
+    public static void Objective_setCriterion(Objective objective, ObjectiveCriteria criterion) {
         objective.carpetSetCriterion(criterion);
     }
 
-    public static Map<ObjectiveCriteria, List<Objective>> Scoreboard_getObjectivesByCriterion(Scoreboard scoreboard)
-    {
+    public static Map<ObjectiveCriteria, List<Objective>> Scoreboard_getObjectivesByCriterion(Scoreboard scoreboard) {
         return scoreboard.carpetGetObjectivesByCriterion();
     }
 
-    public static Long2ObjectOpenHashMap<List<Ticket>> ChunkTicketManager_getTicketsByPosition(DistanceManager ticketManager)
-    {
+    public static Long2ObjectOpenHashMap<List<Ticket>> ChunkTicketManager_getTicketsByPosition(DistanceManager ticketManager) {
         return copyTickets(ticketManager);
     }
 
-    public static CompoundTag BlockInput_getTag(BlockInput blockInput)
-    {
+    public static CompoundTag BlockInput_getTag(BlockInput blockInput) {
         return blockInput.carpetGetTag();
     }
 
-    public static CarpetScriptServer MinecraftServer_getScriptServer(MinecraftServer server)
-    {
+    public static CarpetScriptServer MinecraftServer_getScriptServer(MinecraftServer server) {
         return ScarpetRuntime.of(server).scriptServer();
     }
 
-    public static Biome.ClimateSettings Biome_getClimateSettings(Biome biome)
-    {
+    public static Biome.ClimateSettings Biome_getClimateSettings(Biome biome) {
         return biome.climateSettings;
     }
 
-    public static ThreadLocal<Boolean> skipGenerationChecks(ServerLevel level)
-    { // not sure does vanilla care at all - needs checking
+    public static ThreadLocal<Boolean> skipGenerationChecks(ServerLevel level) { // not sure does vanilla care at all - needs checking
         return ScarpetRuntime.SKIP_GENERATION_CHECKS;
     }
 
-    public static void sendScarpetShapesDataToPlayer(ServerPlayer player, Tag data)
-    { // dont forget to add the packet to vanilla packed handler and call ShapesRenderer.addShape to handle on client
+    public static void sendScarpetShapesDataToPlayer(ServerPlayer player, Tag data) { // dont forget to add the packet to vanilla packed handler and call ShapesRenderer.addShape to handle on client
         CarpetServerProtocol.sendCustomCommand(player, "scShapes", data);
     }
 
-    public static PermissionSet MinecraftServer_getRunPermissionLevel(MinecraftServer server)
-    {
+    public static PermissionSet MinecraftServer_getRunPermissionLevel(MinecraftServer server) {
         return ScarpetRuntime.of(server).runPermission();
     }
 
     public static void CommandSourceStack_setupPrivates(CommandSourceStack css, boolean bl, CommandResultCallback commandResultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext commandSigningContext, TaskChainer taskChainer) {
         css.carpetSetupPrivates(bl, commandResultCallback, anchor, commandSigningContext, taskChainer);
-    };
-
-    public static int [] MinecraftServer_getReleaseTarget(MinecraftServer server)
-    {
-        String version = net.minecraft.SharedConstants.getCurrentVersion().name();
-        java.util.regex.Matcher parts = java.util.regex.Pattern.compile("([0-9]+)\\.([0-9]+)(?:\\.([0-9]+))?").matcher(version);
-        if (!parts.find()) return new int[] {0, 0, 0};
-        return new int[] {Integer.parseInt(parts.group(1)), Integer.parseInt(parts.group(2)), parts.group(3) == null ? 0 : Integer.parseInt(parts.group(3))};
     }
 
-    public static boolean isDevelopmentEnvironment()
-    {
+    ;
+
+    public static int[] MinecraftServer_getReleaseTarget(MinecraftServer server) {
+        String version = net.minecraft.SharedConstants.getCurrentVersion().name();
+        java.util.regex.Matcher parts = java.util.regex.Pattern.compile("([0-9]+)\\.([0-9]+)(?:\\.([0-9]+))?").matcher(version);
+        if (!parts.find()) return new int[]{0, 0, 0};
+        return new int[]{Integer.parseInt(parts.group(1)), Integer.parseInt(parts.group(2)), parts.group(3) == null ? 0 : Integer.parseInt(parts.group(3))};
+    }
+
+    public static boolean isDevelopmentEnvironment() {
         return false;
     }
 
-    public static MapValue getServerMods(MinecraftServer server)
-    {
+    public static MapValue getServerMods(MinecraftServer server) {
         Map<Value, Value> ret = new HashMap<>();
         platformVersions().forEach((name, version) -> ret.put(new StringValue(name), new StringValue(version)));
         return MapValue.wrap(ret);
@@ -165,148 +140,122 @@ public class Vanilla
         return brain.carpetGetMemories();
     }
 
-    public static LevelStorageSource.LevelStorageAccess MinecraftServer_storageSource(MinecraftServer server)
-    {
+    public static LevelStorageSource.LevelStorageAccess MinecraftServer_storageSource(MinecraftServer server) {
         return server.carpetGetStorageSource();
     }
 
-    public static BlockPos ServerPlayerGameMode_getCurrentBlockPosition(ServerPlayerGameMode gameMode)
-    {
+    public static BlockPos ServerPlayerGameMode_getCurrentBlockPosition(ServerPlayerGameMode gameMode) {
         return gameMode.carpetGetBreakingBlock();
     }
 
-    public static int ServerPlayerGameMode_getCurrentBlockBreakingProgress(ServerPlayerGameMode gameMode)
-    {
+    public static int ServerPlayerGameMode_getCurrentBlockBreakingProgress(ServerPlayerGameMode gameMode) {
         return gameMode.carpetGetBreakingProgress();
     }
 
-    public static void ServerPlayerGameMode_setBlockBreakingProgress(ServerPlayerGameMode gameMode, int progress)
-    {
+    public static void ServerPlayerGameMode_setBlockBreakingProgress(ServerPlayerGameMode gameMode, int progress) {
         gameMode.carpetSetBreakingProgress(progress);
     }
 
-    public static boolean ServerPlayer_isInvalidEntityObject(ServerPlayer player)
-    {
+    public static boolean ServerPlayer_isInvalidEntityObject(ServerPlayer player) {
         return player.level().getServer().getPlayerList().getPlayer(player.getUUID()) != player;
     }
 
-    public static GoalSelector Mob_getAI(Mob mob, boolean target)
-    {
+    public static GoalSelector Mob_getAI(Mob mob, boolean target) {
         return target ? mob.targetSelector : mob.getGoalSelector();
     }
 
-    public static Map<String, Goal> Mob_getTemporaryTasks(Mob mob)
-    {
+    public static Map<String, Goal> Mob_getTemporaryTasks(Mob mob) {
         return mob.carpetTemporaryTasks;
     }
 
-    public static void Mob_setPersistence(Mob mob, boolean what)
-    {
+    public static void Mob_setPersistence(Mob mob, boolean what) {
         mob.persistenceRequired = what;
     }
 
-    public static EntityEventsGroup Entity_getEventContainer(Entity entity)
-    {
+    public static EntityEventsGroup Entity_getEventContainer(Entity entity) {
         return entity.carpetGetEventContainer();
     }
 
-    public static boolean Entity_isPermanentVehicle(Entity entity)
-    {
+    public static boolean Entity_isPermanentVehicle(Entity entity) {
         return entity.carpetPermanentVehicle;
     }
 
-    public static void Entity_setPermanentVehicle(Entity entity, boolean permanent)
-    {
+    public static void Entity_setPermanentVehicle(Entity entity, boolean permanent) {
         entity.carpetPermanentVehicle = permanent;
     }
 
-    public static int Entity_getPortalTimer(Entity entity)
-    {
+    public static int Entity_getPortalTimer(Entity entity) {
         return entity.portalProcess == null ? 0 : entity.portalProcess.getPortalTime();
     }
 
-    public static void Entity_setPortalTimer(Entity entity, int amount)
-    {
+    public static void Entity_setPortalTimer(Entity entity, int amount) {
         entity.carpetSetPortalTime(amount);
     }
 
-    public static int Entity_getPublicNetherPortalCooldown(Entity entity)
-    {
+    public static int Entity_getPublicNetherPortalCooldown(Entity entity) {
         return entity.getPortalCooldown();
     }
 
-    public static void Entity_setPublicNetherPortalCooldown(Entity entity, int what)
-    {
+    public static void Entity_setPublicNetherPortalCooldown(Entity entity, int what) {
         entity.setPortalCooldown(what);
     }
 
-    public static int ItemEntity_getPickupDelay(ItemEntity entity)
-    {
+    public static int ItemEntity_getPickupDelay(ItemEntity entity) {
         return entity.pickupDelay;
     }
 
-    public static boolean LivingEntity_isJumping(LivingEntity entity)
-    {
+    public static boolean LivingEntity_isJumping(LivingEntity entity) {
         return entity.isJumping();
     }
 
-    public static void LivingEntity_setJumping(LivingEntity entity)
-    {
+    public static void LivingEntity_setJumping(LivingEntity entity) {
         entity.carpetJumpFromGround();
     }
 
-    public static Container AbstractHorse_getInventory(AbstractHorse horse)
-    {
+    public static Container AbstractHorse_getInventory(AbstractHorse horse) {
         return horse.inventory;
     }
 
-    public static DataSlot AbstractContainerMenu_getDataSlot(AbstractContainerMenu handler, int index)
-    {
+    public static DataSlot AbstractContainerMenu_getDataSlot(AbstractContainerMenu handler, int index) {
         return handler.dataSlots.get(index);
     }
 
-    public static void CommandDispatcher_unregisterCommand(CommandDispatcher<CommandSourceStack> dispatcher, String name)
-    {
-        ScarpetRuntime.atGlobal(net.minecraft.server.MinecraftServer.getServer(), () -> { dispatcher.getRoot().removeCommand(name); return null; });
+    public static void CommandDispatcher_unregisterCommand(CommandDispatcher<CommandSourceStack> dispatcher, String name) {
+        ScarpetRuntime.atGlobal(net.minecraft.server.MinecraftServer.getServer(), () -> {
+            dispatcher.getRoot().removeCommand(name);
+            return null;
+        });
     }
 
-    public static boolean MinecraftServer_doScriptsAutoload(MinecraftServer server)
-    {
+    public static boolean MinecraftServer_doScriptsAutoload(MinecraftServer server) {
         return GeneralCompatConfig.scriptsAutoload;
     }
 
-    public static void MinecraftServer_notifyPlayersCommandsChanged(MinecraftServer server)
-    {
+    public static void MinecraftServer_notifyPlayersCommandsChanged(MinecraftServer server) {
         notifyPlayers(server);
     }
 
-    public static boolean ScriptServer_scriptOptimizations(MinecraftServer scriptServer)
-    {
+    public static boolean ScriptServer_scriptOptimizations(MinecraftServer scriptServer) {
         return GeneralCompatConfig.scriptsOptimization;
     }
 
-    public static boolean ScriptServer_scriptDebugging(MinecraftServer server)
-    {
+    public static boolean ScriptServer_scriptDebugging(MinecraftServer server) {
         return GeneralCompatConfig.scriptsDebugging;
     }
 
-    public static boolean ServerPlayer_canScriptACE(CommandSourceStack player)
-    {
+    public static boolean ServerPlayer_canScriptACE(CommandSourceStack player) {
         return CarpetCommandPermissions.canUse(player, GeneralCompatConfig.commandScriptACE);
     }
 
-    public static boolean ServerPlayer_canScriptGeneral(CommandSourceStack player)
-    {
+    public static boolean ServerPlayer_canScriptGeneral(CommandSourceStack player) {
         return CarpetCommandPermissions.canUse(player, GeneralCompatConfig.commandScript);
     }
 
-    public static int PoiRecord_getFreeTickets(PoiRecord record)
-    {
+    public static int PoiRecord_getFreeTickets(PoiRecord record) {
         return record.carpetGetFreeTickets();
     }
 
-    public static void PoiRecord_callAcquireTicket(PoiRecord record)
-    {
+    public static void PoiRecord_callAcquireTicket(PoiRecord record) {
         record.carpetAcquireTicket();
     }
 
@@ -318,9 +267,9 @@ public class Vanilla
         foodData.exhaustionLevel = exhaustion;
     }
 
-    public record BlockPredicatePayload(BlockState state, TagKey<Block> tagKey, Map<Value, Value> properties, CompoundTag tag) {
-        public static BlockPredicatePayload of(Predicate<BlockInWorld> blockPredicate)
-        {
+    public record BlockPredicatePayload(BlockState state, TagKey<Block> tagKey, Map<Value, Value> properties,
+                                        CompoundTag tag) {
+        public static BlockPredicatePayload of(Predicate<BlockInWorld> blockPredicate) {
             return ((net.minecraft.commands.arguments.blocks.BlockPredicateArgument.Result) blockPredicate).carpetPayload();
         }
     }
@@ -343,8 +292,9 @@ public class Vanilla
 
     private static void notifyPlayers(MinecraftServer server) {
         io.papermc.paper.threadedregions.RegionizedServer.getInstance().addTask(() -> {
-            for (ServerPlayer player : server.getPlayerList().getPlayers()) player.getBukkitEntity().taskScheduler.schedule(owned ->
-                server.getCommands().sendCommands((ServerPlayer) owned), null, 1L);
+            for (ServerPlayer player : server.getPlayerList().getPlayers())
+                player.getBukkitEntity().taskScheduler.schedule(owned ->
+                        server.getCommands().sendCommands((ServerPlayer) owned), null, 1L);
         });
     }
 }

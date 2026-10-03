@@ -153,7 +153,7 @@ public class BotDataStorage {
             }
             try {
                 java.nio.file.Files.move(staging, target, java.nio.file.StandardCopyOption.ATOMIC_MOVE,
-                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING);
             } catch (java.nio.file.AtomicMoveNotSupportedException ignored) {
                 java.nio.file.Files.move(staging, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
             }
