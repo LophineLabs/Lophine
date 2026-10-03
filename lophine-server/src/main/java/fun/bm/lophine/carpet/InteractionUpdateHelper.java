@@ -9,6 +9,14 @@ public final class InteractionUpdateHelper {
         return SUPPRESSED_DEPTH.get() > 0;
     }
 
+    public static void beginSuppressedUpdates() {
+        push();
+    }
+
+    public static void endSuppressedUpdates() {
+        pop();
+    }
+
     public static void runWithSuppressedUpdates(Runnable action) {
         push();
         try {

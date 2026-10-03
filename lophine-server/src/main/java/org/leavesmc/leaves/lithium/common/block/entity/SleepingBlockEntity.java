@@ -55,6 +55,7 @@ public interface SleepingBlockEntity {
     void lithium$setSleepingTicker(TickingBlockEntity sleepingTicker);
 
     default boolean lithium$startSleeping() {
+        if (this instanceof net.minecraft.world.Container container && fun.bm.lophine.carpet.OrgItemShadowGroups.any(fun.bm.lophine.carpet.OrgItemShadowGroups.container(container))) return false;
         if (this.isSleeping()) {
             return false;
         }

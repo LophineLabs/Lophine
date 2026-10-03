@@ -1,0 +1,706 @@
+carpetamsaddition:
+  carpet:
+    totalRules:
+      version: 'version'
+      total_rules: 'total rules'
+
+  fuzz:
+    command:
+      highlightCoordButtonHoverText: 'Use fuzz mod to highlight waypoints, use /coordCompass clear to remove the highlight'
+
+  rule:
+    amsUpdateSuppressionCrashFix:
+      msg: 'Update suppression location @ %s -> [ %s ] | reason: %s'
+      copy: 'copy coord to clipboard'
+    welcomeMessage:
+      modify_content_in: 'Modify the content in：'
+      save_path: '[ save path ]'
+    maxPlayerBlockInteractionRange:
+      disable_command: '<Carpet AMS Addition> This change will not take effect because the maxPlayerBlockInteractionRange rule is enabled'
+    maxPlayerEntityInteractionRange:
+      disable_command: '<Carpet AMS Addition> This change will not take effect because the maxPlayerBlockInteractionRange rule is enabled'
+    sendPlayerDeathLocation:
+      location: 'death location'
+      copy: 'copy coord to clipboard'
+    phantomSpawnAlert:
+      msg: '§b<phantomSpawnAlert> §r§e%s §r§dsummoned phantoms §r§e@ §r§a[ %s ]'
+    experimentalMinecartSpeed:
+      vanilla_command_disabled: '<Carpet AMS Addition> The rules of the game have been taken over by the minecartMaxSpeed carpet rules'
+
+  command:
+    commandHelper:
+      refresh_cmd_tree: '<Carpet AMS Addition> Command tree has been refreshed'
+
+    playerChunkLoading:
+      no_player_specified: '<commandPlayerChunkLoadController> No player specified'
+      set: '<commandPlayerChunkLoadController> %s chunk loading %s'
+      chunk_loading_true: '<commandPlayerChunkLoadController> chunk loading: true'
+      chunk_loading_false: '<commandPlayerChunkLoadController> chunk_loading_false'
+      help: '/playerChunkLoading [true/false] - Control chunk loading of player. Can only manipulate yourself'
+    amsUpdateSuppressionCrashFixForceMode:
+      lazy_mode: '[ lazy mode ]'
+      force_mode: '[ force mode ]'
+    anvilInteractionDisabled:
+      disable: '[ Anvil Interaction Disable ]'
+      enable: '[ Anvil Interaction Enable ]'
+    customBlockBlastResistance:
+      modify_set: '<customBlockBlastResistance> %s/%s -> %s/%s'
+      set: '<customBlockBlastResistance> + %s/%s'
+      remove: '<customBlockBlastResistance> - %s/%s'
+      not_found: '<customBlockBlastResistance> %s not found !'
+      removeAll: '<customBlockBlastResistance> All custom block blast resistance values have been removed.'
+      list: '[ Block / Blast resistance ]'
+      help:
+        set: '/customBlockBlastResistance set <block> <hardness> - Add or modify blocks and their blast resistance'
+        remove: '/customBlockBlastResistance remove <block> - Remove a block from the list'
+        removeAll: '/customBlockBlastResistance removeAll - Remove all blocks from the list'
+        list: '/customBlockBlastResistance list - Display all added blocks'
+    here:
+      overworld: 'overworld'
+      nether: 'nether'
+      the_end: 'the_end'
+      the_end_button_hover: 'copy end coord'
+      overworld_button_hover: 'copy overworld coord'
+      nether_button_hover: 'copy nether coord'
+    where:
+      overworld: 'overworld'
+      nether: 'nether'
+      the_end: 'the_end'
+      who_get_who: '%s got %s location'
+      the_end_button_hover: 'copy end coord'
+      overworld_button_hover: 'copy overworld coord'
+      nether_button_hover: 'copy nether coord'
+    leader:
+      add: '<commandPlayerLeader> %s became a tour guide'
+      is_already_leader: '<commandPlayerLeader> %s is already leader'
+      remove: '<commandPlayerLeader> %s not a tour guide anymore'
+      is_not_leader: '<commandPlayerLeader> %s is not leader'
+      removeAll: '<commandPlayerLeader> All the guides were dismissed'
+      list_title: '[ Leader list ]'
+      help:
+        add: '/leader add <PlayerName> - Add a tour guide'
+        remove: '/leader remove <PlayerName> - Remove a tour guide'
+        removeAll: '/leader removeAll - Remove all tour guide'
+        broadcast_leader_pos: '/leader broadcastLeaderPos <player> interval <tick> - Broadcast the coordinates of a tour guide at regular intervals, The time is set to a negative number to stop broadcasting'
+        list: '/leader list - View tour guide list'
+    ping:
+      stop_ping: 'Ping operation stopped.'
+      active_ping_is_null: 'No active ping operation to stop.'
+      help:
+        ping: '/pings <targetIpOrDomainName> <pingQuantity> - Ping a specific host'
+        stop: '/pings stop - Interrupt the ping operation'
+    getSaveSize:
+      size_msg: 'Current save size:'
+      save_success_msg: '[ Save world success ]'
+      save_fail_msg: '[ Save world failed ]'
+    getSystemInfo:
+      os: 'OS: %s'
+      os_arch: 'Arch: %s'
+      available_processors: 'Available Processors: %s'
+      max_memory: 'Max Memory: %s'
+      total_memory: 'Total Memory: %s'
+      free_memory: 'Free Memory: %s'
+    customCommandPermissionLevel:
+      modify_set: '<customCommandPermissionLevel> %s %d -> %d'
+      set: '<customCommandPermissionLevel> + %s/%d'
+      remove: '<customCommandPermissionLevel> - %s'
+      not_found: '<customCommandPermissionLevel> Command: %s does not exist in the configuration file'
+      cant_modify_self: '<customCommandPermissionLevel> You cannot modify the permissions of the command'
+      removeAll: '<customCommandPermissionLevel> All entries have been removed'
+      list_title: '[ Custom command permission level list ]'
+      help:
+        set: '/customCommandPermissionLevel set <command> <permissionLevel> - Set the permission level of a command'
+        remove: '/customCommandPermissionLevel remove <command> - Remove a modified command'
+        refresh: '/customCommandPermissionLevel refresh - Refresh command tree'
+        removeAll: '/customCommandPermissionLevel removeAll - Remove all modified commands'
+        list: '/customCommandPermissionLevel list - View the list of modified commands'
+    customMovableBlock:
+      add: '<customMovableBlock> + %s'
+      already_exists: "<customMovableBlock> %s is already exists"
+      remove: '<customMovableBlock> - %s'
+      not_found: "<customMovableBlock> %s not found"
+      removeAll: "<customMovableBlock> All block have been removed from list"
+      list: "[ Moveable block list ]"
+      help:
+        set: '/customMovableBlock add <block> - Added a movable block'
+        remove: '/customMovableBlock remove <block> - Delete a movable block'
+        removeAll: '/customMovableBlock removeAll - Removes all added movable blocks'
+        list: '/customMovableBlock list - Check out the list of movable blocks'
+    commandGetHeldItemID:
+      getHeldItemID:
+        copy: 'Copy to clipboard'
+    customAntiFireItems:
+      add: '<customAntiFireItems> + %s'
+      already_exists: "<customAntiFireItems> %s is already exists"
+      not_found: "<customAntiFireItems> not found"
+      remove: '<customAntiFireItems> - %s'
+      removeAll: "<customAntiFireItems> All item have been removed from list"
+      list_title: "[ Anti Fire item list ]"
+      help:
+        set: '/customAntiFireItems add <item> - Added a anti fire item'
+        remove: '/customAntiFireItems remove <item> - Delete a anti fire item'
+        removeAll: '/customAntiFireItems removeAll - Removes all added anti fire item'
+        list: '/customAntiFireItems list - Check out the list of anti fire item'
+    carpetExtensionModWikiHyperlink:
+      click_to_jump: 'Click link to jump: '
+    customBlockHardness:
+      modify_set: '<customBlockHardness> %s/%s -> %s/%s'
+      set: '<customBlockHardness> + %s/%s'
+      remove: '<customBlockHardness> - %s/%s'
+      not_found: '<customBlockHardness> %s not found !'
+      removeAll: '<customBlockHardness> All custom block hardness values have been removed.'
+      list: '[ Block / Hardness ]'
+      default_hardness: '%s default hardness: %s'
+      help:
+        set: '/customBlockHardness set <block> <hardness> - Add or modify blocks and their hardness'
+        remove: '/customBlockHardness remove <block> - Remove a block from the list'
+        removeAll: '/customBlockHardness removeAll - Remove all blocks from the list'
+        get_default_hardness: '/customBlockHardness getDefaultHardness <block> - Query the default hardness of blocks'
+        list: '/customBlockHardness list - Display all added blocks'
+    at:
+      title: '%s @ You'
+    getClientPlayerFps:
+      feedback: '%s - FPS: %s'
+      help: '/getClientPlayerFps <player> - Get the FPS of the specified player'
+    playerPose:
+      set_help: '/playerPose <player> set <pose> - Set player pose'
+      stop_help: '/playerPose <player> stop - Stop posing'
+    amsp:
+      support_client_set_is_none: '<AMSP> No client supports AMSP'
+      support_client_list_title: 'List of clients that support AMSP:'
+      server_support_status: '<AMSP> Server support status: %s'
+      request_client_version: '<AMSP> Requesting version information for the %s time...'
+      client_mod_version_success_feedback: '<AMSP> The client version of %s is: %s'
+      client_mod_version_failed_feedback: '<AMSP> Client version information not received after %s retries'
+      get_client_version_waiting: '<AMSP> Version request sent, awaiting response...'
+      server_mod_version_feedback: '<AMSP> Server Carpet AMS Addition version: %s v%s'
+      deny_client_feedback: '<AMSP> %s has been banned from communicating with the server via AMSP'
+      deny_all_client_feedback: '<AMSP> All current clients have been prohibited from communicating with the server via AMSP'
+      set_server_support_feedback: '<AMSP> The server status has been changed to: %s'
+      request_handshake_feedback: '<AMSP> A handshake request has been sent to %s'
+    playerNoNetherPortalTeleport:
+      globalMode_enable: '<playerNoNetherPortalTeleport> Global mode is turned on'
+      globalMode_disable: '<playerNoNetherPortalTeleport> Global mode is turned off'
+      globalMode_state: '<playerNoNetherPortalTeleport> Global mode: %s'
+      add_success: '<playerNoNetherPortalTeleport> %s teleportation through the nether portal has been prohibited'
+      add_fail: '<playerNoNetherPortalTeleport> %s is already on the blacklist'
+      remove_success: '<playerNoNetherPortalTeleport> %s has been removed from the blacklist'
+      remove_fail: '<playerNoNetherPortalTeleport> %s does not exist in the blacklist'
+      clear_success: '<playerNoNetherPortalTeleport> The blacklist has been cleared'
+      clear_fail: '<playerNoNetherPortalTeleport> The blacklist is empty'
+      list_title: '[ Nether portal teleports player blacklist ]'
+      help:
+        globalMode: '/playerNoNetherPortalTeleport globalMode [true/false] - Set global mode'
+        globalModeState: '/playerNoNetherPortalTeleport globalMode - View the global mode status'
+        add: '/playerNoNetherPortalTeleport add <player> - Add a player to the blacklist'
+        remove: '/playerNoNetherPortalTeleport remove <player> - Remove a player from the blacklist'
+        clear: '/playerNoNetherPortalTeleport clear - Clear the blacklist'
+        list: '/playerNoNetherPortalTeleport list - View the blacklist'
+
+  logger:
+    serverRuntime:
+      server_runtime: 'Server Runtime'
+
+  validator:
+    enhancedWorldEater:
+      value_range: 'The value must be 0 - 16 or -1'
+    maxClientInteractionReachDistance:
+      value_range: 'The value must be 0 - 512 or -1'
+    maxPlayerBlockInteractionRange:
+      value_range: 'The value must be 0 - 512 or -1'
+    maxPlayerEntityInteractionRange:
+      value_range: 'The value must be 0 - 512 or -1'
+    blockChunkLoaderTimeController:
+      value_range: 'The value must be 1 - 300'
+    blockChunkLoaderRangeController:
+      value_range: 'The value must be 1 - 32'
+    easyGetPitcherPod:
+      value_range: 'The value must be 2 - 100 or 0'
+    renewableNetherScrap:
+      value_range: 'The value must be 0 - 1'
+    experimentalMinecartSpeed:
+      value_range: 'The value must be 0 - 1000 or -1'
+
+    observer:
+      largeEnderChest:
+        switch_tip: '<Carpet AMS Addition> The detection of the Large Ender Chest (largeEnderChest) rule has been enabled, and it will take effect after re-entering the game. To prevent items from being lost, it is recommended to set this rule to be enabled by default'
+      amsNetworkProtocol:
+        need_enable_protocol: '<Carpet AMS Addition> %s has been reset to the default value. The amsNetworkProtocol rule needs to be enabled first'
+      need_restart_server_or_client:
+        is_client_message: '<Carpet AMS Addition> Rule detected: %s configuration changed, will take effect after restarting the client'
+        is_server_message: '<Carpet AMS Addition> Rule detected: %s configuration changed, will take effect after restarting the server'
+
+  carpet_translations:
+    category:
+      AMS: AMS
+      crafting: crafting
+      AMS_chunkload: AMS_chunkload
+      AMS_network: AMS_network
+
+    rule:
+      superBow:
+        desc: Enabling making super bows with both infinite and mending enchants
+      sharedVillagerDiscounts:
+        desc: Share villagers discount to all players
+      fakePeace:
+        desc: Simulation fake Peace, You can customize the dimensions in which it works, or you can customize the combination and use "," to separate
+      extinguishedCampfire:
+        desc: The campfire is extinguished when the player places it
+      netherWaterPlacement:
+        desc: Players can use water buckets to place water in nether
+      blowUpEverything:
+        desc: Set all blocks BlastResistance to 0
+      optimizedDragonRespawn:
+        desc: Optimize dragon respawning
+      safeFlight:
+        desc: players don't get hurt by flying into walls
+      customBlockUpdateSuppressor:
+        desc: Customize a block to be an update suppressor (Not all blocks can be set as update suppressor)
+        extra:
+          '1': 'Command format:'
+          '2': '/carpet customBlockUpdateSuppressor minecraft:BlockName'
+          '3': 'Use the following command to control whether the "amsUpdateSuppressionCrashFix" rule is automatically enabled when this rule is enabled: '
+          '4': '/amsUpdateSuppressionCrashFixForceMode true/false'
+      infiniteTrades:
+        desc: Prevents villager trades from locking up
+      invulnerable:
+        desc: Players will be protected from all damage except Void Damage
+      creativeOneHitKill:
+        desc: Allows players in Creative mode to kill entities in one hit, If the player is sneaking, other entities around the target get killed too
+      largeEnderChest:
+        desc: Doubles the size of your EnderChest
+      bambooModelNoOffset:
+        desc: The block model of bamboo will not generate offset
+      bambooCollisionBoxDisabled:
+        desc: Allow players to pass through bamboo
+      commandCustomAntiFireItems:
+        desc: Use command to control whether any item is fireproof or not
+        extra:
+          '0': 'After enabling the rule, use the "/customAntiFireItems help" command to view the usage instructions'
+      itemAntiExplosion:
+        desc: Dropped items will not be destroyed by explosions
+        extra:
+          '0': '[false] - Disable rule'
+          '1': '[true] - Enable rule'
+          '2': '[no_blast_wave] - Explosion-proof and non-shockwave, the explosion will not push the item'
+      creativeShulkerBoxDropsDisabled:
+        desc: Breaking a shulker box with items in creative mode will not cause drops
+      shulkerHitLevitationDisabled:
+        desc: When hit by a shulker, the player only takes damage and does not gain the levitation effect
+      immuneShulkerBullet:
+        desc: Players are now completely immune to bullets fired by shulkers
+      blueSkullController:
+        desc: Control the probability of wither and emitting blue skull
+        extra:
+          '0': '[SURELY] - Always shoot blue skulls'
+          '1': '[NEVER] - Never shoot blue skull'
+          '2': '[VANILLA] - VANILLA'
+      endermanTeleportRandomlyDisabled:
+        desc: Random teleportation by Enderman is prohibited
+      fasterMovement:
+        desc: Five gears are provided to allow players to move faster
+        extra:
+          '0': You can use fasterMovementController rule to control in which dimensions this rule is effective. By default, it is effective in all dimensions.
+      fasterMovementController:
+        desc: Used to control in which dimensions fasterMovement rule is effective.
+        extra:
+          '0': '[overworld] - Only effective in the Overworld'
+          '1': '[nether] - Only effective in the Nether'
+          '2': '[end] - Only effective in the End'
+          '3': '[all] - Effective in all dimensions'
+      easyWitherSkeletonSkullDrop:
+        desc: 100% Wither Skeleton Skull Drop
+      commandAnvilInteractionDisabled:
+        desc: 'Players cannot open the UI of the Anvil'
+        extra:
+          '0': 'Command: /anvilInteractionDisabled true/false'
+      preventAdministratorCheat:
+        desc: Disable some command to prevent accidentally cheating
+        extra:
+          '0': 'Affects command list: '
+          '1': '/gamemode, /tp, /teleport, /give, /setblock, /summon, /difficulty, /kill, /time, /weather, /fill, /setblock, /enchant, /experience, /advancement, /effect, /data, /defaultgamemode, /gamerule'
+      amsUpdateSuppressionCrashFix:
+        desc: Prevent update suppression from causing server crashes, while providing the coordinates and dimensions where the update suppression occurred
+        extra:
+          '0': '[false] - Disable rule'
+          '1': '[true] - Enable rule'
+          "2": '[silence] - Enable but no send server messages'
+          '3': 'Use the following command to control whether it is forcibly enabled when "customBlockUpdateSuppressor" is enabled, with a permission level of 2:'
+          '4': '/amsUpdateSuppressionCrashFixForceMode true/false'
+      cakeBlockDropOnBreak:
+        desc: When the cake is destroyed, it can drop cake (the cake will only drop when it is intact)
+      noCakeEating:
+        desc: Players are not allowed to consume cake
+      redstoneComponentSound:
+        desc: When players right-click on the redstone component, it will emit a sound
+        extra:
+          '0': 'Affected components: '
+          '1': 'daylight detector, redstone dust, repeater'
+      largeShulkerBox:
+        desc: Doubles the size of your ShulkerBox
+        extra:
+          '0': 'When the server environment switches the rule setting, the server needs to be restarted'
+          '1': 'When the client environment switches the rule settings, the client needs to be restarted'
+      maxPlayerBlockInteractionRange:
+        desc: Change the maximum block interaction distance allowed by the server, set to "-1" to disable this rule
+        extra:
+          '0': 'The range of values: 0 - 512'
+          '1': 'When Minecraft >= 1.20.5, you can use the rule "maxPlayerBlockInteractionRangeScope" to modify its scope'
+          '2': 'Changing a value in global mode requires the player to re-enter the game'
+      maxPlayerEntityInteractionRange:
+        desc: Change the maximum entity interaction distance allowed by the server, set to "-1" to disable this rule
+        extra:
+          '0': 'The range of values: 0 - 512'
+          '1': 'When Minecraft >= 1.20.5, you can use the rule "maxPlayerEntityInteractionRangeScope" to modify its scope'
+          '2': 'Changing a value in global mode requires the player to re-enter the game'
+      maxPlayerBlockInteractionRangeScope:
+        desc: Change the scope of the "maxPlayerBlockInteractionRange" rule
+        extra:
+          '0': '[server] - The client needs to modify the interaction distance on its own, and the server only allows modifications made by the client'
+          '1': '[global] - The distance modification will apply to both the server and the client simultaneously, eliminating the need for separate adjustments by the client'
+      maxPlayerEntityInteractionRangeScope:
+        desc: Change the scope of the "maxPlayerEntityInteractionRange" rule
+        extra:
+          '0': '[server] - The client needs to modify the interaction distance on its own, and the server only allows modifications made by the client'
+          '1': '[global] - The distance modification will apply to both the server and the client simultaneously, eliminating the need for separate adjustments by the client'
+      maxClientInteractionReachDistance:
+        desc: Change the maximum interaction distance allowed by the client, set to "-1" to disable this rule
+        extra:
+          '0': 'The range of values: 0 - 512'
+          '1': 'Need to disable the tweakBlockReachOverride feature in Tweakeroo'
+      commandCustomMovableBlock:
+        desc: Customize the non-pushable block to make it pushable (Container blocks are not supported, and if you need to push containers, you can use Carpet's movableBlockEntities rule)
+        extra:
+          '0': 'After enabling the rule, use the "/customMovableBlock help" command to view the usage instructions'
+      easyMaxLevelBeacon:
+        desc: Activate full-level beacon with just one base block
+      commandCustomBlockBlastResistance:
+        desc: Use commands to customize the explosion resistance of any block (this rule will not take effect when the enhancedWorldEater rule is enabled)
+        extra:
+          '0': 'After enabling the rule, use the "/customBlockBlastResistance help" command to view the usage instructions'
+      regeneratingDragonEgg:
+        desc: Every time a player defeats the Ender Dragon, a dragon egg will be generated
+        extra:
+          '0': 'For Dnsolx eggs'
+      enhancedWorldEater:
+        desc: Make way for the WorldEater by customizing the explosion resistance of the blocks listed below (this rule will override the commandCustomBlockBlastResistance rule when enabled)
+        extra:
+          '0': 'Block list:'
+          '1': 'Blocks with blast resistance < 17.0F, Bedrock, Anvil, End Portal Frame, End Portal, End Gateway'
+      sneakToEditSign:
+        desc: Players can sneak with empty hands to edit already placed signs by using the interact key
+        extra:
+          '0': 'In Minecraft >= 1.20, the behavior is such that players must sneak in order to edit a sign'
+      fancyFakePlayerName:
+        desc: Add green prefixes and suffixes to the fake player summoned by the carpet mod, the prefix doesn't need to be input when using the command, but the suffix is indeed present
+        extra:
+          "0": 'Note: This rule will create a team named with the value you input'
+          '1': 'Example：1024_byteeeee -> [bot] 1024_byteeeee_bot'
+      fakePlayerNoScoreboardCounter:
+        desc: The scoreboard will hide the fake player
+      noFamilyPlanning:
+        desc: Allow players to continuously feed animals to breed them
+      hopperSuctionDisabled:
+        desc: The hopper will not suck in items
+      noEnchantedGoldenAppleEating:
+        desc: Prevent players from accidentally eating Enchanted Golden Apples
+      useItemCooldownDisabled:
+        desc: Remove cooldown time for using items
+      flippinCactusSoundEffect:
+        desc: When the flippinCactus rule is enabled in the Carpet Mod, using the cactus will produce sound effects (providing five different sound options, Setting it to 0 disables the sound effects)
+      undyingCoral:
+        desc: Prevent coral blocks and coral fans from dying
+      enderDragonNoDestroyBlock:
+        desc: Make the Ender Dragon unable to destroy any blocks
+      easyCompost:
+        desc: Make every composting successful
+      easyMineDragonEgg:
+        desc: Makes the dragon egg not teleport, Players can mine dragon eggs to collect them
+      breedableParrots:
+        desc: Customize a food to feed the parrots and breed them (You can also feed them with stones if you really want to)
+      kirinArm:
+        desc: Allowing players to instantly mine all mineable blocks
+      sensibleEnderman:
+        desc: Make Endermen only pick up watermelons and pumpkins
+      endermanPickUpDisabled:
+        desc: Preventing Endermen from picking up blocks
+      mitePearl:
+        desc: Using an Ender Pearl each time will spawn an Endermite
+      stackableDiscounts:
+        desc: Reintroduce the stackable discounts feature in <23w31a
+      commandHere:
+        desc: Use the "/here" command to send the current dimension, coordinates, and corresponding overworld/nether coordinates of your current location and give oneself a 30s glowing effect
+        extra:
+          '0': 'When the client has installed Fuzz Mod, they can click the +H button at the end of the message to highlight the waypoint, and use the \"/coordCompass clear\" command to remove the highlight'
+      commandWhere:
+        desc: Use the "/where" command to get the specified player's dimension, coordinates, and corresponding Overworld/Nether coordinates and give the target player a 30s glowing effect
+        extra:
+          '0': 'When the client has installed Fuzz Mod, they can click the +H button at the end of the message to highlight the waypoint, and use the \"/coordCompass clear\" command to remove the highlight'
+      fakePlayerPickUpController:
+        desc: Two modes are provided to control whether fake player can pick up items
+        extra:
+          '0': '[MainHandOnly] - Only the main hand can pick up items'
+          '1': '[NoPickUp] - Unable to pick up items at all'
+          '2': '[false] - Disable rule'
+      sneakToEatCake:
+        desc: Players can only eat cake while sneaking
+      commandPlayerLeader:
+        desc: Designate one or more players as guides, granting them a glowing effect
+        extra:
+          '0': 'After enabling the rule, use the "/leader help" command to view the usage instructions'
+      commandPacketInternetGroper:
+        desc: player can use the "ping" command in the game
+        extra:
+          '0': 'After enabling the rule, use the "/ping help" command to view the usage instructions'
+      commandPlayerNoNetherPortalTeleport:
+        desc: Players cannot teleport through nether portals
+        extra:
+          '0': 'After enabling the rule, use the "/playerNoNetherPortalTeleport help" command to view the usage instructions'
+      infiniteDurability:
+        desc: Use items without losing durability
+      welcomeMessage:
+        desc: When players join the server, send them a custom message (Use json files to customize messages)
+        extra:
+          '0': 'json location:'
+          '1': '[ save path ]/carpetamsaddition/welcomeMessage.json'
+      commandGetSaveSize:
+        desc: Use the "/getSaveSize" command to get the current save size
+      carpetAlwaysSetDefault:
+        desc: Whenever you set the carpet rule, it will be automatically set to the default value
+      fertilizableSmallFlower:
+        desc: Allow small flowers such as dandelion can also be ripened by bone meal
+      safePointedDripstone:
+        desc: When players land on pointed dripstone, they do not take additional damage from it
+      pointedDripstoneCollisionBoxDisabled:
+        desc: Allow players to pass through pointed dripstone
+      preventEndSpikeRespawn:
+        desc: Prevent end spikes (obsidian spikes in the_end) from spawning
+        extra:
+          '0': '[true] - Prohibited from generating'
+          '1': '[false] - Disable Rule'
+          '2': '[keepEndCrystal] - Preserve crystal generation'
+      foliageGenerateDisabled:
+        desc: The foliage will not generate in any way
+      commandGetSystemInfo:
+        desc: Use the "/getSystemInfo" command to get the system information of the server
+      ironGolemNoDropFlower:
+        desc: Iron golems will not drop flowers
+      easyGetPitcherPod:
+        desc: Players can harvest a random amount of pitcher pods by planting pitcher (The maximum quantity is customizable, while the minimum quantity is fixed at 2)
+        extra:
+          '0': 'The range of values: 2 - 100 or 0'
+      commandGoto:
+        desc: Use the "/goto" command to teleport to the specified dimension and coordinates
+        extra:
+          '0': 'When no coordinates are specified, it will teleport to the corresponding coordinates of the current player location'
+      sendPlayerDeathLocation:
+        desc: When a player dies, a message with their death coordinates and dimension will be broadcasted
+        extra:
+          '0': '[false] - Disable rule'
+          '1': '[all] - Always send messages'
+          '2': '[realPlayerOnly] - Messages will only be sent when real players die'
+          '3': '[fakePlayerOnly] - Messages will only be sent when fake players die'
+          '4': 'When the client has installed Carpet Org Addition, they can click the +H button at the end of the message to highlight the waypoint, and use the /highlight clear command to remove the highlight'
+      perfectInvisibility:
+        desc: When the player is invisible, they will be completely hidden from mobs, even when wearing a full set of armor
+      sneakInvisibility:
+        desc: When the player is sneak, they will be completely hidden from mobs, even when wearing a full set of armor
+      commandCustomCommandPermissionLevel:
+        desc: Customize the permission level of any commands
+        extra:
+          '0': 'After enabling the rule, use the "/customCommandPermissionLevel help" command to view the usage instructions'
+      shulkerGolem:
+        desc: A shulker can be summoned by placing a carved pumpkin on the shulker box
+      headHunter:
+        desc: When a player dies, they will drop their own skull
+      commandGetPlayerSkull:
+        desc: Use the "/getPlayerSkull <player> <count>" command to get a player skull
+      quickVillagerLevelUp:
+        desc: Each time the trading screen is opened, the villager will level up
+      renewableNetheriteScrap:
+        desc: Customize the drop rate of netherite scrap from zombified piglin
+        extra:
+          '0': 'The range of values: 0 - 1'
+      fakePlayerInteractLikeClient:
+        desc: Fix some cases that fake player interact differently from the client
+      strongLeash:
+        desc: The leash will not break due to excessive distance
+      superZombieDoctor:
+        desc: Players can use a Weakness Potion + Golden Apple to instantly convert a Zombie Villager into a Villager
+      fakePlayerUseOfflinePlayerUUID:
+        desc: Let fake players use offline UUIDs
+      superLeash:
+        desc: Villagers and monsters can be leashed as well
+      fullMoonEveryDay:
+        desc: Full moon every day
+      easyRefreshTrades:
+        desc: When a villager has not made a deal with the player before, each time the trade screen is opened, the content sold by the villager will be refreshed
+        extra:
+          '0': 'When the player is holding an emerald block in their main hand, the refresh will not be triggered'
+      jebSheepDropRandomColorWool:
+        desc: When a sheep is named jeb_, shearing its wool will drop wool of a random color
+      cryingObsidianNetherPortal:
+        desc: Nether portals can be constructed using crying obsidian
+      furnaceSmeltingTimeController:
+        desc: 'The time required to control the smelting of items in the furnace (unit: Tick)'
+      fakePlayerDefaultSurvivalMode:
+        desc: When summoning fake players, they are default to survival mode anyway
+      commandGetHeldItemID:
+        desc: Use "/getHeldItemID" command to get item ID of the player main hand item
+      stringDupeReintroduced:
+        desc: Reintroduced the string dupe feature, you can use this rule to continue using the string farm
+      witchRedstoneDustDropController:
+        desc: Set the guaranteed minimum amount of Redstone Dust dropped by witches
+      witchGlowstoneDustDropController:
+        desc: Set the guaranteed minimum amount of Glowstone Dust dropped by witches
+      tntPowerController:
+        desc: Controls the explosive power of TNT, setting it to "-1" to disable the rule
+      meekEnderman:
+        desc: You can casually glance at endermen
+      customizedNetherPortal:
+        desc: Fully customizable Nether portal. after enabled, the Nether portal blocks can be mined, and mining the Nether portal frame or the portal itself will not cause the nether portal to broken
+      commandCarpetExtensionModWikiHyperlink:
+        desc: Some commonly used Carpet extension wiki links are listed. You only need to use the "/carpetExtensionModWikiHyperlink <ExtensionName>" command to get the hyperlink in the chat box, and you can click the link to jump to it
+        extra:
+          '0': As the version is updated, the list of mods will be constantly adjusted
+      commandCustomBlockHardness:
+        desc: Use command to customizing mining hardness for any block
+        extra:
+          '0': 'After enabling the rule, use the "/customBlockBlastResistance helper" command to view the usage instructions'
+          '1': 'When the Carpet AMS Addition is not installed on the client, this rule is completely unavailable'
+      onlyOpCanSpawnRealPlayerInWhitelist:
+        desc: Only OP players can spawn players on the whitelist, regardless of whether the whitelist is enabled
+      itemEntityCreateNetherPortalDisabled:
+        desc: Prevent item entities from creating portals when passing through Nether portals
+      powerfulExpMending:
+        desc: Allow items to receive the Mending effect simply by being in the backpack, without needing to be held in hand
+      commandAtSomeOnePlayer:
+        desc: 'Use /@ command to @ some one player'
+      largeBundle:
+        desc: Let the bundle have a 9x3 or 9x6 UI, and right-click in the hand to open the UI
+        extra:
+          '0': 'This rule does not allow bundle and shulker boxes to be placed in bundle'
+      maxChainUpdateDepth:
+        desc: Modify max chain update depth, Set to "-1" to disable the rule
+      phantomSpawnAlert:
+        desc: Broadcast the news of who summoned the phantoms
+      endPortalChunkLoadDisabled:
+        desc: Entities passing through the End Portal will not cause chunk loading (Available for Minecraft >= 1.20.6)
+      amsNetworkProtocol:
+        desc: The switch of the AMS network protocol
+      commandAmspDebug:
+        desc: Some commands for network communication testing
+#        extra:
+#          '0': 'For usage instructions, refer to the web documentation if you really need it'
+      commandGetClientPlayerFps:
+        desc: Use command to get the FPS of the specified player
+        extra:
+          '0': 'After enabling the rule, use the "/getClientPlayerFps help" command to view the usage instructions'
+      commandSetPlayerPose:
+        desc: Use command to set player pose
+        extra:
+          '0': 'After enabling the rule, use the "/playerPose help" command to view the usage instructions'
+      onlyPlayerCanCreateNetherPortal:
+        desc: Only allow new portals to be generated when players pass through the Nether portal
+      preventServerPause:
+        desc: Prevent server pause after 60s
+      flippinCactusExtras:
+        desc: Enables flippinCactus rules to work on more blocks
+        extra:
+          '0': 'Affected blocks:'
+          '1': 'barrel, chiseled_bookshelf, crafter, shelf'
+      experimentalMinecartSpeed:
+        desc: Set the speed of the experimental minecart
+        extra:
+          '0': 'Enabling this rule will override the game rules'
+      experimentalMinecartEnabled:
+        desc: Enable experimental minecarts
+        extra:
+          '0': 'When the server environment switches the rule setting, the server needs to be restarted'
+          '1': 'When the client environment switches the rule settings, the client needs to be restarted'
+      amsTranslationMode:
+        desc: Switch the translation mode of Carpet AMS Addition
+        extra:
+          '0': '[client] - Prefer sending translated text to the client using the client’s own language'
+          '1': '[server] - Use the language set by the server for all translations'
+
+      # 计划刻催熟规则：
+      scheduledRandomTickCactus:
+        desc: Make cactus accepts scheduled tick as random tick
+      scheduledRandomTickBamboo:
+        desc: Make bamboo accepts scheduled tick as random tick
+      scheduledRandomTickChorusFlower:
+        desc: Make chorus flower accepts scheduled tick as random tick
+      scheduledRandomTickSugarCane:
+        desc: Make sugar cane accepts scheduled tick as random tick
+      scheduledRandomTickStem:
+        desc: Make stems accepts scheduled tick as random tick
+      scheduledRandomTickAllPlants:
+        desc: Make all plants accepts scheduled tick as random tick
+
+      # 区块加载规则
+      commandPlayerChunkLoadController:
+        desc: Control chunk loading for players at any gamemodes
+        extra:
+          '0': 'Command:'
+          '1': '/playerChunkLoading true/false'
+      noteBlockChunkLoader:
+        desc: Load nearby 3x3 chunks for 15 seconds when a note block is triggered, You can use the rules of blockChunkLoaderTimeController and blockChunkLoaderRangeController to control their loading time and range
+        extra:
+          '0': '[bone_block] - When bone_block is on the note_block'
+          '1': '[wither_skeleton_skull] - When wither_skeleton_skull is on the note_block, either placed on the note block or hanging on the wall'
+          '2': '[note_block] - Only note_block'
+          '3': '[false] - Disable rule'
+          '4': 'Due to after 300 ticks without any players in the current dimension on the server, Minecraft will stop entities updates, hoppers in chunks loaded by this rule will cease to function whenever there are no players in the current dimension.'
+          '5': 'You can enable the blockChunkLoaderKeepWorldTickUpdate or keepWorldTickUpdate rules to solve this issue.'
+      bellBlockChunkLoader:
+        desc: Load nearby 3x3 chunks for 15 seconds when a bell is triggered, You can use the rules of blockChunkLoaderTimeController and blockChunkLoaderRangeController to control their loading time and range
+        extra:
+          '0': 'Due to after 300 ticks without any players in the current dimension on the server, Minecraft will stop entities updates, hoppers in chunks loaded by this rule will cease to function whenever there are no players in the current dimension.'
+          '1': 'You can enable the blockChunkLoaderKeepWorldTickUpdate or keepWorldTickUpdate rules to solve this issue.'
+      pistonBlockChunkLoader:
+        desc:  Load nearby 3x3 chunks for 15 seconds when a piston is triggered (Centered on the piston head), You can use the rules of blockChunkLoaderTimeController and blockChunkLoaderRangeController to control their loading time and range
+        extra:
+          '0': '[bone_block] - When bone_block is on the piston'
+          '1': '[bedrock] - When bedrock is under the piston'
+          '2': '[all] - When bone_block is on the piston or bedrock is under the piston'
+          '3': '[false] - Disable rule'
+          '4': 'Due to after 300 ticks without any players in the current dimension on the server, Minecraft will stop entities updates, hoppers in chunks loaded by this rule will cease to function whenever there are no players in the current dimension.'
+          '5': 'You can enable the blockChunkLoaderKeepWorldTickUpdate or keepWorldTickUpdate rules to solve this issue.'
+      blockChunkLoaderKeepWorldTickUpdate:
+        desc: After 300 ticks without any players in the current dimension on the server, Minecraft will stop entities updates, This rule will allow the following rules to bypass this restriction when they are loaded
+        extra:
+          '0': 'Affected rules: '
+          '1': 'noteBlockChunkLoader, pistonBlockChunkLoader, bellBlockChunkLoader'
+      keepWorldTickUpdate:
+        desc: After 300 ticks without any players in the current dimension on the server, Minecraft will stop entities updates, This rule will bypass this restriction
+      blockChunkLoaderTimeController:
+        desc: Used to control the loading time of block loader series rules (need restart server)
+        extra:
+          '0': 'Affected rules: '
+          '1': 'noteBlockChunkLoader, pistonBlockChunkLoader, bellBlockChunkLoader'
+      blockChunkLoaderRangeController:
+        desc: Used to control the loading range of block loader series rules (need restart server)
+        extra:
+          '0': 'Affected rules: '
+          '1': 'noteBlockChunkLoader, pistonBlockChunkLoader, bellBlockChunkLoader'
+
+      # 合成配方规则
+      craftableEnchantedGoldenApples:
+        desc: Enchanted Golden Apples can be crafted with 8 Gold Blocks again
+      betterCraftableBoneBlock:
+        desc: Use nine bones to crafted three bone_blocks
+      craftableElytra:
+        desc: Add elytra recipes in minecraft
+      betterCraftableDispenser:
+        desc: Better craftable dispenser
+      betterCraftablePolishedBlackStoneButton:
+        desc: Use deepslate to crafted polished_blackstone_button in minecraft
+      rottenFleshBurnedIntoLeather:
+        desc: Rotten flesh can be burned into leather in a furnace
+      craftableCarvedPumpkin:
+        desc: Using shears and a pumpkin to craft a carved pumpkin, each crafted carved pumpkin reduces the shears durability by 1 (affected by unbreaking enchantments)
+
+      # 测试用规则
+      testRule:
+        desc: Just for test

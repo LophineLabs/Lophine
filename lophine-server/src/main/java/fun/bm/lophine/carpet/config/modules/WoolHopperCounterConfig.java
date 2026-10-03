@@ -11,10 +11,10 @@ import me.earthme.luminol.enums.EnumRunnableType;
 @ConfigClassInfo(category = EnumConfigCategory.ROOT, name = "hopper_counter", directory = {"carpet"})
 public class WoolHopperCounterConfig {
     @ConfigInfo(name = "hopperCounters")
-    public static boolean hopperCounters = false;
+    public static volatile boolean hopperCounters = false;
 
     @ConfigInfo(name = "hopperCountersUnlimitedSpeed")
-    public static boolean hopperCountersUnlimitedSpeed = false;
+    public static volatile boolean hopperCountersUnlimitedSpeed = false;
 
     @DoNotLoad
     private static CounterCommand counterCommand = null;

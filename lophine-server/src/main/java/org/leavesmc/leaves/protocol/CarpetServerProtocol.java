@@ -41,6 +41,7 @@ public class CarpetServerProtocol implements LeavesProtocol {
     private static final int MAX_CLIENT_COMMAND_RESPONSE_LINES = 12;
     private static final int MAX_CLIENT_COMMAND_RESPONSE_LINE_CODE_POINTS = 512;
     private static final Set<UUID> activePlayers = ConcurrentHashMap.newKeySet();
+    private static final Map<UUID, String> carpetClientVersions = new ConcurrentHashMap<>();
     private static boolean batchingRules = false;
     private static boolean rulesDirty = false;
 
@@ -70,6 +71,7 @@ public class CarpetServerProtocol implements LeavesProtocol {
                 LOGGER.info("Player {} joined with carpet {}", onlinePlayer.getScoreboardName(), carpetVersion);
                 sendServerData(onlinePlayer);
                 activePlayers.add(playerId);
+                carpetClientVersions.put(playerId, carpetVersion);
             }, null, 1L);
             return;
         }
@@ -186,6 +188,7 @@ public class CarpetServerProtocol implements LeavesProtocol {
     @ProtocolHandler.PlayerLeave
     public static void onPlayerLeave(ServerPlayer player) {
         activePlayers.remove(player.getUUID());
+        carpetClientVersions.remove(player.getUUID());
     }
 
     @Override
@@ -197,22 +200,26 @@ public class CarpetServerProtocol implements LeavesProtocol {
         sendServerData(player.getUUID());
     }
 
-    private static void sendServerData(UUID playerId) {
-        ServerPlayer player = MinecraftServer.getServer().getPlayerList().getPlayer(playerId);
-        if (player == null) {
-            activePlayers.remove(playerId);
-            return;
-        }
-
-        CompoundTag data = new CompoundTag();
-        CarpetRules.write(data);
-        player.getBukkitEntity().getScheduler().execute(MinecraftInternalPlugin.INSTANCE, () -> {
-            ServerPlayer onlinePlayer = MinecraftServer.getServer().getPlayerList().getPlayer(playerId);
-            if (onlinePlayer != null) {
-                ProtocolUtils.sendPayloadPacket(onlinePlayer, new CarpetPayload(data));
-            }
-        }, null, 1L);
+    private static void broadcastServerData(UUID playerId) {
+        if (!fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.superSecretSetting) sendServerData(playerId);
     }
+
+    private static void sendServerData(UUID playerId) {
+        var server=MinecraftServer.getServer();
+        if(server==null)return;
+        fun.bm.lophine.carpet.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.AmsNativeCommandEffects.global(server,()->{
+            ServerPlayer player=server.getPlayerList().getPlayer(playerId);
+            if(player==null){activePlayers.remove(playerId);return null;}
+            CompoundTag data=new CompoundTag();CarpetRules.write(data);
+            return new ServerData(player,data);
+        }),snapshot->snapshot==null?java.util.concurrent.CompletableFuture.completedFuture(null)
+            :fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(snapshot.player(),()->{
+                if(!snapshot.player().isRemoved()&&!snapshot.player().hasDisconnected())
+                    fun.bm.lophine.carpet.AmsNativeCommandEffects.packet(snapshot.player(),new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(new CarpetPayload(snapshot.data())));
+                return (Void)null;
+            }));
+    }
+    private record ServerData(ServerPlayer player,CompoundTag data){}
 
     public static class CarpetRules {
 
@@ -226,7 +233,7 @@ public class CarpetServerProtocol implements LeavesProtocol {
         public static void endBatch() {
             batchingRules = false;
             if (rulesDirty) {
-                activePlayers.forEach(CarpetServerProtocol::sendServerData);
+                activePlayers.forEach(CarpetServerProtocol::broadcastServerData);
                 rulesDirty = false;
             }
         }
@@ -239,7 +246,7 @@ public class CarpetServerProtocol implements LeavesProtocol {
         }
 
         public static void register(CarpetRule rule) {
-            rules.put(rule.name, rule);
+            rules.put(rule.identifier + ":" + rule.name, rule);
             markDirty();
         }
 
@@ -256,7 +263,7 @@ public class CarpetServerProtocol implements LeavesProtocol {
             if (batchingRules) {
                 rulesDirty = true;
             } else {
-                activePlayers.forEach(CarpetServerProtocol::sendServerData);
+                activePlayers.forEach(CarpetServerProtocol::broadcastServerData);
             }
         }
     }
@@ -289,6 +296,18 @@ public class CarpetServerProtocol implements LeavesProtocol {
 
         @NotNull
         @Contract("_, _, _ -> new")
+        public static CarpetRule of(String identifier, String name, float value) {
+            return new CarpetRule(identifier, name, Float.toString(value));
+        }
+
+        @NotNull
+        @Contract("_, _, _ -> new")
+        public static CarpetRule of(String identifier, String name, double value) {
+            return new CarpetRule(identifier, name, Double.toString(value));
+        }
+
+        @NotNull
+        @Contract("_, _, _ -> new")
         public static CarpetRule of(String identifier, String name, String value) {
             return new CarpetRule(identifier, name, value);
         }
@@ -316,5 +335,24 @@ public class CarpetServerProtocol implements LeavesProtocol {
         private static final StreamCodec<FriendlyByteBuf, CarpetPayload> CODEC = StreamCodec.composite(
                 ByteBufCodecs.COMPOUND_TAG, CarpetPayload::nbt, CarpetPayload::new
         );
+    }
+    // Lophine - original Carpet server payload endpoints
+    public static boolean isValidCarpetPlayer(ServerPlayer player) {
+        return !fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.superSecretSetting && activePlayers.contains(player.getUUID());
+    }
+
+    public static String getPlayerStatus(ServerPlayer player) {
+        return isValidCarpetPlayer(player) ? "carpet " + carpetClientVersions.getOrDefault(player.getUUID(), "Unknown") : "vanilla";
+    }
+
+    public static void sendCustomCommand(ServerPlayer player, String key, net.minecraft.nbt.Tag tag) {
+        if (!isValidCarpetPlayer(player)) return;
+        CompoundTag payload = new CompoundTag();
+        payload.put(key, tag.copy());
+        Runnable delivery = () -> {
+            if (isValidCarpetPlayer(player) && !player.isRemoved()) ProtocolUtils.sendPayloadPacket(player, new CarpetPayload(payload));
+        };
+        if (ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(player)) delivery.run();
+        else player.getBukkitEntity().taskScheduler.schedule(owned -> delivery.run(), null, 1L);
     }
 }

@@ -57,7 +57,7 @@ import static java.util.Map.entry;
 
 public class HopperCounter {
 
-    private static boolean enabled = false;
+    private static volatile boolean enabled = false;
     private static final Map<DyeColor, HopperCounter> COUNTERS;
 
     static {
@@ -80,32 +80,32 @@ public class HopperCounter {
         this.coloredName = Component.text(color.getName(), TextColor.color(color.getTextColor()));
     }
 
-    public void add(MinecraftServer server, ItemStack stack) {
+    public synchronized void add(MinecraftServer server, ItemStack stack) {
         if (startTick < 0) {
-            startTick = server.overworld().getGameTime();
+            startTick = fun.bm.lophine.carpet.CarpetServerClock.gameTime();
             startMillis = System.currentTimeMillis();
         }
         Item item = stack.getItem();
         counter.put(item, counter.getLong(item) + stack.getCount());
     }
 
-    public void reset(MinecraftServer server) {
+    public synchronized void reset(MinecraftServer server) {
         counter.clear();
-        startTick = server.overworld().getGameTime();
+        startTick = fun.bm.lophine.carpet.CarpetServerClock.gameTime();
         startMillis = System.currentTimeMillis();
     }
 
     public static void resetAll(MinecraftServer server, boolean fresh) {
         for (HopperCounter counter : COUNTERS.values()) {
-            counter.reset(server);
-            if (fresh) {
-                counter.startTick = -1;
+            synchronized (counter) {
+                counter.reset(server);
+                if (fresh) counter.startTick = -1;
             }
         }
     }
 
-    public List<Component> format(MinecraftServer server, boolean realTime) {
-        long ticks = Math.max(realTime ? (System.currentTimeMillis() - startMillis) / 50 : server.overworld().getGameTime() - startTick, -1);
+    public synchronized List<Component> format(MinecraftServer server, boolean realTime) {
+        long ticks = Math.max(realTime ? (System.currentTimeMillis() - startMillis) / 50 : fun.bm.lophine.carpet.CarpetServerClock.gameTime() - startTick, -1);
         String colorName = ServerI18nUtil.getLocalizedText("color.minecraft." + coloredName.content().toLowerCase());
         String minText = ServerI18nUtil.getLocalizedText("lophine.hopper_counter.format.min");
         String realTimeText = realTime ? ServerI18nUtil.getLocalizedText("lophine.hopper_counter.format.real_time") : "";
@@ -340,7 +340,7 @@ public class HopperCounter {
         return (r << 16) + (g << 8) + b;
     }
 
-    public long getTotalItems() {
+    public synchronized long getTotalItems() {
         return counter.isEmpty() ? 0 : counter.values().longStream().sum();
     }
 

@@ -76,6 +76,10 @@ public class EntityUtils {
     }
 
     public static void spawnEntityAndPassengersInWorld(Entity entity, Level world) {
+        if (world instanceof net.minecraft.server.level.ServerLevel serverWorld) {
+            carpetSpawnEntityAndPassengersNativeAsync(entity, serverWorld);
+            return;
+        }
         ImmutableList<Entity> passengers = entity.passengers;
         if (world.addFreshEntity(entity) && !passengers.isEmpty()) {
             for (Entity passenger : passengers) {
@@ -89,6 +93,47 @@ public class EntityUtils {
                 spawnEntityAndPassengersInWorld(passenger, world);
             }
         }
+    }
+
+    /** Native root-add result governs all passengers; no queued false can discard the passenger tail. */
+    public static java.util.concurrent.CompletableFuture<Void> carpetSpawnEntityAndPassengersNativeAsync(Entity entity, net.minecraft.server.level.ServerLevel originalWorld) {
+        var actual = new java.util.concurrent.CompletableFuture<Void>();
+        carpet.script.external.ScarpetNativeWork.record(actual);
+        carpet.script.external.ScarpetNativeWork.trackNative(originalWorld.getServer(), actual);
+        try {
+            var body = carpetSpawnTree(entity, originalWorld);
+            carpet.script.external.ScarpetNativeWork.aliasDependency(actual, body);
+            body.whenComplete((ignored, failure) -> { if (failure == null) actual.complete(null); else actual.completeExceptionally(failure); });
+        } catch (Throwable failure) { actual.completeExceptionally(failure); }
+        return actual;
+    }
+
+    private static <T> java.util.concurrent.CompletableFuture<T> carpetActor(Entity entity, java.util.function.Supplier<T> operation) {
+        var actual = carpet.script.external.ScarpetExplosionActors.entity(entity, () ->
+            carpet.script.external.ScarpetNativeWork.recoverGuestValue(carpet.script.external.ScarpetNativeWork.observeNative(entity, operation)))
+            .thenCompose(value -> value);
+        carpet.script.external.ScarpetNativeWork.record(actual); return actual;
+    }
+
+    private static java.util.concurrent.CompletableFuture<Void> carpetSpawnTree(Entity entity, net.minecraft.server.level.ServerLevel originalWorld) {
+        return carpetActor(entity, () -> entity.passengers).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(passengers ->
+            carpetActor(entity, () -> entity.blockPosition().immutable())
+                .thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(origin ->
+                    fun.bm.lophine.carpet.OrgBlockDropRouting.worldNative(originalWorld, origin,
+                        () -> originalWorld.carpetAddFreshEntityNativeAsync(entity, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.DEFAULT))))
+                .thenCompose(value -> value).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(added -> {
+                    if (!added || passengers.isEmpty()) return java.util.concurrent.CompletableFuture.completedFuture(null);
+                    java.util.concurrent.CompletableFuture<Void> tail = java.util.concurrent.CompletableFuture.completedFuture(null);
+                    for (Entity passenger : passengers) tail = tail.thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored ->
+                        carpetActor(entity, () -> new net.minecraft.world.phys.Vec3(entity.getX(), entity.getY() + entity.getPassengerRidingPosition(passenger).y(), entity.getZ()))
+                            .thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(position -> carpetActor(passenger, () -> {
+                                passenger.snapTo(position.x, position.y, position.z, passenger.getYRot(), passenger.getXRot());
+                                setEntityRotations(passenger, passenger.getYRot(), passenger.getXRot());
+                                carpet.script.external.ScarpetRetiredActors.capture(passenger);
+                                return null;
+                            }))).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignoredPosition -> carpetSpawnTree(passenger, originalWorld)))));
+                    carpet.script.external.ScarpetNativeWork.record(tail); return tail;
+                }))));
     }
 
     public static void setEntityRotations(Entity entity, float yaw, float pitch) {

@@ -1,0 +1,855 @@
+carpetamsaddition:
+  carpet:
+    totalRules:
+      version: '版本'
+      total_rules: '规则总数'
+
+  fuzz:
+    command:
+      highlightCoordButtonHoverText: '使用Fuzz模组高亮路径点，使用/coordCompass clear取消高亮'
+
+  rule:
+    amsUpdateSuppressionCrashFix:
+      msg: '更新抑制位置 @ %s -> [ %s ] | 原因：%s'
+      copy: '复制坐标到剪切板'
+    welcomeMessage:
+      modify_content_in: '在该路径下修改内容：'
+      save_path: '[ 存档文件夹 ]'
+    maxPlayerBlockInteractionRange:
+      disable_command: '<Carpet AMS Addition> 由于已开启maxPlayerBlockInteractionRange规则，该改动不会生效'
+    maxPlayerEntityInteractionRange:
+      disable_command: '<Carpet AMS Addition> 由于已开启maxPlayerEntityInteractionRange规则，该改动不会生效'
+    sendPlayerDeathLocation:
+      location: '死亡位置'
+      copy: '复制坐标到剪切板'
+    phantomSpawnAlert:
+      msg: '§b<phantomSpawnAlert> §r§e%s §r§d召唤了幻翼 §r§e@ §r§a[ %s ]'
+    experimentalMinecartSpeed:
+      vanilla_command_disabled: '<Carpet AMS Addition> 该游戏规则已由 minecartMaxSpeed 地毯规则接管'
+
+  command:
+    commandHelper:
+      refresh_cmd_tree: '<Carpet AMS Addition> 命令树已被刷新'
+
+    playerChunkLoading:
+      no_player_specified: '<commandPlayerChunkLoadController> 没有指定任何玩家'
+      set: '<commandPlayerChunkLoadController> %s 区块加载 %s'
+      chunk_loading_true: '<commandPlayerChunkLoadController> 区块加载: true'
+      chunk_loading_false: '<commandPlayerChunkLoadController> 区块加载: false'
+      help: '/playerChunkLoading [true/false] - 开关玩家自身加载'
+    amsUpdateSuppressionCrashFixForceMode:
+      lazy_mode: '[ lazy 模式 ]'
+      force_mode: '[ force 模式 ]'
+    anvilInteractionDisabled:
+      disable: '[ 铁砧交互已关闭 ]'
+      enable: '[ 铁砧交互已开启 ]'
+    customBlockBlastResistance:
+      modify_set: '<customBlockBlastResistance> %s/%s -> %s/%s'
+      set: '<customBlockBlastResistance> + %s/%s'
+      remove: '<customBlockBlastResistance> - %s/%s'
+      not_found: '<customBlockBlastResistance> %s 不存在 !'
+      removeAll: '<customBlockBlastResistance> 所有自定义方块及其爆炸抗性已从列表删除'
+      list: '[ 方块 / 爆炸抗性 ]'
+      help:
+        set: '/customBlockBlastResistance set <block> <hardness> - 添加或修改方块及其爆炸抗性'
+        remove: '/customBlockBlastResistance remove <block> - 从列表中移除方块'
+        removeAll: '/customBlockBlastResistance removeAll - 移除列表中的所有方块'
+        list: '/customBlockBlastResistance list - 显示所有添加的方块'
+    here:
+      overworld: '主世界'
+      nether: '下界'
+      the_end: '末地'
+      the_end_button_hover: '复制末地坐标'
+      overworld_button_hover: '复制主世界坐标'
+      nether_button_hover: '复制下界坐标'
+    where:
+      overworld: '主世界'
+      nether: '下界'
+      the_end: '末地'
+      who_get_who: '%s 获取了 %s 的位置'
+      the_end_button_hover: '复制末地坐标'
+      overworld_button_hover: '复制主世界坐标'
+      nether_button_hover: '复制下界坐标'
+    leader:
+      add: '<commandPlayerLeader> %s 成为了导游'
+      is_already_leader: '<commandPlayerLeader> %s 已经是一名导游'
+      remove: '<commandPlayerLeader> %s 不再是导游了'
+      is_not_leader: '<commandPlayerLeader> %s 不是一名导游'
+      removeAll: '<commandPlayerLeader> 所有的导游都被解雇了'
+      list_title: '[ 导游列表 ]'
+      help:
+        add: '/leader add <PlayerName> - 添加一名导游'
+        remove: '/leader remove <PlayerName> - 移除一名导游'
+        removeAll: '/leader removeAll - 解雇所有导游'
+        broadcast_leader_pos: '/leader broadcastLeaderPos <player> interval <tick> - 定时广播一名导游的坐标，时间设置为负数停止广播'
+        list: '/leader list - 查看导游列表'
+    ping:
+      stop_ping: '已中断ping操作'
+      active_ping_is_null: '没有正在活动的ping操作'
+      help:
+        ping: '/pings <目标IP/域名> <ping的次数> - ping某个主机'
+        stop: '/pings stop - 中断ping操作'
+    getSaveSize:
+      size_msg: '当前存档大小：'
+      save_success_msg: '[ 保存世界成功 ]'
+      save_fail_msg: '[ 保存世界失败 ]'
+    getSystemInfo:
+      os: '操作系统: %s'
+      os_arch: '架构: %s'
+      available_processors: '可用处理器: %s'
+      max_memory: '总内存: %s'
+      total_memory: '已分配内存: %s'
+      free_memory: '可用内存: %s'
+    customCommandPermissionLevel:
+      modify_set: '<customCommandPermissionLevel> %s %d -> %d'
+      set: '<customCommandPermissionLevel> + %s/%d'
+      remove: '<customCommandPermissionLevel> - %s'
+      not_found: '<customCommandPermissionLevel> 指令: %s 不存在于配置文件中'
+      cant_modify_self: '<customCommandPermissionLevel> 您不能修改该指令的权限'
+      removeAll: '<customCommandPermissionLevel> 已删除所有条目'
+      list_title: '[ 自定义指令权限等级列表 ]'
+      help:
+        set: '/customCommandPermissionLevel set <指令> <权限等级> - 设置某个指令的权限等级'
+        remove: '/customCommandPermissionLevel remove <指令> - 删除某个被修改的指令'
+        refresh: '/customCommandPermissionLevel refresh - 刷新指令树'
+        removeAll: '/customCommandPermissionLevel removeAll - 删除所有被修改的指令'
+        list: '/customCommandPermissionLevel list - 查看被修改的指令列表'
+    customMovableBlock:
+      add: '<customMovableBlock> + %s'
+      already_exists: "<customMovableBlock> %s 已存在"
+      remove: '<customMovableBlock> - %s'
+      not_found: "<customMovableBlock> %s 不存在"
+      removeAll: "<customMovableBlock> 已删除所有条目"
+      list: "[ 可移动方块列表 ]"
+      help:
+        set: '/customMovableBlock add <方块注册名> - 增加一个可移动方块'
+        remove: '/customMovableBlock remove <方块注册名> - 删除一个可移动方块'
+        removeAll: '/customMovableBlock removeAll - 删除所有添加的可移动方块'
+        list: '/customMovableBlock list - 查看可移动方块列表'
+    commandGetHeldItemID:
+      getHeldItemID:
+        copy: '复制到剪切板'
+    customAntiFireItems:
+      add: '<customAntiFireItems> + %s'
+      already_exists: "<customAntiFireItems> 已存在"
+      not_found: "<customAntiFireItems> 不存在"
+      remove: '<customAntiFireItems> - %s'
+      removeAll: "<customAntiFireItems> 已删除所有条目"
+      list_title: "[ 防火物品列表 ]"
+      help:
+        set: '/customAntiFireItems add <物品注册名> - 增加一个防火物品'
+        remove: '/customAntiFireItems remove <物品注册名> - 删除一个防火物品'
+        removeAll: '/customAntiFireItems removeAll - 删除所有添加的防火物品'
+        list: '/customAntiFireItems list - 查看防火物品列表'
+    carpetExtensionModWikiHyperlink:
+      click_to_jump: '点击此链接访问页面: '
+    customBlockHardness:
+      modify_set: '<customBlockHardness> %s/%s -> %s/%s'
+      set: '<customBlockHardness> + %s/%s'
+      remove: '<customBlockHardness> - %s/%s'
+      not_found: '<customBlockHardness> %s 不存在 !'
+      removeAll: '<customBlockHardness> 所有自定义方块及其硬度已从列表删除'
+      list: '[ 方块 / 硬度 ]'
+      default_hardness: '<customBlockHardness> %s 的默认硬度为: %s'
+      help:
+        set: '/customBlockHardness set <block> <hardness> - 添加或修改方块及其硬度'
+        remove: '/customBlockHardness remove <block> - 从列表中移除方块'
+        removeAll: '/customBlockHardness removeAll - 移除列表中的所有方块'
+        get_default_hardness: '/customBlockHardness getDefaultHardness <block> - 查询方块的默认硬度'
+        list: '/customBlockHardness list - 显示所有添加的方块'
+    at:
+      title: '%s @ 了你'
+    getClientPlayerFps:
+      feedback: '%s - FPS: %s'
+      help: '/getClientPlayerFps <player> - 获取指定玩家的FPS'
+    playerPose:
+      set_help: '/playerPose <player> set <pose> - 设置玩家姿势'
+      stop_help: '/playerPose <player> stop - 停止做姿势'
+    amsp:
+      support_client_set_is_none: '<AMSP> 当前没有支持AMSP的客户端'
+      support_client_list_title: '支持AMSP的客户端列表:'
+      server_support_status: '<AMSP> 服务器支持状态: %s'
+      request_client_version: '<AMSP> 第 %s 次请求客户端版本信息...'
+      client_mod_version_success_feedback: '<AMSP> %s 的客户端版本为: %s'
+      client_mod_version_failed_feedback: '<AMSP> 经过 %s 次重试后仍未收到客户端版本信息'
+      get_client_version_waiting: '<AMSP> 已发送客户端版本请求，等待响应...'
+      server_mod_version_feedback: '<AMSP> 服务器 Carpet AMS Addition 版本: %s v%s'
+      deny_client_feedback: '<AMSP> 已禁止 %s 与服务器通过AMSP通信'
+      deny_all_client_feedback: '<AMSP> 已禁止当前所有客户端通过AMSP与服务器进行通信'
+      set_server_support_feedback: '<AMSP> 服务器支持状态已更改为: %s'
+      request_handshake_feedback: '<AMSP> 已向 %s 发出握手请求'
+    playerNoNetherPortalTeleport:
+      globalMode_enable: '<playerNoNetherPortalTeleport> 已开启全局模式'
+      globalMode_disable: '<playerNoNetherPortalTeleport> 已关闭全局模式'
+      globalMode_state: '<playerNoNetherPortalTeleport> 全局模式: %s'
+      add_success: '<playerNoNetherPortalTeleport> 已禁止 %s 通过地狱门进行传送'
+      add_fail: '<playerNoNetherPortalTeleport> %s 已在黑名单中'
+      remove_success: '<playerNoNetherPortalTeleport> %s 已从黑名单中移除'
+      remove_fail: '<playerNoNetherPortalTeleport> %s 不存在于黑名单中'
+      clear_success: '<playerNoNetherPortalTeleport> 已清空黑名单'
+      clear_fail: '<playerNoNetherPortalTeleport> 黑名单为空'
+      list_title: '[ 地狱门传送玩家黑名单 ]'
+      help:
+        globalMode: '/playerNoNetherPortalTeleport globalMode [true/false] - 设置全局模式'
+        globalModeState: '/playerNoNetherPortalTeleport globalMode - 查看全局模式状态'
+        add: '/playerNoNetherPortalTeleport add <player> - 添加某名玩家到黑名单'
+        remove: '/playerNoNetherPortalTeleport remove <player> - 将某名玩家从黑名单中移除'
+        clear: '/playerNoNetherPortalTeleport clear - 清空黑名单'
+        list: '/playerNoNetherPortalTeleport list - 查看黑名单'
+
+  logger:
+    serverRuntime:
+      server_runtime: '服务器运行时间'
+
+  validator:
+    enhancedWorldEater:
+      value_range: '设定的值必须为 0 - 16 或 -1'
+    maxClientInteractionReachDistance:
+      value_range: '设定的值必须为 0 - 512 或 -1'
+    maxPlayerBlockInteractionRange:
+      value_range: '设定的值必须为 0 - 512 或 -1'
+    maxPlayerEntityInteractionRange:
+      value_range: '设定的值必须为 0 - 512 或 -1'
+    blockChunkLoaderTimeController:
+      value_range: '设定的值必须为 1 - 300'
+    blockChunkLoaderRangeController:
+      value_range: '设定的值必须为 1 - 32'
+    easyGetPitcherPod:
+      value_range: '设定的值必须为 1 - 100 或 0'
+    renewableNetherScrap:
+      value_range: '设定的值必须为 0 - 1'
+    experimentalMinecartSpeed:
+      value_range: '设定的值必须为 0 - 1000 或 -1'
+
+  observer:
+    largeEnderChest:
+      switch_tip: '<Carpet AMS Addition> 侦测到开启了大末影箱（largeEnderChest）规则，重新进入游戏后生效，为防止吞掉物品，建议将该规则设置为默认开启'
+    amsNetworkProtocol:
+      need_enable_protocol: '<Carpet AMS Addition> 已将 %s 重置为默认值，需要先启用 amsNetworkProtocol 规则'
+    need_restart_server_or_client:
+      is_client_message: '<Carpet AMS Addition> 侦测到规则：%s设置变化，重启客户端后生效'
+      is_server_message: '<Carpet AMS Addition> 侦测到规则：%s设置变化，重启服务器后生效'
+
+  carpet_translations:
+    category:
+      AMS: AMS
+      crafting: 制造
+      AMS_chunkload: AMS_区块加载
+      AMS_network: AMS_网络
+
+    rule:
+      superBow:
+        name: 超级弓
+        desc: 让弓能同时打上无限和经验修补两种附魔
+      sharedVillagerDiscounts:
+        name: 共享打折
+        desc: 玩家将僵尸村民治疗为村民后的获得的折扣将共享给所有玩家
+      fakePeace:
+        name: 伪和平
+        desc: 伪和平，你可以自定义其生效的维度，也可以自定义生效的维度组合，使用“,”隔开即可
+      extinguishedCampfire:
+        name: 熄灭的篝火
+        desc: 当玩家放置篝火时，篝火处于熄灭状态
+      netherWaterPlacement:
+        name: 地狱可放水
+        desc: 玩家可以在地狱使用水桶放置水
+      blowUpEverything:
+        name: 炸毁所有方块
+        desc: 让所有方块的爆炸抗性为0
+      optimizedDragonRespawn:
+        name: 龙战优化
+        desc: 大幅度优化龙战定位末地门过程，为基于末地门的末地石农场设计
+      safeFlight:
+        name: 安全飞行
+        desc: 玩家使用鞘翅飞行时不会因为撞到墙壁而受到伤害
+      customBlockUpdateSuppressor:
+        name: 自定义方块更新抑制器
+        desc: 自定义一个方块成为更新抑制器（不是所有的方块都能设置为更新抑制器）
+        extra:
+          '0': '命令格式：'
+          '1': '/carpet customBlockUpdateSuppressor minecraft:BlockName'
+          '2': '使用如下指令来控制是否在启用该规则时自动开启"amsUpdateSuppressionCrashFix"规则: '
+          '3': '/amsUpdateSuppressionCrashFixForceMode true/false'
+      infiniteTrades:
+        name: 无限交易
+        desc: 防止村民交易被锁定
+      invulnerable:
+        name: 无懈可击
+        desc: 玩家将免受除虚空伤害外的一切伤害
+      creativeOneHitKill:
+        name: 创造模式一击必杀
+        desc: 当玩家在创造模式下时可以做到一击必杀，当玩家处于潜行状态时，周围的实体也会被杀死
+      largeEnderChest:
+        name: 大末影箱
+        desc: 让你的末影箱容量增加一倍（与大箱子相同）
+      bambooModelNoOffset:
+        name: 竹子模型无偏移
+        desc: 让竹子的模型不会产生偏移
+      bambooCollisionBoxDisabled:
+        name: 禁用竹子碰撞箱
+        desc: 允许玩家穿过竹子
+      commandCustomAntiFireItems:
+        name: 自定义防火物品
+        desc: 用命令控制任何物品是否防火
+        extra:
+          '0': '开启规则后，使用"/customAntiFireItems help"命令查看使用说明'
+      itemAntiExplosion:
+        name: 掉落物防爆
+        desc: 掉落物将不会被爆炸摧毁
+        extra:
+          '0': '[false] - 禁用规则'
+          '1': '[true] - 启用规则'
+          '2': '[no_blast_wave] - 防爆且无冲击波，爆炸将不会推动掉落物'
+      creativeShulkerBoxDropsDisabled:
+        name: 创造模式潜影盒无掉落
+        desc: 当玩家处于创造模式下时，破坏装有物品的潜影盒也不会产生掉落
+      shulkerHitLevitationDisabled:
+        name: 禁止潜影贝给予漂浮效果
+        desc: 玩家被潜影贝击中时只会受到伤害而不会获得漂浮BUFF
+      immuneShulkerBullet:
+        name: 免疫潜影贝飞弹
+        desc: 玩家将完全免疫潜影贝发射的飞弹
+      blueSkullController:
+        name: 凋零蓝头控制器
+        desc: 控制凋零发射蓝色骷髅的概率
+        extra:
+          '0': '[SURELY] - 总是发射蓝头'
+          '1': '[NEVER] - 从不发射蓝头'
+          '2': '[VANILLA] - 原版表现'
+      endermanTeleportRandomlyDisabled:
+        name: 禁止末影人随机传送
+        desc: 禁止末影人随机传送
+      fasterMovement:
+        name: 快速移动
+        desc: 提供了五个挡位让玩家移动速度变快
+        extra:
+          '0': 你可以使用fasterMovementController规则来控制该规则在哪个维度生效，默认所有维度生效
+      fasterMovementController:
+        name: 快速移动规则控制器
+        desc: 用于控制快速移动规则在那个维度生效
+        extra:
+          '0': '[overworld] - 只在主世界生效'
+          '1': '[nether] - 只在地狱生效'
+          '2': '[end] - 只在末地生效'
+          '3': '[all] - 所有维度生效'
+      easyWitherSkeletonSkullDrop:
+        name: 轻松掉落凋零骷髅头
+        desc: 击杀凋零骷髅会百分百掉落凋零骷髅头
+      commandAnvilInteractionDisabled:
+        name: 禁用铁砧交互
+        desc: 玩家无法打开铁砧的UI界面
+        extra:
+          '0': '指令: /anvilInteractionDisabled true/false'
+      preventAdministratorCheat:
+        name: 防止管理员作弊
+        desc: 禁用部分指令以避免op玩家意外地作弊
+        extra:
+          '0': '影响的指令列表: '
+          '1': '/gamemode, /tp, /teleport, /give, /setblock, /summon, /difficulty, /kill, /time, /weather, /fill, /setblock, /enchant, /experience, /advancement, /effect, /data, /defaultgamemode, /gamerule'
+      amsUpdateSuppressionCrashFix:
+        name: 更新抑制崩溃修复
+        desc: 防止更新抑制导致服务器崩溃，同时提供发生更新抑制的坐标与维度
+        extra:
+          '0': '[false] - 禁用规则'
+          '1': '[true] - 启用规则'
+          "2": '[silence] - 启用但不发送服务器消息'
+          '3': '使用如下指令来控制其是否在"customBlockUpdateSuppressor"开启时强制启动，权限等级为2:'
+          '4': '/amsUpdateSuppressionCrashFixForceMode true/false'
+      cakeBlockDropOnBreak:
+        name: 可掉落蛋糕
+        desc: 蛋糕在被破坏时可以掉落蛋糕（蛋糕是完整的情况下才会掉落）
+      noCakeEating:
+        name: 不准吃蛋糕
+        desc: 玩家不可以吃蛋糕
+      redstoneComponentSound:
+        name: 红石元件音效
+        desc: 玩家右键红石元件时会播放声音
+        extra:
+          '0': '影响的元件：'
+          '1': '阳光传感器、红石粉、中继器'
+      largeShulkerBox:
+        name: 大潜影盒
+        desc: 让潜影盒容量增加一倍（与大箱子相同）
+        extra:
+          '0': '服务器环境切换该规则设置时需要重启服务器'
+          '1': '客户端环境切换该规则设置时需要重启客户端'
+      maxPlayerBlockInteractionRange:
+        name: 最大玩家方块交互距离
+        desc: 更改服务器允许玩家与方块的最大交互距离，设置为“-1”禁用该规则
+        extra:
+          '0': '允许设定的范围：0 - 512'
+          '1': 'Minecraft >= 1.20.5 时可以使用maxPlayerBlockInteractionRangeScope规则来修改其作用域'
+          '2': 'global模式下修改值后需要玩家重新进入游戏'
+      maxPlayerEntityInteractionRange:
+        name: 最大玩家实体交互距离
+        desc: 更改服务器允许玩家与实体的最大交互距离，设置为“-1”禁用该规则
+        extra:
+          '0': '允许设定的范围：0 - 512'
+          '1': 'Minecraft >= 1.20.5 时可以使用maxPlayerEntityInteractionRangeScope规则来修改其作用域'
+          '2': 'global模式下修改值后需要玩家重新进入游戏'
+      maxPlayerBlockInteractionRangeScope:
+        name: 最大玩家方块交互距离作用域
+        desc: 更改maxPlayerBlockInteractionRange规则的作用域
+        extra:
+          '0': '[server] - 需要客户端自己对交互距离进行修改，服务端仅对客户端修改放行'
+          '1': '[global] - 距离的修改将同时应用于服务端和客户端，客户端无需单独修改交互距离'
+      maxPlayerEntityInteractionRangeScope:
+        name: 最大玩家实体交互距离作用域
+        desc: 更改maxPlayerEntityInteractionRange规则的作用域
+        extra:
+          '0': '[server] - 需要客户端自己对交互距离进行修改，服务端仅对客户端修改放行'
+          '1': '[global] - 距离的修改将同时应用于服务端和客户端，客户端无需单独修改交互距离'
+      maxClientInteractionReachDistance:
+        name: 客户端最大交互距离
+        desc: 更改客户端允许的最大交互距离，设置为“-1”禁用该规则
+        extra:
+          '0': '允许设定的范围：0 - 512'
+          '1': '需要关闭Tweakeroo的tweakBlockReachOverride功能'
+      commandCustomMovableBlock:
+        name: 自定义可移动方块
+        desc: 可自定义的让不能被推动的方块变得能被推动（不支持容器方块，如果需要推动容器可以使用Carpet的movableBlockEntities规则）
+        extra:
+          '0': '开启规则后，使用"/customMovableBlock help"命令查看使用说明'
+      easyMaxLevelBeacon:
+        name: 简易满级信标
+        desc: 只需一个底座方块就能激活满级信标
+      commandCustomBlockBlastResistance:
+        name: 自定义方块爆炸抗性
+        desc: 使用指令自定义任何方块的爆炸抗性（强化版世界吞噬者(enhancedWorldEater)规则开启时该规则将不会生效）
+        extra:
+          '0': '开启规则后，使用"/customBlockBlastResistance help"命令查看使用说明'
+      regeneratingDragonEgg:
+        name: 再生成龙蛋
+        desc: 玩家每次击败末影龙都会生成一个龙蛋
+        extra:
+          '0': '为了Dnsolx的蛋'
+      enhancedWorldEater:
+        name: 增强型世界吞噬者
+        desc: 通过自定义除以下方块的爆炸抗性来让世界吞噬者一路畅通（该规则开启时，自定义炸毁方块(commandCustomBlockBlastResistance)规则将不会生效）
+        extra:
+          '0': '方块列表：'
+          '1': '爆炸抗性 < 17.0F的方块、基岩、铁砧、末地传送门框架、末地传送门、折跃门'
+      sneakToEditSign:
+        name: 潜行编辑告示牌
+        desc: 玩家可以在潜行状态且双手为空时对已经放置的告示牌按使用键来编辑它
+        extra:
+          '0': 'Minecraft >= 1.20时表现为必须潜行'
+      fancyFakePlayerName:
+        name: 花哨的假人名称
+        desc: 为carpet mod所召唤出来的假人加上绿色的前缀与后缀，输入命令时不用输入前缀，而后缀则是真实存在的
+        extra:
+          "0": '注意：该规则会创建一个名为你输入的值的team'
+          '1': '例：1024_byteeeee -> [bot] 1024_byteeeee_bot'
+      fakePlayerNoScoreboardCounter:
+        name: 假人不计入计分板
+        desc: 计分板将会屏蔽假人
+      noFamilyPlanning:
+        name: 没有计划生育
+        desc: 允许玩家一直喂食动物来繁殖它们
+      hopperSuctionDisabled:
+        name: 禁止漏斗吸入
+        desc: 漏斗将不会吸入物品
+      noEnchantedGoldenAppleEating:
+        name: 不准吃附魔金苹果
+        desc: 防止玩家意外吃掉附魔金苹果
+      useItemCooldownDisabled:
+        name: 禁用物品使用冷却
+        desc: 让使用物品没有冷却时间
+      flippinCactusSoundEffect:
+        name: 仙人掌扳手音效
+        desc: 在开启carpet mod的仙人掌扳手规则时，使用仙人掌扳手会发出声音（提供了五种不同音效，设置为 0 禁用音效）
+      undyingCoral:
+        name: 禁用珊瑚失活
+        desc: 让珊瑚扇和珊瑚块不会因缺水失活
+      enderDragonNoDestroyBlock:
+        name: 禁止末影龙破坏方块
+        desc: 使末影龙不能破坏任何方块
+      easyCompost:
+        name: 轻松堆肥
+        desc: 让每次堆肥都可以成功
+      easyMineDragonEgg:
+        name: 易采集龙蛋
+        desc: 让龙蛋不会瞬移，玩家可以直接挖掉龙蛋来收集它
+      breedableParrots:
+        name: 可繁殖鹦鹉
+        desc: 自定义一种食物来喂食鹦鹉繁殖它们（你也可以用石头来喂它们，如果你真的这么想的话）
+      kirinArm:
+        name: 麒麟臂
+        desc: 让玩家可以瞬间开采所有可挖掘方块
+      sensibleEnderman:
+        name: 懂事的末影人
+        desc: 让末影人只会拾起西瓜和南瓜
+      endermanPickUpDisabled:
+        name: 禁止末影人拾起方块
+        desc: 禁止末影人拾起方块
+      mitePearl:
+        name: 螨虫珍珠
+        desc: 每一次使用末影珍珠都会生成一只末影螨
+      commandHere:
+        name: 我在哪
+        desc: 使用/here命令发送当前自身所在维度、坐标、对应的主世界/下界坐标，同时给予自身30s的发光效果。
+        extra:
+          '0': '当客户端安装了Fuzz模组时，可以单击消息末尾的+H按钮高亮路径点，使用\"/coordCompass clear\"命令来取消高亮'
+      commandWhere:
+        name: 你在哪
+        desc: 使用/where命令获取指定玩家所在维度、坐标、对应的主世界/下界坐标，同时给予目标玩家30s的发光效果。
+        extra:
+          '0': '当客户端安装了Fuzz模组时，可以单击消息末尾的+H按钮高亮路径点，使用\"/coordCompass clear\"命令来取消高亮'
+      fakePlayerPickUpController:
+        name: 假人拾取控制器
+        desc: 提供了两种模式来控制假人是否可以拾取物品
+        extra:
+          '0': '[MainHandOnly] - 仅主手可拾取物品'
+          '1': '[NoPickUp] - 完全无法拾取物品'
+          '2': '[false] - 禁用规则'
+      sneakToEatCake:
+        name: 潜行吃蛋糕
+        desc: 玩家只能在潜行状态下吃蛋糕
+      commandPlayerLeader:
+        name: 玩家导游
+        desc: 指定一名或多名玩家成为导游，使他们拥有发光效果
+        extra:
+          '0': '开启规则后，使用"/leader help"命令查看使用说明'
+      commandPacketInternetGroper:
+        name: ping命令
+        desc: 玩家可以在游戏中使用ping命令
+        extra:
+          '0': '开启规则后，使用"/ping help"命令查看使用说明'
+      commandPlayerNoNetherPortalTeleport:
+        name: 下界传送门不传送玩家
+        desc: 让玩家无法通过下界传送门进行传送
+        extra:
+          '0': '开启规则后，使用"/playerNoNetherPortalTeleport help"命令查看使用说明'
+      infiniteDurability:
+        name: 无限耐久
+        desc: 使用物品不会丢失耐久
+      welcomeMessage:
+        name: 欢迎消息
+        desc: 在玩家进入服务器时发送一条自定义消息给玩家（使用json文件来自定义消息）
+        extra:
+          '0': 'json位置：'
+          '1': '[ 存档文件夹 ]/carpetamsaddition/welcomeMessage.json'
+      commandGetSaveSize:
+        name: 获取存档大小
+        desc: 使用 “/getSaveSize” 命令获取当前存档大小
+      carpetAlwaysSetDefault:
+        name: 地毯规则总是设置为默认
+        desc: 每当你设置carpet规则时，都会自动设置为默认值
+      fertilizableSmallFlower:
+        name: 可施肥小花
+        desc: 使诸如蒲公英的小花也可以被骨粉催熟
+      preventEndSpikeRespawn:
+        name: 禁用末地黑曜石柱重新生成
+        desc: 复活龙时末地的黑曜石柱子不会重新生成
+        extra:
+          '0': '[true] - 禁止生成'
+          '1': '[false] - 禁用规则'
+          '2': '[keepEndCrystal] - 保留水晶生成'
+      safePointedDripstone:
+        name: 安全的滴水石锥
+        desc: 玩家落在滴水石锥上时，不会受到它的附加伤害
+      pointedDripstoneCollisionBoxDisabled:
+        name: 禁用滴水石锥碰撞箱
+        desc: 允许玩家穿过滴水石锥
+      foliageGenerateDisabled:
+        name: 禁止树叶生成
+        desc: 树叶不会以任何方式生成
+      stackableDiscounts:
+        name: 村民折扣叠加
+        desc: 重新引入<23w31a的打骨折机制，让治疗村民的折扣可以叠加
+      commandGetSystemInfo:
+        name: 获取系统信息
+        desc: 使用“/getSystemInfo”命令获取服务器的系统信息
+      ironGolemNoDropFlower:
+        name: 铁傀儡不掉落花
+        desc: 铁傀儡不会掉落花
+      easyGetPitcherPod:
+        name: 轻松获取瓶子草荚果
+        desc: 玩家可以通过种植瓶子草来收获随机数量的瓶子草荚果（其最大数量是自定义的，最小数量为固定2个）
+        extra:
+          '0': '允许设定的范围：2 - 100 或 0'
+      commandGoto:
+        name: goto命令
+        desc: 使用 /goto 命令快速传送到指定维度的指定坐标
+        extra:
+          '0': '没有指定坐标时会传送至当前玩家所在位置的对应坐标'
+      sendPlayerDeathLocation:
+        name: 发送玩家死亡位置
+        desc: 当玩家死亡时，会广播一条包含该玩家死亡坐标以及维度的消息
+        extra:
+          '0': '[false] - 禁用规则'
+          '1': '[all] - 总是发送消息'
+          '2': '[realPlayerOnly] - 只有真实玩家死亡时发送消息'
+          '3': '[fakePlayerOnly] - 只有假人死亡时发送消息'
+          '4': '当客户端安装了Carpet Org Addition时，可以单击消息末尾的H按钮高亮路径点，使用/highlight clear命令来取消高亮'
+      perfectInvisibility:
+        name: 完美隐身
+        desc: 当玩家拥有隐身效果时将对生物完全隐身，即使穿着全套盔甲
+      sneakInvisibility:
+        name: 潜行隐身
+        desc: 当玩家潜行时将对生物完全隐身，即使穿着全套盔甲
+      commandCustomCommandPermissionLevel:
+        name: 自定义命令权限等级
+        desc: 自定义任何命令的权限等级
+        extra:
+          '0': '开启规则后，使用"/customCommandPermissionLevel help"命令查看使用说明'
+      shulkerGolem:
+        name: 潜影贝傀儡
+        desc: 可以通过在潜影盒上放置一个雕刻南瓜来召唤一只潜影贝
+      headHunter:
+        name: 猎头
+        desc: 当玩家死亡时他们会掉落一个自己的头颅
+      commandGetPlayerSkull:
+        name: 获取玩家头颅
+        desc: 使用 “/getPlayerSkull <玩家名> <数量>” 命令来获取一名玩家的头颅
+      quickVillagerLevelUp:
+        name: 快速升级村民
+        desc: 每次打开交易屏幕时村民都会升级
+      renewableNetheriteScrap:
+        name: 可再生下界合金碎片
+        desc: 自定义僵尸猪灵掉落下界合金碎片的概率
+        extra:
+          '0': '允许设定的范围：0 - 1'
+      fakePlayerInteractLikeClient:
+        name: 假人交互同步客户端行为
+        desc: 修复几个假人和盔甲架、矿车、船在特定情况下与客户端相应行为结果不一样的问题
+      strongLeash:
+        name: 强力拴绳
+        desc: 使拴绳不会因为距离过远而断裂
+      superZombieDoctor:
+        name: 超级僵尸医生
+        desc: 玩家可以使用虚弱药水 + 金苹果瞬间将僵尸村民转化为村民
+      fakePlayerUseOfflinePlayerUUID:
+        name: 假玩家使用离线UUID
+        desc: 让假玩家使用离线UUID
+      superLeash:
+        name: 超级拴绳
+        desc: 让村民与怪物同样可以被拴绳栓住
+      fullMoonEveryDay:
+        name: 每天都是满月
+        desc: 每天都是满月
+      easyRefreshTrades:
+        name: 轻松刷新交易
+        desc: 当村民之前没有与玩家达成过交易时，每次打开交易界面都会刷新村民出售的内容
+        extra:
+          '0': '当玩家主手拿着绿宝石块时将不会触发刷新'
+      jebSheepDropRandomColorWool:
+        name: jeb羊掉落随机颜色羊毛
+        desc: 当羊被命名为jeb_后，修剪羊毛会掉落随机颜色的羊毛
+      cryingObsidianNetherPortal:
+        name: 哭泣的黑曜石下界传送门
+        desc: 可以使用哭泣的黑曜石构建下界传送门
+      furnaceSmeltingTimeController:
+        name: 熔炉冶炼时间控制器
+        desc: 控制熔炉冶炼物品所需要的时间（单位：Tick）
+      fakePlayerDefaultSurvivalMode:
+        name: 假人默认生存模式
+        desc: 当召唤假人时，无论如何假人都默认为生存模式
+      commandGetHeldItemID:
+        name: 获取主手物品ID
+        desc: 使用“/getHeldItemID”命令来获取玩家主手物品的物品ID
+      stringDupeReintroduced:
+        name: 重新引入拌线骗特性
+        desc: 重新引入拌线骗特性，可以通过此规则来继续使用刷线机
+      witchRedstoneDustDropController:
+        name: 女巫红石粉掉落控制器
+        desc: 设置女巫掉落红石粉的保底数量
+      witchGlowstoneDustDropController:
+        name: 女巫萤石粉掉落控制器
+        desc: 设置女巫掉落萤石粉的保底数量
+      tntPowerController:
+        name: TNT威力控制器
+        desc: 控制TNT的爆炸威力，设置为"-1"禁用规则
+      meekEnderman:
+        name: 温顺的末影人
+        desc: 你可以随便瞅末影人
+      customizedNetherPortal:
+        name: 客制化地狱门
+        desc: 完全自定义地狱门，开启后，地狱门方块将可以被挖掘且挖掘地狱门框架和地狱门都不会让整个地狱门破碎
+      commandCarpetExtensionModWikiHyperlink:
+        name: 地毯拓展模组Wiki超链接
+        desc: 列举了一些常用Carpet拓展的Wiki链接，你只需要使用"/carpetExtensionModWikiHyperlink <ExtensionName>"指令即可在聊天框中获取到跳转链接，点击链接即可跳转
+        extra:
+          '0': 随着版本更新该规则的拓展模组列表会不断调整
+      commandCustomBlockHardness:
+        name: 自定义方块硬度
+        desc: 使用指令来自定义任何方块的挖掘硬度
+        extra:
+          '0': '开启规则后，使用"/customBlockHardness help"命令来查看使用说明'
+          '1': '客户端没有安装Carpet AMS Addition时，该规则完全不可用'
+      onlyOpCanSpawnRealPlayerInWhitelist:
+        name: 仅OP可召唤白名单中的玩家
+        desc: 只有OP玩家可以召唤在白名单中的玩家，无论白名单是否开启
+      itemEntityCreateNetherPortalDisabled:
+        name: 禁止物品实体创建下界传送门
+        desc: 让物品实体穿过下界传送门时不会创建传送门
+      powerfulExpMending:
+        name: 强效经验修补
+        desc: 让物品只需要在背包内即可受到经验修补的效果，无需拿在手上
+      commandAtSomeOnePlayer:
+        name: '@玩家'
+        desc: '使用/@指令去@某位玩家'
+      largeBundle:
+        name: 大收纳袋
+        desc: 让收纳袋拥有一个9x3或9x6的UI，手持收纳袋右键即可打开UI
+        extra:
+          '0': '该规则不允许在收纳袋中放入收纳袋和潜影盒'
+      maxChainUpdateDepth:
+        name: 最大链式更新深度
+        desc: 修改最大链式更新深度，设置为“-1”禁用规则
+      phantomSpawnAlert:
+        name: 幻翼生成警告
+        desc: 广播谁召唤了幻翼的消息
+      endPortalChunkLoadDisabled:
+        name: 禁用末地门加载
+        desc: 让实体穿过末地门不会发生区块加载（Minecraft >= 1.20.6可用）
+      amsNetworkProtocol:
+        name: AMS网络协议
+        desc: AMS网络协议的开关
+      commandAmspDebug:
+        name: AMSP网络协议Debug指令
+        desc: 一些用于网络通信测试的指令
+#        extra:
+#          '0': '使用说明见网页文档，如果你真的需要的话'
+      commandGetClientPlayerFps:
+        name: 获取客户端玩家FPS
+        desc: 使用指令获取指定客户端玩家的FPS
+        extra:
+          '0': '开启规则后，使用"/getClientPlayerFps help"命令查看使用说明'
+      commandSetPlayerPose:
+        name: 设置玩家姿势
+        desc: 使用指令设置玩家姿势
+        extra:
+          '0': '开启规则后，使用"/playerPose help"命令查看使用说明'
+      onlyPlayerCanCreateNetherPortal:
+        name: 只有玩家可以生成地狱门
+        desc: 只允许玩家穿过地狱门时生成新的地狱门
+      preventServerPause:
+        name: 防止服务器暂停
+        desc: 防止服务器60s后暂停
+      flippinCactusExtras:
+        name: 仙人掌扳手拓展
+        desc: 使仙人掌扳手能适用于更多方块
+        extra:
+          '0': '受影响的方块:'
+          '1': '木桶、雕文书架、合成器、展示架'
+      experimentalMinecartSpeed:
+        name: 实验性矿车速度
+        desc: 设置实验性矿车的速度
+        extra:
+          '0': '启用该规则将覆盖游戏规则'
+      experimentalMinecartEnabled:
+        name: 启用实验性矿车
+        desc: 启用实验性矿车
+        extra:
+          '0': '服务器环境切换该规则设置时需要重启服务器'
+          '1': '客户端环境切换该规则设置时需要重启客户端'
+      amsTranslationMode:
+        name: AMS翻译模式
+        desc: 切换Carpet AMS Addition的翻译模式
+        extra:
+          '0': '[client] - 优先使用客户端自己的语言向客户端发送翻译文本'
+          '1': '[server] - 统一使用服务端设置的语言进行翻译'
+
+      # 计划刻催熟规则：
+      scheduledRandomTickCactus:
+        name: 计划刻催熟仙人掌
+        desc: 当仙人掌方块收到计划刻时仍会给予生长随机刻
+      scheduledRandomTickBamboo:
+        name: 计划刻催熟竹子
+        desc: 当竹子方块收到计划刻时仍会给予生长随机刻
+      scheduledRandomTickChorusFlower:
+        name: 计划刻催熟紫颂花
+        desc: 当紫颂花方块收到计划刻时仍会给予生长随机刻
+      scheduledRandomTickSugarCane:
+        name: 计划刻催熟甘蔗
+        desc: 当甘蔗方块收到计划刻时仍会给予生长随机刻
+      scheduledRandomTickStem:
+        name: 计划刻催熟海带、缠怨藤、垂泪藤
+        desc: 当海带、缠怨藤、垂泪藤方块收到计划刻时仍会给予生长随机刻
+      scheduledRandomTickAllPlants:
+        name: 计划刻催熟所有作物
+        desc: 当所有作物方块收到计划刻时仍会给予生长随机刻
+
+      # 区块加载规则
+      commandPlayerChunkLoadController:
+        name: 区块加载控制
+        desc: 控制任意游戏模式下玩家对周围区块的加载
+        extra:
+          '0': '指令:'
+          '1': '/playerChunkLoading true/false'
+      noteBlockChunkLoader:
+        name: 音符盒区块加载
+        desc: 音符盒方块被激活时将加载周围3x3区块15s，你可以使用blockChunkLoaderTimeController与blockChunkLoaderRangeController规则来控制其加载时间与范围
+        extra:
+          '0': '[bone_block] - 音符盒上方有骨块可以触发加载'
+          '1': '[wither_skeleton_skull] - 音符盒上有凋灵骷髅头（可以是挂在墙上的也可以是放在音符盒上的）时可以触发加载'
+          '2': '[note_block] - 无需条件，只有音符盒即可加载'
+          '3': '[false] - 禁用该规则'
+          '4': '由于在服务器当前维度没有玩家的300tick后，Minecraft会停止实体相关的更新，因此每当当前维度中没有玩家时使用该规则加载的区块中漏斗将会停止工作'
+          '5': '你可以启用blockChunkLoaderKeepWorldTickUpdate或keepWorldTickUpdate规则来解决这个问题'
+      bellBlockChunkLoader:
+        name: 钟区块加载
+        desc: 钟方块被激活时将加载周围3x3区块15s，你可以使用blockChunkLoaderTimeController与blockChunkLoaderRangeController规则来控制其加载时间与范围
+        extra:
+          '0': '由于在服务器当前维度没有玩家的300tick后，Minecraft会停止实体相关的更新，因此每当当前维度中没有玩家时使用该规则加载的区块中漏斗将会停止工作'
+          '1': '你可以启用blockChunkLoaderKeepWorldTickUpdate或keepWorldTickUpdate规则来解决这个问题'
+      pistonBlockChunkLoader:
+        name: 活塞头区块加载
+        desc: 活塞或黏性活塞被激活且能正常伸出时以活塞头将到达的区块为中心加载3x3区块持续15s，你可以使用blockChunkLoaderTimeController与blockChunkLoaderRangeController规则来控制其加载时间与范围
+        extra:
+          '0': '[bone_block] - 当活塞/黏性活塞上方有骨块时'
+          '1': '[bedrock] - 当活塞/黏性活塞下方有基岩时'
+          '2': '[all] - 当活塞/黏性活塞上方有骨块或下方有基岩时'
+          '3': '[false] - 禁用该规则'
+          '4': '由于在服务器当前维度没有玩家的300tick后，Minecraft会停止实体相关的更新，因此每当当前维度中没有玩家时使用该规则加载的区块中漏斗将会停止工作'
+          '5': '你可以启用blockChunkLoaderKeepWorldTickUpdate或keepWorldTickUpdate规则来解决这个问题'
+      blockChunkLoaderKeepWorldTickUpdate:
+        name: 方块区块加载保持实体更新
+        desc: 在服务器当前维度没有玩家的300tick后，Minecraft会停止实体相关的更新，这条规则会让以下规则发生加载时绕过这个限制
+        extra:
+          '0': '受影响的规则：'
+          '1': 'noteBlockChunkLoader、pistonBlockChunkLoader、bellBlockChunkLoader'
+      keepWorldTickUpdate:
+        name: 保持实体更新
+        desc: 在服务器当前维度没有玩家的300tick后，Minecraft会停止实体相关的更新，这条规则会绕过这个限制
+      blockChunkLoaderTimeController:
+        name: 方块加载时长控制器
+        desc: 用于控制方块加载系列规则的加载时长（需要重启服务器）
+        extra:
+          '0': '受影响的规则：'
+          '1': 'noteBlockChunkLoader、pistonBlockChunkLoader、bellBlockChunkLoader'
+      blockChunkLoaderRangeController:
+        name: 方块加载范围控制器
+        desc: 用于控制方块加载系列规则的加载范围（需要重启服务器）
+        extra:
+          '0': '受影响的规则：'
+          '1': 'noteBlockChunkLoader、pistonBlockChunkLoader、bellBlockChunkLoader'
+
+      # 合成配方规则
+      craftableEnchantedGoldenApples:
+        name: 可合成附魔金苹果
+        desc: 使用老版本的方式来合成附魔金苹果（8金块+1苹果）
+      betterCraftableBoneBlock:
+        name: 更好的骨块合成
+        desc: 使用9个骨头可以合成出3个骨块(一点都不卡！)
+      craftableElytra:
+        name: 可合成鞘翅
+        desc: 添加了鞘翅的合成配方
+      betterCraftableDispenser:
+        name: 更好的合成发射器
+        desc: 使用更灵活的配方来合成发射器
+      betterCraftablePolishedBlackStoneButton:
+        name: 更好的合成磨制黑石按钮
+        desc: 使用深板岩来合成磨制黑石按钮
+      rottenFleshBurnedIntoLeather:
+        name: 腐肉烧皮革
+        desc: 腐肉可以在熔炉中烧成皮革
+      craftableCarvedPumpkin:
+        name: 可合成南瓜头
+        desc: 使用剪刀和南瓜合成南瓜头，每合成一个南瓜头剪刀-1耐久（受耐久附魔影响）
+
+      # 测试用规则
+      testRule:
+        name: 测试用规则
+        desc: 仅用于测试

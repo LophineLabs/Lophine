@@ -1,0 +1,209 @@
+package carpet.script.utils;
+
+import carpet.script.external.Vanilla;
+import net.minecraft.commands.CommandResultCallback;
+import net.minecraft.commands.CommandSigningContext;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.PermissionSet;
+import net.minecraft.util.Mth;
+import net.minecraft.util.TaskChainer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.OptionalLong;
+import java.util.function.BinaryOperator;
+import java.util.function.Supplier;
+
+public class SnoopyCommandSource extends CommandSourceStack
+{
+    private final CommandSource output;
+    private final Vec3 position;
+    private final ServerLevel world;
+    private final PermissionSet level;
+    private final CommandSourceStack.NamesProvider namesProvider;
+    private final MinecraftServer server;
+    // skipping silent since snooper is never silent
+    private final Entity entity;
+    private final CommandResultCallback resultConsumer;
+    private final EntityAnchorArgument.Anchor entityAnchor;
+    private final Vec2 rotation;
+    // good stuff
+    private final Component[] error;
+    private final List<Component> chatOutput;
+    private final CommandSigningContext signingContext;
+
+    private final TaskChainer taskChainer;
+
+    public SnoopyCommandSource(CommandSourceStack original, Component[] error, List<Component> chatOutput, OptionalLong[] returnValue)
+    {
+        super(CommandSource.NULL, original.getPosition(), original.getRotation(), original.getLevel(), Vanilla.MinecraftServer_getRunPermissionLevel(original.getServer()),
+                 original.getServer(), original.getEntity()
+                //,false ,(b, i) -> returnValue[0] = OptionalLong.of(i), EntityAnchorArgument.Anchor.FEET, CommandSigningContext.ANONYMOUS, TaskChainer.immediate(original.getServer())
+        );
+        this.output = CommandSource.NULL;
+        this.position = original.getPosition();
+        this.world = original.getLevel();
+        this.level = Vanilla.MinecraftServer_getRunPermissionLevel(original.getServer());
+        this.namesProvider = original.namesProvider;
+        this.server = original.getServer();
+        this.entity = original.getEntity();
+        this.resultConsumer = (b, i) -> returnValue[0] = OptionalLong.of(i);
+        this.entityAnchor = original.getAnchor();
+        this.rotation = original.getRotation();
+        this.error = error;
+        this.chatOutput = chatOutput;
+        this.signingContext = original.getSigningContext();
+        this.taskChainer = TaskChainer.immediate(original.getServer());
+        Vanilla.CommandSourceStack_setupPrivates(this, false, (b, i) -> returnValue[0] = OptionalLong.of(i), EntityAnchorArgument.Anchor.FEET, CommandSigningContext.ANONYMOUS, TaskChainer.immediate(original.getServer()));
+    }
+
+    public SnoopyCommandSource(ServerPlayer player, Component[] error, List<Component> output, int [] result)
+    {
+        super(player.commandSource(), player.position(), player.getRotationVector(),
+                player.level(),
+                player.level().getServer().getProfilePermissions(player.nameAndId()),
+                player.level().getServer(), player);
+        this.output = player.commandSource();
+        this.position = player.position();
+        this.world = player.level();
+        this.level = player.level().getServer().getProfilePermissions(player.nameAndId());
+        this.namesProvider = NamesProvider.FOR_ENTITY;
+        this.server = player.level().getServer();
+        this.entity = player;
+        this.resultConsumer = (b, i) -> result[0] = i;
+        this.entityAnchor = EntityAnchorArgument.Anchor.FEET;
+        this.rotation = player.getRotationVector(); // not a client call really
+        this.error = error;
+        this.chatOutput = output;
+        this.signingContext = CommandSigningContext.ANONYMOUS;
+        this.taskChainer = TaskChainer.immediate(player.level().getServer());
+        Vanilla.CommandSourceStack_setupPrivates(this, false, (b, i) -> result[0] = i, EntityAnchorArgument.Anchor.FEET, CommandSigningContext.ANONYMOUS, TaskChainer.immediate(player.level().getServer()));
+    }
+
+    private SnoopyCommandSource(CommandSource output, Vec3 pos, Vec2 rot, ServerLevel world, PermissionSet level, CommandSourceStack.NamesProvider namesProvider, MinecraftServer server, @Nullable Entity entity, CommandResultCallback consumer, EntityAnchorArgument.Anchor entityAnchor, CommandSigningContext context, TaskChainer chainer,
+                                Component[] error, List<Component> chatOutput
+    )
+    {
+        super(output, pos, rot, world, level,
+                server, entity
+               // , false, consumer, entityAnchor, context, chainer
+        );
+        this.output = output;
+        this.position = pos;
+        this.rotation = rot;
+        this.world = world;
+        this.level = level;
+        this.namesProvider = namesProvider;
+        this.server = server;
+        this.entity = entity;
+        this.resultConsumer = consumer;
+        this.entityAnchor = entityAnchor;
+        this.error = error;
+        this.chatOutput = chatOutput;
+        this.signingContext = context;
+        this.taskChainer = chainer;
+        Vanilla.CommandSourceStack_setupPrivates(this, false, consumer, entityAnchor, context, chainer);
+    }
+
+    @Override
+    public CommandSourceStack withEntity(Entity entity)
+    {
+        return new SnoopyCommandSource(output, position, rotation, world, level, NamesProvider.FOR_ENTITY, server, entity, resultConsumer, entityAnchor, signingContext, taskChainer, error, chatOutput);
+    }
+
+    @Override
+    public CommandSourceStack withPosition(Vec3 position)
+    {
+        return new SnoopyCommandSource(output, position, rotation, world, level, namesProvider, server, entity, resultConsumer, entityAnchor, signingContext, taskChainer, error, chatOutput);
+    }
+
+    @Override
+    public CommandSourceStack withRotation(Vec2 rotation)
+    {
+        return new SnoopyCommandSource(output, position, rotation, world, level, namesProvider, server, entity, resultConsumer, entityAnchor, signingContext, taskChainer, error, chatOutput);
+    }
+
+    @Override
+    public CommandSourceStack withCallback(CommandResultCallback consumer)
+    {
+        return new SnoopyCommandSource(output, position, rotation, world, level, namesProvider, server, entity, consumer, entityAnchor, signingContext, taskChainer, error, chatOutput);
+    }
+
+    @Override
+    public CommandSourceStack withCallback(CommandResultCallback consumer, BinaryOperator<CommandResultCallback> binaryOperator)
+    {
+        CommandResultCallback resultConsumer = binaryOperator.apply(this.resultConsumer, consumer);
+        return this.withCallback(resultConsumer);
+    }
+
+    //@Override // only used in fuctions and we really don't care to track these actually, besides the basic output
+    // also other overrides target ONLY execute command, which withSilent doesn't care bout.
+    //public ServerCommandSource withSilent() { return this; }
+
+    @Override
+    public CommandSourceStack withPermission(PermissionSet level)
+    {
+        return this;
+    }
+
+    @Override
+    public CommandSourceStack withMaximumPermission(PermissionSet level)
+    {
+        return this;
+    }
+
+    @Override
+    public CommandSourceStack withAnchor(EntityAnchorArgument.Anchor anchor)
+    {
+        return new SnoopyCommandSource(output, position, rotation, world, level, namesProvider, server, entity, resultConsumer, anchor, signingContext, taskChainer, error, chatOutput);
+    }
+
+    @Override
+    public CommandSourceStack withSigningContext(CommandSigningContext commandSigningContext, TaskChainer taskChainer)
+    {
+        return new SnoopyCommandSource(output, position, rotation, world, level, namesProvider, server, entity, resultConsumer, entityAnchor, commandSigningContext, taskChainer, error, chatOutput);
+    }
+
+    @Override
+    public CommandSourceStack withLevel(ServerLevel world)
+    {
+        double d = DimensionType.getTeleportationScale(this.world.dimensionType(), world.dimensionType());
+        Vec3 position = new Vec3(this.position.x * d, this.position.y, this.position.z * d);
+        return new SnoopyCommandSource(output, position, rotation, world, level, namesProvider, server, entity, resultConsumer, entityAnchor, signingContext, taskChainer, error, chatOutput);
+    }
+
+    @Override
+    public CommandSourceStack facing(Vec3 position)
+    {
+        Vec3 vec3d = this.entityAnchor.apply(this);
+        double d = position.x - vec3d.x;
+        double e = position.y - vec3d.y;
+        double f = position.z - vec3d.z;
+        double g = Math.sqrt(d * d + f * f);
+        float h = Mth.wrapDegrees((float) -(Mth.atan2(e, g) * 57.2957763671875D));
+        float i = Mth.wrapDegrees((float) (Mth.atan2(f, d) * 57.2957763671875D) - 90.0F);
+        return this.withRotation(new Vec2(h, i));
+    }
+
+    @Override
+    public void sendFailure(Component message)
+    {
+        error[0] = message;
+    }
+
+    @Override
+    public void sendSuccess(Supplier<Component> message, boolean broadcastToOps)
+    {
+        chatOutput.add(message.get());
+    }
+}

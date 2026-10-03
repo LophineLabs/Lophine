@@ -136,6 +136,7 @@ public class ServerPhotographer extends ServerPlayer {
     @Override
     public void die(@NotNull DamageSource damageSource) {
         super.die(damageSource);
+        if (carpet.script.external.ScarpetNativeDeaths.thenOwner(this,()->remove(true))) return;
         remove(true);
     }
 

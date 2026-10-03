@@ -67,20 +67,12 @@ public class BotDataStorage {
         }
     }
 
-    public void save(Player player) {
+    public synchronized void save(Player player) {
         try {
             CompoundTag nbt = TagUtil.saveEntityWithoutId(player);
             File file = new File(this.botDir, player.getStringUUID() + ".dat");
 
-            if (file.exists() && file.isFile()) {
-                if (!file.delete()) {
-                    throw new IOException("Failed to delete file: " + file);
-                }
-            }
-            if (!file.createNewFile()) {
-                throw new IOException("Failed to create nbt file: " + file);
-            }
-            NbtIo.writeCompressed(nbt, file.toPath());
+            writeAtomic(nbt, file.toPath());
         } catch (Exception exception) {
             BotDataStorage.LOGGER.warn("Failed to save fakeplayer data for {}", player.getScoreboardName(), exception);
             return;
@@ -96,7 +88,7 @@ public class BotDataStorage {
         }
     }
 
-    public Optional<ValueInput> load(@NotNull ServerBot bot, ProblemReporter reporter) {
+    public synchronized Optional<ValueInput> load(@NotNull ServerBot bot, ProblemReporter reporter) {
         return this.load(bot.nameAndId().name(), bot.nameAndId().id().toString()).map(nbt -> {
             ValueInput valueInput = TagValueInput.create(reporter, bot.registryAccess(), nbt);
             bot.load(valueInput);
@@ -104,7 +96,7 @@ public class BotDataStorage {
         });
     }
 
-    public void removeSavedData(String name) {
+    public synchronized void removeSavedData(String name) {
         this.savedBotList.remove(name.toLowerCase(Locale.ROOT));
         this.saveBotList();
     }
@@ -128,7 +120,11 @@ public class BotDataStorage {
         return Optional.empty();
     }
 
-    public Optional<CompoundTag> read(String uuid) {
+    public java.nio.file.Path statePath(UUID uuid) {
+        return new File(this.botDir, uuid + ".dat").toPath();
+    }
+
+    public synchronized Optional<CompoundTag> read(String uuid) {
         File file = new File(this.botDir, uuid + ".dat");
         if (file.exists() && file.isFile()) {
             try {
@@ -142,29 +138,51 @@ public class BotDataStorage {
 
     private void saveBotList() {
         try {
-            if (this.botListFile.exists() && this.botListFile.isFile()) {
-                if (!this.botListFile.delete()) {
-                    throw new IOException("Failed to delete file: " + this.botListFile);
-                }
-            }
-            if (!this.botListFile.createNewFile()) {
-                throw new IOException("Failed to create nbt file: " + this.botListFile);
-            }
-            NbtIo.writeCompressed(this.savedBotList, this.botListFile.toPath());
+            writeAtomic(this.savedBotList, this.botListFile.toPath());
         } catch (Exception exception) {
             BotDataStorage.LOGGER.warn("Failed to save player data list");
         }
     }
 
-    public CompoundTag getSavedBotList() {
-        return savedBotList;
+    private static void writeAtomic(CompoundTag nbt, java.nio.file.Path target) throws IOException {
+        java.nio.file.Path staging = java.nio.file.Files.createTempFile(target.getParent(), "carpet-bot-", ".dat.tmp");
+        try {
+            NbtIo.writeCompressed(nbt, staging);
+            try (var channel = java.nio.channels.FileChannel.open(staging, java.nio.file.StandardOpenOption.WRITE)) {
+                channel.force(true);
+            }
+            try {
+                java.nio.file.Files.move(staging, target, java.nio.file.StandardCopyOption.ATOMIC_MOVE,
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            } catch (java.nio.file.AtomicMoveNotSupportedException ignored) {
+                java.nio.file.Files.move(staging, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+        } finally {
+            java.nio.file.Files.deleteIfExists(staging);
+        }
     }
 
-    public UUID getUUIDFromLower(String lowerName) {
+    public synchronized Optional<CompoundTag> readCarpetSavedState(ServerBot bot) {
+        try {
+            CompoundTag savedIndex = NbtIo.readCompressed(this.botListFile.toPath(), NbtAccounter.unlimitedHeap());
+            CompoundTag entry = savedIndex.getCompoundOrEmpty(bot.createState.fullName().toLowerCase(Locale.ROOT));
+            if (!entry.read("uuid", UUIDUtil.CODEC).filter(bot.getUUID()::equals).isPresent()) return Optional.empty();
+            return this.read(bot.getStringUUID());
+        } catch (IOException exception) {
+            LOGGER.warn("Failed to verify fakeplayer index for {}", bot.getScoreboardName(), exception);
+            return Optional.empty();
+        }
+    }
+
+    public synchronized CompoundTag getSavedBotList() {
+        return savedBotList.copy();
+    }
+
+    public synchronized UUID getUUIDFromLower(String lowerName) {
         return savedBotList.getCompoundOrEmpty(lowerName).read("uuid", UUIDUtil.CODEC).orElseThrow();
     }
 
-    public String getNameFromLower(String lowerName) {
+    public synchronized String getNameFromLower(String lowerName) {
         return savedBotList.getCompoundOrEmpty(lowerName).getString("name").orElseThrow();
     }
 }

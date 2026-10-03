@@ -1,0 +1,1652 @@
+carpettisaddition:
+  rule:
+    microTimingTarget:
+      deprecate_not_marker_warning: '[Warning] Not marker_only target types are deprecated and will be removed in the future'
+    synchronizedLightThread:
+      safety_warning:
+        '0': "Dangerous combination between rule synchronizedLightThread and rule lightUpdates detected"
+        '1': "Rule modification has been cancelled to prevent infinite waiting in lighting synchronization"
+        '2': "Related rule values to be set:"
+    tickFreezeDeepCommand:
+      wrapper: '%s (%s)'
+      deep_freeze: deeply frozen
+    yeetUpdateSuppressionCrash:
+      exception_detail:
+        body: 'Update Suppression in %1$s at %2$s'
+        catch_location: 'Exception catch location: %s'
+        name_and_message: 'Exception name: %s, message:'
+      report_message: 'You just caused a server crash: %1$s'
+      catch_location:
+        world_ticking: World Ticking
+        server_async_task: Server Async Task
+        player_entity_ticking: Player Ticking
+        player_removal: Player Removal
+        packet_handling: Packet Handler
+
+  validator:
+    # common validators
+    basic:
+      failure: "Wrong value for rule %1$s: %2$s"
+    positive_number:
+      message: Must be a positive number
+    negative_number:
+      message: Must be a negative number
+    non_negative_number:
+      message: Must be a positive number or 0
+    non_positive_number:
+      message: Must be a negative number or 0
+    ranged_number:
+      message: Must be a number between %1$s and %2$s
+
+    # custom validators
+    fake_player_name_extra:
+      message: You need to give a string without special characters and with a length from 1 to 16
+      warn:
+        found: "Unexpected character found in value \"%1$s\" when applying rule %2$s"
+        blocked: "Re-enter the command again if you do want to use this value"
+        applied: "Accepted anyway cuz you insisted"
+    tiscm_protocol:
+      protocol_not_enabled: '[Warning] TISCM network protocol is not enabled. You need to set rule tiscmNetworkProtocol to true to make rule %1$s work'
+    logger_switch:
+      message: Invalid value for a logger switch rule
+
+  logger:
+    commandBlock:
+      executed: '%1$s executed %2$s'
+      remove_executor: Click to remove %1$s
+    damage:
+      modify_reason:
+        wearing_a_helmet: Wearing a helmet
+        holding_a_shield: Holding a shield
+        recently_hit: Recently Hit
+        difficulty: Difficulty
+        immuse_to_damage: Immuse to damage
+        invulnerable: Invulnerable
+        respawn_protection: Respawn protection
+        pvp_disabled: PVP disabled
+        status_effect: Status effect
+        enchantment: Enchantment
+        armor: Armor
+      type: Type
+      attacker: Attacker
+      source: Source
+      header_message: "%1$s is receiving %2$s damage, damage name: %3$s, initial health: %4$s"
+      due_to: ' due to %1$s'
+      footer_message: "%1$s actually received %2$s damage, remaining health: %3$s"
+    entity:
+      created: '%1$s created'
+      despawned: '%1$s despawned'
+      damage_amount: Damage amount
+    entityIdCounter:
+      header_hover: Entity ID Counter Logger
+      increment: 'Entity %1$s with ID %2$s was instantiated on %3$s'
+      thread_name:
+        server: server thread
+        client: client thread
+        worker: worker thread
+        unknown: unknown thread
+    item:
+      item_stack_size: Item stack size
+    microTiming:
+      gametime: GameTime
+      merged_message: Merged %1$s more same messages
+      common:
+        color: Color
+        indentation: Indentation
+        dimension: Dimension
+        event_source: Event source
+        id: ID
+        entity: Entity
+        type: Type
+        block: Block
+        fluid: Fluid
+        order: Order
+        depth: Depth
+        priority: Priority
+        position: Position
+      util:
+        successful: Successful
+        failed: Failed
+        return_value: Return value
+        direction:
+          down: down
+          up: up
+          north: north
+          south: south
+          west: west
+          east: east
+      stage:
+        unknown: Unknown
+        spawning: Spawning
+        spawning_special: SpawningSpecial
+        world_border: WorldBorder
+        tile_tick: TileTick
+        raid: Raid
+        wandering_trader: WanderingTrader
+        block_event: BlockEvent
+        entity: Entity
+        chunk_tick: ChunkTick
+        tile_entity: TileEntity
+        dragon_fight: DragonFight
+        auto_save: AutoSave
+        async_task: AsyncTask
+        player_action: PlayerAction
+        command_function: CommandFunction
+        network: Network
+        console: Console
+        scarpet: Scarpet
+      stage_detail:
+        thunder: Thunder
+        ice&snow: Ice&Snow
+        randomtick: RandomTick
+      sub_stage:
+        player: Player
+        player_action: Executing player actions sent by clients
+        player_action_pack: Executing action packs from the /player command
+        ticking_weather_effect_entities: Ticking weather effect entities
+        ticking_regular_entities: Ticking regular entities
+        ticking_player_entity: Ticking player entity
+      block_update_type:
+        aka: aka %1$s
+        except: Except
+        blockupdates: BlockUpdates
+        blockupdates_except: BlockUpdates Except
+        stateupdates: StateUpdates
+        comparatorupdates: ComparatorUpdates
+        singleblockupdate: SingleBlockUpdate
+        singlestateupdate: SingleStateUpdate
+      piston_block_event_type:
+        push: Push
+        retract: Retract
+        drop: Drop
+        unknown: Unknown operation
+      event:
+        set_block_state_event_base:
+          flag_data:
+            '0': "emits block updates"
+            '1': "updates listeners"
+            '2': "updates client listeners"
+            '3': "immediately redraws on client"
+            '4': "emits state updates"
+            '5': "drops items in block entity"
+            '6': "caused by piston"
+            '7': "emits light updates"
+            '8': "triggers side effects"
+        block_state_change:
+          state_change: State Change
+          state_change_details: Block state changes details
+          finished: finished
+        block_replace:
+          block_replace: Block Replace
+          finished: finished
+        detect_block_update:
+          emit: emit
+          detected: detected
+          started: started
+          ended: ended
+        emit_block_update:
+          emit: Emit
+          updates: Updates
+          method_name: Method name (yarn)
+          started: started
+          ended: ended
+          self: self
+        execute_block_event:
+          execute: Execute
+          blockevent: BlockEvent
+          ended: ended
+          fail_info:
+            block_changed: Block has changed
+            event_fail: Event Failed
+        execute_tile_tick:
+          execute: Execute
+          ended: ended
+          priority: Priority
+          tiletick_event: TileTick Event
+        piston_compute_push_structure:
+          computed: Computed push structure
+          to_push: 'Blocks to push num: %s'
+          to_destroy: 'Blocks to destroy num: %s'
+          push: Push
+          pull: Pull
+          info:
+            piston_pos: 'Piston position: %s'
+            piston_direction: 'Piston direction: %s'
+            push_type: 'Push type: %s'
+            push_direction: 'Push direction: %s'
+            push_start_pos: 'Push start position: %s'
+          failure_reason:
+            push_limit_exceeded: 'Push limit exceeded'
+            got_immovable_block: 'Got immovable block'
+          failure_pos: 'Position: %s'
+          failure_block: 'Block: %s'
+        schedule_block_event:
+          scheduled: Scheduled
+          blockevent: BlockEvent
+        schedule_block_update:
+          scheduled: Scheduled
+        schedule_tile_tick:
+          scheduled: Scheduled
+          tiletick_event: TileTick Event
+          delay: Delay
+          priority: Priority
+      carpet_logger:
+        rule_hint: Use command %1$s to start logging
+        click_to_execute: Click to execute
+      rule_listener:
+        instant_block_updater_promote: |-
+          Seems like the world's block updater is not an instant type, which might make MicroTiming logs which invoke block updates hard to read
+          You can turn on rule %1$s to enable the 1.19- instant block updater
+        click_to_see_rule: Click to see the rule
+      marker:
+        on_mark: '§aAdded§r MicroTiming marker: %1$s'
+        on_unmark: '§cRemoved§r MicroTiming marker: %1$s'
+        on_type_switch: Switch marker to %1$s mode
+        on_mobility_true: Marker %1$s is set to be §amovable§r
+        on_mobility_false: Marker %1$s is set to be §cimmovable§r
+        cleared: Marker cleared
+    mobcapsLocal:
+      player_not_found: Player %1$s not found
+      local: local
+    movement:
+      header: '%1$s tried to move for %2$s'
+      header_details: 'Movement type: %1$s, Game time: %2$s'
+      delta: delta
+      due_to: ' due to %1$s'
+      footer: '%1$s actually moved for %2$s'
+      movement_type:
+        self: Self logic
+        player: Player action
+        piston: Piston
+        shulker_box: Shulker box
+        shulker: Shulker
+      modification:
+        piston: Piston Limit
+        sneaking: Sneaking
+        collision: Collision
+    phantom:
+      header: Phantom Reminder
+      summon: '%1$s summoned %2$sx %3$s'
+      reminder:
+        time_since_rest: You haven't slept for %1$s minutes
+        regular: '%1$s might spawn after %2$s minutes'
+        now: '%1$s might spawn since now'
+    portalCreation:
+      created: '%1$s created a nether portal at %2$s, time %3$s'
+    projectiles:
+      visualized:
+        info: 'Visualize projectile logger: visualized %1$s tick(s)'
+        not_enabled:
+          warn: 'Visualize projectile logger: visualize is not enabled'
+          hint: 'Click to enable'
+    raid:
+      created: 'Raid created with id %1$s'
+      invalidated: 'Raid (id: %1$s) invalidated, reason: %2$s'
+      bad_omen_level_increased: 'Raid (id: %1$s) increased its bad omen level to %2$s'
+      center_moved: 'Raid (id: %1$s) moves its center to %2$s'
+      raid_invalidate_reason:
+        difficulty_peaceful: difficulty peaceful
+        gamerule_disable: gamerule disable
+        poi_removed_before_spawn: poi removed before spawn
+        time_out: time out
+        raider_cannot_spawn: raider cannot spawn
+        raid_victory: raid victory
+        raid_defeat: raid defeat
+    ticket:
+      added: added
+      removed: removed
+      time_detail: "World: %1$s\nGameTime: %2$s"
+      message: Ticket %1$s %2$s at %3$s
+      ticket_detail: "Level = %1$s\nDuration = %2$s\nEntity processing chunks: %3$s\nLazy processing chunks: %4$s\nBorder chunks: %5$s"
+      permanent: Permanent
+    tickWarp:
+      not_started: Tick warp has not started
+      starter: Starter
+      server: Server
+      average_tps: Average TPS
+      average_mspt: Average MSPT
+      time_info: '%1$smin (in game) / %2$smin (real time)'
+      elapsed_time: Time elapsed
+      estimated_time: Estimated remaining time
+      show_history_header: Last tick warp result (%1$smin ago)
+    wanderingTrader:
+      header_hover: Wandering Trader Logger
+      summon: '%1$s summoned %2$s at %3$s'
+      summon_failed: '%1$s failed to summon %2$s: %3$s'
+      no_spawnable_pos_nearby: fail to locate spawnable position near the player
+      bad_spawn_pos: '%1$s is not a valid spawn position for %2$s'
+    xporb:
+      xp_amount: XP amount
+
+  command:
+    dye_counter:
+      unknown_color: 'Unknown color: %1$s'
+      no_item_yet: No %1$s have been counted yet
+      restart_single: Restarted %1$s %2$s
+      restart_all: Restarted all %1$s
+      counter:
+        not_started: "%1$s %2$s hasn't started counting yet"
+        summary: '%1$s for %2$s %3$s (%4$s min%5$s), total: %6$s, (%7$s/h):'
+        realtime: real time
+        reset: reset
+    info:
+      world:
+        ticking_order: "Ticking order of %1$s dimensions in the game:"
+        weather:
+          data:
+            title: Weather Telemetry Data
+            clearWeatherTime: clearWeatherTime
+            rainTime: rainTime
+            raining: raining
+            thunderTime: thunderTime
+            thundering: thundering
+          forecast:
+            title: Weather Forecast
+            current: 'Current weather: %1$s'
+            clear_sky_duration: Clear sky duration
+            rain_duration: Rain duration
+            thunder_duration: Thunderstorm duration
+            thunder_in: Thunderstorm in %1$s
+            no_thunder: No thunderstorm during this rain
+            rain_in:
+              .: Rain in %1$s
+              with_thunder: It will be a thunderstorm which will last up to %1$s
+              thunder_unknown: Thunderstorm forecast unavailable, you can retry in %1$s
+              no_thunder_for_now: No thunderstorm for at least %1$s
+              maybe_thunder: Potential thunderstorm. Retry in %1$s for further data
+          weathers:
+            clear_sky: Clear sky
+            raining: Raining
+            thundering: Thunderstorm
+      server:
+        entity_id_counter: 'Entity ID counter: %1$s'
+        server_tick_counter: 'Server tick counter: %1$s'
+    manipulate:
+      block:
+        emit:
+          block_update: Emitted %1$s block updates
+          state_update: Emitted %1$s state updates
+          light_update: Emitted %1$s light updates
+        execute:
+          block_event: Executed %1$s block events (type=%2$s data=%3$s)
+          random_tick: Executed %1$s random ticks
+          tile_tick: Executed %1$s random ticks
+          precipitation_tick: Executed %1$s precipitation tick
+      chunk:
+        help:
+          danger_notice: '[NOTICE] Chunk manipulations cannot be undone. Please back up and think twice before execute'
+          root: |-
+            Parameter Descriptions:
+            current: Manipulate the chunk you are in
+            square|chebyshev <r>: Manipulate chunks in a square centered at the player. The length of the square will be 2r + 1
+            circle|euclidean <r>: Manipulate chunks in a circle centered at the player. The diameter of the circle will be 2r + 1
+            at <chunkX> <chunkZ>: Manipulate chunk at given position. The chunk must be loaded
+        common:
+          throttled: Please wait until the ongoing operation finishes
+          nothing_to_abort: There is no ongoing operation to abort
+        erase:
+          loading_summary: Loaded %s chunks for erasing, cost %ss
+          matter_summary: Erased %s chunks, cost %ss, removed %s entities, %s tile entities, %s tile ticks, %s block events, %s chunk sections
+          erase_light: Resetting lights within erased chunks, this might take a while
+          light_summary: 'Light reset done, cost: %ss'
+          light_summary_aborted: 'Light reset aborted, processed %s/%s chunks, cost: %ss'
+          aborting: Aborting task, please wait for the lighting engine to finish remaining tasks
+          all_done: 'Chunk erase manipulation done. Total cost: %ss'
+          all_done_hover: |-
+            Time cost stats:
+            Chunk loading: %ss
+            Content erasing: %ss
+            Light resetting: %ss
+        relight:
+          relight_start: Relighting %s chunks, please wait for the lighting engine to process these updates
+          relight_progress: Relighted %s/%s chunks, speed %s chunk/s, ETA %ss
+          relight_progress_hover: You can use %s command to abort this task
+          aborting: Aborting task, please wait for the lighting engine to finish remaining tasks
+          done: 'Relighted %s chunks. Total cost: %ss'
+          done_aborted: 'Relight aborted, processed %s/%s chunks, cost: %ss'
+          hint: You can use command "/refresh chunk" to refresh lighting updates outside of those given chunks
+        inhabitedTime:
+          set_done: Set inhabited time of %s chunks to %s
+          add_done: Added inhabited time of %s chunks by %s
+          add_summary: 'New inhabited time of these %s chunks: min %s, max %s, avg %s'
+          query_no_chunk: No chunk to query
+          query_summary: 'Inhabited time of %s chunks: min %s, max %s, avg %s'
+      container:
+        help: Manipulate %1$s
+        cannot_manipulate: '%1$s cannot be manipulate now, you may try executing this command in another game phase'
+        entity:
+          name: Entity List
+          revert: Reverted %1$s with %2$s entities
+          shuffle: Shuffled %1$s with %2$s entities
+        tile_entity:
+          name: Tickable tile entity list
+          revert: Reverted %1$s with %2$s tile entities
+          shuffle: Shuffled %1$s with %2$s tile entities
+          query:
+            title: Tile entity information at %1$s
+            type: Type
+            ticking_order: Ticking order
+            not_found: There's no tile entity at %1$s
+          statistic:
+            title: Tile entity statistic in %1$s
+            all: All tile entities
+            ticking: Ticking tile entities
+        tile_tick:
+          name: Tile Tick Queue
+          item_name: tile tick event
+          item_description: "Block: %1$s\nDelay: %2$s\nPriority: %3$s (%4$s)"
+          scheduled: Scheduled %1$s @ %2$s
+          removed: Removed %1$s tile tick events
+        block_event:
+          name: Block Event Queue
+          item_name: block event
+          scheduled: Scheduled %1$s @ %2$s
+          removed: Removed %1$s block events
+      entity:
+        entity_message: '%1$s entities'
+        rename:
+          renamed: Renamed %1$s to %2$s
+          cleared: Cleared custom name of %1$s
+        persistent:
+          not_found: No targets found, please select creature entities
+          title: 'Persistent states:'
+          set: Set persistent state of %1$s to %2$s
+        mounted: Mounted %1$s onto %2$s
+        dismounted: Dismounted %1$s from their vehicles
+        velocity:
+          title: 'Velocity vectors:'
+          added: Added velocity of %1$s with %2$s
+          set: Set velocity of %1$s to %2$s
+      server:
+        entity_id_counter:
+          set: Set entity ID counter to %1$s
+          add: 'Added %1$s to entity ID counter, current value: %2$s'
+          show: 'Current entity ID counter value: %1$s'
+          query: 'Entity ID of %1$s is %2$s'
+          progress_of_overflow_to_negative: 'Progress of overflow to negative: %1$s'
+          progress_of_overflow_to_0: 'Progress of overflow to 0: %1$s'
+    player:
+      action:
+        perTick:
+          permission_not_enough: The “perTick” action mode is unavailable due to insufficient permission. See rule commandPlayerActionPerTick for more information
+          disabled: The "perTick" action mode is disabled. See rule commandPlayerActionPerTick for more information
+        randomly:
+          root:
+            help: |- 
+              A set of random generators to make the player perform the action randomly
+              Available random generators:
+                uniform: Uniform Distribution
+                poisson: Poisson Distribution
+                gaussian: Gaussian / Normal Distribution
+                triangular: Triangular Distribution
+              You can add a §7--simulate§r suffix to the target command to perform a simulating run with the given random generator
+            uniform_deprecation: Deprecated, will be removed when mc1.21 is out. Go use the §7uniform§r subcommand
+          simulate:
+            command: 'Command: %1$s'
+            samples: 'Simulation amount: %1$s'
+            divider: '======================'
+          uniform:
+            help: |-
+              §lUniform Distribution§r, from §7<min>§r to §7<max>§r, closed interval
+              All integers in the [min, max] range have the same probability of being selected: 1 / (max - min + 1)
+          poisson:
+            help: |-
+              §lPoisson Distribution§r, determined by the offset origin point and the maxima point
+              The random generator is implemented with the following steps:
+              1. Make a poisson generator whose λ = §7<maxima>§r - §7<origin>§r
+              2. Shift the probability density function in the positive direction of X by §7<origin>§r
+              3. Done. Now the probability density function starts at x = §7<origin>§r, and has the maxima point at x = 7<maxima>§r
+              The generated random real interval will be rounded to an integer and clamped to range [1, +∞), cuz after all, the player action interval is a positive integer
+              If λ is greater than 50, it will be automatically replaced with an equivalent gaussian generator for better performance
+              Optionally, you can specified a §7<upper_bound>§r for the random value. All values greater than the upper bound will be replaced with the upper bound
+            large_origin: §7<origin>§r cannot be greater than §7<maxima>§r
+          gaussian:
+            help: |-
+              §lGaussian / Normal Distribution§r, determined by μ (§7<mu>§r) and σ (§7<sigma>§r)
+              Probability cheatsheet (in range [μ - r, μ + r]): 
+                r = 0.32σ: 25.0%
+                r = 0.67σ: 50.0%
+                r = 1σ: 68.3%
+                r = 2σ: 95.4%
+                r = 3σ: 99.7%
+              The generated random real interval will be rounded to an integer and clamped to range [1, +∞), cuz after all, the player action interval is a positive integer
+              Optionally, you can specified §7<lower_bound>§r or §7<upper_bound>§r for the random value. All out-of-bound value will be clamped into the bound
+          triangular:
+            help: |-
+              §lTriangular Distribution§r, determined by §7<mode>§r and §7<deviation>§r
+              Value range: [§7<mode>§r - §7<deviation>§r, §7<mode>§r + §7<deviation>§r]
+              Optionally, you can specified §7<lower_bound>§r or §7<upper_bound>§r for the random value. All out-of-bound value will be clamped into the bound
+    sleep:
+      help: Immediately Block the current thread for given duration, can be used to create lag
+      usage: 'Usage: %1$s'
+      warning_header: Warning
+      warning_content: Durations greater than 15s might disconnect clients or even disturb server watch dog
+    speedtest:
+      help:
+        .: 'Test the network connection speed and ping. Test size limit: %sMiB; Client supported: %s'
+        test_size_rule_hint: Configured by rule speedTestCommandMaxTestSize
+        support_state:
+          'no': 'no'
+          partial: partial
+          'yes': 'yes'
+      test_type:
+        download: ↓Download
+        upload: ↑Upload
+        ping: Ping
+      command:
+        abort_no_test: No ongoing speed test session, no need to abort
+        abort_test: Aborting speed test
+        test_size_too_large: Test size %sMiB too large. Should not be greater than %sMiB
+        tiscm_protocol_disabled: Rule tiscmNetworkProtocol is disabled. You need to enable it to start a speed test
+        client_not_supported: Client does not support TISCM speed test. Please install or update the Carpet TIS Addition mod
+        has_ongoing: You have ongoing speed test, please wait until existing test finishes
+      messenger:
+        abort_hover: Click me to abort the test
+        header_hover: TISCM network speed test command %s
+      speed_test:
+        start: 'Test start, size: %sMiB'
+        progress: '[%s] %s%% %sMiB/s'
+        done: 'Test completed, processed %sMiB, cost: %ss, speed: %sMiB/s'
+      ping_test:
+        start: 'Test start, count: %s, interval %sms'
+        pinging: '#%s Pinging client ... %sms'
+        done: 'Test completed, count: %s, average ping: %sms'
+    stop:
+      double_confirmation:
+        message: Execute this command again to confirm the shutdown of the server
+        hover_hint: Double confirmation provided by rule stopCommandDoubleConfirmation to prevent unintended activation
+    raid:
+      raid_count: "Raid Count: %1$s"
+      status:
+        .: Status
+        ongoing: ongoing
+        victory: victory
+        loss: loss
+        stopped: stopped
+      center: Center
+      bad_omen_level: Bad omen level
+      waves: Waves
+      raiders: Raiders
+      none: None
+      no_raid: No raid exists
+    raycast:
+      missed: Raycast missed
+      hit: Raycast hit
+      unknown_enum:
+        shapeMode: Unknown shape mode %1$s
+        fluidMode: Unknown fluid mode %1$s
+    refresh:
+      inventory:
+        done: Inventory refreshed
+      chunk:
+        overloaded: "Refresh failed: Network connection overloaded"
+        too_far: "Selected chunk is not within your view distance"
+        done: "Refreshed %1$s chunks"
+    removeentity:
+      success: Removed %1$s entities
+    spawn:
+      mobcapsLocal:
+        info: 'Local mobcaps of player %1$s:'
+      natualSpawning:
+        unknown_enum.mob_catalogue: Unknown mob catalogue %1$s
+        condition:
+          dimension_only: 'Dimension: %s'
+          catalogue_only: 'Mob catalogue: %s'
+          dimension_and_catalogue: 'Dimension: %s, Mob catalogue: %s'
+        show:
+          show: Listing natual mob spawning states%s
+          enabled: Enabled
+          disabled: Disabled
+          all_dimension: All
+          single.enabled: |-
+            Current state: %s
+            Click to to disable natural spawning in %s for %s
+          single.disabled: |-
+            Current state: %s
+            Click to to enable natural spawning in %s for %s
+          catalogue.enabled: Click to disable natural spawning for %s in all dimensions
+          catalogue.disabled: Click to enable natural spawning for %s in all dimensions
+          dimension.enabled: Click to disable natural spawning for all mob catalogues in %s
+          dimension.disabled: Click to enable natural spawning for all mob catalogues in %s
+          all.enabled: Click to disable natural spawning for all mob catalogues in all dimensions
+          all.disabled: Click to enable natural spawning for all mob catalogues in all dimensions
+        set:
+          done: Changed %1$s mob spawning states in %2$s dimensions in total
+          show_after_set: Listing new natual mob spawning states
+        resetAll:
+          done: Reset all natual spawning states and they are now back to normal -- natual spawning enabled for all
+    supplier_counter:
+      counter_name: supplier counter
+      key_name: item
+      key_name_pc: Items
+    xp_counter:
+      counter_name: XP counter
+      key_name: XP
+      key_name_pc: XP
+      key_hover: |-
+        XP orb value: %1$s
+        XP orb size: %2$s
+      lithium_hopper_sleeping_notice: '[Notes] Lithium hopper sleeping optimization is enabled. You might need to wake up those sleeping xp counter hoppers manually, e.g. by re-placing the hopper'
+
+  tracker:
+    tracker_name_full: '%1$s Tracker'
+    tracking_already_started: '%1$s is already running'
+    tracking_started: '%1$s started'
+    tracking_stopped: '%1$s stopped'
+    tracking_not_started: '%1$s has not started'
+    tracking_restarted: '%1$s restarted'
+    tracked: Tracked %1$s
+    real_time: real time
+    in_game: in game
+    lifetime:
+      name: Lifetime
+      no_result: No result yet
+      specific_result: Lifetime result for %1$s
+      invalid_detail: Invalid statistic detail "%1$s"
+      unknown_entity_type: Unknown entity type "%1$s"
+      filter_info_header: Filter
+      detail_hint: "Click to show detail"
+      spawn_count: Spawn Count
+      removal_count: Removal Count
+      item_count: "Item Count"
+      experience_amount: "Experience Amount"
+      lifetime: Lifetime
+      lifetime_overview: Lifetime Overview
+      lifetime_explain: "The amount of spawning stage passing between entity spawning and entity removal"
+      reasons_for_spawning: Reasons for spawning
+      reasons_for_removal: Reasons for removal
+      minimum_lifetime: Minimum lifetime
+      maximum_lifetime: Maximum lifetime
+      average_lifetime: Average lifetime
+      spawning_position: Spawning Position
+      spawning_position_mr: Spawning Position (most recent)
+      removal_position: Removal Position
+      spawn_reason:
+        # LiteralSpawningReason starts
+        block_drop: Block drop
+        breeding: Breeding
+        command: /summon command
+        container: Dropped from container
+        dispensed: Dispensed by block
+        item: Spawned by item
+        jockey: Jockey
+        jockey_mount: Jockey mount
+        natural: Natural spawning
+        place_block: Placed down a block
+        player_login: Player login
+        portal_pigman: Nether portal pigman spawning
+        raid: Spawned in raid as raider
+        slime: Slime division
+        spawner: Spawned by spawner
+        summon: Be summoned by entity or block
+        vehicle_dismounting: Dismounts from a vehicle
+        zombie_reinforce: Zombie Reinforce
+        # LiteralSpawningReason ends
+        mob_drop: Dropped by %1$s
+        mob_throw: Thrown by %1$s
+        mob_conversion: Converted from %1$s
+        status_effect: Status effect (%1$s)
+        trans_dimension:
+          .: Trans-dimension
+          from: from %1$s
+      removal_reason:
+        # LiteralRemovalReason starts
+        despawn:
+          randomly: Randomly despawn
+          immediately: Immediately despawn
+          difficulty: Despawn for difficulty
+          timeout: Despawn for timeout
+        exploded: Self-exploded
+        hopper: Collected by hopper
+        merge: Entity merging
+        other: Other
+        persistent: Becomes persistent
+        pickup_block: Picked up a block
+        player_logout: Player logout
+        vehicle_mounting: Rides on a vehicle
+        void: Entering void
+        # LiteralRemovalReason ends
+        mob_pickup: Picked up by %1$s
+        mob_conversion: Converted to %1$s
+        death:
+          .: Death
+          damage_source: Death damage source
+        trans_dimension:
+          .: Trans-dimension
+          to: to %1$s
+      help:
+        doc_summary: "A tracker to track lifetime and spawn / removal reasons from all newly spawned and removed entities"
+        complete_doc_hint: "Complete doc %1$s"
+        here: here
+        doc_link: https://carpet.tis.world/docs/commands#lifetime
+      filter:
+        global: Global
+        unsupported:
+          '0': "Unsupported entity filter (no. %1$s)"
+          '1': "Please enter a @e style entity selector"
+        filter_set: 'Entity filter of %1$s is set to %2$s'
+        filter_removed: 'Entity filter of %1$s removed'
+        display: "Entity filter of %1$s is %2$s"
+        display_total: "There are %1$s activated filters"
+        none: None
+        click_to_clear: "Click to clear filter"
+        or: or
+      recorder:
+        enabled: Lifetime data recorder enabled
+        already_enabled: Lifetime data recorder is already enabled
+        need_rerun_to_start: 'Note: You need to restart the current lifetime tracking to start recording'
+        disabled: Lifetime data recorder disabled
+        already_disabled: Lifetime data recorder is already disabled
+        started: 'Lifetime data recorder started, output file: %1$s'
+        total_output_count_too_many: Skipping lifetime data recorder startup, since the total output file count (%1$s) exceeds the configured limit (%2$s)
+        total_output_size_too_large: Skipping lifetime data recorder startup, since the total output file size (%1$s) exceeds the configured limit (%2$s)
+        total_output_size_unknown: Skipping lifetime data recorder startup, since the total output files size could not be retrieved
+        stopped: Lifetime data recorder stopped, recorded %1$s data (%2$s)
+        reload_config_failed: 'Failed to reload lifetime data recorder config: %s'
+        reload_config_ok: Reloaded lifetime data recorder config
+        status:
+          title: Lifetime data recorder
+          status: 'Status: %1$s, %2$s'
+          enabled: 'enabled'
+          disabled: 'disabled'
+          running: 'running'
+          paused: 'paused'
+          stopped: 'stopped'
+          output_file: 'Output file: %1$s'
+          record_written: 'Recorded data: %1$s (%2$s)'
+          bytes_written: 'Written bytes: %1$s (%2$s)'
+          sample_rate: 'Sample rate: %1$s'
+          capped: '%1$s max, %2$s'
+          unlimited: unlimited
+    raid:
+      name: Raid
+      raid_generated: Raid generated
+      invalidate_reasons_statistics: Reasons for invalidation
+      none: None
+
+  util:
+    teleport_hint:
+      .: "Click to teleport to %1$s"
+      dimension: "Dimension"
+    entity_type: 'Entity type: %1$s (%2$s)'
+    language:
+      space: ' '
+    stack_trace:
+      stack_trace: Stack trace
+      stack_trace_hover: Stack trace (click to copy details)
+      deobfuscated_stack_trace: Deobfuscated stack trace
+      deobfuscated_stack_trace_hover: Deobfuscated stack trace (click to copy details)
+      n_more_lines: '... %1$s more lines'
+    entity_filter:
+      dimension: Dimension
+      anchor_pos: Anchor Pos
+    color:
+      white: white
+      orange: orange
+      magenta: magenta
+      light_blue: light blue
+      yellow: yellow
+      lime: lime
+      pink: pink
+      gray: gray
+      light_gray: light gray
+      cyan: cyan
+      purple: purple
+      blue: blue
+      brown: brown
+      green: green
+      red: red
+      black: black
+    mob_category:
+      monster: monster
+      creature: creature
+      ambient: ambient
+      axolotls: axolotls
+      underground_water_creature: underground water creature
+      water_creature: water creature
+      water_ambient: water ambient
+      misc: misc
+    mob_category_short:
+      monster: monster
+      creature: creature
+      ambient: ambient
+      axolotls: axolotls
+      underground_water_creature: uw_creature
+      water_creature: w_creature
+      water_ambient: w_ambient
+      misc: misc
+
+  misc:
+    player_mount_anything_permission_denied: Only OP players are allowed to mount anything
+    log_subscribe_for_other_permission_denied: Only OP players are allowed to control logger subscription for other players
+    logger_rule_switch:
+      permission_denied: Permission denied, you cannot subscribe logger %1$s
+      rule_hint: See rule %1$s for more details
+    rule_disabling:
+      unmatched_minecraft: Disabled by unmatched MC version
+      unsatisfied_restriction: Disabled by unsatisfied mod restrictions
+
+  # ------------------------------------------------------
+  #   Translations below will be passed to fabric carpet
+  # ------------------------------------------------------
+
+  carpet_translations:
+    category:
+      TIS: TIS
+      TISCM_protocol: TISCM Network Protocol
+      logger: logger
+      carpet_mod: CARPET MOD
+      porting: Porting
+
+    rule:
+      antiSpamDisabled:
+        name: antiSpamDisabled
+        desc: 'Disable spamming checks on players, including: chat message cooldown, creative item drop cooldown'
+      blockEventPacketRange:
+        name: blockEventPacketRange
+        desc: Set the range where player will receive a block event packet after a block event fires successfully
+        extra:
+          '0': For piston the packet is used to render the piston movement animation. Decrease it to reduce client's lag
+      blockPlacementIgnoreEntity:
+        name: blockPlacementIgnoreEntity
+        desc: Disable entity collision check before block placement, aka you can place blocks inside entities
+        extra:
+          '0': Works with creative mode players only
+      breedingCooldownDisabled:
+        name: breedingCooldownDisabled
+        desc: Remove breeding cooldown of all kinds of mobs
+      cauldronBlockItemInteractFix:
+        name: cauldronBlockItemInteractFix
+        desc: Make player be able to place block against cauldron block with any filled level
+        extra:
+          '0': Affected Minecraft <= 1.16.x. This annoying behavior is already been fixed in 1.17+
+      chatMessageLengthLimitUnlocked:
+        name: chatMessageLengthLimitUnlocked
+        desc: Unlock the chat message / command string length limit
+        extra:
+          '0': The limit will be raised from 256 to 32000
+          '1': Carpet TIS Addition is required to be installed on the client
+      chunkTickInEntityTickingChunksBackport:
+        name: chunkTickInEntityTickingChunksBackport
+        desc: Backport the feature from Minecraft 1.21.5+ that chunk ticks are performed in all entity ticking chunks, without requiring nearby players to be present
+        extra:
+          '0': This rule only exists in Minecraft < 1.21.5
+      chunkTickSpeed:
+        name: chunkTickSpeed
+        desc: Modify how often the chunk tick occurs per chunk per game tick
+        extra:
+          '0': The default value is 1. Set it to 0 to disables chunk ticks
+          '1': 'Affected game phases: thunder, ice and snow, randomtick'
+          '2': With a value of n, in every chunk every game tick, climate things will tick n times, and randomtick will tick n * randomTickSpeed times per chunk section
+      chunkUpdatePacketThreshold:
+        name: chunkUpdatePacketThreshold
+        desc: The threshold which the game will just send an chunk data packet if the amount of block changes is more than it
+        extra:
+          '0': Increasing this value might reduce network bandwidth usage, and boost client's fps if there are lots of tile entities in a chunk section with a lot of block changes
+          '1': Set it to really high to simulate 1.16+ behavior, which is no chunk packet but only multiple block change packet
+          '2': This rule is only available in <1.16
+      clientSettingsLostOnRespawnFix:
+        name: clientSettingsLostOnRespawnFix
+        desc: Fixed stored client settings are not migrated from the old player entity during player respawn or entering end portal in the end
+        extra:
+          '0': So mods relies on client settings are always able to work correctly, e.g. serverside translation of this mod and worldedit mod
+      commandLifeTime:
+        name: commandLifeTime
+        desc: Enables /lifetime command to track entity lifetime and so on
+        extra:
+          '0': Useful for mob farm debugging etc.
+      commandManipulate:
+        name: commandManipulate
+        desc: Enables /manipulate command for world related manipulation command
+      commandPlayerActionPerTick:
+        name: commandPlayerActionPerTick
+        desc: Enables the "perTick" action mode for the /player <name> <action> command
+        extra:
+          '0': 'This rule is disabled by default since the "perTick" action mode exceeds the capabilities of vanilla behavior: vanilla clients can only perform one action input per tick'
+          '1': However, you can still enable the "perTick" action mode or restrict it to operator players only with this rule
+      commandRaid:
+        name: commandRaid
+        desc: Enables /raid command for raid listing and tracking
+      commandRaycast:
+        name: commandRaycast
+        desc: Enables /raycast command for debugging raycast
+      commandRefresh:
+        name: commandRefresh
+        desc: Enables /refresh command for synchronizing your client to the server
+      commandRemoveEntity:
+        name: commandRemoveEntity
+        desc: Enables /removeentity command for directly erase target entities from the world
+      commandSleep:
+        name: commandSleep
+        desc: Enables /sleep command for creating lag
+      commandSpeedTest:
+        name: commandSpeedTest
+        desc: Enables /speedtest command for network speed test
+        extra:
+          '0': You can change the maximum allowed test size with rule speedTestCommandMaxTestSize
+      creativeHitRemoveEntity:
+        name: creativeHitRemoveEntity
+        desc: Allow creative players to directly remove entities by attacking them
+        extra:
+          '0': When holding a sword and can perform a sweeping attack, entities within the sweep attack range are also removed
+          '1': The entity removal method is the same as the /removeentity command
+      creativeInstantTame:
+        name: creativeInstantTame
+        desc: Let create player tame animals instantly
+        extra:
+          '0': Affects cat, wolf, parrot and horse-like animals
+      creativeNetherWaterPlacement:
+        name: creativeNetherWaterPlacement
+        desc: Allow creative players place water via water bucket in nether
+        extra:
+          '0': Technically this rule applies to all ultrawarm dimensions
+      creativeNoItemCooldown:
+        name: creativeNoItemCooldown
+        desc: Remove the cooldown of items used by the creative players
+        extra:
+          '0': e.g. the 20gt cooldown after throwing an ender pearl
+      creativeOpenContainerForcibly:
+        name: creativeOpenContainerForcibly
+        desc: Allow creative players to open a container even if the container is blocked. e.g. for shulker box
+      debugNbtQueryNoPermission:
+        name: debugNbtQueryNoPermission
+        desc: Remove the permission requirement for the debug nbt request of client's F3+I action
+        extra:
+          '0': In vanilla, the request needs permission level 2 at least
+          '1': Carpet TIS Addition is required to be installed on the client
+      deobfuscateCrashReportStackTrace:
+        name: deobfuscateCrashReportStackTrace
+        desc: Deobfuscate stack traces in crash report
+      dispenserNoItemCost:
+        name: dispenserNoItemCost
+        desc: Dispensers and droppers execute without having the itemstack inside decreased
+        extra:
+          '0': Either dropping and using items do not cost, but dropper transferring item still costs
+      dispensersFireDragonBreath:
+        name: dispensersFireDragonBreath
+        desc: Dispenser can fire dragon breath bottle to create a dragon breath effect cloud
+      dustTrapdoorReintroduced:
+        name: dustTrapdoorReintroduced
+        desc: Reintroduced the dust-trapdoor instant update looper
+        extra:
+          '0': 'This rule actually does the following two things:'
+          '1': 1. Makes opened trapdoors unable to redirect redstone dust (reintroducing the behavior before mc1.20)
+          '2': 2. Makes redstone dust ignore state updates from below (reintroducing the behavior before mc1.20.3)
+      elytraFireworkBoostOnBlockBackport:
+        name: elytraFireworkBoostOnBlockBackport
+        desc: Backport the feature from Minecraft 1.21.6+ where using a firework item on a block while in elytra state will boost the player, instead of launching a firework
+        extra:
+          '0': This rule only exists in Minecraft < 1.21.6
+      elytraFireworkKeepLeashConnection:
+        name: elytraFireworkKeepLeashConnection
+        desc: When enabled, using fireworks during elytra flight will no longer break existing leash connections, restoring the behavior from before mc1.21.6
+        extra:
+          '0': 'Note: This rule does not prevent leash disconnection caused by excessive distance'
+          '1': This rule only exists in Minecraft >= 1.21.6
+      enchantCommandNoRestriction:
+        name: enchantCommandNoRestriction
+        desc: Remove all enchantment restriction checks inside /enchant command
+      endGatewayChunkLoadingBackport:
+        name: endGatewayChunkLoadingBackport
+        desc: When enabled, entity entering the end gateway can load chunks around the exit portal
+        extra:
+          '0': The ticket used to load chunks is a PORTAL ticket with radius set to 3, matching the behavior of nether portal
+          '1': This rule only exists in Minecraft < 1.21, since the feature was introduced to vanilla in 1.21-pre1
+          '2': 'See also: rule endPortalChunkLoadingBackport'
+      endPortalChunkLoadingBackport:
+        name: endPortalChunkLoadingBackport
+        desc: When enabled, entity entering the overworld from the end dimension can load chunks around the obsidian platform
+        extra:
+          '0': The ticket used to load chunks is a PORTAL ticket with radius set to 3, matching the behavior of nether portal
+          '1': This rule only exists in Minecraft < 1.20.5, since the feature was introduced to vanilla in 24w03a (mc1.20.5 snapshot)
+          '2': 'See also: rule endGatewayChunkLoadingBackport'
+      endPortalOpenedSoundDisabled:
+        name: endPortalOpenedSoundDisabled
+        desc: Disable the sound emitted when opening an end portal
+      entityBrainMemoryUnfreedFix:
+        name: entityBrainMemoryUnfreedFix
+        desc: Fix brain memory of living entity staying unfreed after the entity has been removed
+        extra:
+          '0': This could lead to a memory leak if living entities remember other and then get removed continuously and create an endless memory chain in their brains
+          '1': Fixed MC-260605, using the same fix that Mojang implemented in 1.19.4-pre3
+      entityChunkSectionIndexXOverflowFix:
+        name: entityChunkSectionIndexXOverflowFix
+        desc: Fix a bug where IllegalArgumentException will be thrown during entity range queries if the query range intersects any chunk satisfying `(chunkX + 1) % (2 ^ 22) == 2 ^ 21`
+        extra:
+          '0': This rule only exists in Minecraft >= 1.17, since the bug was introduced in 1.17
+      entityIdCounterLoggerSamplingDuration:
+        name: entityIdCounterLoggerSamplingDuration
+        desc: The sampling window length for calculating the entity ID counter increment speed, in game ticks
+      entityInstantDeathRemoval:
+        name: entityInstantDeathRemoval
+        desc: Remove the 20gt delay before living entity removal after death
+        extra:
+          '0': When enabled, living entities will despawn immediately after their death
+      entityMomentumLoss:
+        name: entityMomentumLoss
+        desc: Set it to false to disable entity axis momentum cancellation if it's above 10m/gt when being loaded from disk
+      entityPathNavigationStuckDetectionUseRealTimeReintroduced:
+        name: entityPathNavigationStuckDetectionUseRealTimeReintroduced
+        desc: Reintroduce the realtime stuck detection logic for entity path navigation back to mc < 1.19.3
+        extra:
+          '0': This rule make the stuck detection uses real time instead of the game time again, making it possible to detect lag or tick rate with redstone contraptions
+          '1': It reverts the behavior back to mc < 22w42a (1.19.3 snapshot)
+      entityPlacementIgnoreCollision:
+        name: entityPlacementIgnoreCollision
+        desc: Disable block and entity collision check during entity placement with items
+        extra:
+          '0': 'Affected items: armorstand, end crystal, all kinds of boat'
+          '1': Spawn egg items are not affected
+      entityTrackerDistance:
+        name: entityTrackerDistance
+        desc: The maximum horizontal chebyshev distance (in chunks) for the server to sync entities information to the client
+        extra:
+          '0': Basically this works as a "entity view distance", but will still be limited to the server view distance
+          '1': Set it to a value not less than the server view distance to make the server sync all entities within the view distance to the client
+          '2': Set it to a non-positive value to use vanilla logic
+          '3': Requires chunk reloading to set the new rule value to entities
+      entityTrackerInterval:
+        name: entityTrackerInterval
+        desc: The time interval (in gametick) for the server to sync entities information to the client
+        extra:
+          '0': With a small number e.g. 1, entity information will be synced to the client every 1 gametick, resulting in less-likely client-side entity desync
+          '1': Set it to a non-positive value to use vanilla logic
+          '2': Requires chunk reloading to set the new rule value to entities
+      explosionNoEntityInfluence:
+        name: explosionNoEntityInfluence
+        desc: Explosions won't affect any entity
+        extra:
+          '0': Influences here include damage, acceleration etc.
+      explosionPacketRange:
+        name: explosionPacketRange
+        desc: Set the range where player will receive an explosion packet when an explosion happens
+      failSoftBlockStateParsing:
+        name: failSoftBlockStateParsing
+        desc: Ignore invalid property keys/values in block state arguments used in e.g. /setblock command
+        extra:
+          '0': In vanilla invalid property keys/values cause command failure when parsing, this rule suppresses that
+          '1': Useful during cross-version litematica schematic pasting etc.
+      fakePlayerNamePrefix:
+        name: fakePlayerNamePrefix
+        desc: Add a name prefix for fake players spawned with /player command
+        extra:
+          '0': 'Set it to #none to stop adding a prefix'
+          '1': Which can prevent summoning fake player with illegal names and make player list look nicer
+      fakePlayerNameSuffix:
+        name: fakePlayerNameSuffix
+        desc: Add a name suffix for fake players spawned with /player command
+        extra:
+          '0': 'Set it to #none to stop adding a suffix'
+      fakePlayerTicksLikeRealPlayer:
+        name: fakePlayerTicksLikeRealPlayer
+        desc:
+          Adjust the game phase where carpet's fake player logic and /player action packs are ticked, 
+          to make their behavior as close to real players as possible
+        extra:
+          '0': 'Adjustments, before -> after:'
+          '1': '1. Fake player entity-related ticking: Entity Phase -> Network Phase'
+          '2': '2. /player command action packs: Entity Phase -> Asynchronous Task Phase'
+      fakePlayerRemoteSpawning:
+        name: fakePlayerRemoteSpawning
+        desc: The permission requirement for spawning remotely a fake player with /player command
+        extra:
+          '0': Here "remotely" means spawning a fake player at more than 16m away, or in other dimension
+      farmlandTrampledDisabled:
+        name: farmlandTrampledDisabled
+        desc: Disable farmland being able to be trampled into dirt by mobs
+      fillCommandModeEnhance:
+        name: fillCommandModeEnhance
+        desc: Enhance modes in the /fill command
+        extra:
+          '0': 'Add softreplace mode: Keep the block state of the original block as much as possible. You can use it to replace block type of stairs / slabs etc.'
+      fortressNetherBricksPackSpawningFix:
+        name: fortressNetherBricksPackSpawningFix
+        desc: Fixed fortress mobs pack spawning isolation issue introduced in [1.18.2, 1.21.5)
+        extra:
+          '0': Introduced in 1.18.2-pre1. For pack spawning with first attempt on nether bricks, if the spawning attempt location shifts onto a non-nether brick within the inner bounding box, fortress mobs will not able to spawn, and vice versa
+          '1': 'Example issue impact: rate of wither rose based wither skeleton farm with bedrock ceiling might have the rate decreased if nether bricks pack spawning floor extension is built'
+      flattenTriangularDistribution:
+        name: flattenTriangularDistribution
+        desc: Change all triangle distribution in Minecraft randomizers into uniform distribution
+        extra:
+          '0': With that edge cases are more likely to happen
+      fluidDestructionDisabled:
+        name: fluidDestructionDisabled
+        desc: Disable block destruction by fluid flowing
+        extra:
+          '0': Fluid will just simply stop at the state before destroying the block
+          '1': It's useful to prevent liquid from accidentally flooding your redstone wiring in creative
+      gazeDisguiseEquipmentExtended:
+        name: gazeDisguiseEquipmentExtended
+        desc: Allows players to wear Dragon Heads, Player Heads, or Mob Heads to disguise their gaze from other mobs
+        extra:
+          '0': Wearing these items will provide the same effect as wearing a carved pumpkin, i.e. won't anger enderman and cannot freeze creaking from moving
+      hopperCountersUnlimitedSpeed:
+        name: hopperCountersUnlimitedSpeed
+        desc: Make hopper pointing towards wool has infinity speed to suck in or transfer items with no cooldown
+        extra:
+          '0': Only works when hopperCounters option in Carpet Mod is on
+      hopperNoItemCost:
+        name: hopperNoItemCost
+        desc: Hopper with wool block on top outputs item infinitely without having its item decreased
+        extra:
+          '0': You can use the /scounter command or subscribe to the scounter logger to track the amount of the output items
+          '1': This rule is also the switch of the /scounter command
+      hopperXpCounters:
+        name: hopperXpCounters
+        desc: Make hopper counters be able to count experience amount from XP orbs
+        extra:
+          '0': When enabled, hopper counters will be able to "absorb" XP orbs and count their XP values
+          '1': You can use the /xcounter command or subscribe to the xcounter logger to see the XP counter results
+          '2': This rule is also the switch of the /xcounter command
+      HUDLoggerUpdateInterval:
+        name: HUDLoggerUpdateInterval
+        desc: Overwrite HUD loggers update interval (gametick)
+      instantCommandBlock:
+        name: instantCommandBlock
+        desc: Make command blocks on redstone ores execute command instantly instead of scheduling a 1gt delay TileTick event for execution
+        extra:
+          '0': Only affects normal command blocks
+      instantBlockUpdaterReintroduced:
+        name: instantBlockUpdaterReintroduced
+        desc: Reintroduce the instant block update behavior from versions before 1.19
+        extra:
+          '0': With that update suppression is doable in 1.19+ again
+          '1': It also provides a better logging results with more clear logic for microTiming logger, as clean as versions before 1.19
+          '2': 'WARNING: The 1.19+ vanilla block update logic does not behave exactly the same as the pre-1.19 instant block update logic. Be careful as this may cause redstone breakage. See issues #156 and #236 in TISUnion/Carpet-TIS-Addition'
+      itemEntitySkipMovementDisabled:
+        name: itemEntitySkipMovementDisabled
+        desc: Removed the movement skipping mechanism when ticking of item entity
+        extra:
+          '0': Brings back <=1.13 item entity behavior, where item entities with low velocity on ground still tick movement every gt instead of every 4gt
+          '1': Useful when you require precise item entity movement timing
+          '2': Breaks related redstone devices, e.g. 2no2name's wireless redstone
+      keepMobInLazyChunks:
+        name: keepMobInLazyChunks
+        desc: The mobs in lazy chunks will not despawn
+        extra:
+          '0': This option only have effects between Minecraft 1.15 and 1.16
+      largeBarrel:
+        name: largeBarrel
+        desc: 'The best storage block ever: Large barrel'
+        extra:
+          '0': Two adjacent barrel blocks with their bottom side facing towards each other create a large barrel
+          '1': The behavior and logic of large barrel is just like large chest
+      leaderZombieSpawnWithMaxHealthDisabled:
+        name: leaderZombieSpawnWithMaxHealthDisabled
+        desc: When enabled, leader zombies will spawn with default health (20) instead of their boosted max health
+        extra:
+          '0': It reverts the behavior back to mc < 26.1, where leader zombies had a high max health but still spawned with 20 HP
+      lifeTimeTrackerConsidersMobcap:
+        name: lifeTimeTrackerConsidersMobcap
+        desc: Strategy for lifetime tracker to deal with mob that doesn't count towards mobcap
+        extra:
+          '0': "true: Don't track mobs that don't count towards mobcap, and treat mobs as removal as soon as they don't affect mobcap e.g. right when they pick up some items. Good for mob farm designing"
+          '1': "false: Tracks everything it can track and mark mobs as removal when they actually get removed. Good for raid testing Good for raid testing or non-mobfarms"
+      lightEngineMaxBatchSize:
+        name: lightEngineMaxBatchSize
+        desc: Changes maximum light tasks batch size
+        extra:
+          '0': Allows for a higher light suppression tolerance
+          '1': Setting it to 5 - Default limit defined by the game
+      lightQueueLoggerSamplingDuration:
+        name: lightQueueLoggerSamplingDuration
+        desc: The sampling duration of light queue logger in game tick
+        extra:
+          '0': Affects all data except the queue size displayed in the logger
+      lightUpdates:
+        name: lightUpdates
+        desc: Pause or disable light updates
+        extra:
+          '0': If set to suppressed, no light update can be executed which simulates light suppressor
+          '1': If set to ignored, no light update can be scheduled. It's useful for creating light errors
+          '2': If set to off, no light update can be scheduled or executed
+          '3': '[WARNING] If set to suppressed or off, new chunks cannot be loaded. Then if the server tries to load chunk for player movement or whatever reason the server will be stuck forever'
+      loggerMovement:
+        name: loggerMovement
+        desc: The switch / permission requirement of movement logger
+      manipulateBlockLimit:
+        manipulateBlockLimit: manipulateBlockLimit
+        desc: The maximum amount of affected block of the /manipulate block commands
+      microTiming:
+        name: microTiming
+        desc: Enable the function of MicroTick logger
+        extra:
+          '0': Log and display redstone components actions, block updates and stacktrace with dye item
+          '1': Use /log microTiming to start logging
+          '2': Might impact the server performance when it's on
+          '3': See description of rule microTimingDyeMarker for instructions of dye markers
+          '4': '[deprecated] Use wool blocks and end rods to mark blocks that need to be logged'
+          '5': '[deprecated] End rods will detect block updates and redstone components will show their actions'
+          '6': '[deprecated] - Observer, Piston, EndRod: pointing towards wool'
+          '7': '[deprecated] - Repeater, Comparator, Rail, Button, etc.: placed on wool'
+          '8': '[deprecated] Beside that, a universal block actions logging method is using EndRod on wool block to point on the block you want to log'
+          '9': '[deprecated] Check rule microTimingTarget to see how to switch logging method'
+      microTimingDyeMarker:
+        name: microTimingDyeMarker
+        desc: Allow player to right click with dye item to mark a block to be logged by microTiming logger
+        extra:
+          '0': You need to subscribe to microTiming logger for marking or displaying blocks
+          '1': Right click with the same dye to switch the marker to end rod mode with which block update information will be logged additionally. Right click again to remove the marker
+          '2': Right click a marker with slime ball item to make it movable. It will move to the corresponding new position when the attaching block is moved by a piston
+          '3': Use `/carpet microTimingDyeMarker clear` to remove all markers
+          '4': You can create a named marker by using a renamed dye item. Marker name will be shown in logging message as well
+          '5': You can see boxes at marked blocks with fabric-carpet installed on your client. With carpet-tis-addition installed the marker name could also be seen through blocks
+      microTimingTarget:
+        name: microTimingTarget
+        desc: Modify the way to specify events to be logged in microTiming logger. Events labelled with dye marker are always logged
+        extra:
+          '0': 'labelled: Logs events labelled with wool. Deprecated'
+          '1': 'in_range: Logs events within 32m of any player. Deprecated'
+          '2': 'all: Logs every event. Use with caution. Deprecated'
+          '3': 'marker_only: Logs event labelled with dye marker only. Use it with rule microTimingDyeMarker'
+      microTimingTickDivision:
+        name: microTimingTickDivision
+        desc: Determine the way to divide game ticks
+        extra:
+          '0': 'world_timer: Divides at Overworld timer increment'
+          '1': 'player_action: Divides at the beginning of player action'
+      minecartFullDropBackport:
+        name: minecartFullDropBackport
+        desc: Backport the feature from Minecraft 1.19+ that minecart entity drops the full cart item on destroy
+        extra:
+          '0': This rule only exists in Minecraft < 1.19
+      minecartPlaceableOnGround:
+        name: minecartPlaceableOnGround
+        desc: Make minecart being able to be placed directly on ground without rails, like boat
+      minecartTakePassengerMinVelocity:
+        name: minecartTakePassengerMinVelocity
+        desc: Determine the minimum required horizontal velocity (m/gt) for a minecart to pick up nearby entity as its passenger
+        extra:
+          '0': Set it to 0 to let minecart always take passenger no matter how fast it is, just like a boat
+          '1': Set it to NaN to let minecart never takes passenger
+      mobcapsDisplayIgnoreMisc:
+        name: mobcapsDisplayIgnoreMisc
+        desc: Ignore mob type "misc" in carpet mobcaps displays
+        extra:
+          '0': "Since it's useless: Nothing in misc category spawns, and it's ignored when calculating mobcap"
+          '1': Affects mobcaps logger and /spawn mobcap command
+      moveableReinforcedDeepslate:
+        name: moveableReinforcedDeepslate
+        desc: Make reinforced deepslate movable by pistons
+      naturalSpawningUse13Heightmap:
+        name: naturalSpawningUse13Heightmap
+        desc: Change the upper limit of the Y value during the initial coordinate selection in natural mob spawning, to the highest block that blocks light at that XZ position
+        extra:
+          '0': Basically, this rule reverts the use of the heightmap during natural spawning back to version 1.13 and earlier
+          '1': 'Note: This will slightly increase lag during the natual spawning phase'
+          '2': 'See also: rule naturalSpawningUse13HeightmapExtra'
+      naturalSpawningUse13HeightmapExtra:
+        name: naturalSpawningUse13HeightmapExtra
+        desc: Ignore piston block, slime block, honey block when calculating the modified heightmap in rule naturalSpawningUse13Heightmap
+        extra:
+          '0': It's designed to keep the behavior unchanged from pre-1.13, but might introduce some unintended usage abuse
+      netherPortalEntityInteractionCheckUseFullBlockShape:
+        name: netherPortalEntityInteractionCheckUseFullBlockShape
+        desc: Change the voxel shape used in the entity-inside check for the nether portal block to a full cube
+        extra:
+          '0': Basically, this rule change the nether portal teleport range, from the portal outline box, to a full cube
+          '1': It reverts the behavior back to mc < 25w04a (1.21.5 snapshot) and unfixes MC-101556
+      netherPortalMaxSize:
+        name: netherPortalMaxSize
+        desc: Modify the maximum size limit of the nether portal
+        extra:
+          '0': Use with caution If you set it to a large value
+      oakBalloonPercent:
+        name: oakBalloonPercent
+        desc: The chance for oak sapling top grow into a balloon oak (fancy_oak) in percent
+        extra:
+          '0': e.g. 0 means no balloon oak, 50 means 50% balloon oak, 100 means always balloon oak
+          '1': Set it to -1 to disable the rule and use vanilla logic (10% balloon oak)
+      observerNoDetection:
+        name: observerNoDetection
+        desc: Stop observer from scheduling tile tick event after it receives a state update
+        extra:
+          '0': Basically this rule disables the detection functionality of observers
+      obsidianPlatformBlockBreakerBackport:
+        name: obsidianPlatformBlockBreakerBackport
+        desc: Backport the feature from Minecraft 1.21+ that the creation of the obsidian platform in the end dimension can break existing blocks
+        extra:
+          '0': 'Notes: block iterating order for obsidian platform creation for normal entity in vanilla [1.16, 1.21) is different from mc1.21+'
+      opPlayerNoCheat:
+        name: opPlayerNoCheat
+        desc: Disable some command to prevent accidentally cheating
+        extra:
+          '0': 'Affects command list: /gamemode, /tp, /teleport, /give, /setblock, /summon'
+      optimizedFastEntityMovement:
+        name: optimizedFastEntityMovement
+        desc: Optimize fast entity movement by only checking block collisions on current moving axis
+        extra:
+          '0': Inspired by the fastMovingEntityOptimization rule in carpetmod112
+          '1': Use with rule optimizedTNT to greatly improve performance in cannons
+      optimizedHardHitBoxEntityCollision:
+        name: optimizedHardHitBoxEntityCollision
+        desc: Optimize entity colliding with entities with hard hit box
+        extra:
+          '0': It uses an extra separate list to store entities, that have a hard hit box including boat and shulker, in a chunk
+          '1': It reduces quite a lot of unnecessary iterating when an entity is moving and trying to search entities with hard hit box on the way,since the world is always not filled with boats and shulkers
+          '2': Enable it before loading the chunk to make it work. ~20% performance boost in portal mob farms
+          '3': Might not work with other mods that add new entities
+          '4': 'Known conflicted mods: async'
+      optimizedTNTHighPriority:
+        name: optimizedTNTHighPriority
+        desc: Use a Mixin injection with higher priority for carpet rule optimizedTNT
+        extra:
+          '0': So the rule optimizedTNT can overwrite lithium's explosion optimization
+          '1': Of course rule optimizedTNT needs to be on for it to work
+      overspawningReintroduced:
+        name: overspawningReintroduced
+        desc: Reintroduce the overspawning mechanism back to mc1.16+
+        extra:
+          '0': With overspawning on, the game only checks for mobcap / spawn potential at the beginning of the natural spawning phase
+          '1': This brings back the possibility for mob farms to utilize all spawning attempts with mobcap ignored in a single game tick, making fast passive mob farms possible again
+      poiUpdates:
+        name: poiUpdates
+        desc: Whether block changes will cause POI to updates or not
+        extra:
+          '0': Set it to false to disable POI updates
+      persistentLoggerSubscription:
+        name: persistentLoggerSubscription
+        desc: Remember the subscribed loggers as well as logging options of the player during server restart
+        extra:
+          '0': Only applies carpet's defaultLoggers rule at someone's first login
+          '1': Logger subscriptions are saved in config/carpettisaddition/logger_subscriptions.json
+      preciseEntityPlacement:
+        name: preciseEntityPlacement
+        desc: When placing / summoning entity with item, place the entity at the exact position of player's cursor target position
+        extra:
+          '0': 'Affected items: Spawn eggs, armorstand, ender crystal'
+      railDupingFix:
+        name: railDupingFix
+        desc: Disable rail duping using old school pushing lit powered or activator rail method
+      redstoneDustRandomUpdateOrder:
+        name: redstoneDustRandomUpdateOrder
+        desc: Randomize the order for redstone dust to emit block updates
+        extra:
+          '0': It's useful to test if your contraption is locational or not
+          '1': Does not work with rule fastRedstoneDust
+      redstoneDustRepeaterComparatorIgnoreUpwardsStateUpdate:
+        name: redstoneDustRepeaterComparatorIgnoreUpwardsStateUpdate
+        desc: Make redstone dust, redstone repeater and redstone comparator ignore state updates from below
+        extra:
+          '0': This reverts the change introduced in 23w35a (1.20.2 snapshot). With the rule, floating comparator can be easily created once
+          '1': 'Notes: rule dustTrapdoorReintroduced implements the same revert for redstone dust'
+      renewableDragonEgg:
+        name: renewableDragonEgg
+        desc: Make dragon egg renewable
+        extra:
+          '0': When a dragon egg is in dragon breath effect cloud it has a possibility to absorb the effect cloud and "summon" a new dragon egg
+          '1': Use with rule "dispensersFireDragonBreath" for more ease
+      renewableDragonHead:
+        name: renewableDragonHead
+        desc: Ender dragon killed by charged creeper will drop dragon head
+      renewableElytra:
+        name: renewableElytra
+        desc: Phantom killed by shulker will drops an elytra with given possibility
+        extra:
+          '0': Set it to 0 to disable
+      repeaterHalfDelay:
+        name: repeaterHalfDelay
+        desc: Halve the delay of redstone repeaters upon a redstone ore
+        extra:
+          '0': The delay will change from 2, 4, 6 or 8 game tick instead of 1, 2, 3 or 4 game tick
+      sandDupingFix:
+        name: sandDupingFix
+        desc: Disable sand and other gravity block duping using end portal
+        extra:
+          '0': Gravity block includes sand, anvil, dragon egg and so on
+          '1': In sand dupers sand will only get teleported to the other dimension
+      shulkerBoxCCEReintroduced:
+        name: shulkerBoxCCEReintroduced
+        desc: Reintroduce the ClassCastException suppressor by reading comparator signal from a shulker block box with non Inventory-type block entity at it
+        extra:
+          '0': Long live void's magic box!
+      shulkerBoxContentDropBackport:
+        name: shulkerBoxContentDropBackport
+        desc: Backport the feature that item entity of skulker box drops all of its contents when the item entity is damaged to die
+        extra:
+          '0': This feature is introduced to vanilla Minecraft in mc1.17
+      snowMeltMinLightLevel:
+        name: snowMeltMinLightLevel
+        desc: The minimum light level allowed for snow to melt
+        extra:
+          '0': In vanilla the value is 12, which means snow will melt when the light level >=12 when random ticked
+          '1': Set it to 0 to melt all annoying snow on your builds
+          '2': Set it to the same level as the minimum light level for snow to not fall on block (light level 10) to easily test if your build is snow-proof with light or not
+          '3': You can modify gamerule randomTickSpeed to speed up the melting progress, or modify carpet rule chunkTickSpeed to speed up the snowfall progress
+      soundSuppressionSimulator:
+        name: soundSuppressionSimulator
+        desc: Sculk sensor / Calibrated sculk sensor on a lapis ore simulates a sound suppressor
+        extra:
+          '0': Throw an IllegalArgumentException right before a (calibrated) sculk sensor block entity on a lapis ore querying its "sculk_sensor_phase" block state on receiving vibration
+      spawnBabyProbably:
+        name: spawnBabyProbably
+        desc: When spawning mobs, if baby variant exists, spawn the baby variant with given probably
+        extra:
+          '0': Set it to -1 to disable the rule and use vanilla logic
+      spawnJockeyProbably:
+        name: spawnJockeyProbably
+        desc: When spawning mobs, if jockey variant exists, spawn the jockey variant with given probably
+        extra:
+          '0': 'Affected jockeys: chicken jockey, spider jockey, strider jockey'
+          '1': 'For striders, the spawn ratio between zombified piglin and baby strider is still 1:3'
+          '2': Set it to -1 to disable the rule and use vanilla logic
+      spawnLeaderZombieProbably:
+        name: spawnLeaderZombieProbably
+        desc: When spawning zombies, override the probability of spawning a leader zombie
+        extra:
+          '0': A leader zombie can call for reinforcements, has higher max health, and can break doors
+          '1': Set it to -1 to disable the rule and use vanilla logic
+      speedTestCommandMaxTestSize:
+        name: speedTestCommandMaxTestSize
+        desc: The max test size in MiB when using the /speedtest command for network speed test
+      stopCommandDoubleConfirmation:
+        name: stopCommandDoubleConfirmation
+        desc: Add a double confirmation for /stop command to prevent stopping server accidentally
+        extra:
+          '0': You need to enter /stop twice within 1 minute to stop the server
+          '1': This mechanics only works for players
+      structureBlockDoNotPreserveFluid:
+        name: structureBlockDoNotPreserveFluid
+        desc: Structure block do not preserve existed fluid when placing waterlogged-able blocks
+        extra:
+          '0': Has a side effect of suppressing bug MC-130584 happening
+      structureBlockLimit:
+        name: structureBlockLimit
+        desc: Overwrite the size limit of structure block
+        extra:
+          '0': Relative position might display wrongly on client side if it's larger than 32
+      structureBlockOutlineDistance:
+        name: structureBlockOutlineDistance
+        desc: Customizable Structure Block outline render distance
+        extra:
+          '0': Required on client to work properly
+      synchronizedLightThread:
+        name: synchronizedLightThread
+        desc: Synchronize lighting thread with the server thread
+        extra:
+          '0': so the light thread will not lag behind the main thread and get desynchronized
+          '1': The server will wait until all lighting tasks to be done at the beginning of each world ticking
+          '2': With this rule you can safely /tick warp without potential light suppression or lighting desynchronization
+      syncServerMsptMetricsData:
+        name: syncServerMsptMetricsData
+        desc: Sync server's mspt metrics data to the client, so players can see that in the debug screen with F3 + ALT
+        extra:
+          '0': Carpet TIS Addition is required to be installed on the client
+      tickCommandCarpetfied:
+        name: tickCommandCarpetfied
+        desc: The only rule you need to bring back the /tick command from carpet mod before mc1.20.3
+        extra:
+          '0': 'Enabling this rule equals to setting the following rules to the following values:'
+          '1': '- tickCommandEnhance = true'
+          '2': '- tickCommandPermission = 2'
+          '3': '- tickFreezeCommandToggleable = true'
+          '4': '- tickFreezeDeepCommand = true'
+          '5': '- tickProfilerCommandsReintroduced = true'
+          '6': '- tickWarpCommandAsAnAlias = true'
+      tickCommandEnhance:
+        name: tickCommandEnhance
+        desc: Enable the enhancements for the /tick command from carpet mod before mc1.20.3
+        extra:
+          '0': 'Enhancement list:'
+          '1': '1. Enable the "/tick sprint status" command (previously it was "/tick warp status")'
+      tickCommandPermission:
+        name: tickCommandPermission
+        desc: Override the permission level requirement for the "/tick" command
+        extra:
+          '0': Set it to "2" or "ops" to restore the default carpet mod behavior before mc1.20.3
+          '1': It's useful if you want to execute the "/tick" command in e.g. command blocks
+      tickFreezeCommandToggleable:
+        name: tickFreezeCommandToggleable
+        desc: Make the "/tick freeze" command toggleable again, just like how carpet mode behaved before
+        extra:
+          '0': i.e. Make the "/tick freeze" command unfreeze the game if the game is already frozen
+      tickFreezeDeepCommand:
+        name: tickFreezeDeepCommand
+        desc: Bring back the "/tick freeze deep" subcommand from carpet mod
+        extra:
+          '0': Compared to the regular "/tick freeze", it additionally adds the ability to freeze ticket expiration ticking
+      tickProfilerCommandsReintroduced:
+        name: tickProfilerCommandsReintroduced
+        desc: Bring back the "/tick health" and "/tick entities" subcommands from carpet mod
+        extra:
+          '0': Just like the previous carpet mod, these 2 subcommands have the same behavior as "/profile [health|entities]" subcommands
+      tickWarpCommandAsAnAlias:
+        name: tickWarpCommandAsAnAlias
+        desc: Bring back the "/tick warp" subcommand, as an alias of the vanilla "/tick sprint" command
+      tileTickLimit:
+        name: tileTickLimit
+        desc: Modify the limit of executed tile tick events per game tick
+      tiscmNetworkProtocol:
+        name: tiscmNetworkProtocol
+        desc: The switch of the TISCM network protocol
+      tntDupingFix:
+        name: tntDupingFix
+        desc: Disable TNT, carpet and part of rail dupers
+        extra:
+          '0': Attachment block update based dupers will do nothing and redstone component update based dupers can no longer keep their duped block
+          '1': Dupe bad dig good
+      tntFuseDuration:
+        name: tntFuseDuration
+        desc: Overwrite the default fuse duration of TNT
+        extra:
+          '0': This might also affect the fuse duration of TNT ignited in explosion
+      tntIgnoreRedstoneSignal:
+        name: tntIgnoreRedstoneSignal
+        desc: Prevent TNT blocks from being ignited from redstone
+        extra:
+          '0': You can still use explosion etc. to ignite a tnt
+      tooledTNT:
+        name: tooledTNT
+        desc: Tools on the player's main hand is applied to item dropping during the explosion caused by the player
+        extra:
+          '0': So you can ignite TNT to harvest blocks that require specific tool or enchantment as long as you are holding the right tool
+          '1': For example, you can harvest ice with silk touch pickaxe, or harvest grass with shears
+          '2': It also works for any other living entities beside player
+          '3': Technically this rule applies the main hand item of the causing entity onto the loot table builder during the explosion
+      totallyNoBlockUpdate:
+        name: totallyNoBlockUpdate
+        desc: Disable all block updates and state updates
+      toughWitherRose:
+        name: toughWitherRose
+        desc: Birth from death, wither rose is tough enough to be planted on any surface
+        extra:
+          '0': This rule removes all placement requirement of wither rose block, which means you're able to place wither rose at anywhere
+          '1': It's useful when you want to play around with update suppressed wither roses for wither skeleton farms
+      turtleEggTrampledDisabled:
+        name: turtleEggTrampledDisabled
+        desc: Disable turtle egg trampled to broken
+      ultraSecretSetting:
+        name: ultraSecretSetting
+        desc: qOf DSh hwg ORRWHW Cb
+      undeadDontBurnInSunlight:
+        name: undeadDontBurnInSunlight
+        desc: Prevent undead creatures burning in sunlight
+        extra:
+          '0': Their helmets will still get damaged in sunlight though
+      updateSkippingSimulator:
+        name: updateSkippingSimulator
+        desc: Activator / Powered rail on a deepslate lapis ore simulates an update skipper
+        extra:
+          '0': Right before a powered activator / powered rail on a deepslate lapis ore sets its powered state to false, set the updater counter to its maximum value to trigger update skipping and cancel the current change of the powered state
+      updateSuppressionSimulator:
+        name: updateSuppressionSimulator
+        desc: Activator / Powered rail on a lapis ore simulates an update suppressor
+        extra:
+          '0': Throw the given JVM throwable right before a powered activator / powered rail on a lapis ore sets its powered state to false
+          '1': 'false: rule disabled; true: rule enable and use StackOverflowError; others: feature enable and use given throwable'
+      vaultBlacklistDisabled:
+        name: vaultBlacklistDisabled
+        desc: Disable functionalities related to the vault block's player blacklist
+        extra:
+          '0': 'After enabling this rule:'
+          '1': 1. When players open the vault, their UUIDs will not be added to the vault blacklist
+          '2': 2. Regardless of whether players are on the vault blacklist, they can activate or open the vault
+      violentNetherPortalCreation:
+        name: violentNetherPortalCreation
+        desc: Allows nether portal creation to ignore blocks already inside the frame, directly forcefully open the nether portal
+        extra:
+          '0': 'false: Rule disabled. The vanilla behavior'
+          '1': 'replaceable: Only allow ignoring replaceable blocks (e.g., fluids, grass)'
+          '2': 'all: Allow ignoring any blocks except obsidian. Obsidian cannot be ignored due to how portal frame is calculated'
+          '3': 'Notes: The forceful block replacements will cause no block updates, just like what vanilla does'
+      visualizeProjectileLoggerEnabled:
+        name: visualizeProjectileLoggerEnabled
+        desc: Enable visualize projectile logger
+        extra:
+          '0': Try /log projectiles visualize
+      voidDamageAmount:
+        name: voidDamageAmount
+        desc: Modify the amount of void damage
+      voidDamageIgnorePlayer:
+        name: voidDamageIgnorePlayer
+        desc: Prevent players from taking void damage
+        extra:
+          '0': Completely harmless void for players, yay!
+          '1': If the rule value is set to a comma-separated game mode list, then only players in these game modes are immutable to void damage
+      voidRelatedAltitude:
+        name: voidRelatedAltitude
+        desc: Modify the related altitude between the bottom of the world and the void where entities will receive void damages
+      wetExplosionReintroduced:
+        name: wetExplosionReintroduced
+        desc: Reintroduced the wet-explosion from MC version 1.21.2 ~ 1.21.5
+        extra:
+          '0': If an explosion is created by an entity (e.g. primed TNT) and the entity is touching water, then the explosion does no damage to item entities, armor stand entities and all kinds of decoration entities
+          '1': 'This rule has no effect in MC 1.21.2 ~ 1.21.5'
+          '2': 'See also: MC-3697'
+      witherSpawnedSoundDisabled:
+        name: witherSpawnedSoundDisabled
+        desc: Disable the wither spawned sound emitted when a wither fully reset its health after summoned
+      xpTrackingDistance:
+        name: xpTrackingDistance
+        desc: Overwrite the tracking distance of xp orb
+        extra:
+          '0': Change it to 0 to disable tracking
+      yeetAsyncTaskExecutionDelay:
+        name: yeetAsyncTaskExecutionDelay
+        desc: Ensure MinecraftServer's async server tasks are executed as soon as possible
+        extra:
+          '0': In vanilla, execution of async tasks can be skipped for up to 4 ticks when the server is tick-warping
+          '1': This rule ensures async tasks are always executed at the nearest async-task phase
+      yeetIdleMspt:
+        name: yeetIdleMspt
+        desc: Suppress the appearance of idle mspt
+        extra:
+          '0': Some operations, such as chunk unloading and POI saving, may introduce idle mspt overhead
+          '1': Idle mspt will only appear when the current game tick cost has not yet reached the lag limit (i.e., mspt is still below 50, and the server is not in tick warp)
+          '2': When this rule is enabled, idle mspt will be suppressed. If the server is neither dropping ticks nor in tick warp, its mspt may be slightly reduced
+      yeetOutOfOrderChatKick:
+        name: yeetOutOfOrderChatKick
+        desc: Prevent players being kicked with message "Out-of-order chat packet received..." caused by whatever reason
+      yeetUpdateSuppressionCrash:
+        name: yeetUpdateSuppressionCrash
+        desc: Prevent the server from crashing due to update suppression from StackOverflowError, OutOfMemoryError, ClassCastException or IllegalArgumentSuppression
+        extra:
+          '0': Do the same thing as fabric carpet's updateSuppressionCrashFix rule, but with more information
+          '1': In fabric carpet >= 1.4.49, in order to receive the suppression-crash-prevented message broadcast in game, you need to subscribe to the updateSuppressedCrashes logger
+          '2': "NOTE: It only handles exception from update suppression methods (e.g. rail stack-overflower, sound suppression, shulker box CCE, ...). It's NOT a universal try-catch on all exceptions"
+      zombifiedPiglinDropLootIfAngryReintroduced:
+        name: zombifiedPiglinDropLootIfAngryReintroduced
+        desc: When enabled, zombified piglins that die within 100 game ticks of becoming angry or targeting a player will drop loot and xp orbs as if killed by a player
+        extra:
+          '0': It reverts the behavior back to mc < 25w02a (1.21.5 snapshot) and unfixes MC-56653

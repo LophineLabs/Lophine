@@ -246,13 +246,9 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
     }
 
     private String getStopActionCommand(String actionHash) throws UnexpectedException {
-        boolean botCommand = FakeplayerConfig.enable;
-        boolean playerCommand = FakePlayerCompatConfig.commandPlayer;
         String command;
-        if (botCommand) {
+        if (FakeplayerConfig.checkEnabled()) {
             command = "bot ";
-        } else if (playerCommand) {
-            command = "player ";
         } else {
             throw new UnexpectedException("Unable to build String from commandNode.");
         }
