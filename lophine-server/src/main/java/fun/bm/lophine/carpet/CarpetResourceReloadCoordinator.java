@@ -1,6 +1,8 @@
 package fun.bm.lophine.carpet;
 
 import io.papermc.paper.threadedregions.RegionizedServer;
+import net.minecraft.server.MinecraftServer;
+
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Set;
@@ -9,9 +11,10 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
-import net.minecraft.server.MinecraftServer;
 
-/** Nonblocking safe points covering every real region tick and between-tick execution. */
+/**
+ * Nonblocking safe points covering every real region tick and between-tick execution.
+ */
 public final class CarpetResourceReloadCoordinator {
     private static final Object LIFECYCLE = new Object();
     private static final Gate GATE = new Gate();
@@ -23,7 +26,8 @@ public final class CarpetResourceReloadCoordinator {
     private static volatile boolean closed;
     public static final Executor GLOBAL = runnable -> RegionizedServer.getInstance().addTask(runnable);
 
-    private CarpetResourceReloadCoordinator() {}
+    private CarpetResourceReloadCoordinator() {
+    }
 
     static final class Gate {
         private int readers;
@@ -35,6 +39,7 @@ public final class CarpetResourceReloadCoordinator {
             readers++;
             return true;
         }
+
         void exit() {
             CompletableFuture<Void> ready;
             synchronized (this) {
@@ -44,6 +49,7 @@ public final class CarpetResourceReloadCoordinator {
             // Only schedules global continuation; never performs the resource apply on this owner.
             if (ready != null) ready.complete(null);
         }
+
         synchronized CompletableFuture<Void> pause() {
             if (paused) throw new IllegalStateException("Resource reload gate already paused");
             paused = true;
@@ -51,22 +57,42 @@ public final class CarpetResourceReloadCoordinator {
             if (readers == 0) acknowledgement.complete(null);
             return acknowledgement;
         }
-        synchronized void resume() { paused = false; acknowledgement = null; }
-        boolean paused() { return paused; }
+
+        synchronized void resume() {
+            paused = false;
+            acknowledgement = null;
+        }
+
+        boolean paused() {
+            return paused;
+        }
     }
 
-    public static boolean tryEnterRegion() { return GATE.enter(); }
-    public static void exitRegion() { GATE.exit(); }
-    public static boolean regionsPaused() { return GATE.paused(); }
+    public static boolean tryEnterRegion() {
+        return GATE.enter();
+    }
 
-    private record Request(MinecraftServer server, Supplier<CompletableFuture<Void>> work, CompletableFuture<Void> result) {}
+    public static void exitRegion() {
+        GATE.exit();
+    }
+
+    public static boolean regionsPaused() {
+        return GATE.paused();
+    }
+
+    private record Request(MinecraftServer server, Supplier<CompletableFuture<Void>> work,
+                           CompletableFuture<Void> result) {
+    }
 
     public static CompletableFuture<Void> serial(MinecraftServer server, Supplier<CompletableFuture<Void>> work) {
         CompletableFuture<Void> result = track();
         if (result.isDone()) return result;
         GLOBAL.execute(() -> {
             synchronized (LIFECYCLE) {
-                if (closed) { result.completeExceptionally(stopped()); return; }
+                if (closed) {
+                    result.completeExceptionally(stopped());
+                    return;
+                }
                 QUEUE.addLast(new Request(server, work, result));
                 startNext();
             }
@@ -74,16 +100,22 @@ public final class CarpetResourceReloadCoordinator {
         return result;
     }
 
-    /** Caller holds lifecycle; work starts on the global actor without waiting for it. */
+    /**
+     * Caller holds lifecycle; work starts on the global actor without waiting for it.
+     */
     private static void startNext() {
         if (running != null || QUEUE.isEmpty() || closed) return;
         Request request = running = QUEUE.removeFirst();
         CompletableFuture<Void> work;
-        try { work = request.work().get(); }
-        catch (Throwable failure) { work = CompletableFuture.failedFuture(failure); }
+        try {
+            work = request.work().get();
+        } catch (Throwable failure) {
+            work = CompletableFuture.failedFuture(failure);
+        }
         work.whenComplete((unused, failure) -> GLOBAL.execute(() -> {
             synchronized (LIFECYCLE) {
-                if (failure == null) request.result().complete(null); else request.result().completeExceptionally(failure);
+                if (failure == null) request.result().complete(null);
+                else request.result().completeExceptionally(failure);
                 if (running == request) running = null;
                 startNext();
             }
@@ -95,8 +127,11 @@ public final class CarpetResourceReloadCoordinator {
         if (result.isDone()) return result;
         GLOBAL.execute(() -> {
             if (result.isDone() || closed) return;
-            try { result.complete(action.get()); }
-            catch (Throwable failure) { result.completeExceptionally(failure); }
+            try {
+                result.complete(action.get());
+            } catch (Throwable failure) {
+                result.completeExceptionally(failure);
+            }
         });
         return result;
     }
@@ -104,29 +139,44 @@ public final class CarpetResourceReloadCoordinator {
     private static <T> CompletableFuture<T> track() {
         CompletableFuture<T> result = new CompletableFuture<>();
         synchronized (LIFECYCLE) {
-            if (closed) result.completeExceptionally(stopped()); else FUTURES.add(result);
+            if (closed) result.completeExceptionally(stopped());
+            else FUTURES.add(result);
         }
-        result.whenComplete((value, failure) -> { synchronized (LIFECYCLE) { FUTURES.remove(result); } });
+        result.whenComplete((value, failure) -> {
+            synchronized (LIFECYCLE) {
+                FUTURES.remove(result);
+            }
+        });
         return result;
     }
 
-    private static IllegalStateException stopped() { return new IllegalStateException("Server stopped during resource reload"); }
+    private static IllegalStateException stopped() {
+        return new IllegalStateException("Server stopped during resource reload");
+    }
 
     public static void prepared(AutoCloseable resource) {
         synchronized (LIFECYCLE) {
-            if (closed) { close(resource); throw stopped(); }
+            if (closed) {
+                close(resource);
+                throw stopped();
+            }
             PREPARED.add(resource);
         }
     }
 
     public static void discard(AutoCloseable resource) {
-        synchronized (LIFECYCLE) { PREPARED.remove(resource); }
+        synchronized (LIFECYCLE) {
+            PREPARED.remove(resource);
+        }
         close(resource);
     }
 
     private static void close(AutoCloseable resource) {
-        try { resource.close(); }
-        catch (Exception failure) { MinecraftServer.LOGGER.warn("Could not close prepared data pack resources", failure); }
+        try {
+            resource.close();
+        } catch (Exception failure) {
+            MinecraftServer.LOGGER.warn("Could not close prepared data pack resources", failure);
+        }
     }
 
     private static final class Barrier<T> {
@@ -135,8 +185,12 @@ public final class CarpetResourceReloadCoordinator {
         final AutoCloseable retain;
         final CompletableFuture<T> result;
         boolean started;
+
         Barrier(MinecraftServer server, Supplier<T> action, AutoCloseable retain, CompletableFuture<T> result) {
-            this.server = server; this.action = action; this.retain = retain; this.result = result;
+            this.server = server;
+            this.action = action;
+            this.retain = retain;
+            this.result = result;
         }
     }
 
@@ -144,7 +198,9 @@ public final class CarpetResourceReloadCoordinator {
         return exclusive(server, action, null);
     }
 
-    /** Retain transfers ownership from pending preparation to MinecraftServer under the same lifecycle lock. */
+    /**
+     * Retain transfers ownership from pending preparation to MinecraftServer under the same lifecycle lock.
+     */
     public static <T> CompletableFuture<T> exclusive(MinecraftServer server, Supplier<T> action, AutoCloseable retain) {
         CompletableFuture<T> result = track();
         if (result.isDone()) return result;
@@ -153,7 +209,10 @@ public final class CarpetResourceReloadCoordinator {
             CompletableFuture<Void> ready;
             synchronized (LIFECYCLE) {
                 if (closed || result.isDone()) return;
-                if (barrier != null) { result.completeExceptionally(new IllegalStateException("Overlapping resource apply barriers")); return; }
+                if (barrier != null) {
+                    result.completeExceptionally(new IllegalStateException("Overlapping resource apply barriers"));
+                    return;
+                }
                 barrier = request;
                 ready = GATE.pause();
             }
@@ -163,8 +222,11 @@ public final class CarpetResourceReloadCoordinator {
                     if (barrier == request && !request.started) {
                         barrier = null;
                         GATE.resume();
-                        try { notifyRegions(server); }
-                        finally { result.completeExceptionally(new TimeoutException("Regions did not reach the resource reload safe point within 60 seconds")); }
+                        try {
+                            notifyRegions(server);
+                        } finally {
+                            result.completeExceptionally(new TimeoutException("Regions did not reach the resource reload safe point within 60 seconds"));
+                        }
                     }
                 }
             }));
@@ -180,30 +242,43 @@ public final class CarpetResourceReloadCoordinator {
         }
         T value = null;
         Throwable failure = null;
-        try { value = request.action.get(); }
-        catch (Throwable problem) { failure = problem; }
-        finally {
+        try {
+            value = request.action.get();
+        } catch (Throwable problem) {
+            failure = problem;
+        } finally {
             synchronized (LIFECYCLE) {
                 if (barrier == request) barrier = null;
                 GATE.resume();
             }
             if (!closed) {
-                try { notifyRegions(request.server); }
-                catch (Throwable problem) { if (failure == null) failure = problem; else failure.addSuppressed(problem); }
+                try {
+                    notifyRegions(request.server);
+                } catch (Throwable problem) {
+                    if (failure == null) failure = problem;
+                    else failure.addSuppressed(problem);
+                }
             }
         }
-        if (failure == null) request.result.complete(value); else request.result.completeExceptionally(failure);
+        if (failure == null) request.result.complete(value);
+        else request.result.completeExceptionally(failure);
     }
 
     private static void notifyRegions(MinecraftServer server) {
-        for (var level : server.getAllLevels()) level.regioniser.computeForAllRegions(region -> region.getData().setHasTasks());
+        for (var level : server.getAllLevels())
+            level.regioniser.computeForAllRegions(region -> region.getData().setHasTasks());
     }
 
-    /** Cancel pending work before the native schedulers halt, and release every waiting gate. */
+    /**
+     * Cancel pending work before the native schedulers halt, and release every waiting gate.
+     */
     public static void shutdown() {
         synchronized (LIFECYCLE) {
             closed = true;
-            if (barrier == null || !barrier.started) { barrier = null; GATE.resume(); }
+            if (barrier == null || !barrier.started) {
+                barrier = null;
+                GATE.resume();
+            }
             QUEUE.clear();
             for (var future : Set.copyOf(FUTURES)) future.completeExceptionally(stopped());
             for (var resource : Set.copyOf(PREPARED)) close(resource);

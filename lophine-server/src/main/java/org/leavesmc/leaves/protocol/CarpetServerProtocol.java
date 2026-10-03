@@ -205,21 +205,27 @@ public class CarpetServerProtocol implements LeavesProtocol {
     }
 
     private static void sendServerData(UUID playerId) {
-        var server=MinecraftServer.getServer();
-        if(server==null)return;
-        fun.bm.lophine.carpet.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.AmsNativeCommandEffects.global(server,()->{
-            ServerPlayer player=server.getPlayerList().getPlayer(playerId);
-            if(player==null){activePlayers.remove(playerId);return null;}
-            CompoundTag data=new CompoundTag();CarpetRules.write(data);
-            return new ServerData(player,data);
-        }),snapshot->snapshot==null?java.util.concurrent.CompletableFuture.completedFuture(null)
-            :fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(snapshot.player(),()->{
-                if(!snapshot.player().isRemoved()&&!snapshot.player().hasDisconnected())
-                    fun.bm.lophine.carpet.AmsNativeCommandEffects.packet(snapshot.player(),new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(new CarpetPayload(snapshot.data())));
-                return (Void)null;
-            }));
+        var server = MinecraftServer.getServer();
+        if (server == null) return;
+        fun.bm.lophine.carpet.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.AmsNativeCommandEffects.global(server, () -> {
+            ServerPlayer player = server.getPlayerList().getPlayer(playerId);
+            if (player == null) {
+                activePlayers.remove(playerId);
+                return null;
+            }
+            CompoundTag data = new CompoundTag();
+            CarpetRules.write(data);
+            return new ServerData(player, data);
+        }), snapshot -> snapshot == null ? java.util.concurrent.CompletableFuture.completedFuture(null)
+                : fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(snapshot.player(), () -> {
+            if (!snapshot.player().isRemoved() && !snapshot.player().hasDisconnected())
+                fun.bm.lophine.carpet.AmsNativeCommandEffects.packet(snapshot.player(), new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(new CarpetPayload(snapshot.data())));
+            return (Void) null;
+        }));
     }
-    private record ServerData(ServerPlayer player,CompoundTag data){}
+
+    private record ServerData(ServerPlayer player, CompoundTag data) {
+    }
 
     public static class CarpetRules {
 
@@ -336,6 +342,7 @@ public class CarpetServerProtocol implements LeavesProtocol {
                 ByteBufCodecs.COMPOUND_TAG, CarpetPayload::nbt, CarpetPayload::new
         );
     }
+
     // Lophine - original Carpet server payload endpoints
     public static boolean isValidCarpetPlayer(ServerPlayer player) {
         return !fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.superSecretSetting && activePlayers.contains(player.getUUID());
@@ -350,7 +357,8 @@ public class CarpetServerProtocol implements LeavesProtocol {
         CompoundTag payload = new CompoundTag();
         payload.put(key, tag.copy());
         Runnable delivery = () -> {
-            if (isValidCarpetPlayer(player) && !player.isRemoved()) ProtocolUtils.sendPayloadPacket(player, new CarpetPayload(payload));
+            if (isValidCarpetPlayer(player) && !player.isRemoved())
+                ProtocolUtils.sendPayloadPacket(player, new CarpetPayload(payload));
         };
         if (ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(player)) delivery.run();
         else player.getBukkitEntity().taskScheduler.schedule(owned -> delivery.run(), null, 1L);

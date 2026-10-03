@@ -9,13 +9,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-/** Accepted actions remain visible until their native effects and owner state commit terminate. */
+/**
+ * Accepted actions remain visible until their native effects and owner state commit terminate.
+ */
 final class CarpetActionCompletion {
     private final Set<CompletableFuture<Void>> accepted = Collections.newSetFromMap(new IdentityHashMap<>());
     private int pauses;
 
-    synchronized boolean paused() { return pauses != 0; }
-    synchronized boolean hasPending() { return !accepted.isEmpty(); }
+    synchronized boolean paused() {
+        return pauses != 0;
+    }
+
+    synchronized boolean hasPending() {
+        return !accepted.isEmpty();
+    }
 
     synchronized Accepted begin() {
         if (pauses != 0) throw new IllegalStateException("New actions cannot start during a player snapshot");
@@ -30,33 +37,34 @@ final class CarpetActionCompletion {
     }
 
     <T> CompletableFuture<T> whenIdle(Function<Supplier<T>, CompletableFuture<T>> owner, Supplier<T> snapshot) {
-        return whenIdle(owner,snapshot,false);
+        return whenIdle(owner, snapshot, false);
     }
 
     <T> CompletableFuture<T> whenIdleAfterTermination(Function<Supplier<T>, CompletableFuture<T>> owner, Supplier<T> snapshot) {
-        return whenIdle(owner,snapshot,true);
+        return whenIdle(owner, snapshot, true);
     }
 
     private <T> CompletableFuture<T> whenIdle(Function<Supplier<T>, CompletableFuture<T>> owner, Supplier<T> snapshot, boolean ignorePreviousFailure) {
         CompletableFuture<Void> pending;
         synchronized (this) {
             var remaining = new java.util.ArrayList<CompletableFuture<Void>>();
-            for(var terminal:accepted){
-                var dependency=carpet.script.external.ScarpetNativeWork.knownDependencyOf(terminal);
-                boolean ownCausalWork=dependency!=null&&carpet.script.external.ScarpetNativeWork.currentDependsOn(dependency);
-                if(ownCausalWork){
-                    if(!ignorePreviousFailure)return CompletableFuture.failedFuture(new IllegalStateException(
-                        "Cannot capture a stable player action snapshot from a callback that depends on its own pending native action"));
+            for (var terminal : accepted) {
+                var dependency = carpet.script.external.ScarpetNativeWork.knownDependencyOf(terminal);
+                boolean ownCausalWork = dependency != null && carpet.script.external.ScarpetNativeWork.currentDependsOn(dependency);
+                if (ownCausalWork) {
+                    if (!ignorePreviousFailure) return CompletableFuture.failedFuture(new IllegalStateException(
+                            "Cannot capture a stable player action snapshot from a callback that depends on its own pending native action"));
                     // A mandatory removal may interrupt its own causal operation. It still waits
                     // every independently admitted job, even another job for the same player.
                     continue;
                 }
                 remaining.add(terminal);
             }
-            pauses++;pending=CompletableFuture.allOf(remaining.toArray(CompletableFuture[]::new));
+            pauses++;
+            pending = CompletableFuture.allOf(remaining.toArray(CompletableFuture[]::new));
         }
         // allOf waits every actual terminal future even after an earlier entry fails.
-        if(ignorePreviousFailure)pending=pending.handle((ignored,failure)->null);
+        if (ignorePreviousFailure) pending = pending.handle((ignored, failure) -> null);
         var result = new CompletableFuture<T>();
         var lifetime = new Snapshot<>(result, () -> {
             synchronized (CarpetActionCompletion.this) {
@@ -66,8 +74,11 @@ final class CarpetActionCompletion {
         try {
             CompletableFuture<T> operation = pending.thenCompose(ignored -> owner.apply(snapshot));
             lifetime.follow(operation, true);
-        } catch (Throwable failure) { lifetime.failed(failure); }
-        finally { lifetime.exit(); }
+        } catch (Throwable failure) {
+            lifetime.failed(failure);
+        } finally {
+            lifetime.exit();
+        }
         // Cancelling the caller's view must not release the pause while the actual snapshot runs.
         return result;
     }
@@ -75,20 +86,30 @@ final class CarpetActionCompletion {
     final class Accepted {
         private final CompletableFuture<Void> terminal = new CompletableFuture<>();
         private final AtomicBoolean ended = new AtomicBoolean();
-        CompletableFuture<Void> future() { return terminal; }
 
-        void finish() { finish(null); }
+        CompletableFuture<Void> future() {
+            return terminal;
+        }
+
+        void finish() {
+            finish(null);
+        }
 
         void finish(Throwable failure) {
             if (!ended.compareAndSet(false, true)) return;
             // Complete before removal: a racing snapshot observes either this terminal future or
             // the state after its real owner commit. A failed retired owner cannot be serialized.
-            if (failure == null) terminal.complete(null); else terminal.completeExceptionally(failure);
-            synchronized (CarpetActionCompletion.this) { accepted.remove(terminal); }
+            if (failure == null) terminal.complete(null);
+            else terminal.completeExceptionally(failure);
+            synchronized (CarpetActionCompletion.this) {
+                accepted.remove(terminal);
+            }
         }
     }
 
-    /** Preserve T while retaining the pause through CompletionStage values recursively returned in T. */
+    /**
+     * Preserve T while retaining the pause through CompletionStage values recursively returned in T.
+     */
     private static final class Snapshot<T> {
         private final CompletableFuture<T> result;
         private final Runnable release;
@@ -98,7 +119,10 @@ final class CarpetActionCompletion {
         private Throwable failure;
         private boolean ended;
 
-        Snapshot(CompletableFuture<T> result, Runnable release) { this.result = result; this.release = release; }
+        Snapshot(CompletableFuture<T> result, Runnable release) {
+            this.result = result;
+            this.release = release;
+        }
 
         @SuppressWarnings("unchecked")
         void follow(CompletionStage<?> stage, boolean outer) {
@@ -114,11 +138,16 @@ final class CarpetActionCompletion {
                     try {
                         if (thrown != null) failed(thrown);
                         else {
-                            if (outer) synchronized (this) { value = (T) nested; }
+                            if (outer) synchronized (this) {
+                                value = (T) nested;
+                            }
                             if (nested instanceof CompletionStage<?> child) follow(child, false);
                         }
-                    } catch (Throwable failure) { failed(failure); }
-                    finally { exit(); }
+                    } catch (Throwable failure) {
+                        failed(failure);
+                    } finally {
+                        exit();
+                    }
                 });
             } catch (Throwable failure) {
                 failed(failure);
@@ -126,7 +155,9 @@ final class CarpetActionCompletion {
             }
         }
 
-        synchronized void failed(Throwable thrown) { if (failure == null) failure = thrown; }
+        synchronized void failed(Throwable thrown) {
+            if (failure == null) failure = thrown;
+        }
 
         void exit() {
             T completedValue;
@@ -134,11 +165,17 @@ final class CarpetActionCompletion {
             synchronized (this) {
                 if (--pending < 0) throw new IllegalStateException("Snapshot completion was counted twice");
                 if (pending != 0) return;
-                ended = true; observed.clear(); completedValue = value; completedFailure = failure;
+                ended = true;
+                observed.clear();
+                completedValue = value;
+                completedFailure = failure;
             }
             // Release first so a callback that begins the next action sees the correct gate state.
-            try { release.run(); }
-            catch (Throwable thrown) { if (completedFailure == null) completedFailure = thrown; }
+            try {
+                release.run();
+            } catch (Throwable thrown) {
+                if (completedFailure == null) completedFailure = thrown;
+            }
             if (completedFailure == null) result.complete(completedValue);
             else result.completeExceptionally(completedFailure);
         }

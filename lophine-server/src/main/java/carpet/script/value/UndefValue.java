@@ -5,145 +5,121 @@ import com.google.gson.JsonElement;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.Tag;
 
-public class UndefValue extends NullValue
-{
+public class UndefValue extends NullValue {
     public static final UndefValue UNDEF = new UndefValue();
     public static final UndefValue EOL = new UndefValue();
 
-    private RuntimeException getError()
-    {
+    private RuntimeException getError() {
         return new InternalExpressionException("variable " + boundVariable + " was used before initialization under 'strict' app config");
     }
 
     @Override
-    public String getString()
-    {
+    public String getString() {
         throw getError();
     }
 
     @Override
-    public String getPrettyString()
-    {
+    public String getPrettyString() {
         return "undefined";
     }
 
     @Override
-    public boolean getBoolean()
-    {
+    public boolean getBoolean() {
         throw getError();
     }
 
     @Override
-    public Value clone()
-    {
+    public Value clone() {
         return new UndefValue();
     }
 
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         throw getError();
     }
 
     @Override
-    public Value slice(long fromDesc, Long toDesc)
-    {
+    public Value slice(long fromDesc, Long toDesc) {
         throw getError();
     }
 
     @Override
-    public NumericValue opposite()
-    {
+    public NumericValue opposite() {
         throw getError();
     }
 
     @Override
-    public int length()
-    {
+    public int length() {
         throw getError();
     }
 
     @Override
-    public int compareTo(Value o)
-    {
+    public int compareTo(Value o) {
         throw getError();
     }
 
     @Override
-    public Value in(Value value)
-    {
+    public Value in(Value value) {
         throw getError();
     }
 
     @Override
-    public String getTypeString()
-    {
+    public String getTypeString() {
         return "undef";
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         throw getError();
     }
 
     @Override
-    public Tag toTag(boolean force, RegistryAccess regs)
-    {
+    public Tag toTag(boolean force, RegistryAccess regs) {
         throw getError();
     }
 
     @Override
-    public Value split(Value delimiter)
-    {
+    public Value split(Value delimiter) {
         throw getError();
     }
 
     @Override
-    public JsonElement toJson()
-    {
+    public JsonElement toJson() {
         throw getError();
     }
 
     @Override
-    public boolean isNull()
-    {
+    public boolean isNull() {
         throw getError();
     }
 
     @Override
-    public Value add(Value v)
-    {
+    public Value add(Value v) {
         throw getError();
     }
 
     @Override
-    public Value subtract(Value v)
-    {
+    public Value subtract(Value v) {
         throw getError();
     }
 
     @Override
-    public Value multiply(Value v)
-    {
+    public Value multiply(Value v) {
         throw getError();
     }
 
     @Override
-    public Value divide(Value v)
-    {
+    public Value divide(Value v) {
         throw getError();
     }
 
     @Override
-    public double readDoubleNumber()
-    {
+    public double readDoubleNumber() {
         throw getError();
     }
 
     @Override
-    public long readInteger()
-    {
+    public long readInteger() {
         throw getError();
     }
 

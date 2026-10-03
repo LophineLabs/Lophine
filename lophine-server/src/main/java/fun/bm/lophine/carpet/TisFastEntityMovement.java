@@ -4,30 +4,33 @@ package fun.bm.lophine.carpet;
 
 import ca.spottedleaf.moonrise.patches.collisions.CollisionUtil;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
-import java.util.ArrayList;
-import java.util.List;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public final class TisFastEntityMovement {
-    private TisFastEntityMovement() { }
+    private TisFastEntityMovement() {
+    }
 
     public static boolean threshold(Vec3 movement) {
         return movement.lengthSqr() >= 100.0
-            && Math.abs(movement.x) * Math.abs(movement.y) * Math.abs(movement.z)
+                && Math.abs(movement.x) * Math.abs(movement.y) * Math.abs(movement.z)
                 > (Math.abs(movement.x) + Math.abs(movement.y) + Math.abs(movement.z)) * 12.0;
     }
+
     public static boolean enabled(Vec3 movement) {
         return GeneralCompatConfig.optimizedFastEntityMovement && (threshold(movement)
-            || "optimizedFastEntityMovement".equals(GeneralCompatConfig.ultraSecretSetting));
+                || "optimizedFastEntityMovement".equals(GeneralCompatConfig.ultraSecretSetting));
     }
 
     public static Vec3 collide(Entity entity, Vec3 movement, AABB original, List<AABB> entityBoxes) {
         return collide(movement, original, entityBoxes, (search, voxels, boxes) -> CollisionUtil.getCollisionsForBlocksOrWorldBorder(
-            entity.level(), entity, search, voxels, boxes, CollisionUtil.COLLISION_FLAG_CHECK_BORDER, null));
+                entity.level(), entity, search, voxels, boxes, CollisionUtil.COLLISION_FLAG_CHECK_BORDER, null));
     }
 
     public static Vec3 collideBlocks(Entity source, Level world, Vec3 movement, AABB original, List<VoxelShape> entityColliders) {
@@ -38,7 +41,9 @@ public final class TisFastEntityMovement {
     }
 
     @FunctionalInterface
-    interface CollisionGetter { void collect(AABB search, List<VoxelShape> voxels, List<AABB> boxes); }
+    interface CollisionGetter {
+        void collect(AABB search, List<VoxelShape> voxels, List<AABB> boxes);
+    }
 
     // The search enlargement retains fences/piston heads extending outside their own block.
     static Vec3 collide(Vec3 movement, AABB original, List<AABB> entityBoxes, CollisionGetter getter) {

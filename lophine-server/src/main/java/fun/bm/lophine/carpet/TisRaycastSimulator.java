@@ -7,13 +7,6 @@ package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import io.papermc.paper.threadedregions.RegionizedServer;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -27,6 +20,9 @@ import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
+
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public final class TisRaycastSimulator {
     private TisRaycastSimulator() {
@@ -64,7 +60,7 @@ public final class TisRaycastSimulator {
             add(changes, pos, Blocks.AIR.defaultBlockState(), false);
         }
         List<BlockPos> melons = List.of(center.offset(-radius, 0, -radius), center.offset(-radius, 0, radius),
-            center.offset(radius, 0, -radius), center.offset(radius, 0, radius));
+                center.offset(radius, 0, -radius), center.offset(radius, 0, radius));
         Set<BlockPos> solids = new HashSet<>(melons);
         for (BlockPos melon : melons) add(changes, melon, Blocks.MELON.defaultBlockState(), false);
         // The upstream clears this complete layer to air before placing four full-cube melons.
@@ -93,11 +89,11 @@ public final class TisRaycastSimulator {
     private static boolean canTraceMelon(final BlockPos center, final BlockPos melon, final Set<BlockPos> solids, final List<BlockPos> melons) {
         Vec3 from = Vec3.atCenterOf(center), to = Vec3.atCenterOf(melon);
         BlockHitResult hit = BlockGetter.traverseBlocks(from, to, solids,
-            (set, pos) -> set.contains(pos) ? Shapes.block().clip(from, to, pos) : null,
-            set -> {
-                Vec3 delta = from.subtract(to);
-                return BlockHitResult.miss(to, Direction.getApproximateNearest(delta.x(), delta.y(), delta.z()), melon);
-            });
+                (set, pos) -> set.contains(pos) ? Shapes.block().clip(from, to, pos) : null,
+                set -> {
+                    Vec3 delta = from.subtract(to);
+                    return BlockHitResult.miss(to, Direction.getApproximateNearest(delta.x(), delta.y(), delta.z()), melon);
+                });
         return hit.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK && melons.contains(hit.getBlockPos());
     }
 

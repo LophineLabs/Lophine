@@ -48,22 +48,11 @@ public class GeneralCompatConfig {
     public static volatile String quickSettingFakePlayerCraft = "false";
 
 
-
-
-
-
-
-
-
     @ConfigInfo(name = "playerCommandTeleportFakePlayer")
     public static volatile String playerCommandTeleportFakePlayer = "false";
 
     @ConfigInfo(name = "playerCommandSummonMannequin")
     public static volatile String playerCommandSummonMannequin = "false";
-
-
-
-
 
 
     @ConfigInfo(name = "cauldronBlockItemInteractFix")
@@ -88,15 +77,8 @@ public class GeneralCompatConfig {
     public static volatile boolean yeetAsyncTaskExecutionDelay = false;
 
 
-
-
-
     @ConfigInfo(name = "visualizeProjectileLoggerEnabled")
     public static volatile boolean visualizeProjectileLoggerEnabled = false;
-
-
-
-
 
 
     @ConfigInfo(name = "commandScript")
@@ -118,12 +100,6 @@ public class GeneralCompatConfig {
     public static volatile String scriptsAppStore = "gnembon/scarpet/contents/programs";
 
 
-
-
-
-
-
-
     @ConfigInfo(name = "microTimingDyeMarker")
     public static volatile String microTimingDyeMarker = "true";
 
@@ -132,9 +108,6 @@ public class GeneralCompatConfig {
 
     @ConfigInfo(name = "microTimingTickDivision")
     public static volatile String microTimingTickDivision = "world_timer";
-
-
-
 
 
     @ConfigInfo(name = "amsNetworkProtocol")
@@ -186,7 +159,6 @@ public class GeneralCompatConfig {
     public static volatile String commandCarpetExtensionModWikiHyperlink = "false";
 
 
-
     @ConfigInfo(name = "commandLifeTime")
     public static volatile String commandLifeTime = "true";
 
@@ -196,7 +168,6 @@ public class GeneralCompatConfig {
 
     @ConfigInfo(name = "commandPerimeterInfo")
     public static volatile String commandPerimeterInfo = "true";
-
 
 
     @ConfigInfo(name = "commandTrackAI")
@@ -305,7 +276,6 @@ public class GeneralCompatConfig {
 
     @ConfigInfo(name = "hopperXpCounters")
     public static volatile boolean hopperXpCounters = false;
-
 
 
     @ConfigInfo(name = "commandItemShadowing")
@@ -665,8 +635,9 @@ public class GeneralCompatConfig {
 
     public static boolean hasSilkTouch(net.minecraft.world.item.ItemStack stack) {
         for (var entry : stack.getOrDefault(net.minecraft.core.component.DataComponents.ENCHANTMENTS,
-            net.minecraft.world.item.enchantment.ItemEnchantments.EMPTY).entrySet()) {
-            if (entry.getKey().is(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH) && entry.getIntValue() > 0) return true;
+                net.minecraft.world.item.enchantment.ItemEnchantments.EMPTY).entrySet()) {
+            if (entry.getKey().is(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH) && entry.getIntValue() > 0)
+                return true;
         }
         return false;
     }
@@ -705,7 +676,7 @@ public class GeneralCompatConfig {
 
     public static List<Boolean> recipeRuleValues() {
         return List.of(betterCraftableBoneBlock, betterCraftableDispenser, craftableEnchantedGoldenApples,
-            craftableElytra, betterCraftablePolishedBlackStoneButton, rottenFleshBurnedIntoLeather, craftableCarvedPumpkin);
+                craftableElytra, betterCraftablePolishedBlackStoneButton, rottenFleshBurnedIntoLeather, craftableCarvedPumpkin);
     }
 
     @ConfigInfo(name = "stackableDiscounts")
@@ -731,7 +702,7 @@ public class GeneralCompatConfig {
 
     public static boolean channelingIgnoresWeather() {
         return CHANNELING_TRIDENT.orElse(false) && ("ignore_weather".equalsIgnoreCase(channelingIgnoreConditions)
-            || "ignore_weather_and_sky".equalsIgnoreCase(channelingIgnoreConditions));
+                || "ignore_weather_and_sky".equalsIgnoreCase(channelingIgnoreConditions));
     }
 
     public static boolean channelingIgnoresSky() {
@@ -1433,7 +1404,7 @@ public class GeneralCompatConfig {
     public static List<net.minecraft.world.level.block.Block> structureIgnoredBlocks(final List<net.minecraft.world.level.block.Block> original) {
         net.minecraft.resources.Identifier id = net.minecraft.resources.Identifier.tryParse(structureBlockIgnored);
         net.minecraft.world.level.block.Block block = id == null ? net.minecraft.world.level.block.Blocks.STRUCTURE_VOID
-            : net.minecraft.core.registries.BuiltInRegistries.BLOCK.getOptional(id).orElse(net.minecraft.world.level.block.Blocks.STRUCTURE_VOID);
+                : net.minecraft.core.registries.BuiltInRegistries.BLOCK.getOptional(id).orElse(net.minecraft.world.level.block.Blocks.STRUCTURE_VOID);
         return original.contains(block) ? original : java.util.stream.Stream.concat(original.stream(), java.util.stream.Stream.of(block)).toList();
     }
 
@@ -1476,6 +1447,7 @@ public class GeneralCompatConfig {
     public static final class StriderJockeyDecision {
         private Boolean jockey;
         private boolean ziglin;
+
         public int tweak(int original) {
             if (spawnJockeyProbably >= 0.0D) {
                 if (this.jockey == null) {
@@ -1590,7 +1562,9 @@ public class GeneralCompatConfig {
         return !"false".equals(amsUpdateSuppressionCrashFix) || yeetUpdateSuppressionCrash;
     }
 
-    public static boolean amsUpdateSuppressionSilent() { return "silence".equals(amsUpdateSuppressionCrashFix); }
+    public static boolean amsUpdateSuppressionSilent() {
+        return "silence".equals(amsUpdateSuppressionCrashFix);
+    }
 
     public static int normalizedTntFuseDuration() {
         return Math.clamp(tntFuseDuration, 0, Short.MAX_VALUE);
@@ -1648,10 +1622,10 @@ public class GeneralCompatConfig {
     }
 
     public static float carpetBlockDestroySpeed(
-        final net.minecraft.world.level.block.Block block,
-        final net.minecraft.world.level.BlockGetter level,
-        final net.minecraft.core.BlockPos pos,
-        final float original
+            final net.minecraft.world.level.block.Block block,
+            final net.minecraft.world.level.BlockGetter level,
+            final net.minecraft.core.BlockPos pos,
+            final float original
     ) {
         if (block == net.minecraft.world.level.block.Blocks.BEDROCK && setBedrockHardness != -1.0F) {
             return setBedrockHardness;
@@ -1686,66 +1660,66 @@ public class GeneralCompatConfig {
 
     public static boolean isProtectionEnchantment(final net.minecraft.resources.ResourceKey<net.minecraft.world.item.enchantment.Enchantment> key) {
         return key == net.minecraft.world.item.enchantment.Enchantments.PROTECTION
-            || key == net.minecraft.world.item.enchantment.Enchantments.BLAST_PROTECTION
-            || key == net.minecraft.world.item.enchantment.Enchantments.FIRE_PROTECTION
-            || key == net.minecraft.world.item.enchantment.Enchantments.PROJECTILE_PROTECTION;
+                || key == net.minecraft.world.item.enchantment.Enchantments.BLAST_PROTECTION
+                || key == net.minecraft.world.item.enchantment.Enchantments.FIRE_PROTECTION
+                || key == net.minecraft.world.item.enchantment.Enchantments.PROJECTILE_PROTECTION;
     }
 
     public static boolean isDamageEnchantment(final net.minecraft.resources.ResourceKey<net.minecraft.world.item.enchantment.Enchantment> key) {
         return key == net.minecraft.world.item.enchantment.Enchantments.SHARPNESS
-            || key == net.minecraft.world.item.enchantment.Enchantments.SMITE
-            || key == net.minecraft.world.item.enchantment.Enchantments.BANE_OF_ARTHROPODS
-            || key == net.minecraft.world.item.enchantment.Enchantments.IMPALING
-            || key == net.minecraft.world.item.enchantment.Enchantments.DENSITY
-            || key == net.minecraft.world.item.enchantment.Enchantments.BREACH;
+                || key == net.minecraft.world.item.enchantment.Enchantments.SMITE
+                || key == net.minecraft.world.item.enchantment.Enchantments.BANE_OF_ARTHROPODS
+                || key == net.minecraft.world.item.enchantment.Enchantments.IMPALING
+                || key == net.minecraft.world.item.enchantment.Enchantments.DENSITY
+                || key == net.minecraft.world.item.enchantment.Enchantments.BREACH;
     }
 
     private static boolean isSoftDeepslate(net.minecraft.world.level.block.Block block) {
         return block == net.minecraft.world.level.block.Blocks.DEEPSLATE
-            || block == net.minecraft.world.level.block.Blocks.CHISELED_DEEPSLATE
-            || block == net.minecraft.world.level.block.Blocks.POLISHED_DEEPSLATE
-            || block == net.minecraft.world.level.block.Blocks.POLISHED_DEEPSLATE_SLAB
-            || block == net.minecraft.world.level.block.Blocks.POLISHED_DEEPSLATE_STAIRS
-            || block == net.minecraft.world.level.block.Blocks.POLISHED_DEEPSLATE_WALL
-            || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_BRICK_SLAB
-            || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_BRICK_STAIRS
-            || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_BRICK_WALL;
+                || block == net.minecraft.world.level.block.Blocks.CHISELED_DEEPSLATE
+                || block == net.minecraft.world.level.block.Blocks.POLISHED_DEEPSLATE
+                || block == net.minecraft.world.level.block.Blocks.POLISHED_DEEPSLATE_SLAB
+                || block == net.minecraft.world.level.block.Blocks.POLISHED_DEEPSLATE_STAIRS
+                || block == net.minecraft.world.level.block.Blocks.POLISHED_DEEPSLATE_WALL
+                || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_BRICK_SLAB
+                || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_BRICK_STAIRS
+                || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_BRICK_WALL;
     }
 
     private static boolean isSoftCobbledDeepslate(net.minecraft.world.level.block.Block block) {
         return block == net.minecraft.world.level.block.Blocks.COBBLED_DEEPSLATE
-            || block == net.minecraft.world.level.block.Blocks.COBBLED_DEEPSLATE_SLAB
-            || block == net.minecraft.world.level.block.Blocks.COBBLED_DEEPSLATE_STAIRS
-            || block == net.minecraft.world.level.block.Blocks.COBBLED_DEEPSLATE_WALL
-            || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_BRICKS
-            || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_TILES
-            || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_TILE_SLAB
-            || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_TILE_STAIRS
-            || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_TILE_WALL
-            || block == net.minecraft.world.level.block.Blocks.CRACKED_DEEPSLATE_BRICKS
-            || block == net.minecraft.world.level.block.Blocks.CRACKED_DEEPSLATE_TILES;
+                || block == net.minecraft.world.level.block.Blocks.COBBLED_DEEPSLATE_SLAB
+                || block == net.minecraft.world.level.block.Blocks.COBBLED_DEEPSLATE_STAIRS
+                || block == net.minecraft.world.level.block.Blocks.COBBLED_DEEPSLATE_WALL
+                || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_BRICKS
+                || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_TILES
+                || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_TILE_SLAB
+                || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_TILE_STAIRS
+                || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_TILE_WALL
+                || block == net.minecraft.world.level.block.Blocks.CRACKED_DEEPSLATE_BRICKS
+                || block == net.minecraft.world.level.block.Blocks.CRACKED_DEEPSLATE_TILES;
     }
 
     private static boolean isSoftOre(net.minecraft.world.level.block.Block block) {
         return block == net.minecraft.world.level.block.Blocks.COAL_ORE
-            || block == net.minecraft.world.level.block.Blocks.IRON_ORE
-            || block == net.minecraft.world.level.block.Blocks.COPPER_ORE
-            || block == net.minecraft.world.level.block.Blocks.LAPIS_ORE
-            || block == net.minecraft.world.level.block.Blocks.GOLD_ORE
-            || block == net.minecraft.world.level.block.Blocks.REDSTONE_ORE
-            || block == net.minecraft.world.level.block.Blocks.DIAMOND_ORE
-            || block == net.minecraft.world.level.block.Blocks.EMERALD_ORE;
+                || block == net.minecraft.world.level.block.Blocks.IRON_ORE
+                || block == net.minecraft.world.level.block.Blocks.COPPER_ORE
+                || block == net.minecraft.world.level.block.Blocks.LAPIS_ORE
+                || block == net.minecraft.world.level.block.Blocks.GOLD_ORE
+                || block == net.minecraft.world.level.block.Blocks.REDSTONE_ORE
+                || block == net.minecraft.world.level.block.Blocks.DIAMOND_ORE
+                || block == net.minecraft.world.level.block.Blocks.EMERALD_ORE;
     }
 
     private static boolean isSoftDeepslateOre(net.minecraft.world.level.block.Block block) {
         return block == net.minecraft.world.level.block.Blocks.DEEPSLATE_COAL_ORE
-            || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_IRON_ORE
-            || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_COPPER_ORE
-            || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_LAPIS_ORE
-            || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_GOLD_ORE
-            || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_REDSTONE_ORE
-            || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_DIAMOND_ORE
-            || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_EMERALD_ORE;
+                || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_IRON_ORE
+                || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_COPPER_ORE
+                || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_LAPIS_ORE
+                || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_GOLD_ORE
+                || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_REDSTONE_ORE
+                || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_DIAMOND_ORE
+                || block == net.minecraft.world.level.block.Blocks.DEEPSLATE_EMERALD_ORE;
     }
 
     public static boolean forceOpenChest() {
@@ -1779,7 +1753,8 @@ public class GeneralCompatConfig {
             appliedScriptsAppStore = scriptsAppStore;
             String value = scriptsAppStore;
             carpet.script.external.ScarpetRuntime.of(server).submit(() -> {
-                carpet.script.external.Carpet.ruleChanged(server.createCommandSourceStack(), "scriptsAppStore", value); return null;
+                carpet.script.external.Carpet.ruleChanged(server.createCommandSourceStack(), "scriptsAppStore", value);
+                return null;
             });
         }
     }
@@ -1793,7 +1768,9 @@ public class GeneralCompatConfig {
         String accepted = fun.bm.lophine.carpet.TisMicroTimingMarkers.validateDyeRule(microTimingDyeMarker, appliedMicroDye, null);
         microTimingDyeMarker = accepted == null ? appliedMicroDye : accepted;
         if (appliedMicroTiming != microTiming || !appliedMicroDye.equals(microTimingDyeMarker) || !appliedMicroTarget.equals(microTimingTarget)) {
-            appliedMicroTiming = microTiming; appliedMicroDye = microTimingDyeMarker; appliedMicroTarget = microTimingTarget;
+            appliedMicroTiming = microTiming;
+            appliedMicroDye = microTimingDyeMarker;
+            appliedMicroTarget = microTimingTarget;
             fun.bm.lophine.carpet.TisMicroTiming.ruleChanged();
         }
     }
@@ -1805,10 +1782,11 @@ public class GeneralCompatConfig {
 
     @NeedRun(when = EnumRunnableType.BEFORE_FINAL_LOAD)
     public void sendChangesToClient() {
-        Boolean previousEnderChest=appliedLargeEnderChest;appliedLargeEnderChest=largeEnderChest;
-        if(Boolean.FALSE.equals(previousEnderChest)&&largeEnderChest){
-            var server=net.minecraft.server.MinecraftServer.getServer();
-            if(server!=null&&server.isReady())fun.bm.lophine.carpet.CarpetRuleObservers.enderChestEnabled(server);
+        Boolean previousEnderChest = appliedLargeEnderChest;
+        appliedLargeEnderChest = largeEnderChest;
+        if (Boolean.FALSE.equals(previousEnderChest) && largeEnderChest) {
+            var server = net.minecraft.server.MinecraftServer.getServer();
+            if (server != null && server.isReady()) fun.bm.lophine.carpet.CarpetRuleObservers.enderChestEnabled(server);
         }
         fun.bm.lophine.carpet.AmsFakePlayers.refresh();
         fun.bm.lophine.carpet.CarpetDistanceRuleLifecycle.refresh();
@@ -1827,6 +1805,6 @@ public class GeneralCompatConfig {
             net.minecraft.world.entity.ai.gossip.GossipType.MAJOR_POSITIVE.decayPerTransfer = stackableDiscounts ? 100 : 20;
             appliedStackableDiscounts = stackableDiscounts;
         }
-        if(!fun.bm.lophine.carpet.CarpetRuleChanges.isChanging())CarpetProtocalDataBase.apply();
+        if (!fun.bm.lophine.carpet.CarpetRuleChanges.isChanging()) CarpetProtocalDataBase.apply();
     }
 }

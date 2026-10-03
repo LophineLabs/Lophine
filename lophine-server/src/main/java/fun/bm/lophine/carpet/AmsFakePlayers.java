@@ -3,9 +3,6 @@
 package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
-import io.papermc.paper.threadedregions.RegionizedServer;
-import java.util.Objects;
-import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -15,20 +12,24 @@ import org.bukkit.command.CommandSender;
 import org.leavesmc.leaves.bot.BotList;
 import org.leavesmc.leaves.bot.ServerBot;
 
+import java.util.Objects;
+import java.util.Optional;
+
 public final class AmsFakePlayers {
     private static String previousTeam = "false";
 
     private AmsFakePlayers() {
     }
 
-    public record SpawnMode(net.minecraft.world.level.GameType mode, boolean flying) {}
+    public record SpawnMode(net.minecraft.world.level.GameType mode, boolean flying) {
+    }
 
     public static SpawnMode spawnMode(final net.minecraft.world.level.GameType explicitMode, final net.minecraft.server.level.ServerPlayer sender) {
         net.minecraft.world.level.GameType mode = net.minecraft.world.level.GameType.CREATIVE;
         boolean flying = false;
         if (sender != null) {
             mode = fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig.fakePlayerDefaultSurvivalMode
-                ? net.minecraft.world.level.GameType.SURVIVAL : sender.gameMode.getGameModeForPlayer();
+                    ? net.minecraft.world.level.GameType.SURVIVAL : sender.gameMode.getGameModeForPlayer();
             boolean originalFlying = sender.getAbilities().flying;
             flying = fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig.fakePlayerDefaultSurvivalMode ? false : originalFlying;
         }
@@ -51,7 +52,7 @@ public final class AmsFakePlayers {
         // whitelist identity without a blocking profile lookup on a region thread.
         for (var entry : server.getPlayerList().getWhiteList().getEntries()) {
             if (entry.getUser() != null && entry.getUser().name().equalsIgnoreCase(name)
-                && (!GeneralCompatConfig.fakePlayerUseOfflinePlayerUUID
+                    && (!GeneralCompatConfig.fakePlayerUseOfflinePlayerUUID
                     || entry.getUser().id().equals(net.minecraft.core.UUIDUtil.createOfflinePlayerUUID(name)))) {
                 creator.sendMessage("Whitelisted players can only be spawned by operators");
                 return false;
@@ -70,7 +71,7 @@ public final class AmsFakePlayers {
             if (!"false".equals(team)) {
                 addToTeam(server, name, team);
             }
-            return (Void)null;
+            return (Void) null;
         });
     }
 
@@ -83,14 +84,17 @@ public final class AmsFakePlayers {
             if (current != null && current.getName().equals(GeneralCompatConfig.fancyFakePlayerName)) {
                 server.getScoreboard().removePlayerFromTeam(name, current);
             }
-            return (Void)null;
+            return (Void) null;
         });
     }
 
     public static void refresh() {
         final MinecraftServer server = MinecraftServer.getServer();
         if (server != null && BotList.INSTANCE != null) {
-            AmsNativeCommandEffects.global(server, () -> {applyRuleChange(server);return (Void)null;});
+            AmsNativeCommandEffects.global(server, () -> {
+                applyRuleChange(server);
+                return (Void) null;
+            });
         }
     }
 

@@ -4,10 +4,11 @@
 package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
-import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import org.leavesmc.leaves.util.UpdateSuppressionException;
+
+import java.util.Locale;
 
 public final class TisSimulationRules {
     private TisSimulationRules() {
@@ -36,6 +37,6 @@ public final class TisSimulationRules {
             throw new UpdateSuppressionException(pos, level, null, null, failure);
         }
         if (failure instanceof Error error) throw error;
-        throw (RuntimeException)failure;
+        throw (RuntimeException) failure;
     }
 }

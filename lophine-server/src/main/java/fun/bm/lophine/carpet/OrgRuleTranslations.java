@@ -2,18 +2,22 @@ package fun.bm.lophine.carpet;
 
 import com.google.gson.JsonParser;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
+import org.bukkit.configuration.file.YamlConfiguration;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import org.bukkit.configuration.file.YamlConfiguration;
 
-/** Pinned upstream translations used by server-side rule discovery and feedback. */
+/**
+ * Pinned upstream translations used by server-side rule discovery and feedback.
+ */
 public final class OrgRuleTranslations {
     private static final Map<String, Map<String, String>> TRANSLATIONS = loadAll();
 
-    private OrgRuleTranslations() {}
+    private OrgRuleTranslations() {
+    }
 
     private static Map<String, Map<String, String>> loadAll() {
         Map<String, Map<String, String>> languages = new HashMap<>();
@@ -24,9 +28,10 @@ public final class OrgRuleTranslations {
                 try (InputStream json = OrgRuleTranslations.class.getResourceAsStream(root + ".json")) {
                     if (json != null) {
                         JsonParser.parseReader(new InputStreamReader(json, StandardCharsets.UTF_8)).getAsJsonObject()
-                            .entrySet().forEach(entry -> {
-                                if (entry.getValue().isJsonPrimitive()) entries.putIfAbsent(entry.getKey(), entry.getValue().getAsString());
-                            });
+                                .entrySet().forEach(entry -> {
+                                    if (entry.getValue().isJsonPrimitive())
+                                        entries.putIfAbsent(entry.getKey(), entry.getValue().getAsString());
+                                });
                     }
                 } catch (java.io.IOException exception) {
                     throw new IllegalStateException("Unable to load bundled Carpet translations", exception);
@@ -53,9 +58,14 @@ public final class OrgRuleTranslations {
     public static String text(String key, String fallback) {
         String language = GeneralCompatConfig.language.toLowerCase(java.util.Locale.ROOT);
         return TRANSLATIONS.getOrDefault(language, Map.of()).getOrDefault(key,
-            TRANSLATIONS.get("en_us").getOrDefault(key, fallback));
+                TRANSLATIONS.get("en_us").getOrDefault(key, fallback));
     }
 
-    public static String name(String rule) { return text("carpet.rule." + rule + ".name", rule); }
-    public static String description(String rule) { return text("carpet.rule." + rule + ".desc", ""); }
+    public static String name(String rule) {
+        return text("carpet.rule." + rule + ".name", rule);
+    }
+
+    public static String description(String rule) {
+        return text("carpet.rule." + rule + ".desc", "");
+    }
 }

@@ -2,42 +2,59 @@
 package carpet.script.external;
 
 import ca.spottedleaf.moonrise.common.util.TickThread;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 
-/** Native world handoff begins only after every original removal callback and transform completes. */
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+/**
+ * Native world handoff begins only after every original removal callback and transform completes.
+ */
 public final class ScarpetDimensionContinuations {
-    private ScarpetDimensionContinuations() {}
+    private ScarpetDimensionContinuations() {
+    }
 
-    /** Committed native callbacks retain causal work without re-admitting a cancelled guest frame. */
-    public static <T> Consumer<T> captureConsumer(Consumer<T> action) { return ScarpetRuntime.captureNativeConsumer(action); }
+    /**
+     * Committed native callbacks retain causal work without re-admitting a cancelled guest frame.
+     */
+    public static <T> Consumer<T> captureConsumer(Consumer<T> action) {
+        return ScarpetRuntime.captureNativeConsumer(action);
+    }
 
-    public static <T,U> java.util.function.BiConsumer<T,U> captureConsumer(java.util.function.BiConsumer<T,U> action) { return ScarpetRuntime.captureNativeConsumer(action); }
+    public static <T, U> java.util.function.BiConsumer<T, U> captureConsumer(java.util.function.BiConsumer<T, U> action) {
+        return ScarpetRuntime.captureNativeConsumer(action);
+    }
 
     public static <T> CompletableFuture<T> atOrigin(ServerLevel world, BlockPos position, Supplier<T> operation) {
         Supplier<T> owned = ScarpetRuntime.captureNativeContinuation(operation);
         if (TickThread.isTickThreadFor(world, position)) {
-            try { return CompletableFuture.completedFuture(owned.get()); }
-            catch (Throwable failure) { return CompletableFuture.failedFuture(failure); }
+            try {
+                return CompletableFuture.completedFuture(owned.get());
+            } catch (Throwable failure) {
+                return CompletableFuture.failedFuture(failure);
+            }
         }
         var actual = new CompletableFuture<T>();
         world.getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, world.getWorld(),
-            position.getX() >> 4, position.getZ() >> 4, () -> {
-                try { actual.complete(owned.get()); } catch (Throwable failure) { actual.completeExceptionally(failure); }
-            });
+                position.getX() >> 4, position.getZ() >> 4, () -> {
+                    try {
+                        actual.complete(owned.get());
+                    } catch (Throwable failure) {
+                        actual.completeExceptionally(failure);
+                    }
+                });
         return actual;
     }
 
     public static CompletableFuture<Void> transformTree(Entity originalRoot, ServerLevel origin, BlockPos originPosition,
-            List<Entity.EntityTreeNode> nodes, Function<Entity, CompletableFuture<Entity>> transform,
-            Consumer<Consumer<Throwable>> place, Runnable failed) {
+                                                        List<Entity.EntityTreeNode> nodes, Function<Entity, CompletableFuture<Entity>> transform,
+                                                        Consumer<Consumer<Throwable>> place, Runnable failed) {
         // Capture actual original owners while the initial native passenger tree is still owned.
         for (var node : nodes) ScarpetRetiredActors.capture(node.root);
         var done = new CompletableFuture<Void>();
@@ -63,8 +80,11 @@ public final class ScarpetDimensionContinuations {
                                 else done.completeExceptionally(problem);
                             });
                             else {
-                                try { failed.run(); }
-                                finally { done.completeExceptionally(failure); }
+                                try {
+                                    failed.run();
+                                } finally {
+                                    done.completeExceptionally(failure);
+                                }
                             }
                             return null;
                         });

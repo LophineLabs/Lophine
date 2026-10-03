@@ -3,10 +3,11 @@
 package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.protocol.CarpetLoggerProtocol;
-import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
 
 public final class CarpetTntLogger {
     private static long lastGameTime = Long.MIN_VALUE;
@@ -37,12 +38,12 @@ public final class CarpetTntLogger {
             if (!full && !"brief".equals(option)) return List.of();
             var message = Component.empty();
             if (full) message.append(Component.literal("#" + number).withStyle(ChatFormatting.RED))
-                .append(Component.literal(" @" + gameTime).withStyle(ChatFormatting.LIGHT_PURPLE)).append(": ");
+                    .append(Component.literal(" @" + gameTime).withStyle(ChatFormatting.LIGHT_PURPLE)).append(": ");
             message.append(Component.literal("P ").withStyle(ChatFormatting.AQUA))
-                .append(CarpetTrajectoryLogger.coordinatesText(primed, ChatFormatting.AQUA, full)).append(" ")
-                .append(CarpetTrajectoryLogger.coordinatesText(motion, ChatFormatting.AQUA, full));
+                    .append(CarpetTrajectoryLogger.coordinatesText(primed, ChatFormatting.AQUA, full)).append(" ")
+                    .append(CarpetTrajectoryLogger.coordinatesText(motion, ChatFormatting.AQUA, full));
             message.append(Component.literal(" E ").withStyle(ChatFormatting.RED))
-                .append(CarpetTrajectoryLogger.coordinatesText(position, ChatFormatting.RED, full));
+                    .append(CarpetTrajectoryLogger.coordinatesText(position, ChatFormatting.RED, full));
             return List.of(message);
         });
     }

@@ -86,7 +86,7 @@ public class FakeplayerConfig {
 
     public static synchronized void ensureCommandBackend() {
         if (checkEnabled() && command == null) {
-            command = new BotCommand("bot");
+            command = new BotCommand();
             command.register();
         } else if (!checkEnabled() && command != null) {
             command.unregister();

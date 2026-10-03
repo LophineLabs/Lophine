@@ -10,8 +10,7 @@ import java.util.List;
  * Expression tokenizer that allows to iterate over a {@link String}
  * expression token by token. Blank characters will be skipped.
  */
-public class Tokenizer
-{
+public class Tokenizer {
     /**
      * What character to use for decimal separators.
      */
@@ -40,8 +39,7 @@ public class Tokenizer
     private final Expression expression;
     private final Context context;
 
-    Tokenizer(Context c, Expression expr, String input, boolean allowComments, boolean allowNewLineMakers)
-    {
+    Tokenizer(Context c, Expression expr, String input, boolean allowComments, boolean allowNewLineMakers) {
         this.input = input;
         this.expression = expr;
         this.context = c;
@@ -49,53 +47,40 @@ public class Tokenizer
         this.newLinesMarkers = allowNewLineMakers;
     }
 
-    public static Tokenizer simple(String input)
-    {
+    public static Tokenizer simple(String input) {
         return new Tokenizer(null, null, input, false, false);
     }
 
-    public static List<Token> postProcess(List<Token> originalTokens)
-    {
+    public static List<Token> postProcess(List<Token> originalTokens) {
         List<Token> cleanedTokens = new ArrayList<>();
         Token last = null;
-        for (int i = originalTokens.size() - 1; i >= 0; i--)
-        {
+        for (int i = originalTokens.size() - 1; i >= 0; i--) {
             Token current = originalTokens.get(i);
-            if (current.type == Token.TokenType.MARKER && current.surface.startsWith("//"))
-            {
+            if (current.type == Token.TokenType.MARKER && current.surface.startsWith("//")) {
                 continue;
             }
             // skipping comments
             if (!isSemicolon(current)
-                    || (last != null && last.type != Token.TokenType.CLOSE_PAREN && last.type != Token.TokenType.COMMA && !isSemicolon(last)))
-            {
-                if (isSemicolon(current))
-                {
+                    || (last != null && last.type != Token.TokenType.CLOSE_PAREN && last.type != Token.TokenType.COMMA && !isSemicolon(last))) {
+                if (isSemicolon(current)) {
                     current.surface = ";";
                     current.type = Token.TokenType.OPERATOR;
                 }
-                if (current.type == Token.TokenType.MARKER)
-                {
+                if (current.type == Token.TokenType.MARKER) {
                     // dealing with tokens in reversed order
-                    if ("{".equals(current.surface))
-                    {
+                    if ("{".equals(current.surface)) {
                         cleanedTokens.add(current.morphedInto(Token.TokenType.OPEN_PAREN, "("));
                         current.morph(Token.TokenType.FUNCTION, "m");
-                    }
-                    else if ("[".equals(current.surface))
-                    {
+                    } else if ("[".equals(current.surface)) {
                         cleanedTokens.add(current.morphedInto(Token.TokenType.OPEN_PAREN, "("));
                         current.morph(Token.TokenType.FUNCTION, "l");
-                    }
-                    else if ("}".equals(current.surface) || "]".equals(current.surface))
-                    {
+                    } else if ("}".equals(current.surface) || "]".equals(current.surface)) {
                         current.morph(Token.TokenType.CLOSE_PAREN, ")");
                     }
                 }
                 cleanedTokens.add(current);
             }
-            if (!(current.type == Token.TokenType.MARKER && current.surface.equals("$")))
-            {
+            if (!(current.type == Token.TokenType.MARKER && current.surface.equals("$"))) {
                 last = current;
             }
         }
@@ -103,18 +88,15 @@ public class Tokenizer
         return cleanedTokens;
     }
 
-    public List<Token> parseTokens()
-    {
+    public List<Token> parseTokens() {
         List<Token> tokens = new ArrayList<>();
-        while (hasNext())
-        {
+        while (hasNext()) {
             tokens.add(next());
         }
         return tokens;
     }
 
-    public boolean hasNext()
-    {
+    public boolean hasNext() {
         return (pos < input.length());
     }
 
@@ -123,37 +105,30 @@ public class Tokenizer
      *
      * @return The next character or character 0, if at end of string.
      */
-    private char peekNextChar()
-    {
+    private char peekNextChar() {
         return (pos < (input.length() - 1)) ? input.charAt(pos + 1) : 0;
     }
 
-    private boolean isHexDigit(char ch)
-    {
+    private boolean isHexDigit(char ch) {
         return ch == 'x' || ch == 'X' || (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f')
                 || (ch >= 'A' && ch <= 'F');
     }
 
-    private static boolean isSemicolon(Token tok)
-    {
+    private static boolean isSemicolon(Token tok) {
         return (tok.type == Token.TokenType.OPERATOR && tok.surface.equals(";"))
                 || (tok.type == Token.TokenType.UNARY_OPERATOR && tok.surface.equals(";u"));
     }
 
-    public Token next()
-    {
+    public Token next() {
         Token token = new Token();
 
-        if (pos >= input.length())
-        {
+        if (pos >= input.length()) {
             return previousToken = null;
         }
         char ch = input.charAt(pos);
-        while (Character.isWhitespace(ch) && pos < input.length())
-        {
+        while (Character.isWhitespace(ch) && pos < input.length()) {
             linepos++;
-            if (ch == '\n')
-            {
+            if (ch == '\n') {
                 lineno++;
                 linepos = 0;
             }
@@ -168,8 +143,7 @@ public class Tokenizer
         if (Character.isDigit(ch)) // || (ch == decimalSeparator && Character.isDigit(peekNextChar())))
         // decided to no support this notation to favour element access via . operator
         {
-            if (ch == '0' && (peekNextChar() == 'x' || peekNextChar() == 'X'))
-            {
+            if (ch == '0' && (peekNextChar() == 'x' || peekNextChar() == 'X')) {
                 isHex = true;
             }
             while ((isHex
@@ -182,72 +156,52 @@ public class Tokenizer
                     || (ch == '+' && token.length() > 0
                     && ('e' == token.charAt(token.length() - 1)
                     || 'E' == token.charAt(token.length() - 1))))
-                    && (pos < input.length()))
-            {
+                    && (pos < input.length())) {
                 token.append(input.charAt(pos++));
                 linepos++;
                 ch = pos == input.length() ? 0 : input.charAt(pos);
             }
             token.type = isHex ? Token.TokenType.HEX_LITERAL : Token.TokenType.LITERAL;
-        }
-        else if (ch == '\'')
-        {
+        } else if (ch == '\'') {
             pos++;
             linepos++;
             token.type = Token.TokenType.STRINGPARAM;
-            if (pos == input.length() && expression != null && context != null)
-            {
+            if (pos == input.length() && expression != null && context != null) {
                 throw new ExpressionException(context, this.expression, token, "Program truncated");
             }
             ch = input.charAt(pos);
-            while (ch != '\'')
-            {
-                if (ch == '\\')
-                {
+            while (ch != '\'') {
+                if (ch == '\\') {
                     char nextChar = peekNextChar();
-                    if (nextChar == 'n')
-                    {
+                    if (nextChar == 'n') {
                         token.append('\n');
-                    }
-                    else if (nextChar == 't')
-                    {
+                    } else if (nextChar == 't') {
                         //throw new ExpressionException(context, this.expression, token,
                         //        "Tab character is not supported");
                         token.append('\t');
-                    }
-                    else if (nextChar == 'r')
-                    {
+                    } else if (nextChar == 'r') {
                         throw new ExpressionException(context, this.expression, token,
                                 "Carriage return character is not supported");
                         //token.append('\r');
-                    }
-                    else if (nextChar == '\\' || nextChar == '\'')
-                    {
+                    } else if (nextChar == '\\' || nextChar == '\'') {
                         token.append(nextChar);
-                    }
-                    else
-                    {
+                    } else {
                         pos--;
                         linepos--;
                     }
                     pos += 2;
                     linepos += 2;
-                    if (pos == input.length() && expression != null && context != null)
-                    {
+                    if (pos == input.length() && expression != null && context != null) {
                         throw new ExpressionException(context, this.expression, token, "Program truncated");
                     }
-                }
-                else
-                {
+                } else {
                     token.append(input.charAt(pos++));
                     linepos++;
-                    if (ch == '\n')
-                    {
+                    if (ch == '\n') {
                         lineno++;
                         linepos = 0;
                     }
-                    if (pos == input.length() && expression != null && context != null)
-                    {
+                    if (pos == input.length() && expression != null && context != null) {
                         throw new ExpressionException(context, this.expression, token, "Program truncated");
                     }
                 }
@@ -255,27 +209,21 @@ public class Tokenizer
             }
             pos++;
             linepos++;
-            token.disguiseAs("'"+token.surface+"'", null);
+            token.disguiseAs("'" + token.surface + "'", null);
 
-        }
-        else if (Character.isLetter(ch) || "_".indexOf(ch) >= 0)
-        {
+        } else if (Character.isLetter(ch) || "_".indexOf(ch) >= 0) {
             while ((Character.isLetter(ch) || Character.isDigit(ch) || "_".indexOf(ch) >= 0
-                    || token.length() == 0 && "_".indexOf(ch) >= 0) && (pos < input.length()))
-            {
+                    || token.length() == 0 && "_".indexOf(ch) >= 0) && (pos < input.length())) {
                 token.append(input.charAt(pos++));
                 linepos++;
                 ch = pos == input.length() ? 0 : input.charAt(pos);
             }
             // Remove optional white spaces after function or variable name
-            if (Character.isWhitespace(ch))
-            {
-                while (Character.isWhitespace(ch) && pos < input.length())
-                {
+            if (Character.isWhitespace(ch)) {
+                while (Character.isWhitespace(ch) && pos < input.length()) {
                     ch = input.charAt(pos++);
                     linepos++;
-                    if (ch == '\n')
-                    {
+                    if (ch == '\n') {
                         lineno++;
                         linepos = 0;
                     }
@@ -284,25 +232,16 @@ public class Tokenizer
                 linepos--;
             }
             token.type = ch == '(' ? Token.TokenType.FUNCTION : Token.TokenType.VARIABLE;
-        }
-        else if (ch == '(' || ch == ')' || ch == ',' ||
-                ch == '{' || ch == '}' || ch == '[' || ch == ']')
-        {
-            if (ch == '(')
-            {
+        } else if (ch == '(' || ch == ')' || ch == ',' ||
+                ch == '{' || ch == '}' || ch == '[' || ch == ']') {
+            if (ch == '(') {
                 token.type = Token.TokenType.OPEN_PAREN;
-            }
-            else if (ch == ')')
-            {
+            } else if (ch == ')') {
                 token.type = Token.TokenType.CLOSE_PAREN;
-            }
-            else if (ch == ',')
-            {
+            } else if (ch == ',') {
                 token.type = Token.TokenType.COMMA;
                 token.disguiseAs(", ", null);
-            }
-            else
-            {
+            } else {
                 token.type = Token.TokenType.MARKER;
             }
             token.append(ch);
@@ -313,14 +252,11 @@ public class Tokenizer
                     previousToken.type == Token.TokenType.OPERATOR &&
                     (ch == ')' || ch == ',' || ch == ']' || ch == '}') &&
                     !previousToken.surface.equalsIgnoreCase(";")
-            )
-            {
+            ) {
                 throw new ExpressionException(context, this.expression, previousToken,
                         "Can't have operator " + previousToken.surface + " at the end of a subexpression");
             }
-        }
-        else
-        {
+        } else {
             String greedyMatch = "";
             int initialPos = pos;
             int initialLinePos = linepos;
@@ -328,20 +264,16 @@ public class Tokenizer
             int validOperatorSeenUntil = -1;
             while (!Character.isLetter(ch) && !Character.isDigit(ch) && "_".indexOf(ch) < 0
                     && !Character.isWhitespace(ch) && ch != '(' && ch != ')' && ch != ','
-                    && (pos < input.length()))
-            {
+                    && (pos < input.length())) {
                 greedyMatch += ch;
-                if (comments && "//".equals(greedyMatch))
-                {
+                if (comments && "//".equals(greedyMatch)) {
 
-                    while (ch != '\n' && pos < input.length())
-                    {
+                    while (ch != '\n' && pos < input.length()) {
                         ch = input.charAt(pos++);
                         linepos++;
                         greedyMatch += ch;
                     }
-                    if (ch == '\n')
-                    {
+                    if (ch == '\n') {
                         lineno++;
                         linepos = 0;
                     }
@@ -351,42 +283,34 @@ public class Tokenizer
                 }
                 pos++;
                 linepos++;
-                if (Expression.none.isAnOperator(greedyMatch))
-                {
+                if (Expression.none.isAnOperator(greedyMatch)) {
                     validOperatorSeenUntil = pos;
                 }
                 ch = pos == input.length() ? 0 : input.charAt(pos);
             }
-            if (newLinesMarkers && "$".equals(greedyMatch))
-            {
+            if (newLinesMarkers && "$".equals(greedyMatch)) {
                 lineno++;
                 linepos = 0;
                 token.type = Token.TokenType.MARKER;
                 token.append('$');
                 return token; // skipping previous token lookback
             }
-            if (validOperatorSeenUntil != -1)
-            {
+            if (validOperatorSeenUntil != -1) {
                 token.append(input.substring(initialPos, validOperatorSeenUntil));
                 pos = validOperatorSeenUntil;
                 linepos = initialLinePos + validOperatorSeenUntil - initialPos;
-            }
-            else
-            {
+            } else {
                 token.append(greedyMatch);
             }
 
             if (previousToken == null || previousToken.type == Token.TokenType.OPERATOR
                     || previousToken.type == Token.TokenType.OPEN_PAREN || previousToken.type == Token.TokenType.COMMA
                     || (previousToken.type == Token.TokenType.MARKER && (previousToken.surface.equals("{") || previousToken.surface.equals("[")))
-            )
-            {
+            ) {
                 token.disguiseAs(token.surface, null);
                 token.surface += "u";
                 token.type = Token.TokenType.UNARY_OPERATOR;
-            }
-            else
-            {
+            } else {
                 token.type = Token.TokenType.OPERATOR;
                 token.disguiseAs(token.surface.equals(";") ? (token.surface + " ") : (" " + token.surface + " "), null);
 
@@ -409,8 +333,7 @@ public class Tokenizer
                         previousToken.type == Token.TokenType.HEX_LITERAL ||
                         previousToken.type == Token.TokenType.STRINGPARAM
         )
-        )
-        {
+        ) {
             throw new ExpressionException(context, this.expression, previousToken, "'" + token.surface + "' is not allowed after '" + previousToken.surface + "'");
         }
         return previousToken = token;

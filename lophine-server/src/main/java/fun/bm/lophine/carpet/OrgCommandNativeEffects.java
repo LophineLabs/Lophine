@@ -4,9 +4,6 @@ package fun.bm.lophine.carpet;
 import carpet.script.external.ScarpetNativeWork;
 import carpet.script.external.ScarpetPlayerInventoryGate;
 import carpet.script.external.ScarpetRuntime;
-import java.util.ArrayList;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -14,13 +11,21 @@ import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Location;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
-/** Org command receipts retain their real file, teleport and recipient effects. */
+import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+
+/**
+ * Org command receipts retain their real file, teleport and recipient effects.
+ */
 final class OrgCommandNativeEffects {
-    private OrgCommandNativeEffects() {}
+    private OrgCommandNativeEffects() {
+    }
 
     static int command(CommandSourceStack source, int immediate, Supplier<CompletableFuture<Integer>> action) {
         return TisCommandContinuations.complete(source, immediate,
-            () -> OrgMenuNativeEffects.admit(source.getServer(), action), null, () -> {});
+                () -> OrgMenuNativeEffects.admit(source.getServer(), action), null, () -> {
+                });
     }
 
     static CompletableFuture<Void> broadcast(MinecraftServer server, Component message) {
@@ -48,12 +53,18 @@ final class OrgCommandNativeEffects {
 
     static <T> CompletableFuture<T> global(MinecraftServer server, Supplier<T> action) {
         return OrgMenuNativeEffects.admit(server, () -> {
-            var actual = new CompletableFuture<T>(); ScarpetNativeWork.record(actual);
+            var actual = new CompletableFuture<T>();
+            ScarpetNativeWork.record(actual);
             var captured = ScarpetRuntime.captureNativeContinuation(() -> TisCommandContinuations.phase(null, action));
             Runnable run = () -> {
-                try { captured.get().whenComplete((value, failure) -> {
-                    if (failure == null) actual.complete(value); else actual.completeExceptionally(failure);
-                }); } catch (Throwable failure) { actual.completeExceptionally(failure); }
+                try {
+                    captured.get().whenComplete((value, failure) -> {
+                        if (failure == null) actual.complete(value);
+                        else actual.completeExceptionally(failure);
+                    });
+                } catch (Throwable failure) {
+                    actual.completeExceptionally(failure);
+                }
             };
             if (io.papermc.paper.threadedregions.RegionizedServer.isGlobalTickThread()) run.run();
             else io.papermc.paper.threadedregions.RegionizedServer.getInstance().addTask(run);
@@ -65,7 +76,9 @@ final class OrgCommandNativeEffects {
         return OrgMenuNativeEffects.admit(world.getServer(), () -> {
             var captured = ScarpetRuntime.captureNativeContinuation(() -> TisCommandContinuations.phase(null, action));
             java.util.concurrent.CompletableFuture<java.util.concurrent.CompletableFuture<T>> held = CarpetRegionLease.<java.util.concurrent.CompletableFuture<T>>runLoadedValue(world, minX, minZ, maxX, maxZ, lease -> captured.get());
-            var actual = held.thenCompose(value -> value); ScarpetNativeWork.record(actual); return actual;
+            var actual = held.thenCompose(value -> value);
+            ScarpetNativeWork.record(actual);
+            return actual;
         });
     }
 
@@ -77,23 +90,28 @@ final class OrgCommandNativeEffects {
                 return actual;
             }).thenCompose(value -> value);
             return TisCommandContinuations.then(trip, success -> success
-                ? OrgMenuNativeEffects.run(player, () -> { arrived.run(); return true; })
-                : CompletableFuture.completedFuture(false));
+                    ? OrgMenuNativeEffects.run(player, () -> {
+                arrived.run();
+                return true;
+            })
+                    : CompletableFuture.completedFuture(false));
         });
     }
 
-    /** Group acquisition itself remains a waiting intent until its real owner can borrow the group. */
+    /**
+     * Group acquisition itself remains a waiting intent until its real owner can borrow the group.
+     */
     static <T> CompletableFuture<T> intent(ServerPlayer player, Supplier<T> action) {
         return OrgMenuNativeEffects.admit(player.level().getServer(), () -> {
             var captured = ScarpetRuntime.captureNativeContinuation(() ->
-                TisCommandContinuations.phase(player, action));
+                    TisCommandContinuations.phase(player, action));
             return startIntent(player, captured);
         });
     }
 
     private static <T> CompletableFuture<T> startIntent(ServerPlayer player, Supplier<CompletableFuture<T>> action) {
         return OrgFakePlayerActions.owned(player, () -> ScarpetPlayerInventoryGate.paused(player)
-            ? TisCommandContinuations.then(ScarpetPlayerInventoryGate.whenOpen(player), ignored -> startIntent(player, action))
-            : action.get()).thenCompose(value -> value);
+                ? TisCommandContinuations.then(ScarpetPlayerInventoryGate.whenOpen(player), ignored -> startIntent(player, action))
+                : action.get()).thenCompose(value -> value);
     }
 }

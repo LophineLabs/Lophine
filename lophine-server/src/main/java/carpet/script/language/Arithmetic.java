@@ -8,34 +8,27 @@ import carpet.script.value.ListValue;
 import carpet.script.value.NumericValue;
 import carpet.script.value.Value;
 
-public class Arithmetic
-{
+public class Arithmetic {
     public static final Value PI = new NumericValue(Math.PI);
     public static final Value euler = new NumericValue(Math.E);
 
-    public static void apply(Expression expression)
-    {
+    public static void apply(Expression expression) {
         expression.addTypedContextFunction("not", 1, Context.Type.BOOLEAN, (c, t, lv) -> BooleanValue.of(lv.get(0).getBoolean()));
         expression.addUnaryFunction("fact", v ->
         {
             long number = NumericValue.asNumber(v).getLong();
-            if (number < 21)
-            {
+            if (number < 21) {
                 long factorial = 1;
-                for (int i = 1; i <= number; i++)
-                {
+                for (int i = 1; i <= number; i++) {
                     factorial = factorial * i;
                 }
                 return new NumericValue(factorial);
-            }
-            else if (number > 170)
-            {
+            } else if (number > 170) {
                 return NumericValue.of(Double.MAX_VALUE);
             }
             // values over 21 will exceed long limits
             double factorial = 1.0;
-            for (int i = 1; i <= number; i++)
-            {
+            for (int i = 1; i <= number; i++) {
                 factorial = factorial * i;
             }
             return new NumericValue(factorial);
@@ -62,8 +55,7 @@ public class Arithmetic
         expression.addMathematicalUnaryFunction("acosh", d -> Math.log(d + Math.sqrt(Math.pow(d, 2) - 1)));  // Formula: acosh(x) = ln(x + sqrt(x^2 - 1))
         expression.addMathematicalUnaryFunction("atanh", d ->                                       // Formula: atanh(x) = 0.5*ln((1 + x)/(1 - x))
         {
-            if (Math.abs(d) > 1 || Math.abs(d) == 1)
-            {
+            if (Math.abs(d) > 1 || Math.abs(d) == 1) {
                 throw new InternalExpressionException("Number must be |x| < 1");
             }
             return 0.5 * Math.log((1 + d) / (1 - d));
@@ -88,8 +80,7 @@ public class Arithmetic
             double a = 0.0D;
             double b = 0.0D;
             long iter = 0;
-            while (a * a + b * b < 4 && iter < maxiter)
-            {
+            while (a * a + b * b < 4 && iter < maxiter) {
                 double temp = a * a - b * b + a0;
                 b = 2 * a * b + b0;
                 a = temp;
@@ -101,19 +92,15 @@ public class Arithmetic
 
         expression.addFunction("max", lv ->
         {
-            if (lv.isEmpty())
-            {
+            if (lv.isEmpty()) {
                 throw new InternalExpressionException("'max' requires at least one parameter");
             }
             Value max = null;
-            if (lv.size() == 1 && lv.get(0) instanceof ListValue)
-            {
+            if (lv.size() == 1 && lv.get(0) instanceof ListValue) {
                 lv = ((ListValue) lv.get(0)).getItems();
             }
-            for (Value parameter : lv)
-            {
-                if (max == null || parameter.compareTo(max) > 0)
-                {
+            for (Value parameter : lv) {
+                if (max == null || parameter.compareTo(max) > 0) {
                     max = parameter;
                 }
             }
@@ -122,19 +109,15 @@ public class Arithmetic
 
         expression.addFunction("min", lv ->
         {
-            if (lv.isEmpty())
-            {
+            if (lv.isEmpty()) {
                 throw new InternalExpressionException("'min' requires at least one parameter");
             }
             Value min = null;
-            if (lv.size() == 1 && lv.get(0) instanceof ListValue)
-            {
+            if (lv.size() == 1 && lv.get(0) instanceof ListValue) {
                 lv = ((ListValue) lv.get(0)).getItems();
             }
-            for (Value parameter : lv)
-            {
-                if (min == null || parameter.compareTo(min) < 0)
-                {
+            for (Value parameter : lv) {
+                if (min == null || parameter.compareTo(min) < 0) {
                     min = parameter;
                 }
             }

@@ -9,12 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /* The internal expression evaluators exception class. */
-public class InternalExpressionException extends StacklessRuntimeException
-{
+public class InternalExpressionException extends StacklessRuntimeException {
     public List<FunctionValue> stack = new ArrayList<>();
 
-    public InternalExpressionException(String message)
-    {
+    public InternalExpressionException(String message) {
         super(message);
     }
 
@@ -30,8 +28,7 @@ public class InternalExpressionException extends StacklessRuntimeException
      * @return The new {@link ExpressionException} (or {@link ProcessedThrowStatement}),
      * depending on the implementation.
      */
-    public ExpressionException promote(Context c, Expression e, Token token)
-    {
+    public ExpressionException promote(Context c, Expression e, Token token) {
         return new ExpressionException(c, e, token, getMessage(), stack);
     }
 }

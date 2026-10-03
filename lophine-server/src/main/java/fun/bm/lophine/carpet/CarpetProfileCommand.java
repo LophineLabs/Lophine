@@ -9,18 +9,19 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 
 public final class CarpetProfileCommand {
-    private CarpetProfileCommand() {}
+    private CarpetProfileCommand() {
+    }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("profile")
-            .requires(source -> CarpetCommandPermissions.canUse(source, GeneralCompatConfig.commandProfile))
-            .executes(context -> healthReport(context.getSource(), 100))
-            .then(Commands.literal("health").executes(context -> healthReport(context.getSource(), 100))
-                .then(Commands.argument("ticks", IntegerArgumentType.integer(20, 24000))
-                    .executes(context -> healthReport(context.getSource(), IntegerArgumentType.getInteger(context, "ticks")))))
-            .then(Commands.literal("entities").executes(context -> healthEntities(context.getSource(), 100))
-                .then(Commands.argument("ticks", IntegerArgumentType.integer(20, 24000))
-                    .executes(context -> healthEntities(context.getSource(), IntegerArgumentType.getInteger(context, "ticks"))))));
+                .requires(source -> CarpetCommandPermissions.canUse(source, GeneralCompatConfig.commandProfile))
+                .executes(context -> healthReport(context.getSource(), 100))
+                .then(Commands.literal("health").executes(context -> healthReport(context.getSource(), 100))
+                        .then(Commands.argument("ticks", IntegerArgumentType.integer(20, 24000))
+                                .executes(context -> healthReport(context.getSource(), IntegerArgumentType.getInteger(context, "ticks")))))
+                .then(Commands.literal("entities").executes(context -> healthEntities(context.getSource(), 100))
+                        .then(Commands.argument("ticks", IntegerArgumentType.integer(20, 24000))
+                                .executes(context -> healthEntities(context.getSource(), IntegerArgumentType.getInteger(context, "ticks"))))));
     }
 
     public static int healthReport(CommandSourceStack source, int ticks) {

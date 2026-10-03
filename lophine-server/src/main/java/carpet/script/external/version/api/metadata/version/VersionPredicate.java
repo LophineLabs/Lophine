@@ -16,38 +16,39 @@
 
 package carpet.script.external.version.api.metadata.version;
 
-import java.util.Collection;
-import java.util.function.Predicate;
-
 import carpet.script.external.version.api.Version;
 import carpet.script.external.version.api.VersionParsingException;
 import carpet.script.external.version.impl.util.version.VersionPredicateParser;
 
+import java.util.Collection;
+import java.util.function.Predicate;
+
 public interface VersionPredicate extends Predicate<Version> {
-	/**
-	 * Get all terms that have to be satisfied for this predicate to match.
-	 *
-	 * @return Required predicate terms, empty if anything matches
-	 */
-	Collection<? extends PredicateTerm> getTerms();
+    /**
+     * Get all terms that have to be satisfied for this predicate to match.
+     *
+     * @return Required predicate terms, empty if anything matches
+     */
+    Collection<? extends PredicateTerm> getTerms();
 
-	/**
-	 * Get the version interval representing the matched versions.
-	 *
-	 * @return Covered version interval or null if nothing
-	 */
-	VersionInterval getInterval();
+    /**
+     * Get the version interval representing the matched versions.
+     *
+     * @return Covered version interval or null if nothing
+     */
+    VersionInterval getInterval();
 
-	interface PredicateTerm {
-		VersionComparisonOperator getOperator();
-		Version getReferenceVersion();
-	}
+    interface PredicateTerm {
+        VersionComparisonOperator getOperator();
 
-	static VersionPredicate parse(String predicate) throws VersionParsingException {
-		return VersionPredicateParser.parse(predicate);
-	}
+        Version getReferenceVersion();
+    }
 
-	static Collection<VersionPredicate> parse(Collection<String> predicates) throws VersionParsingException {
-		return VersionPredicateParser.parse(predicates);
-	}
+    static VersionPredicate parse(String predicate) throws VersionParsingException {
+        return VersionPredicateParser.parse(predicate);
+    }
+
+    static Collection<VersionPredicate> parse(Collection<String> predicates) throws VersionParsingException {
+        return VersionPredicateParser.parse(predicates);
+    }
 }

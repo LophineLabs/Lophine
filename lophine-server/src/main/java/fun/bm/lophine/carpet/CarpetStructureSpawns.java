@@ -11,9 +11,13 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
 
-/** The original husk predicate reads published structure starts, including during chunk generation. */
+/**
+ * The original husk predicate reads published structure starts, including during chunk generation.
+ */
 public final class CarpetStructureSpawns {
-    private CarpetStructureSpawns() {}
+    private CarpetStructureSpawns() {
+    }
+
     public static boolean surfaceSky(ServerLevelAccessor level, EntityType<?> type, BlockPos pos) {
         if (level.canSeeSky(pos)) return true;
         if (!GeneralCompatConfig.huskSpawningInTemples || type != EntityTypes.HUSK) return false;

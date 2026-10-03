@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 package fun.bm.lophine.carpet;
 
-/** TIS's stack frame expression with the official 26.3 reader's empty mapping result. */
+/**
+ * TIS's stack frame expression with the official 26.3 reader's empty mapping result.
+ */
 public final class TisStackTraces {
-    private TisStackTraces() { }
+    private TisStackTraces() {
+    }
 
     public static StackTraceElement[] rebuild(StackTraceElement[] stack) {
         StackTraceElement[] result = new StackTraceElement[stack.length];

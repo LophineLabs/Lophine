@@ -1,35 +1,28 @@
 package carpet.script.annotation;
 
+import carpet.script.CarpetContext;
+import carpet.script.Context;
+import carpet.script.Expression;
+import carpet.script.Fluff.AbstractLazyFunction;
+import carpet.script.Fluff.TriFunction;
+import carpet.script.Fluff.UsageProvider;
+import carpet.script.LazyValue;
+import carpet.script.exception.InternalExpressionException;
+import carpet.script.value.Value;
+import com.google.common.base.Suppliers;
+import net.minecraft.core.RegistryAccess;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ClassUtils;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import carpet.script.CarpetContext;
-import net.minecraft.core.RegistryAccess;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.ClassUtils;
-
-import com.google.common.base.Suppliers;
-
-import carpet.script.Context;
-import carpet.script.Expression;
-import carpet.script.Fluff.AbstractLazyFunction;
-import carpet.script.Fluff.TriFunction;
-import carpet.script.Fluff.UsageProvider;
-import carpet.script.exception.InternalExpressionException;
-import carpet.script.LazyValue;
-import carpet.script.value.Value;
 
 /**
  * <p>This class parses methods annotated with the {@link ScarpetFunction} annotation in a given {@link Class}, generating
@@ -76,8 +69,7 @@ import carpet.script.value.Value;
  * @see Param.Params#registerStrictConverter(Class, boolean, ValueConverter)
  * @see Param.Params#registerCustomConverterFactory(java.util.function.BiFunction)
  */
-public final class AnnotationParser
-{
+public final class AnnotationParser {
     static final int UNDEFINED_PARAMS = -2;
     static final String USE_METHOD_NAME = "$METHOD_NAME_MARKER$";
     private static final List<ParsedFunction> functionList = new ArrayList<>();
@@ -106,34 +98,26 @@ public final class AnnotationParser
      * @param clazz The class to parse
      * @see ScarpetFunction
      */
-    public static void parseFunctionClass(Class<?> clazz)
-    {
+    public static void parseFunctionClass(Class<?> clazz) {
         // Only try to instantiate or require concrete classes if there are non-static annotated methods
         Supplier<Object> instanceSupplier = Suppliers.memoize(() -> {
-            if (Modifier.isAbstract(clazz.getModifiers()))
-            {
+            if (Modifier.isAbstract(clazz.getModifiers())) {
                 throw new IllegalArgumentException("Function class must be concrete to support non-static methods! Class: " + clazz.getSimpleName());
             }
-            try
-            {
+            try {
                 return clazz.getConstructor().newInstance();
-            }
-            catch (ReflectiveOperationException e)
-            {
+            } catch (ReflectiveOperationException e) {
                 throw new IllegalArgumentException(
                         "Couldn't create instance of given " + clazz + ". This is needed for non-static methods. Make sure default constructor is available", e);
             }
         });
         Method[] methodz = clazz.getDeclaredMethods();
-        for (Method method : methodz)
-        {
-            if (!method.isAnnotationPresent(ScarpetFunction.class))
-            {
+        for (Method method : methodz) {
+            if (!method.isAnnotationPresent(ScarpetFunction.class)) {
                 continue;
             }
 
-            if (method.getExceptionTypes().length != 0)
-            {
+            if (method.getExceptionTypes().length != 0) {
                 throw new IllegalArgumentException("Annotated method '" + method.getName() + "', provided in '" + clazz + "' must not declare checked exceptions");
             }
 
@@ -148,16 +132,13 @@ public final class AnnotationParser
      *
      * @param expr The expression to add every function to
      */
-    public static void apply(Expression expr)
-    {
-        for (ParsedFunction function : functionList)
-        {
+    public static void apply(Expression expr) {
+        for (ParsedFunction function : functionList) {
             expr.addLazyFunction(function.name, function.scarpetParamCount, function);
         }
     }
 
-    private static class ParsedFunction implements TriFunction<Context, Context.Type, List<LazyValue>, LazyValue>, UsageProvider
-    {
+    private static class ParsedFunction implements TriFunction<Context, Context.Type, List<LazyValue>, LazyValue>, UsageProvider {
         private final String name;
         private final boolean isMethodVarArgs;
         private final int methodParamCount;
@@ -173,8 +154,7 @@ public final class AnnotationParser
         private final int scarpetParamCount;
         private final Context.Type contextType;
 
-        private ParsedFunction(Method method, Class<?> originClass, Supplier<Object> instance)
-        {
+        private ParsedFunction(Method method, Class<?> originClass, Supplier<Object> instance) {
             ScarpetFunction annotation = method.getAnnotation(ScarpetFunction.class);
             this.name = USE_METHOD_NAME.equals(annotation.functionName()) ? method.getName() : annotation.functionName();
             this.isMethodVarArgs = method.isVarArgs();
@@ -182,8 +162,7 @@ public final class AnnotationParser
 
             Parameter[] methodParameters = method.getParameters();
             this.valueConverters = new ValueConverter[isMethodVarArgs ? methodParamCount - 1 : methodParamCount];
-            for (int i = 0; i < this.methodParamCount; i++)
-            {
+            for (int i = 0; i < this.methodParamCount; i++) {
                 Parameter param = methodParameters[i];
                 if (!isMethodVarArgs || i != this.methodParamCount - 1) // Varargs converter is separate
                 {
@@ -201,20 +180,16 @@ public final class AnnotationParser
             this.isEffectivelyVarArgs = isMethodVarArgs || Arrays.stream(valueConverters).anyMatch(ValueConverter::consumesVariableArgs);
             this.minParams = Arrays.stream(valueConverters).mapToInt(ValueConverter::valueConsumption).sum(); // Note: In !varargs, this is params
             int setMaxParams = this.minParams; // Unlimited == Integer.MAX_VALUE
-            if (this.isEffectivelyVarArgs)
-            {
+            if (this.isEffectivelyVarArgs) {
                 setMaxParams = annotation.maxParams();
-                if (setMaxParams == UNDEFINED_PARAMS)
-                {
+                if (setMaxParams == UNDEFINED_PARAMS) {
                     throw new IllegalArgumentException("No maximum number of params specified for " + name + ", use ScarpetFunction.UNLIMITED_PARAMS for unlimited. "
                             + "Provided in " + originClass);
                 }
-                if (setMaxParams == ScarpetFunction.UNLIMITED_PARAMS)
-                {
+                if (setMaxParams == ScarpetFunction.UNLIMITED_PARAMS) {
                     setMaxParams = Integer.MAX_VALUE;
                 }
-                if (setMaxParams < this.minParams)
-                {
+                if (setMaxParams < this.minParams) {
                     throw new IllegalArgumentException("Provided maximum number of params for " + name + " is smaller than method's param count."
                             + "Provided in " + originClass);
                 }
@@ -230,14 +205,11 @@ public final class AnnotationParser
             // (checking access at invoke vs create).
             // Note: there is also MethodHandle#invoke and #invokeWithArguments, but those run #asType at every invocation, which is quite slow, so we
             // are basically running it here.
-            try
-            {
+            try {
                 MethodHandle tempHandle = MethodHandles.publicLookup().unreflect(method).asFixedArity().asSpreader(Object[].class, this.methodParamCount);
                 tempHandle = tempHandle.asType(tempHandle.type().changeReturnType(Object.class));
                 this.handle = Modifier.isStatic(method.getModifiers()) ? tempHandle : tempHandle.bindTo(instance.get());
-            }
-            catch (IllegalAccessException e)
-            {
+            } catch (IllegalAccessException e) {
                 throw new IllegalArgumentException(e);
             }
 
@@ -246,34 +218,26 @@ public final class AnnotationParser
         }
 
         @Override
-        public LazyValue apply(Context context, Context.Type t, List<LazyValue> lazyValues)
-        {
+        public LazyValue apply(Context context, Context.Type t, List<LazyValue> lazyValues) {
             // yes we are making a minecraft dependency, because of the stupid registry access required to parse stuff
             RegistryAccess regs = ((CarpetContext) context).registryAccess();
             List<Value> lv = AbstractLazyFunction.unpackLazy(lazyValues, context, contextType);
-            if (isEffectivelyVarArgs)
-            {
-                if (lv.size() < minParams)
-                {
+            if (isEffectivelyVarArgs) {
+                if (lv.size() < minParams) {
                     throw new InternalExpressionException("Function '" + name + "' expected at least " + minParams + " arguments, got " + lv.size() + ". "
                             + getUsage());
                 }
-                if (lv.size() > maxParams)
-                {
+                if (lv.size() > maxParams) {
                     throw new InternalExpressionException("Function '" + name + " expected up to " + maxParams + " arguments, got " + lv.size() + ". "
                             + getUsage());
                 }
             }
             Object[] params = getMethodParams(lv, context, t);
-            try
-            {
+            try {
                 Value result = outputConverter.convert(handle.invokeExact(params), regs);
                 return (cc, tt) -> result;
-            }
-            catch (Throwable e)
-            {
-                if (e instanceof RuntimeException re)
-                {
+            } catch (Throwable e) {
+                if (e instanceof RuntimeException re) {
                     throw re;
                 }
                 throw (Error) e; // Stack overflow or something. Methods are guaranteed not to throw checked exceptions
@@ -281,46 +245,35 @@ public final class AnnotationParser
         }
 
         // Hot code: Must be optimized
-        private Object[] getMethodParams(List<Value> lv, Context context, Context.Type theLazyT)
-        {
+        private Object[] getMethodParams(List<Value> lv, Context context, Context.Type theLazyT) {
             Object[] params = new Object[methodParamCount];
             ListIterator<Value> lvIterator = lv.listIterator();
 
             int regularArgs = isMethodVarArgs ? methodParamCount - 1 : methodParamCount;
-            for (int i = 0; i < regularArgs; i++)
-            {
+            for (int i = 0; i < regularArgs; i++) {
                 params[i] = valueConverters[i].checkAndConvert(lvIterator, context, theLazyT);
-                if (params[i] == null)
-                {
+                if (params[i] == null) {
                     throw new InternalExpressionException("Incorrect argument passsed to '" + name + "' function.\n" + getUsage());
                 }
             }
-            if (isMethodVarArgs)
-            {
+            if (isMethodVarArgs) {
                 int remaining = lv.size() - lvIterator.nextIndex();
                 Object[] varArgs;
-                if (varArgsConverter.consumesVariableArgs())
-                {
+                if (varArgsConverter.consumesVariableArgs()) {
                     List<Object> varArgsList = new ArrayList<>(); // fastutil's is extremely slow in toArray, and we use that
-                    while (lvIterator.hasNext())
-                    {
+                    while (lvIterator.hasNext()) {
                         Object obj = varArgsConverter.checkAndConvert(lvIterator, context, theLazyT);
-                        if (obj == null)
-                        {
+                        if (obj == null) {
                             throw new InternalExpressionException("Incorrect argument passsed to '" + name + "' function.\n" + getUsage());
                         }
                         varArgsList.add(obj);
                     }
                     varArgs = varArgsList.toArray((Object[]) Array.newInstance(varArgsType, 0));
-                }
-                else
-                {
+                } else {
                     varArgs = (Object[]) Array.newInstance(varArgsType, remaining / varArgsConverter.valueConsumption());
-                    for (int i = 0; lvIterator.hasNext(); i++)
-                    {
+                    for (int i = 0; lvIterator.hasNext(); i++) {
                         varArgs[i] = varArgsConverter.checkAndConvert(lvIterator, context, theLazyT);
-                        if (varArgs[i] == null)
-                        {
+                        if (varArgs[i] == null) {
                             throw new InternalExpressionException("Incorrect argument passsed to '" + name + "' function.\n" + getUsage());
                         }
                     }
@@ -331,21 +284,17 @@ public final class AnnotationParser
         }
 
         @Override
-        public String getUsage()
-        {
+        public String getUsage() {
             // Possibility: More descriptive messages using param.getName()? Would need changing gradle setup to keep those
             StringBuilder builder = new StringBuilder("Usage: '");
             builder.append(name);
             builder.append('(');
             builder.append(Arrays.stream(valueConverters).map(ValueConverter::getTypeName).filter(Objects::nonNull).collect(Collectors.joining(", ")));
-            if (varArgsConverter != null)
-            {
+            if (varArgsConverter != null) {
                 builder.append(", ");
                 builder.append(varArgsConverter.getTypeName());
                 builder.append("s...)");
-            }
-            else
-            {
+            } else {
                 builder.append(')');
             }
             builder.append("'");
@@ -353,7 +302,6 @@ public final class AnnotationParser
         }
     }
 
-    private AnnotationParser()
-    {
+    private AnnotationParser() {
     }
 }

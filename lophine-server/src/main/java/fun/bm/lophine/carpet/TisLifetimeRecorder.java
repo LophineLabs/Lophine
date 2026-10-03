@@ -4,6 +4,10 @@ package fun.bm.lophine.carpet;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import net.minecraft.commands.CommandSourceStack;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -16,9 +20,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import net.minecraft.commands.CommandSourceStack;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 final class TisLifetimeRecorder {
     private static final Logger LOGGER = LoggerFactory.getLogger("TISCM-LifetimeRecorder");
@@ -29,12 +30,13 @@ final class TisLifetimeRecorder {
     private static volatile Writer writer;
     private static volatile String state = "stopped";
 
-    private TisLifetimeRecorder() { }
+    private TisLifetimeRecorder() {
+    }
 
     static boolean hasPermission(CommandSourceStack source) {
         var player = source.getPlayer();
         if (config.consoleOrSinglePlayerOwnerOnly && !(source.source instanceof net.minecraft.server.MinecraftServer
-            || player != null && source.getServer().isSingleplayerOwner(player.nameAndId()))) return false;
+                || player != null && source.getServer().isSingleplayerOwner(player.nameAndId()))) return false;
         return CarpetCommandPermissions.canUse(source, Integer.toString(config.requiredPermissionLevel));
     }
 
@@ -43,11 +45,12 @@ final class TisLifetimeRecorder {
         TisRaycastCommand.feedback(source, "Lifetime recorder: " + (config.enabled ? "enabled" : "disabled") + ", " + state);
         if (hasPermission(source)) {
             TisRaycastCommand.feedback(source, "Config: " + CONFIG.toAbsolutePath() + "; output: " + config.outputDirectory
-                + "; sampleRate=" + config.sampleRate + "; maxRecords=" + config.maxOutputRecordCount
-                + "; maxFileBytes=" + config.maxOutputFileBytes);
-            if (active != null) TisRaycastCommand.feedback(source, "File: " + active.path.toAbsolutePath() + "; records="
-                + active.records.get() + "; bytes=" + active.bytes.get() + "; queued=" + active.queue.size()
-                + "; dropped=" + active.dropped.get());
+                    + "; sampleRate=" + config.sampleRate + "; maxRecords=" + config.maxOutputRecordCount
+                    + "; maxFileBytes=" + config.maxOutputFileBytes);
+            if (active != null)
+                TisRaycastCommand.feedback(source, "File: " + active.path.toAbsolutePath() + "; records="
+                        + active.records.get() + "; bytes=" + active.bytes.get() + "; queued=" + active.queue.size()
+                        + "; dropped=" + active.dropped.get());
         }
         return 1;
     }
@@ -70,7 +73,10 @@ final class TisLifetimeRecorder {
     }
 
     static synchronized int enabled(CommandSourceStack source, boolean enabled) {
-        if (config.enabled == enabled) { TisRaycastCommand.feedback(source, "Recorder is already " + (enabled ? "enabled" : "disabled")); return 0; }
+        if (config.enabled == enabled) {
+            TisRaycastCommand.feedback(source, "Recorder is already " + (enabled ? "enabled" : "disabled"));
+            return 0;
+        }
         config.enabled = enabled;
         save();
         if (enabled && TisLifetimeTracker.activeTrackId() >= 0) start(source, TisLifetimeTracker.activeTrackId());
@@ -90,7 +96,7 @@ final class TisLifetimeRecorder {
                 long totalBytes = 0;
                 for (Path path : outputs) totalBytes += Files.size(path);
                 if (settings.maxTotalOutputFileCount > 0 && outputs.size() >= settings.maxTotalOutputFileCount
-                    || settings.maxTotalOutputFileBytes > 0 && totalBytes >= settings.maxTotalOutputFileBytes) {
+                        || settings.maxTotalOutputFileBytes > 0 && totalBytes >= settings.maxTotalOutputFileBytes) {
                     TisRaycastCommand.feedback(source, "Lifetime recorder total file limit reached");
                     return;
                 }
@@ -114,10 +120,13 @@ final class TisLifetimeRecorder {
         if (current == null) return;
         current.working.set(false);
         current.thread.interrupt();
-        try { current.thread.join(5000L); }
-        catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
+        try {
+            current.thread.join(5000L);
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+        }
         if (source != null) TisRaycastCommand.feedback(source, "Lifetime recording stopped: " + current.records.get()
-            + " records, " + current.bytes.get() + " bytes");
+                + " records, " + current.bytes.get() + " bytes");
     }
 
     static void add(String json) {
@@ -137,7 +146,8 @@ final class TisLifetimeRecorder {
     private static Config load() {
         Config settings = new Config();
         try {
-            if (Files.isRegularFile(CONFIG)) settings = GSON.fromJson(Files.readString(CONFIG, StandardCharsets.UTF_8), Config.class);
+            if (Files.isRegularFile(CONFIG))
+                settings = GSON.fromJson(Files.readString(CONFIG, StandardCharsets.UTF_8), Config.class);
             validate(settings);
         } catch (Exception failure) {
             LOGGER.error("Could not read lifetime recorder configuration", failure);
@@ -146,21 +156,27 @@ final class TisLifetimeRecorder {
         try {
             Files.createDirectories(BASE);
             Files.writeString(CONFIG, GSON.toJson(settings), StandardCharsets.UTF_8);
-        } catch (IOException failure) { LOGGER.error("Could not save lifetime recorder configuration", failure); }
+        } catch (IOException failure) {
+            LOGGER.error("Could not save lifetime recorder configuration", failure);
+        }
         return settings;
     }
 
     private static void validate(Config settings) {
         if (settings == null || settings.outputDirectory == null || settings.outputDirectory.isBlank()
-            || settings.requiredPermissionLevel < 0 || settings.requiredPermissionLevel > 4
-            || !Double.isFinite(settings.sampleRate) || settings.sampleRate < 0 || settings.sampleRate > 1) {
+                || settings.requiredPermissionLevel < 0 || settings.requiredPermissionLevel > 4
+                || !Double.isFinite(settings.sampleRate) || settings.sampleRate < 0 || settings.sampleRate > 1) {
             throw new IllegalArgumentException("Invalid lifetime recorder configuration");
         }
     }
 
     private static void save() {
-        try { Files.createDirectories(BASE); Files.writeString(CONFIG, GSON.toJson(config), StandardCharsets.UTF_8); }
-        catch (IOException failure) { LOGGER.error("Could not save lifetime recorder configuration", failure); }
+        try {
+            Files.createDirectories(BASE);
+            Files.writeString(CONFIG, GSON.toJson(config), StandardCharsets.UTF_8);
+        } catch (IOException failure) {
+            LOGGER.error("Could not save lifetime recorder configuration", failure);
+        }
     }
 
     private static final class Config {
@@ -206,9 +222,11 @@ final class TisLifetimeRecorder {
                     long size = bytes.addAndGet(line.length + newline.length);
                     if (maxRecords > 0 && count >= maxRecords || maxBytes > 0 && size >= maxBytes) break;
                 }
-            } catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
-            catch (IOException failure) { LOGGER.error("Could not write lifetime records to {}", path, failure); }
-            finally {
+            } catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt();
+            } catch (IOException failure) {
+                LOGGER.error("Could not write lifetime records to {}", path, failure);
+            } finally {
                 working.set(false);
                 queue.clear();
                 if (writer == this) state = "paused";

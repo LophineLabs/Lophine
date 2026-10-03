@@ -1,8 +1,9 @@
 package fun.bm.lophine.carpet;
 
-import java.util.Locale;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+
+import java.util.Locale;
 
 public final class CarpetCommandPermissions {
     private CarpetCommandPermissions() {

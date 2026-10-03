@@ -105,12 +105,15 @@ public class ServerBot extends ServerPlayer {
     public volatile boolean carpetPlacementReady = false;
     final java.util.concurrent.CompletableFuture<ServerBot> carpetActualPlacementFuture = new java.util.concurrent.CompletableFuture<>();
     public final java.util.concurrent.CompletableFuture<ServerBot> carpetPlacementFuture = new java.util.concurrent.CompletableFuture<>();
-    public Runnable carpetPlacementInitializer = () -> {};
+    public Runnable carpetPlacementInitializer = () -> {
+    };
 
     public void carpetSetProfile(GameProfile profile) {
-        if (!profile.id().equals(this.getUUID())) throw new IllegalArgumentException("A fake player's profile must retain its UUID");
+        if (!profile.id().equals(this.getUUID()))
+            throw new IllegalArgumentException("A fake player's profile must retain its UUID");
         this.gameProfile = profile;
     }
+
     private boolean carpetRestoreAfterDeath;
 
     private final int tracingRange;
@@ -148,7 +151,8 @@ public class ServerBot extends ServerPlayer {
 
         this.notSleepTicks = 0;
         this.fauxSleeping = FakeplayerConfig.canSkipSleep;
-        if (!carpetNativePlayer) this.getBukkitEntity().setSimulationDistance(FakeplayerConfig.getSimulationDistance(this));
+        if (!carpetNativePlayer)
+            this.getBukkitEntity().setSimulationDistance(FakeplayerConfig.getSimulationDistance(this));
     }
 
     @Override
@@ -292,7 +296,8 @@ public class ServerBot extends ServerPlayer {
     }
 
     public void networkTick() {
-        if (carpet.script.external.ScarpetNativeWork.isDraining(this.level().getServer()) || fun.bm.lophine.carpet.CarpetPlayerBirths.playerPending(this)) return;
+        if (carpet.script.external.ScarpetNativeWork.isDraining(this.level().getServer()) || fun.bm.lophine.carpet.CarpetPlayerBirths.playerPending(this))
+            return;
         if (this.carpetNativePlayer) {
             if (FakePlayerCompatConfig.fakePlayerTicksLikeRealPlayer) {
                 this.carpetActionPack.onUpdate();
@@ -578,27 +583,34 @@ public class ServerBot extends ServerPlayer {
 
     @Override
     public void die(@NotNull DamageSource damageSource) {
-        if(!this.carpetNativePlayer){this.carpetPerformLegacyBotDeath(damageSource);return;}
-        var observed=carpet.script.external.ScarpetNativeWork.observeNative(this,()->{
-            var originalDeath=carpet.script.external.ScarpetRuntime.captureNativeContinuation(()->
-                carpet.script.external.ScarpetExplosionActors.entity(this,()->
-                    carpet.script.external.ScarpetNativeWork.recoverGuestValue(carpet.script.external.ScarpetNativeWork.<Void>observeNative(this,()->{super.die(damageSource);return null;}))).thenCompose(value->value));
-            var afterDeath=carpet.script.external.ScarpetRuntime.captureNativeContinuation(()->
-                carpet.script.external.ScarpetExplosionActors.entity(this,()->{
-                    this.setHealth(20.0F);
-                    this.foodData=new net.minecraft.world.food.FoodData();
-                    // The true SP body already performed death drops/XP. The disconnect saves its final inventory once.
-                    this.carpetRestoreAfterDeath=true;
-                    return getServer().getBotList().carpetRemoveBotAsync(this,BotRemoveEvent.RemoveReason.DEATH,null,true,false);
-                }).thenCompose(value->value));
-            var actual=carpet.script.external.ScarpetNativeDeaths.shakeOff(this)
-                .thenCompose(ignored->originalDeath.get()).thenCompose(ignored->afterDeath.get());
-            carpet.script.external.ScarpetNativeWork.record(actual);return actual;
+        if (!this.carpetNativePlayer) {
+            this.carpetPerformLegacyBotDeath(damageSource);
+            return;
+        }
+        var observed = carpet.script.external.ScarpetNativeWork.observeNative(this, () -> {
+            var originalDeath = carpet.script.external.ScarpetRuntime.captureNativeContinuation(() ->
+                    carpet.script.external.ScarpetExplosionActors.entity(this, () ->
+                            carpet.script.external.ScarpetNativeWork.recoverGuestValue(carpet.script.external.ScarpetNativeWork.<Void>observeNative(this, () -> {
+                                super.die(damageSource);
+                                return null;
+                            }))).thenCompose(value -> value));
+            var afterDeath = carpet.script.external.ScarpetRuntime.captureNativeContinuation(() ->
+                    carpet.script.external.ScarpetExplosionActors.entity(this, () -> {
+                        this.setHealth(20.0F);
+                        this.foodData = new net.minecraft.world.food.FoodData();
+                        // The true SP body already performed death drops/XP. The disconnect saves its final inventory once.
+                        this.carpetRestoreAfterDeath = true;
+                        return getServer().getBotList().carpetRemoveBotAsync(this, BotRemoveEvent.RemoveReason.DEATH, null, true, false);
+                    }).thenCompose(value -> value));
+            var actual = carpet.script.external.ScarpetNativeDeaths.shakeOff(this)
+                    .thenCompose(ignored -> originalDeath.get()).thenCompose(ignored -> afterDeath.get());
+            carpet.script.external.ScarpetNativeWork.record(actual);
+            return actual;
         });
-        var actual=carpet.script.external.ScarpetNativeWork.recoverGuestValue(observed).thenCompose(value->value);
-        carpet.script.external.ScarpetNativeWork.aliasDependency(actual,observed);
+        var actual = carpet.script.external.ScarpetNativeWork.recoverGuestValue(observed).thenCompose(value -> value);
+        carpet.script.external.ScarpetNativeWork.aliasDependency(actual, observed);
         carpet.script.external.ScarpetNativeWork.record(actual);
-        carpet.script.external.ScarpetNativeWork.trackNative(getServer(),actual);
+        carpet.script.external.ScarpetNativeWork.trackNative(getServer(), actual);
     }
 
     private void carpetPerformLegacyBotDeath(@NotNull DamageSource damageSource) {
@@ -628,7 +640,7 @@ public class ServerBot extends ServerPlayer {
             this.tellNeutralMobsThatIDied();
         }
         this.carpetRestoreAfterDeath = fun.bm.lophine.carpet.OrgFakePlayerInventory.shouldKeepInventory(this, damageSource)
-            || this.carpetNativePlayer && (this.isSpectator() || this.level().getGameRules().get(GameRules.KEEP_INVENTORY));
+                || this.carpetNativePlayer && (this.isSpectator() || this.level().getGameRules().get(GameRules.KEEP_INVENTORY));
         if (this.carpetNativePlayer) {
             this.awardStat(net.minecraft.stats.Stats.DEATHS);
             this.resetStat(net.minecraft.stats.Stats.CUSTOM.get(net.minecraft.stats.Stats.TIME_SINCE_DEATH));
@@ -650,7 +662,8 @@ public class ServerBot extends ServerPlayer {
     @Override
     protected int getBaseExperienceReward(@NotNull ServerLevel level) {
         if (this.isSpectator() || this.carpetNativePlayer && this.keepLevel
-            || fun.bm.lophine.carpet.OrgFakePlayerInventory.shouldKeepInventory(this, this.getLastDamageSource())) return 0;
+                || fun.bm.lophine.carpet.OrgFakePlayerInventory.shouldKeepInventory(this, this.getLastDamageSource()))
+            return 0;
         return Math.min(this.experienceLevel * 7, 100);
     }
 
@@ -765,7 +778,8 @@ public class ServerBot extends ServerPlayer {
             if (!itemStack.isEmpty()) {
                 if (!this.carpetNativePlayer || !death || !net.minecraft.world.item.enchantment.EnchantmentHelper.has(itemStack, net.minecraft.world.item.enchantment.EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
                     ItemEntity dropped = this.drop(itemStack, false, net.minecraft.util.Prediction.PREDICTED, death, false, null);
-                    if (this.carpetNativePlayer && dropped != null && fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.playerDropsNotDespawning) dropped.setUnlimitedLifetime();
+                    if (this.carpetNativePlayer && dropped != null && fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.playerDropsNotDespawning)
+                        dropped.setUnlimitedLifetime();
                 }
                 items.set(i, ItemStack.EMPTY);
             }

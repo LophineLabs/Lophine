@@ -4,18 +4,11 @@ package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import fun.bm.lophine.protocol.CarpetLoggerProtocol;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -32,6 +25,14 @@ import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+
 public final class TisMicroTimingMarkers {
     private static final Map<Key, Marker> MARKERS = new ConcurrentHashMap<>();
     private static final Map<UUID, PlayerPosition> POSITIONS = new ConcurrentHashMap<>();
@@ -39,14 +40,27 @@ public final class TisMicroTimingMarkers {
     private static volatile BiConsumer<Marker, Boolean> shapeSender = TisMicroTimingMarkers::sendShape;
     private static long lastSync;
 
-    private TisMicroTimingMarkers() { }
+    private TisMicroTimingMarkers() {
+    }
 
-    public record Marker(ServerLevel world, BlockPos pos, DyeColor color, Component name, boolean extended, boolean movable) { }
-    private record Key(ServerLevel world, BlockPos pos) { }
-    private record PlayerPosition(ServerLevel world, Vec3 position) { }
+    public record Marker(ServerLevel world, BlockPos pos, DyeColor color, Component name, boolean extended,
+                         boolean movable) {
+    }
 
-    public static void setShapeSender(BiConsumer<Marker, Boolean> sender) { shapeSender = sender; }
-    public static List<Marker> snapshot() { return List.copyOf(MARKERS.values()); }
+    private record Key(ServerLevel world, BlockPos pos) {
+    }
+
+    private record PlayerPosition(ServerLevel world, Vec3 position) {
+    }
+
+    public static void setShapeSender(BiConsumer<Marker, Boolean> sender) {
+        shapeSender = sender;
+    }
+
+    public static List<Marker> snapshot() {
+        return List.copyOf(MARKERS.values());
+    }
+
     public static String name(ServerLevel world, BlockPos pos) {
         Marker marker = MARKERS.get(new Key(world, pos));
         return marker == null || marker.name == null ? null : marker.name.getString();
@@ -58,8 +72,14 @@ public final class TisMicroTimingMarkers {
         previous.forEach(marker -> publish(marker, false));
         return previous.size();
     }
-    public static void ruleChanged() { MARKERS.values().forEach(marker -> publish(marker, GeneralCompatConfig.microTiming)); }
-    public static void playerLeft(UUID player) { POSITIONS.remove(player); }
+
+    public static void ruleChanged() {
+        MARKERS.values().forEach(marker -> publish(marker, GeneralCompatConfig.microTiming));
+    }
+
+    public static void playerLeft(UUID player) {
+        POSITIONS.remove(player);
+    }
 
     public static String validateDyeRule(String value, String current, net.minecraft.commands.CommandSourceStack source) {
         if ("clear".equals(value)) {
@@ -97,9 +117,9 @@ public final class TisMicroTimingMarkers {
         int rgba = ((marker.color.getTextColor() & 0xFFFFFF) << 8) | 0xAF;
         var result = new java.util.ArrayList<CompoundTag>();
         result.add(CarpetShapeSender.box(marker.world, Vec3.atLowerCornerOf(marker.pos), Vec3.atLowerCornerOf(marker.pos.offset(1, 1, 1)),
-            rgba, 0, marker.extended ? 7.0F : 2.5F, duration));
+                rgba, 0, marker.extended ? 7.0F : 2.5F, duration));
         if (marker.name != null) result.add(CarpetShapeSender.text(marker.world, Vec3.atCenterOf(marker.pos),
-            Component.literal("# ").withStyle(style -> style.withColor(marker.color.getTextColor() & 0xFFFFFF)).append(marker.name.copy()), 0xFFFFFFFF, duration));
+                Component.literal("# ").withStyle(style -> style.withColor(marker.color.getTextColor() & 0xFFFFFF)).append(marker.name.copy()), 0xFFFFFFFF, duration));
         return List.copyOf(result);
     }
 
@@ -127,8 +147,9 @@ public final class TisMicroTimingMarkers {
 
     public static synchronized boolean rightClick(Player raw, BlockPos pos) {
         if (!(raw instanceof ServerPlayer player) || !TisMicroTiming.active()
-            || !"true".equals(GeneralCompatConfig.microTimingDyeMarker)
-            || !CarpetLoggerProtocol.subscriptions(player.getScoreboardName()).containsKey("microTiming")) return false;
+                || !"true".equals(GeneralCompatConfig.microTimingDyeMarker)
+                || !CarpetLoggerProtocol.subscriptions(player.getScoreboardName()).containsKey("microTiming"))
+            return false;
         var stack = player.getMainHandItem();
         if (stack.getItem() instanceof DyeItem) {
             DyeColor color = stack.get(DataComponents.DYE);
@@ -137,8 +158,10 @@ public final class TisMicroTimingMarkers {
             Key key = new Key(player.level(), pos.immutable());
             Marker previous = MARKERS.get(key);
             Marker next = null;
-            if (previous == null || previous.color != color) next = new Marker(player.level(), pos.immutable(), color, name == null ? null : name.copy(), false, false);
-            else if (!previous.extended) next = new Marker(previous.world, previous.pos, color, previous.name, true, previous.movable);
+            if (previous == null || previous.color != color)
+                next = new Marker(player.level(), pos.immutable(), color, name == null ? null : name.copy(), false, false);
+            else if (!previous.extended)
+                next = new Marker(previous.world, previous.pos, color, previous.name, true, previous.movable);
             if (previous != null) publish(previous, false);
             if (next == null) {
                 MARKERS.remove(key);
@@ -147,7 +170,7 @@ public final class TisMicroTimingMarkers {
                 MARKERS.put(key, next);
                 publish(next, true);
                 player.sendSystemMessage(Component.literal("Micro timing " + (next.extended ? "END_ROD" : "REGULAR") + " marker: " + color.getName()
-                    + " at " + pos.toShortString() + (name == null ? "" : "; " + name.getString())));
+                        + " at " + pos.toShortString() + (name == null ? "" : "; " + name.getString())));
             }
             return true;
         }
@@ -164,7 +187,8 @@ public final class TisMicroTimingMarkers {
     }
 
     public static synchronized void move(Level raw, BlockPos source, Direction direction) {
-        if (!(raw instanceof ServerLevel world) || !TisMicroTiming.active() || !"true".equals(GeneralCompatConfig.microTimingDyeMarker)) return;
+        if (!(raw instanceof ServerLevel world) || !TisMicroTiming.active() || !"true".equals(GeneralCompatConfig.microTimingDyeMarker))
+            return;
         Key key = new Key(world, source);
         Marker marker = MARKERS.get(key);
         if (marker == null || !marker.movable || !MARKERS.remove(key, marker)) return;
@@ -184,7 +208,7 @@ public final class TisMicroTimingMarkers {
             if (result == null) result = endRod(world, pos);
             if (!update && result == null) {
                 fallback = "all".equals(mode) || "in_range".equals(mode) && POSITIONS.values().stream()
-                    .anyMatch(player -> player.world == world && player.position.distanceToSqr(Vec3.atCenterOf(pos)) <= 32.0 * 32.0);
+                        .anyMatch(player -> player.world == world && player.position.distanceToSqr(Vec3.atCenterOf(pos)) <= 32.0 * 32.0);
                 if (fallback) result = DyeColor.LIGHT_GRAY;
             }
         }
@@ -195,12 +219,14 @@ public final class TisMicroTimingMarkers {
 
     private static BlockState state(ServerLevel world, BlockPos pos) {
         return ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(world, pos) && world.isPositionEntityTicking(pos)
-            ? world.getBlockStateIfLoaded(pos) : null;
+                ? world.getBlockStateIfLoaded(pos) : null;
     }
+
     private static DyeColor wool(ServerLevel world, BlockPos pos) {
         BlockState state = state(world, pos);
         return state == null ? null : WOOL.get(state.getBlock());
     }
+
     private static DyeColor endRod(ServerLevel world, BlockPos pos) {
         for (Direction direction : Direction.values()) {
             BlockPos rod = pos.relative(direction);
@@ -212,6 +238,7 @@ public final class TisMicroTimingMarkers {
         }
         return null;
     }
+
     private static DyeColor attachedWool(ServerLevel world, BlockPos pos) {
         BlockState state = state(world, pos);
         if (state == null) return null;
@@ -226,7 +253,7 @@ public final class TisMicroTimingMarkers {
         } else if (block instanceof RedstoneWallTorchBlock || block instanceof TripWireHookBlock) {
             woolPos = pos.relative(state.getValue(BlockStateProperties.HORIZONTAL_FACING).getOpposite());
         } else if (block instanceof BaseRailBlock || block instanceof DiodeBlock || block instanceof RedstoneTorchBlock
-            || block instanceof RedstoneWireBlock || block instanceof BasePressurePlateBlock) {
+                || block instanceof RedstoneWireBlock || block instanceof BasePressurePlateBlock) {
             woolPos = pos.below();
         } else return null;
         return wool(world, woolPos);

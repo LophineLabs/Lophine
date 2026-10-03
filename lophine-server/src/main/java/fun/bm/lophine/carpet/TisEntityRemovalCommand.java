@@ -4,13 +4,18 @@ package fun.bm.lophine.carpet;
 import carpet.script.external.ScarpetNativeEntityRemoval;
 import carpet.script.external.ScarpetNativeWork;
 import carpet.script.external.ScarpetRuntime;
-import java.util.Collection;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.world.entity.Entity;
 
-/** Reports the original removeentity count after the real entity queue and source feedback children. */
+import java.util.Collection;
+
+/**
+ * Reports the original removeentity count after the real entity queue and source feedback children.
+ */
 public final class TisEntityRemovalCommand {
-    private TisEntityRemovalCommand() { }
+    private TisEntityRemovalCommand() {
+    }
+
     public static int execute(CommandSourceStack source, Collection<? extends Entity> targets) {
         var completion = CarpetAsyncCommandResults.defer(source);
         var observed = ScarpetNativeWork.observeNative(source.getEntity(), () -> {
@@ -20,7 +25,7 @@ public final class TisEntityRemovalCommand {
                 return count;
             }));
             var committed = delivered.whenComplete(ScarpetRuntime.captureNativeConsumer((count, failure) ->
-                completion.complete(failure == null, failure == null ? count : 0)));
+                    completion.complete(failure == null, failure == null ? count : 0)));
             ScarpetNativeWork.record(committed);
             return null;
         });

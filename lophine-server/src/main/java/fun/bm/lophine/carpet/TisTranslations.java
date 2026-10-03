@@ -2,11 +2,6 @@
 package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
@@ -16,15 +11,25 @@ import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-/** Original TIS server translation semantics, including nested arguments, hover and HUD text. */
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
+/**
+ * Original TIS server translation semantics, including nested arguments, hover and HUD text.
+ */
 public final class TisTranslations {
     private static final String PREFIX = "carpettisaddition.";
     private static final Map<String, Map<String, String>> TRANSLATIONS = load();
-    private TisTranslations() {}
+
+    private TisTranslations() {
+    }
 
     private static Map<String, Map<String, String>> load() {
         Map<String, Map<String, String>> languages = new HashMap<>();
-        for (String language : new String[] {"en_us", "zh_cn"}) {
+        for (String language : new String[]{"en_us", "zh_cn"}) {
             String path = "/carpet/upstream/tis/" + language + ".yml";
             try (var input = TisTranslations.class.getResourceAsStream(path)) {
                 if (input == null) throw new IllegalStateException("Missing TIS translation resource " + path);
@@ -35,8 +40,11 @@ public final class TisTranslations {
                 Map<String, String> values = new HashMap<>();
                 flatten(yaml, "", values);
                 languages.put(language, Map.copyOf(values));
-            } catch (java.io.IOException failure) { throw new java.io.UncheckedIOException(failure); }
-            catch (org.bukkit.configuration.InvalidConfigurationException failure) { throw new IllegalStateException(failure); }
+            } catch (java.io.IOException failure) {
+                throw new java.io.UncheckedIOException(failure);
+            } catch (org.bukkit.configuration.InvalidConfigurationException failure) {
+                throw new IllegalStateException(failure);
+            }
         }
         return Map.copyOf(languages);
     }
@@ -51,7 +59,7 @@ public final class TisTranslations {
 
     static String targetLanguage(String clientLanguage) {
         return "translation".equals(GeneralCompatConfig.ultraSecretSetting) ? serverLanguage()
-            : clientLanguage == null ? "en_us" : clientLanguage.toLowerCase(Locale.ROOT);
+                : clientLanguage == null ? "en_us" : clientLanguage.toLowerCase(Locale.ROOT);
     }
 
     public static String serverLanguage() {
@@ -77,9 +85,11 @@ public final class TisTranslations {
     private static boolean hasTisText(Component message) {
         if (message.getContents() instanceof TranslatableContents contents) {
             if (contents.getKey().startsWith(PREFIX)) return true;
-            for (Object arg : contents.getArgs()) if (arg instanceof Component component && hasTisText(component)) return true;
+            for (Object arg : contents.getArgs())
+                if (arg instanceof Component component && hasTisText(component)) return true;
         }
-        if (message.getStyle().getHoverEvent() instanceof HoverEvent.ShowText hover && hasTisText(hover.value())) return true;
+        if (message.getStyle().getHoverEvent() instanceof HoverEvent.ShowText hover && hasTisText(hover.value()))
+            return true;
         for (Component sibling : message.getSiblings()) if (hasTisText(sibling)) return true;
         return false;
     }
@@ -89,14 +99,19 @@ public final class TisTranslations {
         MutableComponent result;
         if (original.getContents() instanceof TranslatableContents contents) {
             Object[] args = contents.getArgs().clone();
-            for (int i = 0; i < args.length; i++) if (args[i] instanceof Component component) args[i] = translateText(component, language);
+            for (int i = 0; i < args.length; i++)
+                if (args[i] instanceof Component component) args[i] = translateText(component, language);
             if (contents.getKey().startsWith(PREFIX)) {
                 String pattern = TRANSLATIONS.getOrDefault(language, Map.of()).get(contents.getKey());
                 if (pattern == null) pattern = TRANSLATIONS.get("en_us").get(contents.getKey());
-                if (pattern == null) result = Component.translatableWithFallback(contents.getKey(), contents.getFallback(), args);
+                if (pattern == null)
+                    result = Component.translatableWithFallback(contents.getKey(), contents.getFallback(), args);
                 else {
-                    try { result = args.length == 0 ? Component.literal(pattern) : AmsTranslations.formatPattern(pattern, args); }
-                    catch (IllegalArgumentException mismatch) { result = Component.literal(pattern); }
+                    try {
+                        result = args.length == 0 ? Component.literal(pattern) : AmsTranslations.formatPattern(pattern, args);
+                    } catch (IllegalArgumentException mismatch) {
+                        result = Component.literal(pattern);
+                    }
                 }
             } else result = Component.translatableWithFallback(contents.getKey(), contents.getFallback(), args);
         } else result = original.plainCopy();

@@ -79,7 +79,9 @@ public class LithiumStackList extends NonNullList<ItemStack> implements LithiumD
 
     public long getModCount() {
         long result = this.modCount;
-        for (ItemStack stack : this) if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(stack)) result = 31L * result + fun.bm.lophine.carpet.OrgItemShadowGroups.revision(stack);
+        for (ItemStack stack : this)
+            if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(stack))
+                result = 31L * result + fun.bm.lophine.carpet.OrgItemShadowGroups.revision(stack);
         return result;
     }
 
@@ -152,11 +154,12 @@ public class LithiumStackList extends NonNullList<ItemStack> implements LithiumD
 
             this.occupiedSlots += (previous.isEmpty() ? 1 : 0) - (element.isEmpty() ? 1 : 0);
             this.fullSlots += (element.getCount() >= fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(element::getMaxStackSize) ? 1 : 0)
-                - (previous.getCount() >= fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(previous::getMaxStackSize) ? 1 : 0);
+                    - (previous.getCount() >= fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(previous::getMaxStackSize) ? 1 : 0);
             this.changed();
         }
 
-        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(previous) || fun.bm.lophine.carpet.OrgItemShadowGroups.managed(element)) this.changedALot();
+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(previous) || fun.bm.lophine.carpet.OrgItemShadowGroups.managed(element))
+            this.changedALot();
         return previous;
     }
 
@@ -257,12 +260,22 @@ public class LithiumStackList extends NonNullList<ItemStack> implements LithiumD
     }
 
     public int getOccupiedSlots() {
-        if (this.carpetOrgHasShadows()) { int occupied = 0; for (ItemStack stack : this) if (!stack.isEmpty()) occupied++; return occupied; }
+        if (this.carpetOrgHasShadows()) {
+            int occupied = 0;
+            for (ItemStack stack : this) if (!stack.isEmpty()) occupied++;
+            return occupied;
+        }
         return this.occupiedSlots;
     }
 
     public int getFullSlots() {
-        if (this.carpetOrgHasShadows()) { int full = 0; for (ItemStack stack : this) if (!stack.isEmpty() && stack.getCount() >= fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(stack::getMaxStackSize)) full++; return full; }
+        if (this.carpetOrgHasShadows()) {
+            int full = 0;
+            for (ItemStack stack : this)
+                if (!stack.isEmpty() && stack.getCount() >= fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(stack::getMaxStackSize))
+                    full++;
+            return full;
+        }
         return this.fullSlots;
     }
 

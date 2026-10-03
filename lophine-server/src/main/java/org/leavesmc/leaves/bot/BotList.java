@@ -72,13 +72,16 @@ public class BotList {
 
     public final List<ServerBot> bots = new CopyOnWriteArrayList<>();
 
-    /** A fresh caller view cannot cancel the actual placement and its join callbacks. */
+    /**
+     * A fresh caller view cannot cancel the actual placement and its join callbacks.
+     */
     public java.util.concurrent.CompletableFuture<ServerBot> carpetPlacementCompletion(ServerBot bot) {
         var actual = bot.carpetActualPlacementFuture;
         var view = actual.copy();
         carpet.script.external.ScarpetNativeWork.aliasDependency(view, actual);
         return view;
     }
+
     private final BotDataStorage manualSaveDataStorage;
     private final BotDataStorage resumeDataStorage;
 
@@ -177,7 +180,7 @@ public class BotList {
             String name = storage.getNameFromLower(lowerName);
             UUID uuid = storage.getUUIDFromLower(lowerName);
             BotLoadEvent event = new BotLoadEvent(name, uuid);
-        this.server.server.getPluginManager().callEvent(event);
+            this.server.server.getPluginManager().callEvent(event);
             if (event.isCancelled()) {
                 return null;
             }
@@ -232,7 +235,7 @@ public class BotList {
     }
 
     private ServerBot carpetPlaceNewBot(@NotNull ServerBot bot, ServerLevel world, Location location, ValueInput save,
-            fun.bm.lophine.carpet.CarpetBotRegistrations<ServerBot>.Reservation reservation) {
+                                        fun.bm.lophine.carpet.CarpetBotRegistrations<ServerBot>.Reservation reservation) {
         Optional<ValueInput> optional = Optional.ofNullable(save);
 
         bot.isRealPlayer = true;
@@ -257,97 +260,114 @@ public class BotList {
         bot.suppressTrackerForLogin = true;
 
         var carpetPlacement = bot.carpetActualPlacementFuture;
-        int carpetSpawnX=spawnLocation.getBlockX(),carpetSpawnZ=spawnLocation.getBlockZ();
+        int carpetSpawnX = spawnLocation.getBlockX(), carpetSpawnZ = spawnLocation.getBlockZ();
         var carpetPlace = carpet.script.external.ScarpetRuntime.captureNativeContinuation(() ->
-            fun.bm.lophine.carpet.CarpetRegionLease.<java.util.concurrent.CompletableFuture<Void>>runValue(targetWorld,
-                (carpetSpawnX-32)>>4,(carpetSpawnZ-32)>>4,(carpetSpawnX+32)>>4,(carpetSpawnZ+32)>>4,lease ->
-                carpet.script.external.ScarpetNativeWork.<Void>observeNative(bot, () -> {
-                    carpet.script.external.ScarpetNativeWork.aliasDependency(carpetPlacement,
-                        carpet.script.external.ScarpetNativeWork.completionOf(carpet.script.external.ScarpetNativeWork.capture()));
-                    var prefix=carpet.script.external.ScarpetNativeWork.<Void>observeNative(bot,()->{
-                    try(var prefixAccepted=carpet.script.external.ScarpetPlayerInventoryGate.acceptedScope(bot)){
-                    bot.setServerLevel(targetWorld);
-                    bot.gameMode.setLevel(targetWorld);
-                    bot.setPosRaw(spawnLocation.getX(), spawnLocation.getY(), spawnLocation.getZ());
-                    bot.setRot(spawnLocation.getYaw(), spawnLocation.getPitch());
-                    targetWorld.getCurrentWorldData().connections.add(bot.connection.connection);
-                    bot.connection.teleport(bot.getX(), bot.getY(), bot.getZ(), bot.getYRot(), bot.getXRot());
-                    targetWorld.addNewPlayer(bot);
-                    if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fakePlayerSpawnNoKnockback) {
-                        bot.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
-                        bot.setRemainingFireTicks(0);
-                        bot.fallDistance = 0.0F;
-                        for (var effect : java.util.List.copyOf(bot.getActiveEffects())) {
-                            if (effect.getEffect().value().getCategory() == net.minecraft.world.effect.MobEffectCategory.HARMFUL) {
-                                bot.removeEffect(effect.getEffect());
-                            }
-                        }
-                    }
-                    carpet.script.external.ScarpetRetiredActors.capture(bot);
-                    return null;
-                    }
-                    });
-                    var restores=carpetBirthAfterGuest(prefix).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored->{
-                        if(optional.isEmpty())return java.util.concurrent.CompletableFuture.<Void>completedFuture(null);
-                        var actual=fun.bm.lophine.carpet.CarpetPlayerSpawnContinuations.extras(bot,optional.get());
-                        carpet.script.external.ScarpetNativeWork.record(actual);
-                        return carpetBirthAfterGuest(actual);
-                    }));
-                    var joinedPhase=restores.thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored ->
-                        fun.bm.lophine.carpet.CarpetPlayerBirthPhase.run(bot,()->{
-                        boolean orgSilence=fun.bm.lophine.carpet.OrgNativePlayerMessages.consumeJoin(bot);
-                        this.carpetPublishJoinMessage(bot,orgSilence);
+                fun.bm.lophine.carpet.CarpetRegionLease.<java.util.concurrent.CompletableFuture<Void>>runValue(targetWorld,
+                        (carpetSpawnX - 32) >> 4, (carpetSpawnZ - 32) >> 4, (carpetSpawnX + 32) >> 4, (carpetSpawnZ + 32) >> 4, lease ->
+                                carpet.script.external.ScarpetNativeWork.<Void>observeNative(bot, () -> {
+                                    carpet.script.external.ScarpetNativeWork.aliasDependency(carpetPlacement,
+                                            carpet.script.external.ScarpetNativeWork.completionOf(carpet.script.external.ScarpetNativeWork.capture()));
+                                    var prefix = carpet.script.external.ScarpetNativeWork.<Void>observeNative(bot, () -> {
+                                        try (var prefixAccepted = carpet.script.external.ScarpetPlayerInventoryGate.acceptedScope(bot)) {
+                                            bot.setServerLevel(targetWorld);
+                                            bot.gameMode.setLevel(targetWorld);
+                                            bot.setPosRaw(spawnLocation.getX(), spawnLocation.getY(), spawnLocation.getZ());
+                                            bot.setRot(spawnLocation.getYaw(), spawnLocation.getPitch());
+                                            targetWorld.getCurrentWorldData().connections.add(bot.connection.connection);
+                                            bot.connection.teleport(bot.getX(), bot.getY(), bot.getZ(), bot.getYRot(), bot.getXRot());
+                                            targetWorld.addNewPlayer(bot);
+                                            if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fakePlayerSpawnNoKnockback) {
+                                                bot.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+                                                bot.setRemainingFireTicks(0);
+                                                bot.fallDistance = 0.0F;
+                                                for (var effect : java.util.List.copyOf(bot.getActiveEffects())) {
+                                                    if (effect.getEffect().value().getCategory() == net.minecraft.world.effect.MobEffectCategory.HARMFUL) {
+                                                        bot.removeEffect(effect.getEffect());
+                                                    }
+                                                }
+                                            }
+                                            carpet.script.external.ScarpetRetiredActors.capture(bot);
+                                            return null;
+                                        }
+                                    });
+                                    var restores = carpetBirthAfterGuest(prefix).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored -> {
+                                        if (optional.isEmpty())
+                                            return java.util.concurrent.CompletableFuture.<Void>completedFuture(null);
+                                        var actual = fun.bm.lophine.carpet.CarpetPlayerSpawnContinuations.extras(bot, optional.get());
+                                        carpet.script.external.ScarpetNativeWork.record(actual);
+                                        return carpetBirthAfterGuest(actual);
+                                    }));
+                                    var joinedPhase = restores.thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored ->
+                                            fun.bm.lophine.carpet.CarpetPlayerBirthPhase.run(bot, () -> {
+                                                boolean orgSilence = fun.bm.lophine.carpet.OrgNativePlayerMessages.consumeJoin(bot);
+                                                this.carpetPublishJoinMessage(bot, orgSilence);
 
-                        bot.renderInfo();
-                        bot.suppressTrackerForLogin = false;
+                                                bot.renderInfo();
+                                                bot.suppressTrackerForLogin = false;
 
-                        bot.level().getChunkSource().chunkMap.addEntity(bot);
-                        bot.renderData();
-                        bot.initInventoryMenu();
-                        fun.bm.lophine.carpet.AmsFakePlayers.added(bot);
-                        botsNameByWorldUuid
-                                .computeIfAbsent(bot.level().uuid.toString(), (k) -> java.util.concurrent.ConcurrentHashMap.newKeySet())
-                                .add(bot.getBukkitEntity().getName());
-                        if(!orgSilence)BotList.LOGGER.info("{}[{}] logged in with entity id {} at ([{}]{}, {}, {})", bot.getName().getString(), "Local", bot.getId(), bot.level().serverLevelData.getLevelName(), bot.getX(), bot.getY(), bot.getZ());
-                            bot.carpetPlacementInitializer.run();
-                            bot.carpetPlacementInitializer = () -> {};
-                            bot.carpetPlacementReady = true;
-                            if (bot.carpetNativePlayer) {
-                                carpet.script.external.ScarpetPlayerInventoryGate.trackAccepted(bot,
-                                    carpet.script.external.ScarpetNativeWork.completionOf(carpet.script.external.ScarpetNativeWork.capture()));
-                                try (var joined = carpet.script.external.ScarpetPlayerInventoryGate.acceptedScope(bot)) {
-                                    carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.AmsPlayerJoin.join(bot, true));
-                                }
-                            } else carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.AmsPlayerJoin.join(bot, false));
-                        })));
-                    var finished=joinedPhase.whenComplete(carpet.script.external.ScarpetRuntime.captureNativeConsumer((ignored,failure)->{
-                        if(failure!=null&&!carpet.script.external.ScarpetNativeWork.onlyGuestFailure(failure)){
-                            var cleanup=fun.bm.lophine.carpet.CarpetPlayerBirthPhase.run(bot,()->{
-                                this.carpetRegistrations.remove(bot.getUUID(),bot.getScoreboardName(),bot);
-                                this.bots.removeIf(value->value==bot);
-                                bot.carpetPlacementInitializer=()->{};
-                                var currentWorld=bot.level();
-                                currentWorld.removePlayerImmediately(bot,Entity.RemovalReason.UNLOADED_WITH_PLAYER);
-                                Runnable retired=()->{currentWorld.getCurrentWorldData().connections.remove(bot.connection.connection);bot.retireScheduler();};
-                                if(!carpet.script.external.ScarpetNativeRemovals.thenOwner(bot,retired))retired.run();
-                            });
-                            carpet.script.external.ScarpetNativeWork.record(cleanup);
-                            LOGGER.error("Failed to finish fake player placement",failure);
-                        }
-                    }));
-                    carpet.script.external.ScarpetNativeWork.record(finished);
-                    return null;
-                })).thenCompose(actual->actual));
+                                                bot.level().getChunkSource().chunkMap.addEntity(bot);
+                                                bot.renderData();
+                                                bot.initInventoryMenu();
+                                                fun.bm.lophine.carpet.AmsFakePlayers.added(bot);
+                                                botsNameByWorldUuid
+                                                        .computeIfAbsent(bot.level().uuid.toString(), (k) -> java.util.concurrent.ConcurrentHashMap.newKeySet())
+                                                        .add(bot.getBukkitEntity().getName());
+                                                if (!orgSilence)
+                                                    BotList.LOGGER.info("{}[{}] logged in with entity id {} at ([{}]{}, {}, {})", bot.getName().getString(), "Local", bot.getId(), bot.level().serverLevelData.getLevelName(), bot.getX(), bot.getY(), bot.getZ());
+                                                bot.carpetPlacementInitializer.run();
+                                                bot.carpetPlacementInitializer = () -> {
+                                                };
+                                                bot.carpetPlacementReady = true;
+                                                if (bot.carpetNativePlayer) {
+                                                    carpet.script.external.ScarpetPlayerInventoryGate.trackAccepted(bot,
+                                                            carpet.script.external.ScarpetNativeWork.completionOf(carpet.script.external.ScarpetNativeWork.capture()));
+                                                    try (var joined = carpet.script.external.ScarpetPlayerInventoryGate.acceptedScope(bot)) {
+                                                        carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.AmsPlayerJoin.join(bot, true));
+                                                    }
+                                                } else
+                                                    carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.AmsPlayerJoin.join(bot, false));
+                                            })));
+                                    var finished = joinedPhase.whenComplete(carpet.script.external.ScarpetRuntime.captureNativeConsumer((ignored, failure) -> {
+                                        if (failure != null && !carpet.script.external.ScarpetNativeWork.onlyGuestFailure(failure)) {
+                                            var cleanup = fun.bm.lophine.carpet.CarpetPlayerBirthPhase.run(bot, () -> {
+                                                this.carpetRegistrations.remove(bot.getUUID(), bot.getScoreboardName(), bot);
+                                                this.bots.removeIf(value -> value == bot);
+                                                bot.carpetPlacementInitializer = () -> {
+                                                };
+                                                var currentWorld = bot.level();
+                                                currentWorld.removePlayerImmediately(bot, Entity.RemovalReason.UNLOADED_WITH_PLAYER);
+                                                Runnable retired = () -> {
+                                                    currentWorld.getCurrentWorldData().connections.remove(bot.connection.connection);
+                                                    bot.retireScheduler();
+                                                };
+                                                if (!carpet.script.external.ScarpetNativeRemovals.thenOwner(bot, retired))
+                                                    retired.run();
+                                            });
+                                            carpet.script.external.ScarpetNativeWork.record(cleanup);
+                                            LOGGER.error("Failed to finish fake player placement", failure);
+                                        }
+                                    }));
+                                    carpet.script.external.ScarpetNativeWork.record(finished);
+                                    return null;
+                                })).thenCompose(actual -> actual));
         carpet.script.external.ScarpetNativeWork.record(carpetPlacement);
         carpet.script.external.ScarpetNativeWork.trackNative(this.server, carpetPlacement);
         Runnable task = () -> {
             java.util.concurrent.CompletableFuture<Void> actual;
-            try { actual = carpetPlace.get(); }
-            catch (Throwable failure) { actual = java.util.concurrent.CompletableFuture.failedFuture(failure); }
+            try {
+                actual = carpetPlace.get();
+            } catch (Throwable failure) {
+                actual = java.util.concurrent.CompletableFuture.failedFuture(failure);
+            }
             carpet.script.external.ScarpetNativeWork.aliasDependency(carpetPlacement, actual);
             actual.whenComplete((ignored, failure) -> {
-                if (failure == null) { carpetPlacement.complete(bot); bot.carpetPlacementFuture.complete(bot); }
-                else { carpetPlacement.completeExceptionally(failure); bot.carpetPlacementFuture.completeExceptionally(failure); }
+                if (failure == null) {
+                    carpetPlacement.complete(bot);
+                    bot.carpetPlacementFuture.complete(bot);
+                } else {
+                    carpetPlacement.completeExceptionally(failure);
+                    bot.carpetPlacementFuture.completeExceptionally(failure);
+                }
             });
         };
         if (TickThread.isTickThreadFor(targetWorld, spawnLocation.blockX() >> 4, spawnLocation.blockZ() >> 4)) {
@@ -361,10 +381,13 @@ public class BotList {
         return bot;
     }
 
-    /** Keep the real observer registered in its outer scope; only completed Guest failures allow the next native phase. */
-    private static java.util.concurrent.CompletableFuture<Void> carpetBirthAfterGuest(java.util.concurrent.CompletableFuture<Void> actual){
-        return actual.handle((ignored,failure)->{
-            if(failure!=null&&!carpet.script.external.ScarpetNativeWork.onlyGuestFailure(failure))throw new java.util.concurrent.CompletionException(failure);
+    /**
+     * Keep the real observer registered in its outer scope; only completed Guest failures allow the next native phase.
+     */
+    private static java.util.concurrent.CompletableFuture<Void> carpetBirthAfterGuest(java.util.concurrent.CompletableFuture<Void> actual) {
+        return actual.handle((ignored, failure) -> {
+            if (failure != null && !carpet.script.external.ScarpetNativeWork.onlyGuestFailure(failure))
+                throw new java.util.concurrent.CompletionException(failure);
             return null;
         });
     }
@@ -389,34 +412,42 @@ public class BotList {
         var completed = this.carpetRemoveBotAsync(bot, reason, remover, save, resume);
         return completed.isDone() ? completed.join() : true;
     }
+
     public java.util.concurrent.CompletableFuture<Boolean> carpetRemoveBotAsync(ServerBot bot, BotRemoveEvent.RemoveReason reason, @Nullable CommandSender remover, boolean save, boolean resume) {
         carpet.script.external.ScarpetRetiredActors.capture(bot);
         var captured = carpet.script.external.ScarpetRuntime.captureOwnerOperation(() -> {
             try (var accepted = carpet.script.external.ScarpetPlayerInventoryGate.acceptedScope(bot)) {
                 return carpet.script.external.ScarpetNativeWork.<java.util.concurrent.CompletableFuture<Boolean>>observeNative(bot, () -> {
                     var completed = this.carpetPrepareBotRemoval(bot, remover, reason, save, resume);
-                    carpet.script.external.ScarpetNativeWork.record(completed); return completed;
+                    carpet.script.external.ScarpetNativeWork.record(completed);
+                    return completed;
                 }).thenCompose(next -> next);
             }
         });
         var completed = TickThread.isShutdownThread() ? captured.get()
-            : carpet.script.external.ScarpetPlayerInventoryGate.whenIdleForRemoval(bot, captured).thenCompose(next -> next);
+                : carpet.script.external.ScarpetPlayerInventoryGate.whenIdleForRemoval(bot, captured).thenCompose(next -> next);
         carpet.script.external.ScarpetNativeWork.record(completed);
         return carpet.script.external.ScarpetNativeRemovals.trackCaller(this.server, completed);
     }
-    private void carpetPublishJoinMessage(ServerBot bot,boolean silence) {
-        BotJoinEvent event = new BotJoinEvent(bot.getBukkitEntity(),silence?null:PaperAdventure.asAdventure(Component.translatable("multiplayer.player.joined",bot.getDisplayName())).style(Style.style(NamedTextColor.YELLOW)));
+
+    private void carpetPublishJoinMessage(ServerBot bot, boolean silence) {
+        BotJoinEvent event = new BotJoinEvent(bot.getBukkitEntity(), silence ? null : PaperAdventure.asAdventure(Component.translatable("multiplayer.player.joined", bot.getDisplayName())).style(Style.style(NamedTextColor.YELLOW)));
         this.server.server.getPluginManager().callEvent(event);
-        var message=event.joinMessage();
-        if(!silence&&message!=null&&!message.equals(net.kyori.adventure.text.Component.empty()))this.server.getPlayerList().broadcastSystemMessage(PaperAdventure.asVanilla(message),false);
+        var message = event.joinMessage();
+        if (!silence && message != null && !message.equals(net.kyori.adventure.text.Component.empty()))
+            this.server.getPlayerList().broadcastSystemMessage(PaperAdventure.asVanilla(message), false);
     }
-    private void carpetPublishLeaveMessage(ServerBot bot,BotRemoveEvent event) {
-        boolean silence=fun.bm.lophine.carpet.OrgNativePlayerMessages.consumeLeave(event);var message=event.removeMessage();
-        if(!silence&&message!=null&&!message.equals(net.kyori.adventure.text.Component.empty()))this.server.getPlayerList().broadcastSystemMessage(PaperAdventure.asVanilla(message),false);
+
+    private void carpetPublishLeaveMessage(ServerBot bot, BotRemoveEvent event) {
+        boolean silence = fun.bm.lophine.carpet.OrgNativePlayerMessages.consumeLeave(event);
+        var message = event.removeMessage();
+        if (!silence && message != null && !message.equals(net.kyori.adventure.text.Component.empty()))
+            this.server.getPlayerList().broadcastSystemMessage(PaperAdventure.asVanilla(message), false);
     }
+
     private java.util.concurrent.CompletableFuture<Boolean> carpetPrepareBotRemoval(ServerBot bot, @Nullable CommandSender remover, BotRemoveEvent.RemoveReason reason, boolean save, boolean resume) {
         BotRemoveEvent event = new BotRemoveEvent(bot.getBukkitEntity(), reason, remover, PaperAdventure.asAdventure(Component.translatable("multiplayer.player.left", bot.getDisplayName())).style(Style.style(NamedTextColor.YELLOW)), save);
-        fun.bm.lophine.carpet.OrgNativePlayerMessages.prepared(bot,event);
+        fun.bm.lophine.carpet.OrgNativePlayerMessages.prepared(bot, event);
         this.server.server.getPluginManager().callEvent(event);
 
         if (event.isCancelled() && event.getReason() != BotRemoveEvent.RemoveReason.INTERNAL) {
@@ -432,9 +463,10 @@ public class BotList {
             }
         })).thenCompose(next -> next);
     }
+
     private boolean carpetRemoveBotLegacy(ServerBot bot, @Nullable CommandSender remover, BotRemoveEvent.RemoveReason reason, boolean save, boolean resume) {
         BotRemoveEvent event = new BotRemoveEvent(bot.getBukkitEntity(), reason, remover, PaperAdventure.asAdventure(Component.translatable("multiplayer.player.left", bot.getDisplayName())).style(Style.style(NamedTextColor.YELLOW)), save);
-        fun.bm.lophine.carpet.OrgNativePlayerMessages.prepared(bot,event);
+        fun.bm.lophine.carpet.OrgNativePlayerMessages.prepared(bot, event);
         this.server.server.getPluginManager().callEvent(event);
 
         if (event.isCancelled() && event.getReason() != BotRemoveEvent.RemoveReason.INTERNAL) {
@@ -446,7 +478,8 @@ public class BotList {
             bot.removeTaskId = -1;
         }
 
-        if (bot.carpetNativePlayer) carpet.script.external.ScarpetRuntime.onLeave(bot, Component.literal(reason.name().toLowerCase(java.util.Locale.ROOT)));
+        if (bot.carpetNativePlayer)
+            carpet.script.external.ScarpetRuntime.onLeave(bot, Component.literal(reason.name().toLowerCase(java.util.Locale.ROOT)));
         bot.disconnect();
 
         this.resumeDataStorage.removeSavedData(bot.nameAndId().name());
@@ -496,10 +529,13 @@ public class BotList {
         }
 
         bot.level().removePlayerImmediately(bot, Entity.RemovalReason.UNLOADED_WITH_PLAYER);
-        if (carpet.script.external.ScarpetNativeRemovals.thenOwner(bot, () -> this.carpetFinishBotRemoval(bot, event))) return true;
+        if (carpet.script.external.ScarpetNativeRemovals.thenOwner(bot, () -> this.carpetFinishBotRemoval(bot, event)))
+            return true;
         return this.carpetFinishBotRemoval(bot, event);
     }
-    private boolean carpetRemoveBotNative(ServerBot bot, BotRemoveEvent event, boolean resume) {        if (bot.removeTaskId != -1) {
+
+    private boolean carpetRemoveBotNative(ServerBot bot, BotRemoveEvent event, boolean resume) {
+        if (bot.removeTaskId != -1) {
             Bukkit.getGlobalRegionScheduler().cancelTask(bot.removeTaskId);
             bot.removeTaskId = -1;
         }
@@ -553,7 +589,8 @@ public class BotList {
         }
 
         bot.level().removePlayerImmediately(bot, Entity.RemovalReason.UNLOADED_WITH_PLAYER);
-        if (carpet.script.external.ScarpetNativeRemovals.thenOwner(bot, () -> this.carpetFinishBotRemoval(bot, event))) return true;
+        if (carpet.script.external.ScarpetNativeRemovals.thenOwner(bot, () -> this.carpetFinishBotRemoval(bot, event)))
+            return true;
         return this.carpetFinishBotRemoval(bot, event);
     }
 
@@ -569,7 +606,7 @@ public class BotList {
         this.bots.removeIf(value -> value == bot);
         this.carpetRegistrations.remove(bot.getUUID(), bot.getScoreboardName(), bot);
 
-        if(!fun.bm.lophine.carpet.OrgNativePlayerMessages.keepTab(event))bot.removeTab();
+        if (!fun.bm.lophine.carpet.OrgNativePlayerMessages.keepTab(event)) bot.removeTab();
         ClientboundRemoveEntitiesPacket packet = new ClientboundRemoveEntitiesPacket(bot.getId());
         for (ServerPlayer player : bot.level().players()) {
             if (!(player instanceof ServerBot)) {
@@ -577,7 +614,7 @@ public class BotList {
             }
         }
 
-        this.carpetPublishLeaveMessage(bot,event);
+        this.carpetPublishLeaveMessage(bot, event);
         return true;
     }
 
@@ -598,7 +635,7 @@ public class BotList {
                 if (TickThread.isTickThreadFor(bot) || TickThread.isShutdownThread()) {
                     bot.resume = FakePlayerCompatConfig.fakePlayerResident;
                     var actual = this.carpetRemoveBotAsync(bot, BotRemoveEvent.RemoveReason.INTERNAL, null,
-                        FakePlayerCompatConfig.fakePlayerResident, FakePlayerCompatConfig.fakePlayerResident);
+                            FakePlayerCompatConfig.fakePlayerResident, FakePlayerCompatConfig.fakePlayerResident);
                     removals.add(actual);
                     finished &= actual.isDone();
                 } else {
@@ -610,12 +647,14 @@ public class BotList {
                         owned.resume = FakePlayerCompatConfig.fakePlayerResident;
                         try {
                             this.carpetRemoveBotAsync(owned, BotRemoveEvent.RemoveReason.INTERNAL, null,
-                                FakePlayerCompatConfig.fakePlayerResident, FakePlayerCompatConfig.fakePlayerResident)
-                                .whenComplete((removed, failure) -> {
-                                    if (failure == null) actual.complete(removed);
-                                    else actual.completeExceptionally(failure);
-                                });
-                        } catch (Throwable failure) { actual.completeExceptionally(failure); }
+                                            FakePlayerCompatConfig.fakePlayerResident, FakePlayerCompatConfig.fakePlayerResident)
+                                    .whenComplete((removed, failure) -> {
+                                        if (failure == null) actual.complete(removed);
+                                        else actual.completeExceptionally(failure);
+                                    });
+                        } catch (Throwable failure) {
+                            actual.completeExceptionally(failure);
+                        }
                     }, retired -> actual.complete(false), 1L);
                     if (!scheduled) actual.complete(false);
                 }
@@ -624,7 +663,7 @@ public class BotList {
             if (TickThread.isTickThreadFor(bot.level(), bot.getX(), bot.getZ())) {
                 bot.resume = FakePlayerCompatConfig.fakePlayerResident;
                 removals.add(java.util.concurrent.CompletableFuture.completedFuture(this.removeBot(bot,
-                    BotRemoveEvent.RemoveReason.INTERNAL, null, FakePlayerCompatConfig.fakePlayerResident, FakePlayerCompatConfig.fakePlayerResident)));
+                        BotRemoveEvent.RemoveReason.INTERNAL, null, FakePlayerCompatConfig.fakePlayerResident, FakePlayerCompatConfig.fakePlayerResident)));
             } else {
                 finished = false;
                 var actual = new java.util.concurrent.CompletableFuture<Boolean>();
@@ -634,11 +673,12 @@ public class BotList {
         }
         // Establish the complete cohort before any terminal callback can advance shutdown.
         var completed = java.util.concurrent.CompletableFuture.allOf(removals.toArray(java.util.concurrent.CompletableFuture[]::new))
-            .thenRun(() -> {
-                for (var removal : removals) {
-                    if (!Boolean.TRUE.equals(removal.join())) throw new IllegalStateException("A player shutdown removal did not complete");
-                }
-            });
+                .thenRun(() -> {
+                    for (var removal : removals) {
+                        if (!Boolean.TRUE.equals(removal.join()))
+                            throw new IllegalStateException("A player shutdown removal did not complete");
+                    }
+                });
         if (finished) {
             completed.join();
         } else {
@@ -663,7 +703,7 @@ public class BotList {
             try {
                 bot.resume = FakePlayerCompatConfig.fakePlayerResident;
                 actual.complete(this.removeBot(bot, BotRemoveEvent.RemoveReason.INTERNAL, null,
-                    FakePlayerCompatConfig.fakePlayerResident, FakePlayerCompatConfig.fakePlayerResident));
+                        FakePlayerCompatConfig.fakePlayerResident, FakePlayerCompatConfig.fakePlayerResident));
             } catch (Exception e) {
                 this.removeBot(bot, actual, counter);
             }

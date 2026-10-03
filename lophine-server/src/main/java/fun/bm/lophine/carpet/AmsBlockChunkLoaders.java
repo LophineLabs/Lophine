@@ -3,7 +3,6 @@
 package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
-import java.util.ArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ChunkLevel;
@@ -13,6 +12,8 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.ArrayList;
 
 public final class AmsBlockChunkLoaders {
     private AmsBlockChunkLoaders() {
@@ -25,8 +26,8 @@ public final class AmsBlockChunkLoaders {
         }
         final BlockState above = level.getBlockState(pos.above());
         if ("note_block".equals(option)
-            || ("bone_block".equals(option) && above.is(Blocks.BONE_BLOCK))
-            || ("wither_skeleton_skull".equals(option) && (above.is(Blocks.WITHER_SKELETON_SKULL) || above.is(Blocks.WITHER_SKELETON_WALL_SKULL)))) {
+                || ("bone_block".equals(option) && above.is(Blocks.BONE_BLOCK))
+                || ("wither_skeleton_skull".equals(option) && (above.is(Blocks.WITHER_SKELETON_SKULL) || above.is(Blocks.WITHER_SKELETON_WALL_SKULL)))) {
             add(level, pos, TicketType.AMS_NOTE_BLOCK_LOADER);
         }
     }
@@ -52,19 +53,22 @@ public final class AmsBlockChunkLoaders {
         }
     }
 
-    private record PistonRead(BlockPos target, BlockState above, BlockState below) {}
+    private record PistonRead(BlockPos target, BlockState above, BlockState below) {
+    }
 
     private static java.util.concurrent.CompletableFuture<Void> pistonAsync(final ServerLevel level, final BlockPos pos, final BlockState state) {
         return AmsNativeCommandEffects.nativeReceipt(level.getServer(), () ->
-            AmsNativeCommandEffects.then(AmsNativeCommandEffects.world(level, pos, () ->
-                new PistonRead(pos.relative(state.getValue(PistonBaseBlock.FACING)), level.getBlockState(pos.above()), level.getBlockState(pos.below()))), read ->
-                AmsNativeCommandEffects.then(AmsNativeCommandEffects.world(level, pos, () -> {
-                    if (("bone_block".equals(GeneralCompatConfig.pistonBlockChunkLoader) || "all".equals(GeneralCompatConfig.pistonBlockChunkLoader)) && read.above().is(Blocks.BONE_BLOCK)) add(level, read.target(), TicketType.AMS_PISTON_BLOCK_LOADER);
-                    return (Void)null;
-                }), ignored -> AmsNativeCommandEffects.world(level, pos, () -> {
-                    if (("bedrock".equals(GeneralCompatConfig.pistonBlockChunkLoader) || "all".equals(GeneralCompatConfig.pistonBlockChunkLoader)) && read.below().is(Blocks.BEDROCK)) add(level, read.target(), TicketType.AMS_PISTON_BLOCK_LOADER);
-                    return (Void)null;
-                }))));
+                AmsNativeCommandEffects.then(AmsNativeCommandEffects.world(level, pos, () ->
+                        new PistonRead(pos.relative(state.getValue(PistonBaseBlock.FACING)), level.getBlockState(pos.above()), level.getBlockState(pos.below()))), read ->
+                        AmsNativeCommandEffects.then(AmsNativeCommandEffects.world(level, pos, () -> {
+                            if (("bone_block".equals(GeneralCompatConfig.pistonBlockChunkLoader) || "all".equals(GeneralCompatConfig.pistonBlockChunkLoader)) && read.above().is(Blocks.BONE_BLOCK))
+                                add(level, read.target(), TicketType.AMS_PISTON_BLOCK_LOADER);
+                            return (Void) null;
+                        }), ignored -> AmsNativeCommandEffects.world(level, pos, () -> {
+                            if (("bedrock".equals(GeneralCompatConfig.pistonBlockChunkLoader) || "all".equals(GeneralCompatConfig.pistonBlockChunkLoader)) && read.below().is(Blocks.BEDROCK))
+                                add(level, read.target(), TicketType.AMS_PISTON_BLOCK_LOADER);
+                            return (Void) null;
+                        }))));
     }
 
     public static void bell(final ServerLevel level, final BlockPos pos) {
@@ -105,16 +109,20 @@ public final class AmsBlockChunkLoaders {
             var tiles = new java.util.ArrayList<ChunkPos>();
             for (int dx : offsets) for (int dz : offsets) tiles.add(new ChunkPos(center.x() + dx, center.z() + dz));
             return AmsNativeCommandEffects.then(addTileNext(level, pos, type, tileRadius, tiles.iterator()), ignored ->
-                AmsNativeCommandEffects.world(level, pos, () -> { if (GeneralCompatConfig.blockChunkLoaderKeepWorldTickUpdate) level.resetEmptyTime(); return (Void)null; }));
+                    AmsNativeCommandEffects.world(level, pos, () -> {
+                        if (GeneralCompatConfig.blockChunkLoaderKeepWorldTickUpdate) level.resetEmptyTime();
+                        return (Void) null;
+                    }));
         });
     }
 
     private static java.util.concurrent.CompletableFuture<Void> addTileNext(final ServerLevel level, final BlockPos pos, final TicketType<?> type,
-        final int radius, final java.util.Iterator<ChunkPos> tiles) {
+                                                                            final int radius, final java.util.Iterator<ChunkPos> tiles) {
         if (!tiles.hasNext()) return java.util.concurrent.CompletableFuture.completedFuture(null);
         final ChunkPos center = tiles.next();
         return AmsNativeCommandEffects.then(AmsNativeCommandEffects.world(level, pos, () -> {
-            level.getChunkSource().addTicketWithRadius(type, center, radius); return (Void)null;
+            level.getChunkSource().addTicketWithRadius(type, center, radius);
+            return (Void) null;
         }), ignored -> addTileNext(level, pos, type, radius, tiles));
     }
 

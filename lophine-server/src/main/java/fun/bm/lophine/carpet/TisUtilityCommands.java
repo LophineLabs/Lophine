@@ -9,14 +9,14 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
-import java.util.Collection;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.CarpetEntityRemoval;
 import net.minecraft.world.entity.Entity;
+
+import java.util.Collection;
 
 public final class TisUtilityCommands {
     private TisUtilityCommands() {
@@ -28,21 +28,21 @@ public final class TisUtilityCommands {
 
     public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("removeentity")
-            .requires(source -> CarpetCommandPermissions.canUse(source, GeneralCompatConfig.commandRemoveEntity))
-            .then(Commands.argument("target", EntityArgument.entities())
-                .executes(context -> removeEntities(context.getSource(), EntityArgument.getEntities(context, "target")))));
+                .requires(source -> CarpetCommandPermissions.canUse(source, GeneralCompatConfig.commandRemoveEntity))
+                .then(Commands.argument("target", EntityArgument.entities())
+                        .executes(context -> removeEntities(context.getSource(), EntityArgument.getEntities(context, "target")))));
         var duration = Commands.argument("duration", IntegerArgumentType.integer(0, 60_000));
-        for (String unit : new String[] {"s", "ms", "us"}) {
+        for (String unit : new String[]{"s", "ms", "us"}) {
             duration.then(Commands.literal(unit).executes(context -> sleep(context.getSource(),
-                IntegerArgumentType.getInteger(context, "duration"), unit)));
+                    IntegerArgumentType.getInteger(context, "duration"), unit)));
         }
         dispatcher.register(Commands.literal("sleep")
-            .requires(source -> CarpetCommandPermissions.canUse(source, GeneralCompatConfig.commandSleep))
-            .executes(context -> {
-                context.getSource().sendSuccess(() -> Component.literal("/sleep <duration 0..60000> <s|ms|us>; pauses the executing tick thread."), false);
-                return 0;
-            })
-            .then(duration));
+                .requires(source -> CarpetCommandPermissions.canUse(source, GeneralCompatConfig.commandSleep))
+                .executes(context -> {
+                    context.getSource().sendSuccess(() -> Component.literal("/sleep <duration 0..60000> <s|ms|us>; pauses the executing tick thread."), false);
+                    return 0;
+                })
+                .then(duration));
     }
 
     private static int removeEntities(final CommandSourceStack source, final Collection<? extends Entity> targets) {

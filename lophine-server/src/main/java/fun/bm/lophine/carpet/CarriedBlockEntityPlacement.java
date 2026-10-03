@@ -6,7 +6,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/** Carries the original instance through the normal chunk, light, POI and physics update path. */
+/**
+ * Carries the original instance through the normal chunk, light, POI and physics update path.
+ */
 public final class CarriedBlockEntityPlacement {
     private static final ThreadLocal<Pending> PENDING = new ThreadLocal<>();
 
@@ -39,7 +41,7 @@ public final class CarriedBlockEntityPlacement {
     public static @Nullable BlockEntity take(Level level, BlockPos pos, BlockState state) {
         Pending pending = PENDING.get();
         if (pending == null || pending.consumed || pending.level != level || !pending.pos.equals(pos)
-            || !pending.entity.isValidBlockState(state)) return null;
+                || !pending.entity.isValidBlockState(state)) return null;
         pending.consumed = true;
         BlockEntity entity = pending.entity;
         entity.carpetSetPosition(pos);

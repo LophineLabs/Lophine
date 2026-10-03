@@ -3,16 +3,19 @@
 package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.protocol.CarpetLoggerProtocol;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.world.phys.Vec3;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.world.phys.Vec3;
 
-/** Owned by one projectile or falling block, with one terminal report. */
+/**
+ * Owned by one projectile or falling block, with one terminal report.
+ */
 public final class CarpetTrajectoryLogger {
     private final String name;
     private final List<Vec3> positions = new ArrayList<>();
@@ -28,7 +31,9 @@ public final class CarpetTrajectoryLogger {
         TisProjectileVisualizer.bind(this.entity, this);
     }
 
-    public void hit(net.minecraft.world.phys.HitResult result) { if (!finished) hit = TisProjectileVisualizer.Hit.capture(result); }
+    public void hit(net.minecraft.world.phys.HitResult result) {
+        if (!finished) hit = TisProjectileVisualizer.Hit.capture(result);
+    }
 
     public void tick(Vec3 position, Vec3 motion) {
         if (!finished) {
@@ -40,7 +45,11 @@ public final class CarpetTrajectoryLogger {
     public void finish() {
         if (finished) return;
         finished = true;
-        if (TisProjectileVisualizer.isVisualizer(entity)) { positions.clear(); motions.clear(); return; }
+        if (TisProjectileVisualizer.isVisualizer(entity)) {
+            positions.clear();
+            motions.clear();
+            return;
+        }
         if (entity != null && "projectiles".equals(name)) TisProjectileVisualizer.clear();
         CarpetLoggerProtocol.log(name, option -> {
             List<Component> output = new ArrayList<>();
@@ -50,9 +59,9 @@ public final class CarpetTrajectoryLogger {
                 for (int i = 0; i < positions.size(); i++) {
                     Vec3 pos = positions.get(i), mot = motions.get(i);
                     String hover = String.format(Locale.ROOT, "Tick: %d\nx: %f\ny: %f\nz: %f\n------------\nmx: %f\nmy: %f\nmz: %f",
-                        i, pos.x(), pos.y(), pos.z(), mot.x(), mot.y(), mot.z());
+                            i, pos.x(), pos.y(), pos.z(), mot.x(), mot.y(), mot.z());
                     line.append(Component.literal("  x").withStyle(style -> style.withColor(ChatFormatting.WHITE)
-                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(hover)))));
+                            .withHoverEvent(new HoverEvent.ShowText(Component.literal(hover)))));
                     if ((i + 1) % 20 == 0 || i == positions.size() - 1) {
                         output.add(line);
                         line = Component.empty();
@@ -62,13 +71,13 @@ public final class CarpetTrajectoryLogger {
                 output.add(Component.literal("---------"));
                 for (int i = 0; i < positions.size(); i++) {
                     output.add(Component.literal(String.format(Locale.ROOT, "tick: %3d pos", i))
-                        .append(coordinatesText(positions.get(i), ChatFormatting.WHITE, false))
-                        .append("   mot").append(coordinatesText(motions.get(i), ChatFormatting.WHITE, false)));
+                            .append(coordinatesText(positions.get(i), ChatFormatting.WHITE, false))
+                            .append("   mot").append(coordinatesText(motions.get(i), ChatFormatting.WHITE, false)));
                 }
             }
             if (hit != null && "brief".equals(option)) {
                 var marker = Component.literal(" x").withStyle(style -> style.withColor(ChatFormatting.GRAY)
-                    .withHoverEvent(new HoverEvent.ShowText(Component.literal(hit.text()))));
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(hit.text()))));
                 if (output.isEmpty()) output.add(marker);
                 else output.set(output.size() - 1, output.getLast().copy().append(marker));
             } else if (hit != null && "full".equals(option)) output.add(Component.literal(hit.text()));
@@ -79,8 +88,9 @@ public final class CarpetTrajectoryLogger {
                         TisProjectileVisualizer.visualize(world, List.copyOf(positions), hit == null ? null : hit.position());
                         createdVisualizers = true;
                     }
-                } else output.add(Component.literal("Projectile visualization is disabled; enable visualizeProjectileLoggerEnabled")
-                    .withStyle(style -> style.withClickEvent(new ClickEvent.SuggestCommand("/carpet visualizeProjectileLoggerEnabled true"))));
+                } else
+                    output.add(Component.literal("Projectile visualization is disabled; enable visualizeProjectileLoggerEnabled")
+                            .withStyle(style -> style.withClickEvent(new ClickEvent.SuggestCommand("/carpet visualizeProjectileLoggerEnabled true"))));
             }
             return output;
         });
@@ -100,8 +110,8 @@ public final class CarpetTrajectoryLogger {
             double value = values[i];
             String prefix = i == 0 ? "" : ", ";
             message.append(Component.literal(prefix + String.format(Locale.ROOT, "%.1f", value)).withStyle(style ->
-                style.withColor(color).withClickEvent(new ClickEvent.SuggestCommand(Double.toString(value)))
-                    .withHoverEvent(new HoverEvent.ShowText(Component.literal(Double.toString(value))))));
+                    style.withColor(color).withClickEvent(new ClickEvent.SuggestCommand(Double.toString(value)))
+                            .withHoverEvent(new HoverEvent.ShowText(Component.literal(Double.toString(value))))));
         }
         return message.append(" ]");
     }

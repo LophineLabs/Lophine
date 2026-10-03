@@ -16,84 +16,84 @@
 
 package carpet.script.external.version.util.version;
 
-import java.util.Optional;
-
 import carpet.script.external.version.api.SemanticVersion;
 import carpet.script.external.version.api.Version;
 import carpet.script.external.version.api.VersionParsingException;
+
+import java.util.Optional;
 
 /**
  * @deprecated Internal API, do not use
  */
 @Deprecated
 public class SemanticVersionImpl implements SemanticVersion {
-	private final SemanticVersion parent;
+    private final SemanticVersion parent;
 
-	protected SemanticVersionImpl() {
-		parent = null;
-	}
+    protected SemanticVersionImpl() {
+        parent = null;
+    }
 
-	public SemanticVersionImpl(String version, boolean storeX) throws VersionParsingException {
-		parent = SemanticVersion.parse(version);
-	}
+    public SemanticVersionImpl(String version, boolean storeX) throws VersionParsingException {
+        parent = SemanticVersion.parse(version);
+    }
 
-	@Override
-	public int getVersionComponentCount() {
-		return parent.getVersionComponentCount();
-	}
+    @Override
+    public int getVersionComponentCount() {
+        return parent.getVersionComponentCount();
+    }
 
-	@Override
-	public int getVersionComponent(int pos) {
-		return parent.getVersionComponent(pos);
-	}
+    @Override
+    public int getVersionComponent(int pos) {
+        return parent.getVersionComponent(pos);
+    }
 
-	@Override
-	public Optional<String> getPrereleaseKey() {
-		return parent.getPrereleaseKey();
-	}
+    @Override
+    public Optional<String> getPrereleaseKey() {
+        return parent.getPrereleaseKey();
+    }
 
-	@Override
-	public Optional<String> getBuildKey() {
-		return parent.getBuildKey();
-	}
+    @Override
+    public Optional<String> getBuildKey() {
+        return parent.getBuildKey();
+    }
 
-	@Override
-	public String getFriendlyString() {
-		return parent.getFriendlyString();
-	}
+    @Override
+    public String getFriendlyString() {
+        return parent.getFriendlyString();
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		return parent.equals(o);
-	}
+    @Override
+    public boolean equals(Object o) {
+        return parent.equals(o);
+    }
 
-	@Override
-	public int hashCode() {
-		return parent.hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return parent.hashCode();
+    }
 
-	@Override
-	public String toString() {
-		return parent.toString();
-	}
+    @Override
+    public String toString() {
+        return parent.toString();
+    }
 
-	@Override
-	public boolean hasWildcard() {
-		return parent.hasWildcard();
-	}
+    @Override
+    public boolean hasWildcard() {
+        return parent.hasWildcard();
+    }
 
-	public boolean equalsComponentsExactly(SemanticVersionImpl other) {
-		for (int i = 0; i < Math.max(getVersionComponentCount(), other.getVersionComponentCount()); i++) {
-			if (getVersionComponent(i) != other.getVersionComponent(i)) {
-				return false;
-			}
-		}
+    public boolean equalsComponentsExactly(SemanticVersionImpl other) {
+        for (int i = 0; i < Math.max(getVersionComponentCount(), other.getVersionComponentCount()); i++) {
+            if (getVersionComponent(i) != other.getVersionComponent(i)) {
+                return false;
+            }
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	@Override
-	public int compareTo(Version o) {
-		return parent.compareTo(o);
-	}
+    @Override
+    public int compareTo(Version o) {
+        return parent.compareTo(o);
+    }
 }

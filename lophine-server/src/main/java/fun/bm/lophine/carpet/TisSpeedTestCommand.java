@@ -10,20 +10,6 @@ import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import fun.bm.lophine.protocol.tiscm.TISCMProtocol;
 import fun.bm.lophine.protocol.tiscm.TISCMProtocol.S2CPacket;
 import io.netty.util.AttributeKey;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.nbt.CompoundTag;
@@ -32,6 +18,12 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.server.level.ServerPlayer;
 
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+
 public final class TisSpeedTestCommand {
     public static final AttributeKey<Boolean> SKIP_COMPRESSION = AttributeKey.valueOf("lophine.tis.speedtest.skipCompression");
     private static final int SIZE_PER_PACKET = 16 * 1024;
@@ -39,37 +31,41 @@ public final class TisSpeedTestCommand {
     private static final Map<UUID, Session> SESSIONS = new ConcurrentHashMap<>();
     private static final AtomicInteger MAGIC_COUNTER = new AtomicInteger();
 
-    static { new Random(42).nextBytes(BUFFER); }
-    private TisSpeedTestCommand() { }
+    static {
+        new Random(42).nextBytes(BUFFER);
+    }
+
+    private TisSpeedTestCommand() {
+    }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("speedtest")
-            .requires(source -> CarpetCommandPermissions.canUse(source, GeneralCompatConfig.commandSpeedTest))
-            .executes(context -> help(context.getSource()))
-            .then(Commands.literal("download")
-                .executes(context -> transfer(context.getSource(), true, Math.min(10, GeneralCompatConfig.speedTestCommandMaxTestSize)))
-                .then(Commands.argument("size_mib", IntegerArgumentType.integer(1))
-                    .executes(context -> transfer(context.getSource(), true, IntegerArgumentType.getInteger(context, "size_mib")))))
-            .then(Commands.literal("upload")
-                .executes(context -> transfer(context.getSource(), false, Math.min(10, GeneralCompatConfig.speedTestCommandMaxTestSize)))
-                .then(Commands.argument("size_mib", IntegerArgumentType.integer(1))
-                    .executes(context -> transfer(context.getSource(), false, IntegerArgumentType.getInteger(context, "size_mib")))))
-            .then(Commands.literal("ping").executes(context -> ping(context.getSource(), 3, 1))
-                .then(Commands.argument("count", IntegerArgumentType.integer(1))
-                    .executes(context -> ping(context.getSource(), IntegerArgumentType.getInteger(context, "count"), 1))
-                    .then(Commands.argument("interval", DoubleArgumentType.doubleArg(0, 10))
-                        .executes(context -> ping(context.getSource(), IntegerArgumentType.getInteger(context, "count"),
-                            DoubleArgumentType.getDouble(context, "interval"))))))
-            .then(Commands.literal("abort").executes(context -> abort(context.getSource()))));
+                .requires(source -> CarpetCommandPermissions.canUse(source, GeneralCompatConfig.commandSpeedTest))
+                .executes(context -> help(context.getSource()))
+                .then(Commands.literal("download")
+                        .executes(context -> transfer(context.getSource(), true, Math.min(10, GeneralCompatConfig.speedTestCommandMaxTestSize)))
+                        .then(Commands.argument("size_mib", IntegerArgumentType.integer(1))
+                                .executes(context -> transfer(context.getSource(), true, IntegerArgumentType.getInteger(context, "size_mib")))))
+                .then(Commands.literal("upload")
+                        .executes(context -> transfer(context.getSource(), false, Math.min(10, GeneralCompatConfig.speedTestCommandMaxTestSize)))
+                        .then(Commands.argument("size_mib", IntegerArgumentType.integer(1))
+                                .executes(context -> transfer(context.getSource(), false, IntegerArgumentType.getInteger(context, "size_mib")))))
+                .then(Commands.literal("ping").executes(context -> ping(context.getSource(), 3, 1))
+                        .then(Commands.argument("count", IntegerArgumentType.integer(1))
+                                .executes(context -> ping(context.getSource(), IntegerArgumentType.getInteger(context, "count"), 1))
+                                .then(Commands.argument("interval", DoubleArgumentType.doubleArg(0, 10))
+                                        .executes(context -> ping(context.getSource(), IntegerArgumentType.getInteger(context, "count"),
+                                                DoubleArgumentType.getDouble(context, "interval"))))))
+                .then(Commands.literal("abort").executes(context -> abort(context.getSource()))));
     }
 
     private static int help(CommandSourceStack source) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         long supported = List.of(S2CPacket.SPEED_TEST_DOWNLOAD_PAYLOAD, S2CPacket.SPEED_TEST_UPLOAD_REQUEST,
-            S2CPacket.SPEED_TEST_PING, S2CPacket.SPEED_TEST_ABORT).stream().filter(packet -> TISCMProtocol.supports(player, packet)).count();
+                S2CPacket.SPEED_TEST_PING, S2CPacket.SPEED_TEST_ABORT).stream().filter(packet -> TISCMProtocol.supports(player, packet)).count();
         tell(source, "/speedtest download|upload [size_mib], ping [count] [interval_s], abort; maximum "
-            + GeneralCompatConfig.speedTestCommandMaxTestSize + " MiB; client support: "
-            + (supported == 4 ? "yes" : supported == 0 ? "no" : "partial"), false);
+                + GeneralCompatConfig.speedTestCommandMaxTestSize + " MiB; client support: "
+                + (supported == 4 ? "yes" : supported == 0 ? "no" : "partial"), false);
         return 0;
     }
 
@@ -91,7 +87,8 @@ public final class TisSpeedTestCommand {
             tell(source, "Test size exceeds speedTestCommandMaxTestSize or packet count limit", false);
             return 0;
         }
-        if (!check(source, player, download ? S2CPacket.SPEED_TEST_DOWNLOAD_PAYLOAD : S2CPacket.SPEED_TEST_UPLOAD_REQUEST)) return 0;
+        if (!check(source, player, download ? S2CPacket.SPEED_TEST_DOWNLOAD_PAYLOAD : S2CPacket.SPEED_TEST_UPLOAD_REQUEST))
+            return 0;
         Transfer session = new Transfer(source, player, download, sizeMiB);
         if (!claim(session)) return 0;
         tell(source, "Starting " + session.kind() + " test: " + sizeMiB + " MiB", false);
@@ -121,7 +118,10 @@ public final class TisSpeedTestCommand {
 
     private static int abort(CommandSourceStack source) throws CommandSyntaxException {
         Session session = SESSIONS.get(source.getPlayerOrException().getUUID());
-        if (session == null) { tell(source, "No speed test is running", false); return 0; }
+        if (session == null) {
+            tell(source, "No speed test is running", false);
+            return 0;
+        }
         session.abort("command");
         return 1;
     }
@@ -160,18 +160,19 @@ public final class TisSpeedTestCommand {
 
     public static boolean isDownloadPacket(Packet<?> packet) {
         return packet instanceof ClientboundCustomPayloadPacket custom
-            && custom.payload() instanceof TISCMProtocol.TISCMPayload tis
-            && "speed_test_download_payload".equals(tis.packetId());
+                && custom.payload() instanceof TISCMProtocol.TISCMPayload tis
+                && "speed_test_download_payload".equals(tis.packetId());
     }
 
     private static void tell(CommandSourceStack source, String message, boolean actionBar) {
         ServerPlayer recipient = source.getPlayer();
         if (recipient == null) source.sendSuccess(() -> Component.literal(message), false);
         else recipient.getBukkitEntity().taskScheduler.schedule(entity -> ((ServerPlayer) entity)
-            .sendSystemMessage(Component.literal(message), actionBar), null, 1L);
+                .sendSystemMessage(Component.literal(message), actionBar), null, 1L);
     }
 
-    private record PendingPing(long sentAt, CompletableFuture<Long> result) { }
+    private record PendingPing(long sentAt, CompletableFuture<Long> result) {
+    }
 
     private abstract static class Session {
         final CommandSourceStack source;
@@ -189,6 +190,7 @@ public final class TisSpeedTestCommand {
         }
 
         abstract String kind();
+
         abstract void report(boolean cancelled, String reason);
 
         void finish(boolean cancelled, String reason) {
@@ -202,13 +204,17 @@ public final class TisSpeedTestCommand {
 
         void abort(String reason) {
             if (done.get()) return;
-            TISCMProtocol.send(player, S2CPacket.SPEED_TEST_ABORT, nbt -> { }, null);
+            TISCMProtocol.send(player, S2CPacket.SPEED_TEST_ABORT, nbt -> {
+            }, null);
             finish(true, reason);
         }
 
         CompletableFuture<Long> sendPing() {
             CompletableFuture<Long> result = new CompletableFuture<>();
-            if (done.get()) { result.complete(-1L); return result; }
+            if (done.get()) {
+                result.complete(-1L);
+                return result;
+            }
             long magic = Integer.toUnsignedLong(MAGIC_COUNTER.getAndIncrement()) | (long) ThreadLocalRandom.current().nextInt() << 32;
             long timestamp = System.nanoTime();
             pendingPings.put(magic, new PendingPing(timestamp, result));
@@ -249,7 +255,10 @@ public final class TisSpeedTestCommand {
             this.totalSize = (long) sizeMiB << 20;
         }
 
-        @Override String kind() { return download ? "download" : "upload"; }
+        @Override
+        String kind() {
+            return download ? "download" : "upload";
+        }
 
         void sendOne() {
             if (done.get()) return;
@@ -267,21 +276,27 @@ public final class TisSpeedTestCommand {
             long previous = lastProgress.get();
             if (now - previous > TimeUnit.SECONDS.toNanos(1) && lastProgress.compareAndSet(previous, now)) {
                 tell(source, String.format(Locale.ROOT, "%s %.1f%% %.2f MiB/s", kind(), 100.0 * count / packetCount,
-                    (double) count * SIZE_PER_PACKET / (1 << 20) / Math.max(1e-9, (now - started) / 1e9)), true);
+                        (double) count * SIZE_PER_PACKET / (1 << 20) / Math.max(1e-9, (now - started) / 1e9)), true);
             }
-            if (count >= packetCount) { finish(false, "done"); return; }
+            if (count >= packetCount) {
+                finish(false, "done");
+                return;
+            }
             if (!download) return;
             if (count % 16 == 0 || count == packetCount - 1) {
-                sendPing().thenAccept(cost -> { if (cost >= 0 && !done.get()) sendOne(); });
+                sendPing().thenAccept(cost -> {
+                    if (cost >= 0 && !done.get()) sendOne();
+                });
             } else sendOne();
         }
 
-        @Override void report(boolean cancelled, String reason) {
+        @Override
+        void report(boolean cancelled, String reason) {
             long bytes = Math.min(packetCount, completed.get()) * (long) SIZE_PER_PACKET;
             double seconds = Math.max(1e-9, (System.nanoTime() - started) / 1e9);
             tell(source, String.format(Locale.ROOT, "%s %s: %.2f/%.2f MiB in %.3f s, %.2f MiB/s (%.2f Mbps)%s",
-                kind(), cancelled ? "aborted" : "done", bytes / (double) (1 << 20), totalSize / (double) (1 << 20), seconds,
-                bytes / (double) (1 << 20) / seconds, bytes * 8e-6 / seconds, cancelled ? " - " + reason : ""), false);
+                    kind(), cancelled ? "aborted" : "done", bytes / (double) (1 << 20), totalSize / (double) (1 << 20), seconds,
+                    bytes / (double) (1 << 20) / seconds, bytes * 8e-6 / seconds, cancelled ? " - " + reason : ""), false);
         }
     }
 
@@ -297,31 +312,43 @@ public final class TisSpeedTestCommand {
             this.intervalNs = (long) (interval * 1e9);
         }
 
-        @Override String kind() { return "ping"; }
+        @Override
+        String kind() {
+            return "ping";
+        }
 
         void run() {
             try {
                 for (int i = 1; i <= count && !done.get(); ++i) {
                     long cost = sendPing().get();
                     if (cost < 0 || done.get()) break;
-                    synchronized (this) { ++received; totalPingNs += cost; }
+                    synchronized (this) {
+                        ++received;
+                        totalPingNs += cost;
+                    }
                     tell(source, String.format(Locale.ROOT, "Ping %d: %.1f ms", i, cost / 1e6), true);
                     long wait = i < count ? Math.max(0L, intervalNs - cost) : 0L;
                     if (wait > 0) {
-                        try { aborted.get(wait, TimeUnit.NANOSECONDS); break; }
-                        catch (TimeoutException elapsed) { }
+                        try {
+                            aborted.get(wait, TimeUnit.NANOSECONDS);
+                            break;
+                        } catch (TimeoutException elapsed) {
+                        }
                     }
                 }
                 finish(false, "done");
             } catch (InterruptedException interrupted) {
                 Thread.currentThread().interrupt();
                 abort("interrupted");
-            } catch (ExecutionException failure) { abort("ping failed"); }
+            } catch (ExecutionException failure) {
+                abort("ping failed");
+            }
         }
 
-        @Override synchronized void report(boolean cancelled, String reason) {
+        @Override
+        synchronized void report(boolean cancelled, String reason) {
             tell(source, String.format(Locale.ROOT, "Ping %s: %d received, average %.2f ms%s", cancelled ? "aborted" : "done",
-                received, received == 0 ? -1.0 : totalPingNs / (double) received / 1e6, cancelled ? " - " + reason : ""), false);
+                    received, received == 0 ? -1.0 : totalPingNs / (double) received / 1e6, cancelled ? " - " + reason : ""), false);
         }
     }
 }

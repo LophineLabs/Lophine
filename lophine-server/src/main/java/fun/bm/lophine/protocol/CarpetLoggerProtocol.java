@@ -2,7 +2,6 @@ package fun.bm.lophine.protocol;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import io.papermc.paper.adventure.PaperAdventure;
-import io.papermc.paper.threadedregions.RegionizedWorldData;
 import io.papermc.paper.threadedregions.TickRegionScheduler;
 import net.kyori.adventure.text.Component;
 import net.minecraft.ChatFormatting;
@@ -10,13 +9,10 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundTabListPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerTickRateManager;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.NaturalSpawner;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.protocol.core.LeavesProtocol;
 import org.leavesmc.leaves.protocol.core.ProtocolHandler;
@@ -70,7 +66,8 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
     }
 
     public static LoggerOptions loggerOptions(String name) {
-        if ("lifetime".equals(name)) return new LoggerOptions("", fun.bm.lophine.carpet.TisLifetimeTracker.loggerOptions(), false);
+        if ("lifetime".equals(name))
+            return new LoggerOptions("", fun.bm.lophine.carpet.TisLifetimeTracker.loggerOptions(), false);
         LoggerOptions options = LOGGERS.get(name);
         if (options == null) throw new IllegalArgumentException("Unknown logger: " + name);
         return options;
@@ -118,7 +115,8 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
     public static void subscribe(String playerName, String name, String option) {
         LoggerOptions logger = loggerOptions(name);
         String accepted = option == null ? logger.defaultOption() : option;
-        if (logger.strict() && !logger.options().contains(accepted)) throw new IllegalArgumentException("Invalid option: " + accepted);
+        if (logger.strict() && !logger.options().contains(accepted))
+            throw new IllegalArgumentException("Invalid option: " + accepted);
         PLAYER_SUBSCRIPTIONS.compute(playerName, (key, old) -> {
             Map<String, String> next = new HashMap<>(old == null ? Map.of() : old);
             next.put(name, accepted);
@@ -164,7 +162,8 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
         if (server == null || server.getPlayerList() == null) return;
         ServerPlayer player = server.getPlayerList().getPlayerByName(name);
         if (player != null) player.getBukkitEntity().taskScheduler.schedule(entity -> {
-            if (subscriptions(name).containsKey("microTiming")) fun.bm.lophine.carpet.TisMicroTimingMarkers.subscribed((ServerPlayer) entity);
+            if (subscriptions(name).containsKey("microTiming"))
+                fun.bm.lophine.carpet.TisMicroTimingMarkers.subscribed((ServerPlayer) entity);
             else fun.bm.lophine.carpet.TisMicroTimingMarkers.unsubscribed((ServerPlayer) entity);
         }, null, 1L);
     }
@@ -173,7 +172,8 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
         MinecraftServer server = MinecraftServer.getServer();
         if (server == null) return;
         ServerPlayer player = server.getPlayerList().getPlayerByName(name);
-        if (player != null) player.getBukkitEntity().taskScheduler.schedule(entity -> clearHud((ServerPlayer) entity), null, 1L);
+        if (player != null)
+            player.getBukkitEntity().taskScheduler.schedule(entity -> clearHud((ServerPlayer) entity), null, 1L);
     }
 
     public static void refreshConfiguredDefaults(boolean initial) {
@@ -214,7 +214,8 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
                 restored.forEach((logger, option) -> {
                     LoggerOptions definition = LOGGERS.get(logger);
                     if (definition == null) return;
-                    if (logger.equals("movement") && !fun.bm.lophine.carpet.TisMovementLogger.canSubscribe(player.createCommandSourceStack())) return;
+                    if (logger.equals("movement") && !fun.bm.lophine.carpet.TisMovementLogger.canSubscribe(player.createCommandSourceStack()))
+                        return;
                     String value = option.isEmpty() ? definition.defaultOption() : option;
                     if (!definition.strict() || definition.options().contains(value)) accepted.put(logger, value);
                 });
@@ -227,7 +228,8 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
         // Join hooks can execute before the entity tick begins; capture on its owner.
         player.getBukkitEntity().taskScheduler.schedule(entity -> {
             fun.bm.lophine.carpet.TisMovementLogger.capture((ServerPlayer) entity);
-            if (subscriptions(name).containsKey("microTiming")) fun.bm.lophine.carpet.TisMicroTimingMarkers.subscribed((ServerPlayer) entity);
+            if (subscriptions(name).containsKey("microTiming"))
+                fun.bm.lophine.carpet.TisMicroTimingMarkers.subscribed((ServerPlayer) entity);
         }, null, 1L);
     }
 
@@ -283,7 +285,7 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
     }
 
     private static void sendHud(MinecraftServer server, ServerPlayer player, Map<String, String> subscriptions,
-        fun.bm.lophine.carpet.CarpetPacketCounter.Counts packetCounts) {
+                                fun.bm.lophine.carpet.CarpetPacketCounter.Counts packetCounts) {
         List<net.minecraft.network.chat.Component> lines = new ArrayList<>();
         subscriptions.forEach((loggerName, option) -> {
             switch (loggerName) {
@@ -347,15 +349,16 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
 
     private static net.minecraft.network.chat.Component buildMobcapsLine(ServerPlayer player, String option) {
         String dimension = option == null || option.isBlank() || option.equalsIgnoreCase("dynamic")
-            ? player.level().dimension().identifier().toString()
-            : switch (option.toLowerCase(Locale.ROOT)) {
-                case "overworld" -> "minecraft:overworld";
-                case "nether" -> "minecraft:the_nether";
-                case "end" -> "minecraft:the_end";
-                default -> option.contains(":") ? option : "minecraft:" + option;
-            };
+                ? player.level().dimension().identifier().toString()
+                : switch (option.toLowerCase(Locale.ROOT)) {
+            case "overworld" -> "minecraft:overworld";
+            case "nether" -> "minecraft:the_nether";
+            case "end" -> "minecraft:the_end";
+            default -> option.contains(":") ? option : "minecraft:" + option;
+        };
         var snapshot = fun.bm.lophine.carpet.CarpetMobcaps.dimension(dimension);
-        if (snapshot == null) return net.minecraft.network.chat.Component.literal("Mobcaps: unavailable").withStyle(ChatFormatting.DARK_GRAY);
+        if (snapshot == null)
+            return net.minecraft.network.chat.Component.literal("Mobcaps: unavailable").withStyle(ChatFormatting.DARK_GRAY);
         var counts = snapshot.counts();
         MutableComponent line = net.minecraft.network.chat.Component.literal("Mobcaps").withStyle(ChatFormatting.GRAY);
         for (MobCategory category : MobCategory.values()) {

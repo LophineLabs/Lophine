@@ -8,9 +8,12 @@ import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
-/** Named-shulker update suppression, retaining the original ClassCastException trigger. */
+/**
+ * Named-shulker update suppression, retaining the original ClassCastException trigger.
+ */
 public final class OrgUpdateSuppression {
-    private OrgUpdateSuppression() {}
+    private OrgUpdateSuppression() {
+    }
 
     public static boolean namedSuppressor(String name) {
         String value = GeneralCompatConfig.CCEUpdateSuppression;
@@ -22,9 +25,11 @@ public final class OrgUpdateSuppression {
     public static final class CCE extends ClassCastException {
         private final BlockPos position;
         private final String dimension;
+
         public CCE(BlockPos position, String dimension) {
             super("CCE Update Suppress triggered on " + dimension + " " + position.toShortString());
-            this.position = position.immutable(); this.dimension = dimension;
+            this.position = position.immutable();
+            this.dimension = dimension;
         }
     }
 
@@ -35,15 +40,15 @@ public final class OrgUpdateSuppression {
         while (cause != null && seen.add(cause)) {
             if (cause instanceof CCE cce) {
                 String activity = packet instanceof ServerboundUseItemOnPacket ? "placing or interacting with a block"
-                    : packet instanceof ServerboundPlayerActionPacket action ? switch (action.getAction()) {
-                        case START_DESTROY_BLOCK, ABORT_DESTROY_BLOCK, STOP_DESTROY_BLOCK -> "breaking a block";
-                        case DROP_ALL_ITEMS, DROP_ITEM -> "dropping an item";
-                        case RELEASE_USE_ITEM -> "using an item";
-                        case SWAP_ITEM_WITH_OFFHAND -> "swapping main-hand and off-hand items";
-                        default -> "sending action " + action.getAction();
-                    } : "sending a " + packet.getClass().getSimpleName() + " packet";
+                        : packet instanceof ServerboundPlayerActionPacket action ? switch (action.getAction()) {
+                    case START_DESTROY_BLOCK, ABORT_DESTROY_BLOCK, STOP_DESTROY_BLOCK -> "breaking a block";
+                    case DROP_ALL_ITEMS, DROP_ITEM -> "dropping an item";
+                    case RELEASE_USE_ITEM -> "using an item";
+                    case SWAP_ITEM_WITH_OFFHAND -> "swapping main-hand and off-hand items";
+                    default -> "sending action " + action.getAction();
+                } : "sending a " + packet.getClass().getSimpleName() + " packet";
                 com.mojang.logging.LogUtils.getLogger().info("{} triggered CCE update suppression while {} at {} {}",
-                    game.player.getScoreboardName(), activity, cce.dimension, cce.position.toShortString());
+                        game.player.getScoreboardName(), activity, cce.dimension, cce.position.toShortString());
                 return;
             }
             cause = cause.getCause();

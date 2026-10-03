@@ -2,11 +2,6 @@
 package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -15,15 +10,25 @@ import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-/** Upstream AMS translations remain server resources, so vanilla clients receive real text. */
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
+/**
+ * Upstream AMS translations remain server resources, so vanilla clients receive real text.
+ */
 public final class AmsTranslations {
     private static final String PREFIX = "carpetamsaddition.";
     private static final Map<String, Map<String, String>> TRANSLATIONS = load();
-    private AmsTranslations() {}
+
+    private AmsTranslations() {
+    }
 
     private static Map<String, Map<String, String>> load() {
         Map<String, Map<String, String>> languages = new HashMap<>();
-        for (String language : new String[] {"en_us", "zh_cn"}) {
+        for (String language : new String[]{"en_us", "zh_cn"}) {
             String path = "/assets/carpetamsaddition/lang/" + language + ".yml";
             try (var input = AmsTranslations.class.getResourceAsStream(path)) {
                 if (input == null) throw new IllegalStateException("Missing AMS translation resource " + path);
@@ -31,7 +36,9 @@ public final class AmsTranslations {
                 Map<String, String> values = new HashMap<>();
                 flatten(yaml, "", values);
                 languages.put(language, Map.copyOf(values));
-            } catch (java.io.IOException failure) { throw new java.io.UncheckedIOException(failure); }
+            } catch (java.io.IOException failure) {
+                throw new java.io.UncheckedIOException(failure);
+            }
         }
         return Map.copyOf(languages);
     }
@@ -58,7 +65,7 @@ public final class AmsTranslations {
 
     public static Component translate(Component message, ServerPlayer player) {
         String language = GeneralCompatConfig.amsTranslationMode.equalsIgnoreCase("SERVER")
-            ? serverLanguage() : player.language == null ? "en_us" : player.language.toLowerCase(Locale.ROOT);
+                ? serverLanguage() : player.language == null ? "en_us" : player.language.toLowerCase(Locale.ROOT);
         return translateText(message, language);
     }
 
@@ -70,13 +77,18 @@ public final class AmsTranslations {
             if (pattern == null) result = original.plainCopy();
             else {
                 Object[] args = contents.getArgs().clone();
-                for (int i = 0; i < args.length; ++i) if (args[i] instanceof Component component) args[i] = translateText(component, language);
-                try { result = args.length == 0 ? Component.literal(pattern) : formatPattern(pattern, args); }
-                catch (java.util.IllegalFormatException mismatch) { result = original.plainCopy(); }
+                for (int i = 0; i < args.length; ++i)
+                    if (args[i] instanceof Component component) args[i] = translateText(component, language);
+                try {
+                    result = args.length == 0 ? Component.literal(pattern) : formatPattern(pattern, args);
+                } catch (java.util.IllegalFormatException mismatch) {
+                    result = original.plainCopy();
+                }
             }
         } else if (original.getContents() instanceof TranslatableContents contents) {
             Object[] args = contents.getArgs().clone();
-            for (int i = 0; i < args.length; ++i) if (args[i] instanceof Component component) args[i] = translateText(component, language);
+            for (int i = 0; i < args.length; ++i)
+                if (args[i] instanceof Component component) args[i] = translateText(component, language);
             result = Component.translatableWithFallback(contents.getKey(), contents.getFallback(), args);
         } else result = original.plainCopy();
         result.setStyle(original.getStyle());
@@ -84,7 +96,9 @@ public final class AmsTranslations {
         return result;
     }
 
-    /** Component arguments keep their own style, hover event and click event. */
+    /**
+     * Component arguments keep their own style, hover event and click event.
+     */
     public static MutableComponent formatPattern(String pattern, Object... args) {
         MutableComponent result = Component.empty();
         java.util.regex.Matcher tokens = java.util.regex.Pattern.compile("%((?:[0-9]+\\$)?[-#+ 0,(<]*[0-9]*(?:\\.[0-9]+)?)([a-zA-Z%])").matcher(pattern);
@@ -97,13 +111,15 @@ public final class AmsTranslations {
             else {
                 int dollar = modifiers.indexOf('$');
                 int argument = dollar >= 0 ? Integer.parseInt(modifiers.substring(0, dollar)) - 1
-                    : modifiers.indexOf('<') >= 0 ? previousArgument : nextArgument++;
-                if (argument < 0 || argument >= args.length) throw new java.util.MissingFormatArgumentException(tokens.group());
+                        : modifiers.indexOf('<') >= 0 ? previousArgument : nextArgument++;
+                if (argument < 0 || argument >= args.length)
+                    throw new java.util.MissingFormatArgumentException(tokens.group());
                 previousArgument = argument;
                 Object value = args[argument];
                 String singleModifiers = (dollar >= 0 ? modifiers.substring(dollar + 1) : modifiers).replace("<", "");
                 if (conversion.equals("s") && value instanceof Component component) result.append(component.copy());
-                else result.append(Component.literal(String.format(Locale.ROOT, "%" + singleModifiers + conversion, value)));
+                else
+                    result.append(Component.literal(String.format(Locale.ROOT, "%" + singleModifiers + conversion, value)));
             }
             cursor = tokens.end();
         }

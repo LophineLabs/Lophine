@@ -24,8 +24,7 @@ import java.util.OptionalLong;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
-public class SnoopyCommandSource extends CommandSourceStack
-{
+public class SnoopyCommandSource extends CommandSourceStack {
     private final CommandSource output;
     private final Vec3 position;
     private final ServerLevel world;
@@ -44,10 +43,9 @@ public class SnoopyCommandSource extends CommandSourceStack
 
     private final TaskChainer taskChainer;
 
-    public SnoopyCommandSource(CommandSourceStack original, Component[] error, List<Component> chatOutput, OptionalLong[] returnValue)
-    {
+    public SnoopyCommandSource(CommandSourceStack original, Component[] error, List<Component> chatOutput, OptionalLong[] returnValue) {
         super(CommandSource.NULL, original.getPosition(), original.getRotation(), original.getLevel(), Vanilla.MinecraftServer_getRunPermissionLevel(original.getServer()),
-                 original.getServer(), original.getEntity()
+                original.getServer(), original.getEntity()
                 //,false ,(b, i) -> returnValue[0] = OptionalLong.of(i), EntityAnchorArgument.Anchor.FEET, CommandSigningContext.ANONYMOUS, TaskChainer.immediate(original.getServer())
         );
         this.output = CommandSource.NULL;
@@ -67,8 +65,7 @@ public class SnoopyCommandSource extends CommandSourceStack
         Vanilla.CommandSourceStack_setupPrivates(this, false, (b, i) -> returnValue[0] = OptionalLong.of(i), EntityAnchorArgument.Anchor.FEET, CommandSigningContext.ANONYMOUS, TaskChainer.immediate(original.getServer()));
     }
 
-    public SnoopyCommandSource(ServerPlayer player, Component[] error, List<Component> output, int [] result)
-    {
+    public SnoopyCommandSource(ServerPlayer player, Component[] error, List<Component> output, int[] result) {
         super(player.commandSource(), player.position(), player.getRotationVector(),
                 player.level(),
                 player.level().getServer().getProfilePermissions(player.nameAndId()),
@@ -92,11 +89,10 @@ public class SnoopyCommandSource extends CommandSourceStack
 
     private SnoopyCommandSource(CommandSource output, Vec3 pos, Vec2 rot, ServerLevel world, PermissionSet level, CommandSourceStack.NamesProvider namesProvider, MinecraftServer server, @Nullable Entity entity, CommandResultCallback consumer, EntityAnchorArgument.Anchor entityAnchor, CommandSigningContext context, TaskChainer chainer,
                                 Component[] error, List<Component> chatOutput
-    )
-    {
+    ) {
         super(output, pos, rot, world, level,
                 server, entity
-               // , false, consumer, entityAnchor, context, chainer
+                // , false, consumer, entityAnchor, context, chainer
         );
         this.output = output;
         this.position = pos;
@@ -116,32 +112,27 @@ public class SnoopyCommandSource extends CommandSourceStack
     }
 
     @Override
-    public CommandSourceStack withEntity(Entity entity)
-    {
+    public CommandSourceStack withEntity(Entity entity) {
         return new SnoopyCommandSource(output, position, rotation, world, level, NamesProvider.FOR_ENTITY, server, entity, resultConsumer, entityAnchor, signingContext, taskChainer, error, chatOutput);
     }
 
     @Override
-    public CommandSourceStack withPosition(Vec3 position)
-    {
+    public CommandSourceStack withPosition(Vec3 position) {
         return new SnoopyCommandSource(output, position, rotation, world, level, namesProvider, server, entity, resultConsumer, entityAnchor, signingContext, taskChainer, error, chatOutput);
     }
 
     @Override
-    public CommandSourceStack withRotation(Vec2 rotation)
-    {
+    public CommandSourceStack withRotation(Vec2 rotation) {
         return new SnoopyCommandSource(output, position, rotation, world, level, namesProvider, server, entity, resultConsumer, entityAnchor, signingContext, taskChainer, error, chatOutput);
     }
 
     @Override
-    public CommandSourceStack withCallback(CommandResultCallback consumer)
-    {
+    public CommandSourceStack withCallback(CommandResultCallback consumer) {
         return new SnoopyCommandSource(output, position, rotation, world, level, namesProvider, server, entity, consumer, entityAnchor, signingContext, taskChainer, error, chatOutput);
     }
 
     @Override
-    public CommandSourceStack withCallback(CommandResultCallback consumer, BinaryOperator<CommandResultCallback> binaryOperator)
-    {
+    public CommandSourceStack withCallback(CommandResultCallback consumer, BinaryOperator<CommandResultCallback> binaryOperator) {
         CommandResultCallback resultConsumer = binaryOperator.apply(this.resultConsumer, consumer);
         return this.withCallback(resultConsumer);
     }
@@ -151,40 +142,34 @@ public class SnoopyCommandSource extends CommandSourceStack
     //public ServerCommandSource withSilent() { return this; }
 
     @Override
-    public CommandSourceStack withPermission(PermissionSet level)
-    {
+    public CommandSourceStack withPermission(PermissionSet level) {
         return this;
     }
 
     @Override
-    public CommandSourceStack withMaximumPermission(PermissionSet level)
-    {
+    public CommandSourceStack withMaximumPermission(PermissionSet level) {
         return this;
     }
 
     @Override
-    public CommandSourceStack withAnchor(EntityAnchorArgument.Anchor anchor)
-    {
+    public CommandSourceStack withAnchor(EntityAnchorArgument.Anchor anchor) {
         return new SnoopyCommandSource(output, position, rotation, world, level, namesProvider, server, entity, resultConsumer, anchor, signingContext, taskChainer, error, chatOutput);
     }
 
     @Override
-    public CommandSourceStack withSigningContext(CommandSigningContext commandSigningContext, TaskChainer taskChainer)
-    {
+    public CommandSourceStack withSigningContext(CommandSigningContext commandSigningContext, TaskChainer taskChainer) {
         return new SnoopyCommandSource(output, position, rotation, world, level, namesProvider, server, entity, resultConsumer, entityAnchor, commandSigningContext, taskChainer, error, chatOutput);
     }
 
     @Override
-    public CommandSourceStack withLevel(ServerLevel world)
-    {
+    public CommandSourceStack withLevel(ServerLevel world) {
         double d = DimensionType.getTeleportationScale(this.world.dimensionType(), world.dimensionType());
         Vec3 position = new Vec3(this.position.x * d, this.position.y, this.position.z * d);
         return new SnoopyCommandSource(output, position, rotation, world, level, namesProvider, server, entity, resultConsumer, entityAnchor, signingContext, taskChainer, error, chatOutput);
     }
 
     @Override
-    public CommandSourceStack facing(Vec3 position)
-    {
+    public CommandSourceStack facing(Vec3 position) {
         Vec3 vec3d = this.entityAnchor.apply(this);
         double d = position.x - vec3d.x;
         double e = position.y - vec3d.y;
@@ -196,14 +181,12 @@ public class SnoopyCommandSource extends CommandSourceStack
     }
 
     @Override
-    public void sendFailure(Component message)
-    {
+    public void sendFailure(Component message) {
         error[0] = message;
     }
 
     @Override
-    public void sendSuccess(Supplier<Component> message, boolean broadcastToOps)
-    {
+    public void sendSuccess(Supplier<Component> message, boolean broadcastToOps) {
         chatOutput.add(message.get());
     }
 }

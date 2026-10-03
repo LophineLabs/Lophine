@@ -3,15 +3,19 @@ package fun.bm.lophine.carpet;
 
 import com.mojang.brigadier.CommandDispatcher;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
-import java.util.List;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
 
-/** The vanilla command registrations targeted by AMS 26.3's permission mixins. */
+import java.util.List;
+
+/**
+ * The vanilla command registrations targeted by AMS 26.3's permission mixins.
+ */
 public final class AmsAdministratorProtection {
     private static final List<String> RESTRICTED = List.of("advancement", "data", "defaultgamemode", "difficulty", "effect", "enchant", "experience", "xp", "fill", "gamemode", "gamerule", "give", "kill", "setblock", "summon", "teleport", "tp", "time", "weather");
 
-    private AmsAdministratorProtection() {}
+    private AmsAdministratorProtection() {
+    }
 
     public static boolean canCheat(CommandSourceStack source) {
         return !GeneralCompatConfig.preventAdministratorCheat || !(source.getEntity() instanceof ServerPlayer);

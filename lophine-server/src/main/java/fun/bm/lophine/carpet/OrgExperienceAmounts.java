@@ -1,21 +1,27 @@
 package fun.bm.lophine.carpet;
 
-import java.math.BigInteger;
 import net.minecraft.server.level.ServerPlayer;
 
-/** Constant-time, overflow-safe equivalent of Org's piecewise XP amount formulas. */
+import java.math.BigInteger;
+
+/**
+ * Constant-time, overflow-safe equivalent of Org's piecewise XP amount formulas.
+ */
 public final class OrgExperienceAmounts {
     public static final int MAX_EFFECTIVE_LEVEL = 238609312;
     public static final BigInteger MAX_TOTAL = forLevel(MAX_EFFECTIVE_LEVEL);
 
-    private OrgExperienceAmounts() {}
+    private OrgExperienceAmounts() {
+    }
 
     public static BigInteger forLevel(int level) {
-        if (level < 0 || level > MAX_EFFECTIVE_LEVEL) throw new IllegalArgumentException("Experience level is outside the finite vanilla range");
+        if (level < 0 || level > MAX_EFFECTIVE_LEVEL)
+            throw new IllegalArgumentException("Experience level is outside the finite vanilla range");
         BigInteger value = BigInteger.valueOf(level);
         BigInteger square = value.multiply(value);
         if (level <= 16) return square.add(value.multiply(BigInteger.valueOf(6)));
-        if (level <= 31) return square.multiply(BigInteger.valueOf(5)).subtract(value.multiply(BigInteger.valueOf(81))).add(BigInteger.valueOf(720)).divide(BigInteger.TWO);
+        if (level <= 31)
+            return square.multiply(BigInteger.valueOf(5)).subtract(value.multiply(BigInteger.valueOf(81))).add(BigInteger.valueOf(720)).divide(BigInteger.TWO);
         return square.multiply(BigInteger.valueOf(9)).subtract(value.multiply(BigInteger.valueOf(325))).add(BigInteger.valueOf(4440)).divide(BigInteger.TWO);
     }
 
@@ -30,7 +36,8 @@ public final class OrgExperienceAmounts {
     }
 
     public static void write(ServerPlayer player, BigInteger points) {
-        if (points.signum() < 0 || points.compareTo(MAX_TOTAL) > 0) throw new IllegalArgumentException("Experience amount is outside the finite vanilla range");
+        if (points.signum() < 0 || points.compareTo(MAX_TOTAL) > 0)
+            throw new IllegalArgumentException("Experience amount is outside the finite vanilla range");
         int low = 0;
         int high = MAX_EFFECTIVE_LEVEL;
         while (low < high) {

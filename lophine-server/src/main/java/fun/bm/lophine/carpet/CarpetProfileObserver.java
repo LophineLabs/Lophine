@@ -2,16 +2,14 @@ package fun.bm.lophine.carpet;
 
 import ca.spottedleaf.leafprofiler.LProfilerRegistry;
 import io.papermc.paper.threadedregions.TickRegionScheduler;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-/** Independent observation of native Folia timers; never acquires a native profiler handle. */
+/**
+ * Independent observation of native Folia timers; never acquires a native profiler handle.
+ */
 public final class CarpetProfileObserver {
     private static final Object LIFECYCLE = new Object();
     private static final Map<Thread, Work> WORK = new HashMap<>();
@@ -21,12 +19,20 @@ public final class CarpetProfileObserver {
     private static final Key GLOBAL = new Key("global", -1L);
     private static final Scope NOOP = new Scope(null);
 
-    private CarpetProfileObserver() {}
+    private CarpetProfileObserver() {
+    }
 
-    public record Key(String dimension, long regionId) {}
-    public record Timing(long nanos, long selfNanos, long calls) {}
-    public record RegionResult(Key key, Map<String, Timing> timers, Map<String, Long> counters) {}
-    public record Result(long startNanos, long endNanos, List<RegionResult> regions) {}
+    public record Key(String dimension, long regionId) {
+    }
+
+    public record Timing(long nanos, long selfNanos, long calls) {
+    }
+
+    public record RegionResult(Key key, Map<String, Timing> timers, Map<String, Long> counters) {
+    }
+
+    public record Result(long startNanos, long endNanos, List<RegionResult> regions) {
+    }
 
     private static final class Work {
         final Key key;
@@ -36,7 +42,10 @@ public final class CarpetProfileObserver {
         volatile Span span;
 
         Work(Key key, int id, String name, long start) {
-            this.key = key; this.id = id; this.name = name; this.start = start;
+            this.key = key;
+            this.id = id;
+            this.name = name;
+            this.start = start;
         }
     }
 
@@ -45,7 +54,9 @@ public final class CarpetProfileObserver {
         private final ConcurrentHashMap<Key, Record> records = new ConcurrentHashMap<>();
         private volatile long end = Long.MAX_VALUE;
 
-        Session(long start) { this.start = start; }
+        Session(long start) {
+            this.start = start;
+        }
 
         private Record record(Key key) {
             Record existing = records.get(key);
@@ -90,7 +101,7 @@ public final class CarpetProfileObserver {
                     record.closed = true;
                     Map<String, Timing> timers = new HashMap<>();
                     record.timers.forEach((name, value) -> timers.put(name,
-                        new Timing(value.nanos, value.selfNanos, value.calls)));
+                            new Timing(value.nanos, value.selfNanos, value.calls)));
                     result.add(new RegionResult(record.key, Map.copyOf(timers), Map.copyOf(record.counters)));
                 }
             }
@@ -104,10 +115,15 @@ public final class CarpetProfileObserver {
         final Map<String, Long> counters = new HashMap<>();
         final IdentityHashMap<Span, Boolean> open = new IdentityHashMap<>();
         boolean closed;
-        Record(Key key) { this.key = key; }
+
+        Record(Key key) {
+            this.key = key;
+        }
     }
 
-    private static final class MutableTiming { long nanos, selfNanos, calls; }
+    private static final class MutableTiming {
+        long nanos, selfNanos, calls;
+    }
 
     static final class Span {
         final Session session;
@@ -121,14 +137,19 @@ public final class CarpetProfileObserver {
         volatile boolean done;
 
         Span(Session session, Record record, int id, String name, long start, Span parent) {
-            this.session = session; this.record = record; this.id = id;
-            this.name = name; this.start = start;
+            this.session = session;
+            this.record = record;
+            this.id = id;
+            this.name = name;
+            this.start = start;
             this.parent = parent != null && parent.session == session && parent.record == record && !parent.done ? parent : null;
             if (this.parent != null) this.parent.children.add(this);
         }
 
         void finish(long now) {
-            synchronized (record) { finishSpan(this, Math.min(now, session.end)); }
+            synchronized (record) {
+                finishSpan(this, Math.min(now, session.end));
+            }
         }
     }
 
@@ -148,7 +169,9 @@ public final class CarpetProfileObserver {
         }
     }
 
-    public static boolean active() { return active != null; }
+    public static boolean active() {
+        return active != null;
+    }
 
     static Session begin(long now) {
         synchronized (LIFECYCLE) {
@@ -170,7 +193,10 @@ public final class CarpetProfileObserver {
 
     public static void reset() {
         synchronized (LIFECYCLE) {
-            if (active != null) { active.finish(System.nanoTime()); active = null; }
+            if (active != null) {
+                active.finish(System.nanoTime());
+                active = null;
+            }
             WORK.clear();
             CURRENT_WORK.remove();
         }
@@ -189,7 +215,9 @@ public final class CarpetProfileObserver {
         return work == null ? null : work.key;
     }
 
-    /** Root lifecycle is retained even while sampling is off, to include boundary-crossing ticks. */
+    /**
+     * Root lifecycle is retained even while sampling is off, to include boundary-crossing ticks.
+     */
     public static void startWork(int id) {
         Key key = currentRegion();
         if (key != null) startWork(key, id, timerName(id), System.nanoTime());
@@ -206,12 +234,17 @@ public final class CarpetProfileObserver {
         }
     }
 
-    public static void stopWork(int id) { stopWork(id, System.nanoTime()); }
+    public static void stopWork(int id) {
+        stopWork(id, System.nanoTime());
+    }
 
     static void stopWork(int id, long now) {
         synchronized (LIFECYCLE) {
             Work work = WORK.get(Thread.currentThread());
-            if (work == null) { CURRENT_WORK.remove(); return; }
+            if (work == null) {
+                CURRENT_WORK.remove();
+                return;
+            }
             if (work.id != id) return;
             WORK.remove(Thread.currentThread());
             CURRENT_WORK.remove();
@@ -242,11 +275,13 @@ public final class CarpetProfileObserver {
         if (span != null) TIMERS.get().addLast(span);
     }
 
-    /** Called for the otherwise no-op native dynamic timer path. */
+    /**
+     * Called for the otherwise no-op native dynamic timer path.
+     */
     public static int startDynamic(Supplier<String> name) {
         if (active == null) return -1;
         int id = LProfilerRegistry.GLOBAL_REGISTRY.getOrCreateType(
-            ca.spottedleaf.profiler.ProfilerRegistry.ProfileType.TIMER, name.get());
+                ca.spottedleaf.profiler.ProfilerRegistry.ProfileType.TIMER, name.get());
         startTimer(id);
         return id;
     }
@@ -255,7 +290,7 @@ public final class CarpetProfileObserver {
         // Old closed spans are cheap to prune on the next callback, without a thread ownership handoff.
         ArrayDeque<Span> stack = TIMERS.get();
         if (stack.isEmpty()) return;
-        for (var iterator = stack.descendingIterator(); iterator.hasNext();) {
+        for (var iterator = stack.descendingIterator(); iterator.hasNext(); ) {
             Span span = iterator.next();
             if (span.id != id) continue;
             span.finish(System.nanoTime());
@@ -288,8 +323,13 @@ public final class CarpetProfileObserver {
 
     public static final class Scope implements AutoCloseable {
         private final Span span;
-        private Scope(Span span) { this.span = span; }
-        @Override public void close() {
+
+        private Scope(Span span) {
+            this.span = span;
+        }
+
+        @Override
+        public void close() {
             if (span == null) return;
             span.finish(System.nanoTime());
             TIMERS.get().removeLastOccurrence(span);

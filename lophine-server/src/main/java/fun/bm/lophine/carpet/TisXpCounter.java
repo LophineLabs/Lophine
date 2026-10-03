@@ -9,13 +9,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import fun.bm.lophine.protocol.CarpetLoggerProtocol;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -28,9 +21,14 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 
+import java.util.*;
+
 public final class TisXpCounter {
     private static final Map<DyeColor, Counter> COUNTERS = new EnumMap<>(DyeColor.class);
-    static { for (DyeColor color : DyeColor.values()) COUNTERS.put(color, new Counter()); }
+
+    static {
+        for (DyeColor color : DyeColor.values()) COUNTERS.put(color, new Counter());
+    }
 
     private TisXpCounter() {
     }
@@ -42,19 +40,24 @@ public final class TisXpCounter {
     public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
         registerLogger();
         dispatcher.register(Commands.literal("xcounter").requires(source -> GeneralCompatConfig.hopperXpCounters)
-            .executes(context -> reportAll(context.getSource()))
-            .then(Commands.literal("reset").executes(context -> { resetAtShutdown(); TisRaycastCommand.feedback(context.getSource(), "All XP counters reset."); return 1; }))
-            .then(Commands.argument("color", StringArgumentType.word())
-                .suggests((context, builder) -> SharedSuggestionProvider.suggest(Arrays.stream(DyeColor.values()).map(DyeColor::getName), builder))
-                .executes(context -> report(context.getSource(), StringArgumentType.getString(context, "color"), false))
-                .then(Commands.literal("realtime").executes(context -> report(context.getSource(), StringArgumentType.getString(context, "color"), true)))
+                .executes(context -> reportAll(context.getSource()))
                 .then(Commands.literal("reset").executes(context -> {
-                    DyeColor color = color(StringArgumentType.getString(context, "color"));
-                    if (color == null) return unknown(context.getSource(), StringArgumentType.getString(context, "color"));
-                    COUNTERS.get(color).reset();
-                    TisRaycastCommand.feedback(context.getSource(), color.getName() + " XP counter reset.");
+                    resetAtShutdown();
+                    TisRaycastCommand.feedback(context.getSource(), "All XP counters reset.");
                     return 1;
-                }))));
+                }))
+                .then(Commands.argument("color", StringArgumentType.word())
+                        .suggests((context, builder) -> SharedSuggestionProvider.suggest(Arrays.stream(DyeColor.values()).map(DyeColor::getName), builder))
+                        .executes(context -> report(context.getSource(), StringArgumentType.getString(context, "color"), false))
+                        .then(Commands.literal("realtime").executes(context -> report(context.getSource(), StringArgumentType.getString(context, "color"), true)))
+                        .then(Commands.literal("reset").executes(context -> {
+                            DyeColor color = color(StringArgumentType.getString(context, "color"));
+                            if (color == null)
+                                return unknown(context.getSource(), StringArgumentType.getString(context, "color"));
+                            COUNTERS.get(color).reset();
+                            TisRaycastCommand.feedback(context.getSource(), color.getName() + " XP counter reset.");
+                            return 1;
+                        }))));
     }
 
     private static DyeColor hopperColor(final HopperBlockEntity hopper) {
@@ -64,14 +67,16 @@ public final class TisXpCounter {
         return org.leavesmc.leaves.util.WoolUtils.getWoolColorAtPosition(level, wool);
     }
 
-    public static boolean isCounterHopper(final HopperBlockEntity hopper) { return hopperColor(hopper) != null; }
+    public static boolean isCounterHopper(final HopperBlockEntity hopper) {
+        return hopperColor(hopper) != null;
+    }
 
     public static void tickHopper(final HopperBlockEntity hopper) {
         DyeColor color = hopperColor(hopper);
         if (color == null || !(hopper.getLevel() instanceof ServerLevel level)) return;
         var mouth = hopper.getSuckAabb().move(hopper.getLevelX() - 0.5, hopper.getLevelY() - 0.5, hopper.getLevelZ() - 0.5);
         for (ExperienceOrb orb : level.getEntitiesOfClass(ExperienceOrb.class, mouth,
-            entity -> ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(entity) && entity.isAlive())) {
+                entity -> ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(entity) && entity.isAlive())) {
             COUNTERS.get(color).record(orb.getValue(), orb.count, gameTime(level.getServer()), System.currentTimeMillis());
             orb.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.PICKUP);
         }
@@ -86,7 +91,9 @@ public final class TisXpCounter {
         return lines;
     }
 
-    private static long gameTime(final MinecraftServer server) { return CarpetServerClock.gameTime(); }
+    private static long gameTime(final MinecraftServer server) {
+        return CarpetServerClock.gameTime();
+    }
 
     private static int reportAll(final CommandSourceStack source) {
         int printed = 0;
@@ -105,7 +112,7 @@ public final class TisXpCounter {
         DyeColor color = color(name);
         if (color == null) return unknown(source, name);
         COUNTERS.get(color).report(color, gameTime(source.getServer()), System.currentTimeMillis(), realtime)
-            .forEach(line -> TisRaycastCommand.feedback(source, line));
+                .forEach(line -> TisRaycastCommand.feedback(source, line));
         return 1;
     }
 
@@ -115,10 +122,16 @@ public final class TisXpCounter {
     }
 
     private static DyeColor color(final String name) {
-        try { return DyeColor.valueOf(name.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException invalid) { return null; }
+        try {
+            return DyeColor.valueOf(name.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException invalid) {
+            return null;
+        }
     }
 
-    public static void resetAtShutdown() { COUNTERS.values().forEach(Counter::reset); }
+    public static void resetAtShutdown() {
+        COUNTERS.values().forEach(Counter::reset);
+    }
 
     private static final class Counter {
         private final Map<Integer, Long> xpByValue = new TreeMap<>(java.util.Comparator.reverseOrder());
@@ -127,12 +140,18 @@ public final class TisXpCounter {
 
         private synchronized void record(final int value, final int count, final long tick, final long millis) {
             if (!this.running) {
-                this.running = true; this.startTick = tick; this.startMillis = millis; this.xpByValue.clear();
+                this.running = true;
+                this.startTick = tick;
+                this.startMillis = millis;
+                this.xpByValue.clear();
             }
-            this.xpByValue.merge(value, (long)value * count, Long::sum);
+            this.xpByValue.merge(value, (long) value * count, Long::sum);
         }
 
-        private synchronized void reset() { this.running = false; this.xpByValue.clear(); }
+        private synchronized void reset() {
+            this.running = false;
+            this.xpByValue.clear();
+        }
 
         private synchronized List<String> report(final DyeColor color, final long nowTick, final long nowMillis, final boolean realtime) {
             if (!this.running) return List.of(color.getName() + " XP counter: not started.");
@@ -140,9 +159,9 @@ public final class TisXpCounter {
             long total = this.xpByValue.values().stream().mapToLong(Long::longValue).sum();
             List<String> lines = new ArrayList<>();
             lines.add(String.format(Locale.ROOT, "%s XP: %d, %.2f/h over %.2f minutes%s", color.getName(), total, total * 72000.0 / ticks,
-                ticks / 1200.0, realtime ? " (real time)" : ""));
+                    ticks / 1200.0, realtime ? " (real time)" : ""));
             this.xpByValue.forEach((value, xp) -> lines.add(String.format(Locale.ROOT, " - orb value %d (size %d): %d XP, %.2f/h",
-                value, orbSize(value), xp, xp * 72000.0 / ticks)));
+                    value, orbSize(value), xp, xp * 72000.0 / ticks)));
             return lines;
         }
 

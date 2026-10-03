@@ -1,6 +1,7 @@
 package carpet.script.exception;
 
 import org.jspecify.annotations.Nullable;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,8 +9,7 @@ import java.util.Map;
  * This class contains default Scarpet catchable types, as well as their inheritance and
  * methods to check whether filters are compatible with those.
  */
-public class Throwables
-{
+public class Throwables {
     private final String id;
     private final @Nullable Throwables parent;
 
@@ -41,8 +41,7 @@ public class Throwables
      * @param parent The parent of the exception being created, or <code>null</code> if top-level
      * @return The created exception
      */
-    public static Throwables register(String id, @Nullable Throwables parent)
-    {
+    public static Throwables register(String id, @Nullable Throwables parent) {
         Throwables exc = new Throwables(id, parent);
         byId.put(id, exc);
         return exc;
@@ -55,17 +54,14 @@ public class Throwables
      *
      * @param id The exception's value as a {@link String}
      */
-    public Throwables(String id, @Nullable Throwables parent)
-    {
+    public Throwables(String id, @Nullable Throwables parent) {
         this.id = id;
         this.parent = parent;
     }
 
-    public static Throwables getTypeForException(String type)
-    {
+    public static Throwables getTypeForException(String type) {
         Throwables properType = byId.get(type);
-        if (properType == null)
-        {
+        if (properType == null) {
             throw new InternalExpressionException("Unknown exception type: " + type);
         }
         return properType;
@@ -78,13 +74,11 @@ public class Throwables
      * @param filter The type to check against
      * @return Whether or not the given value matches this exception's hierarchy
      */
-    public boolean isRelevantFor(String filter)
-    {
+    public boolean isRelevantFor(String filter) {
         return (id.equals(filter) || (parent != null && parent.isRelevantFor(filter)));
     }
 
-    public boolean isUserException()
-    {
+    public boolean isUserException() {
         return this == USER_DEFINED || parent == USER_DEFINED;
     }
 
@@ -93,8 +87,7 @@ public class Throwables
      *
      * @return The type of this exception
      */
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 }
