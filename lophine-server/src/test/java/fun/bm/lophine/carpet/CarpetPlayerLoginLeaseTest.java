@@ -10,9 +10,12 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class CarpetPlayerLoginLeaseTest {
+    @BeforeAll static void bootstrap() { net.minecraft.SharedConstants.tryDetectVersion(); net.minecraft.server.Bootstrap.bootStrap(); }
+
     @Test void theFirstReadAndAllJoinChildrenHoldTheUuidAgainstOfflineEditingAndNextLogin() {
         var server = mock(MinecraftServer.class); var player = mock(ServerPlayer.class);
         var world=mock(net.minecraft.server.level.ServerLevel.class);when(player.level()).thenReturn(world);when(world.getServer()).thenReturn(server);
@@ -29,6 +32,7 @@ class CarpetPlayerLoginLeaseTest {
                 assertFalse(carpet.script.external.ScarpetPlayerInventoryGate.paused(player));
                 events.add("actual placement"); ScarpetNativeWork.record(joinChild); return player;
             }));
+            tick.verify(() -> TickThread.ensureTickThread(player, "Native player work must be admitted by its owner"), never());
         }
         var caller = login.completion(); var idle = ScarpetNativeWork.whenIdle(server); var births = CarpetPlayerBirths.whenIdle(server);
         assertTrue(CarpetPlayerBirths.playerPending(player));
