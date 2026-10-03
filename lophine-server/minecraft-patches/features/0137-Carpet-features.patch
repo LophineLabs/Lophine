@@ -3218,7 +3218,7 @@ index cd56cae73a21800b8a8663836b050784e7fb3c79..ba48b106d08fb78a625bfacf6ca46e52
 +    public LevelStorageSource.LevelStorageAccess carpetGetStorageSource() { return this.storageSource; }
  }
 diff --git a/net/minecraft/server/ReloadableServerResources.java b/net/minecraft/server/ReloadableServerResources.java
-index 4b7cb2ba2e1f05d73768e62bb93cd129514166d0..dc87822ac07d573626ae9fcc0f4652381b4c52e9 100644
+index 4b7cb2ba2e1f05d73768e62bb93cd129514166d0..c4db67211ab725939b73616fecadd463b36cb399 100644
 --- a/net/minecraft/server/ReloadableServerResources.java
 +++ b/net/minecraft/server/ReloadableServerResources.java
 @@ -24,6 +24,7 @@ public class ReloadableServerResources {
@@ -3241,18 +3241,19 @@ index 4b7cb2ba2e1f05d73768e62bb93cd129514166d0..dc87822ac07d573626ae9fcc0f465238
          io.papermc.paper.command.PaperCommands.registerCommands(); // Paper
          this.advancements = new ServerAdvancementManager(loadingContext.lookupWithUpdatedTags());
          this.functionLibrary = new ServerFunctionLibrary(functionCompilationPermissions, this.commands.getDispatcher());
-@@ -61,6 +63,10 @@ public class ReloadableServerResources {
+@@ -61,6 +63,11 @@ public class ReloadableServerResources {
          return this.recipes;
      }
  
 +    public void carpetBindCommands() {
 +        io.papermc.paper.command.brigadier.PaperCommands.INSTANCE.setDispatcher(this.commands, this.carpetCommandContext);
++        org.leavesmc.leaves.command.RootNode.rebindAll(); // Lophine - replant Leaves commands into the freshly bound dispatcher
 +    }
 +
      public Commands getCommands() {
          return this.commands;
      }
-@@ -82,43 +88,49 @@ public class ReloadableServerResources {
+@@ -82,43 +89,49 @@ public class ReloadableServerResources {
          final PermissionSet functionCompilationPermissions,
          final Executor backgroundExecutor,
          final Executor mainThreadExecutor
