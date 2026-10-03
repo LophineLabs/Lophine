@@ -1,15 +1,21 @@
 package fun.bm.lophine.carpet;
 
+import ca.spottedleaf.moonrise.common.util.TickThread;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.server.level.ServerPlayer;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import net.minecraft.world.phys.Vec3;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 public class OrgHiddenPathProtocolTest {
+    @BeforeAll static void bootstrap(){net.minecraft.SharedConstants.tryDetectVersion();net.minecraft.server.Bootstrap.bootStrap();}
+
     @Test void rawPacketUsesOriginalBigEndianIntsAndDoubles() throws Exception {
         var from = new Vec3(1.25, -2.5, 3.75); var to = new Vec3(8.5, 9.25, -10.75);
         byte[] bytes = OrgHiddenPathProtocol.encode(123456, List.of(from, to));
@@ -50,5 +56,12 @@ public class OrgHiddenPathProtocolTest {
         assertThrows(IllegalStateException.class, () -> OrgHiddenPlayerActions.validate(malformed));
         var ambiguous = com.google.gson.JsonParser.parseString("{\"plant\":{},\"goto\":{}}").getAsJsonObject();
         assertThrows(IllegalArgumentException.class, () -> OrgHiddenPlayerActions.validate(ambiguous));
+    }
+    @Test void ordinaryServerPlayersSkipTheFakePlayerOnlyHiddenTick() {
+        var player = mock(ServerPlayer.class);
+        try (var tickThread = mockStatic(TickThread.class)) {
+            assertDoesNotThrow(() -> OrgHiddenPlayerActions.tick(player));
+            tickThread.verify(() -> TickThread.ensureTickThread(player, "Org hidden player action must own its player"), never());
+        }
     }
 }
