@@ -4,28 +4,12 @@ Date: Tue, 23 Jun 2026 03:06:41 +0800
 Subject: [PATCH] Add Vanilla-like experience Config
 
 
-diff --git a/ca/spottedleaf/moonrise/paper/PaperHooks.java b/ca/spottedleaf/moonrise/paper/PaperHooks.java
-index 03085e7ff54e70302ced15a62ea1586c9ac90348..c528c7414f8de6fed012da54c5831b2f68046398 100644
---- a/ca/spottedleaf/moonrise/paper/PaperHooks.java
-+++ b/ca/spottedleaf/moonrise/paper/PaperHooks.java
-@@ -204,6 +204,11 @@ public class PaperHooks extends BaseChunkSystemHooks implements PlatformHooks {
- 
-     @Override
-     public int configMaxAutoSavePerTick(final ServerLevel world) {
-+        // Lophine start - Vanilla-like experience
-+        if (fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled) {
-+            return 200;
-+        }
-+        // Lophine end - Vanilla-like experience
-         return world.paperConfig().chunks.maxAutoSaveChunksPerTick;
-     }
- 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 0a09aa81ebaba7b81bc17f40cc265fcd9c54dcb8..b22eba00598b3e63e1f602b980130276ec78aef2 100644
+index 49c1dfc18de156578c762cb2f816baf020775686..5bb450e8a4458964a4ba8aa0b208b3b65094e43e 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
-@@ -2408,7 +2408,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
-     public boolean isInvulnerableTo(final ServerLevel level, final DamageSource source) {
+@@ -2543,7 +2543,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+         }
          // Paper start - disable player cramming
          return (super.isInvulnerableTo(level, source) || this.isChangingDimension() && !source.is(DamageTypes.ENDER_PEARL) || !this.connection.hasClientLoaded())
 -            || (!this.level().paperConfig().collisions.allowPlayerCrammingDamage && source.is(DamageTypes.CRAMMING));
@@ -33,50 +17,11 @@ index 0a09aa81ebaba7b81bc17f40cc265fcd9c54dcb8..b22eba00598b3e63e1f602b980130276
          // Paper end - disable player cramming
      }
  
-diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 8f726449972fc446d2c428b6f84ac7d49bc5e5b1..348bb4e1e9a110c2efdadc415d886d2fab087f49 100644
---- a/net/minecraft/world/entity/LivingEntity.java
-+++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -4001,7 +4001,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
-             // Paper start - Cap entity collisions
-             this.numCollisions = Math.max(0, this.numCollisions - this.level().paperConfig().collisions.maxEntityCollisions);
-             for (Entity entity : pushableEntities) {
--                if (this.numCollisions >= this.level().paperConfig().collisions.maxEntityCollisions) {
-+                if (this.numCollisions >= (fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled ? Integer.MAX_VALUE : this.level().paperConfig().collisions.maxEntityCollisions)) { // Lophine - Vanilla-like experience
-                     break;
-                 }
- 
-diff --git a/net/minecraft/world/entity/item/FallingBlockEntity.java b/net/minecraft/world/entity/item/FallingBlockEntity.java
-index 6a7565204e71fb81531f2822078baf7f6b5e0fce..c4524c711cff6821da52b959d3136f9f5703dc06 100644
---- a/net/minecraft/world/entity/item/FallingBlockEntity.java
-+++ b/net/minecraft/world/entity/item/FallingBlockEntity.java
-@@ -390,7 +390,7 @@ public class FallingBlockEntity extends Entity {
-         ResourceKey<Level> oldDimension = this.level().dimension();
-         boolean fromOrToEnd = (oldDimension == Level.END || newDimension == Level.END) && oldDimension != newDimension;
-         Entity newEntity = super.teleport(transition);
--        this.forceTickAfterTeleportToDuplicate = newEntity != null && fromOrToEnd && (io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowUnsafeEndPortalTeleportation || me.earthme.luminol.config.modules.fixes.UnsafeTeleportationConfig.enabled); // Paper // Luminol - Unsafe teleportation
-+        this.forceTickAfterTeleportToDuplicate = newEntity != null && fromOrToEnd && (io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowUnsafeEndPortalTeleportation || me.earthme.luminol.config.modules.fixes.UnsafeTeleportationConfig.enabled || fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled); // Paper // Luminol - Unsafe teleportation // Lophine - Vanilla-like experience
-         return newEntity;
-     }
- 
-diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index de2af889221f1506ea71646689b5c52d407c420f..a8ddf144a62beb051aca6df1b279189aa921a974 100644
---- a/net/minecraft/world/entity/item/ItemEntity.java
-+++ b/net/minecraft/world/entity/item/ItemEntity.java
-@@ -254,7 +254,7 @@ public class ItemEntity extends Entity implements TraceableEntity, ChangePublish
-         if (this.isMergable()) {
-             double radius = this.level().spigotConfig.itemMerge; // Spigot
-             for (ItemEntity entity : this.level()
--                .getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(radius, this.level().paperConfig().entities.behavior.onlyMergeItemsHorizontally ? 0 : radius - 0.5D, radius), other -> other != this && other.isMergable())) { // Spigot // Paper - configuration to only merge items horizontally
-+                .getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(radius, fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled ? radius : (this.level().paperConfig().entities.behavior.onlyMergeItemsHorizontally ? 0 : radius - 0.5D), radius), other -> other != this && other.isMergable())) { // Spigot // Paper - configuration to only merge items horizontally // Lophine - Vanilla-like experience
-                 if (entity.isMergable()) {
-                     // Paper start - Fix items merging through walls
-                     if (this.level().paperConfig().fixes.fixItemsMergingThroughWalls) {
 diff --git a/net/minecraft/world/entity/item/PrimedTnt.java b/net/minecraft/world/entity/item/PrimedTnt.java
-index 0da06f339fa8ffe7e2b64326727025967256df28..bc1edf19b6afc42588610dae21835040b6248ac6 100644
+index 11ac254964674714a5a506fb059236cef870d814..c6208f1c30649acdec8d0ff039ce3276068a46b2 100644
 --- a/net/minecraft/world/entity/item/PrimedTnt.java
 +++ b/net/minecraft/world/entity/item/PrimedTnt.java
-@@ -111,7 +111,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
+@@ -141,7 +141,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
  
      @Override
      public void tick() {
@@ -84,105 +29,13 @@ index 0da06f339fa8ffe7e2b64326727025967256df28..bc1edf19b6afc42588610dae21835040
 +        if (!fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled && this.level().spigotConfig.maxTntTicksPerTick > 0 && ++this.level().getCurrentWorldData().currentPrimedTnt > this.level().spigotConfig.maxTntTicksPerTick) { return; } // Spigot // Folia - region threading // Lophine - Vanilla-like experience
          //this.handlePortal(); // Folia - region threading
          this.applyGravity();
-         this.move(MoverType.SELF, this.getDeltaMovement());
-diff --git a/net/minecraft/world/entity/monster/Phantom.java b/net/minecraft/world/entity/monster/Phantom.java
-index 99b5d4aab158e32fb9f940bb66489179527adb76..ac3abcd97c78a460247d4e6bca07dac68b09837c 100644
---- a/net/minecraft/world/entity/monster/Phantom.java
-+++ b/net/minecraft/world/entity/monster/Phantom.java
-@@ -245,7 +245,7 @@ public class Phantom extends Mob implements Enemy {
- 
-                 for (Player player : players) {
-                     if (Phantom.this.canAttack(level, player, TargetingConditions.DEFAULT)) {
--                        if (!level().paperConfig().entities.behavior.phantomsOnlyAttackInsomniacs || EntitySelector.IS_INSOMNIAC.test(player)) { // Paper - Add phantom creative and insomniac controls
-+                        if (!level().paperConfig().entities.behavior.phantomsOnlyAttackInsomniacs || fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled || EntitySelector.IS_INSOMNIAC.test(player)) { // Paper - Add phantom creative and insomniac controls // Lophine - Vanilla-like experience
-                         Phantom.this.setTarget(player, org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER); // CraftBukkit - reason
-                         return true;
-                         } // Paper - Add phantom creative and insomniac controls
-diff --git a/net/minecraft/world/level/NaturalSpawner.java b/net/minecraft/world/level/NaturalSpawner.java
-index 4206d89cc77b476c66382d922fd8fb5d882ef002..75b04bba34dcc7c7eeec6d7aca88ab90437f7a93 100644
---- a/net/minecraft/world/level/NaturalSpawner.java
-+++ b/net/minecraft/world/level/NaturalSpawner.java
-@@ -89,7 +89,8 @@ public final class NaturalSpawner {
-                 MobCategory category = entity.getType().getCategory();
-                 if (category != MobCategory.MISC) {
-                     // Paper start - Only count natural spawns
--                    if (!entity.level().paperConfig().entities.spawning.countAllMobsForSpawning &&
-+                    if (!fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled && // Lophine - Vanilla-like experience
-+                        !entity.level().paperConfig().entities.spawning.countAllMobsForSpawning &&
-                         !(entity.spawnReason == org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.NATURAL ||
-                             entity.spawnReason == org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CHUNK_GEN)) {
-                         continue;
-diff --git a/net/minecraft/world/level/ServerExplosion.java b/net/minecraft/world/level/ServerExplosion.java
-index 2c9622483baf3f1054381b14992924c4345ee193..48cf3c904e2b830659d779160f5f4c9d8da8d37d 100644
---- a/net/minecraft/world/level/ServerExplosion.java
-+++ b/net/minecraft/world/level/ServerExplosion.java
-@@ -451,7 +451,7 @@ public class ServerExplosion implements Explosion {
-                         if (this.fire || !cachedBlock.blockState.isAir()) {
-                             ret.add(cachedBlock.immutablePos);
-                             // Paper start - prevent headless pistons from forming
--                            if (!io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowHeadlessPistons && iblockdata.getBlock() == net.minecraft.world.level.block.Blocks.MOVING_PISTON) {
-+                            if (!fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled && !io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowHeadlessPistons && iblockdata.getBlock() == net.minecraft.world.level.block.Blocks.MOVING_PISTON) { // Lophine - Vanilla-like experience
-                                 net.minecraft.world.level.block.entity.BlockEntity extension = this.level.getBlockEntity(cachedBlock.immutablePos); // Paper - optimise collisions
-                                 if (extension instanceof net.minecraft.world.level.block.piston.PistonMovingBlockEntity blockEntity && blockEntity.isSourcePiston()) {
-                                     net.minecraft.core.Direction direction = iblockdata.getValue(net.minecraft.world.level.block.piston.PistonHeadBlock.FACING);
-diff --git a/net/minecraft/world/level/block/Block.java b/net/minecraft/world/level/block/Block.java
-index f830e251473a1c5788a70ee80b0bbe1e9c1cd73c..c8570bf96ae73d26882054e2e90432e6de586f4f 100644
---- a/net/minecraft/world/level/block/Block.java
-+++ b/net/minecraft/world/level/block/Block.java
-@@ -112,7 +112,7 @@ public class Block extends BlockBehaviour implements ItemLike {
-     private BlockState defaultBlockState;
-     // Paper start - Protect Bedrock and End Portal/Frames from being destroyed
-     public final boolean isDestroyable() {
--        return io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPermanentBlockBreakExploits ||
-+        return fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled || io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPermanentBlockBreakExploits || // Lophine - Vanilla-like experience
-             this != Blocks.BARRIER &&
-             this != Blocks.BEDROCK &&
-             this != Blocks.END_PORTAL_FRAME &&
-diff --git a/net/minecraft/world/level/block/TripWireHookBlock.java b/net/minecraft/world/level/block/TripWireHookBlock.java
-index 8e939d37d72da337f535b7987c756baae868b47f..12ecfbb7049dc153bad643bd7b0ca0b49b474797 100644
---- a/net/minecraft/world/level/block/TripWireHookBlock.java
-+++ b/net/minecraft/world/level/block/TripWireHookBlock.java
-@@ -181,7 +181,7 @@ public class TripWireHookBlock extends Block {
-             if (!cancelledEmitterHook) { // Paper - Call BlockRedstoneEvent
-             emitState(level, pos, attached, powered, wasAttached, wasPowered);
-             if (!isBeingDestroyed) {
--                if (io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.skipTripwireHookPlacementValidation || level.getBlockState(pos).is(Blocks.TRIPWIRE_HOOK)) // Paper - Validate tripwire hook placement before update
-+                if (fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled || io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.skipTripwireHookPlacementValidation || level.getBlockState(pos).is(Blocks.TRIPWIRE_HOOK)) // Paper - Validate tripwire hook placement before update // Lophine - Vanilla-like experience
-                 level.setBlockAndUpdate(pos, newState.setValue(FACING, direction));
-                 if (canUpdate) {
-                     notifyNeighbors(block, level, pos, direction);
-diff --git a/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java b/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java
-index c91631e7544dd913e03e5c46d85f0250389d4082..0254f935611958d9beffb54a0bf4697d57ca8baf 100644
---- a/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java
-+++ b/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java
-@@ -316,7 +316,7 @@ public class BeehiveBlockEntity extends BlockEntity {
-                     iterator.remove();
-                 }
-                 // Paper start - Fix bees aging inside; use exitTickCounter to keep actual bee life
--                else if (level.paperConfig().entities.behavior.cooldownFailedBeehiveReleases) {
-+                else if (!fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled && level.paperConfig().entities.behavior.cooldownFailedBeehiveReleases) { // Lophine - Vanilla-like experience
-                     data.exitTickCounter = data.occupant.minTicksInHive / 2;
-                 }
-                 // Paper end - Fix bees aging inside; use exitTickCounter to keep actual bee life
-diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index e21e15bbdb7b52b9d235db5a37f9c54e2c5222f7..ef78e18f159c43d3285a9f1e5719e59420e156be 100644
---- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-+++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-@@ -346,7 +346,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
-                 origItemStack.setCount(originalItemCount);
-             }
-         }
--        if (foundItem && level.paperConfig().hopper.cooldownWhenFull) { // Inventory was full - cooldown
-+        if (foundItem && !fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled && level.paperConfig().hopper.cooldownWhenFull) { // Inventory was full - cooldown // Lophine - Vanilla-like experience
-             hopper.setCooldown(level.spigotConfig.hopperTransfer);
-         }
-         return false;
+         if (carpet.script.external.ScarpetExplosionContinuations.pending(this)) return;
 diff --git a/net/minecraft/world/level/block/piston/PistonBaseBlock.java b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
-index c2d2e1963c6516583e5479e8f3bfd81402111109..4ab40458f52213f9e4c98751130efa7379a1a2f7 100644
+index f47ae948a40990d946f1d345f40c2c78e03faf6c..a6619242e8ba5000d6536fe02769445f6d8293ae 100644
 --- a/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 +++ b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
-@@ -141,7 +141,7 @@ public class PistonBaseBlock extends DirectionalBlock {
-         Direction direction = state.getValue(FACING);
+@@ -142,7 +142,7 @@ public class PistonBaseBlock extends DirectionalBlock {
+         if (!carpetOrgBedrock) {
          // Paper start - Protect Bedrock and End Portal/Frames from being destroyed; prevent retracting when we're facing the wrong way (we were replaced before retraction could occur)
          Direction directionQueuedAs = Direction.from3DDataValue(b1 & 7); // Paper - copied from below
 -        if (!io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPermanentBlockBreakExploits && direction != directionQueuedAs) {
@@ -190,8 +43,8 @@ index c2d2e1963c6516583e5479e8f3bfd81402111109..4ab40458f52213f9e4c98751130efa73
              return false;
          }
          // Paper end - Protect Bedrock and End Portal/Frames from being destroyed
-@@ -225,7 +225,7 @@ public class PistonBaseBlock extends DirectionalBlock {
-             } else {
+@@ -230,7 +230,7 @@ public class PistonBaseBlock extends DirectionalBlock {
+                 } else {
                  // Paper start - Protect Bedrock and End Portal/Frames from being destroyed; fix headless pistons breaking blocks
                  BlockPos headPos = pos.relative(direction);
 -                if (io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPermanentBlockBreakExploits || level.getBlockState(headPos) == Blocks.PISTON_HEAD.defaultBlockState().setValue(FACING, direction)) { // double check to make sure we're not a headless piston
@@ -199,42 +52,3 @@ index c2d2e1963c6516583e5479e8f3bfd81402111109..4ab40458f52213f9e4c98751130efa73
                      level.removeBlock(headPos, false);
                  } else {
                      ((ServerLevel) level).getChunkSource().blockChanged(headPos); // ... fix client desync
-diff --git a/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java b/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
-index e36295101d6e667976cfabd31932ecf59fe5996e..e30bd4113f3a97f4f4ca8a47bc41bb4cad8dcf69 100644
---- a/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
-+++ b/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
-@@ -318,7 +318,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
-                 if (level.getBlockState(pos).is(Blocks.MOVING_PISTON)) {
-                     BlockState newState = Block.updateFromNeighbourShapes(entity.movedState, level, pos);
-                     if (newState.isAir()) {
--                        level.setBlock(pos, entity.movedState, Block.UPDATE_NONE | Block.UPDATE_MOVE_BY_PISTON | Block.UPDATE_KNOWN_SHAPE | (io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPistonDuplication ? 0 : Block.UPDATE_CLIENTS)); // Paper - fix a variety of piston desync dupes; force notify (flag 2), it's possible the set type by the piston block (which doesn't notify) set this block to air
-+                        level.setBlock(pos, entity.movedState, Block.UPDATE_NONE | Block.UPDATE_MOVE_BY_PISTON | Block.UPDATE_KNOWN_SHAPE | ((fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled || io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPistonDuplication) ? 0 : Block.UPDATE_CLIENTS)); // Paper - fix a variety of piston desync dupes; force notify (flag 2), it's possible the set type by the piston block (which doesn't notify) set this block to air // Lophine - Vanilla-like experience
-                         Block.updateOrDestroy(entity.movedState, newState, level, pos, Block.UPDATE_ALL);
-                     } else {
-                         if (newState.hasProperty(BlockStateProperties.WATERLOGGED) && newState.getValue(BlockStateProperties.WATERLOGGED)) {
-diff --git a/net/minecraft/world/level/levelgen/PhantomSpawner.java b/net/minecraft/world/level/levelgen/PhantomSpawner.java
-index ec3a437bd8a7d0e95e1e5fa0ff4462a70391ecf9..007be83486f8b7b921e3bd06abaf02ae6d60b8ea 100644
---- a/net/minecraft/world/level/levelgen/PhantomSpawner.java
-+++ b/net/minecraft/world/level/levelgen/PhantomSpawner.java
-@@ -41,7 +41,7 @@ public class PhantomSpawner implements CustomSpawner {
-                     // Paper end - Ability to control player's insomnia and phantoms
-                     if (level.getSkyDarken() >= 5 || !level.dimensionType().hasSkyLight()) {
-                         for (ServerPlayer player : level.getLocalPlayers()) { // Folia - region threading
--                            if (!player.isSpectator() && (!level.paperConfig().entities.behavior.phantomsDoNotSpawnOnCreativePlayers || !player.isCreative())) { // Paper - Add phantom creative and insomniac controls
-+                            if (!player.isSpectator() && (fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled || !level.paperConfig().entities.behavior.phantomsDoNotSpawnOnCreativePlayers || !player.isCreative())) { // Paper - Add phantom creative and insomniac controls // Lophine - Vanilla-like experience
-                                 BlockPos playerPos = player.blockPosition();
-                                 if (!level.dimensionType().hasSkyLight() || playerPos.getY() >= level.getSeaLevel() && level.canSeeSky(playerPos)) {
-                                     DifficultyInstance difficulty = level.getCurrentDifficultyAt(playerPos);
-diff --git a/net/minecraft/world/level/portal/PortalForcer.java b/net/minecraft/world/level/portal/PortalForcer.java
-index d5697697d48963a01f8d4c3570b75da2c8f6f102..aff0614355256957e3eccb9c2071c51daacd4dd2 100644
---- a/net/minecraft/world/level/portal/PortalForcer.java
-+++ b/net/minecraft/world/level/portal/PortalForcer.java
-@@ -233,7 +233,7 @@ public class PortalForcer {
-                     origin, direction.getStepX() * width + clockWise.getStepX() * offset, height, direction.getStepZ() * width + clockWise.getStepZ() * offset
-                 );
-                 // Paper start - Protect Bedrock and End Portal/Frames from being destroyed
--                if (!io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPermanentBlockBreakExploits) {
-+                if (!fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled && !io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPermanentBlockBreakExploits) { // Lophine - Vanilla-like experience
-                     if (!this.level.getBlockState(mutable).isDestroyable()) {
-                         return false;
-                     }

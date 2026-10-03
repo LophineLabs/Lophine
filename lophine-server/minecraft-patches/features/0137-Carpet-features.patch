@@ -1676,7 +1676,7 @@ index 8da43d6b187f41cb1f96f93c8759b2cdcc6a030a..de1b77479df200a8c066ccae3038088a
 +    }
  }
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index da358ed058ca5b6b5e958417e63c127f63c5d0b5..8eb8925d55ad84dcef9983f2395ec648585ddb41 100644
+index f30b2e998fd01d588d6581ac539ca867dae19791..4e5eb05a934682a3fd59fb77ae8783c36b68a7c3 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -197,6 +197,7 @@ public class Commands {
@@ -1777,8 +1777,8 @@ index da358ed058ca5b6b5e958417e63c127f63c5d0b5..8eb8925d55ad84dcef9983f2395ec648
                  CURRENT_EXECUTION_CONTEXT.set(executionContext);
                  config.accept(executionContext);
                  executionContext.runCommandQueue();
-@@ -517,6 +549,68 @@ public class Commands {
-         COMMAND_SENDING_POOL.execute(() -> this.sendAsync(player, commandNodes));
+@@ -518,6 +550,70 @@ public class Commands {
+         COMMAND_SENDING_POOL.execute(() -> this.sendAsync(player, rootNode));
      }
  
 +    /** Reload completion follows the real owner-side command packet, including command-send events. */
@@ -1793,9 +1793,11 @@ index da358ed058ca5b6b5e958417e63c127f63c5d0b5..8eb8925d55ad84dcef9983f2395ec648
 +            RootCommandNode<CommandSourceStack> root = new RootCommandNode<>();
 +            if (org.spigotmc.SpigotConfig.tabComplete < 0) return new CarpetPreparedCommands(root, java.util.List.of(), true);
 +            var children = new java.util.ArrayList<>(this.dispatcher.getRoot().getChildren());
++            RootCommandNode<CommandSourceStack> snapshot = new RootCommandNode<>();
++            children.forEach(snapshot::addChild);
 +            Map<CommandNode<CommandSourceStack>, CommandNode<CommandSourceStack>> converted = new HashMap<>();
 +            converted.put(this.dispatcher.getRoot(), root);
-+            fillUsableCommands(children, root, player.createCommandSourceStack(), converted);
++            fillUsableCommands(snapshot, root, player.createCommandSourceStack(), converted);
 +            java.util.Collection<String> labels = new java.util.LinkedHashSet<>();
 +            for (var node : root.getChildren()) labels.add(node.getName());
 +            return new CarpetPreparedCommands(root, labels, false);
@@ -1846,7 +1848,7 @@ index da358ed058ca5b6b5e958417e63c127f63c5d0b5..8eb8925d55ad84dcef9983f2395ec648
      // Fixed pool, but with discard policy
      public static final java.util.concurrent.ExecutorService COMMAND_SENDING_POOL = new java.util.concurrent.ThreadPoolExecutor(
          2, 2, 0, java.util.concurrent.TimeUnit.MILLISECONDS,
-@@ -525,7 +619,9 @@ public class Commands {
+@@ -526,7 +622,9 @@ public class Commands {
              .setNameFormat("Paper Async Command Builder Thread Pool - %1$d")
              .setUncaughtExceptionHandler(new net.minecraft.DefaultUncaughtExceptionHandlerWithName(net.minecraft.server.MinecraftServer.LOGGER))
              .build(),
@@ -1856,8 +1858,8 @@ index da358ed058ca5b6b5e958417e63c127f63c5d0b5..8eb8925d55ad84dcef9983f2395ec648
 +        }
      );
  
-     private void sendAsync(ServerPlayer player, java.util.Collection<CommandNode<CommandSourceStack>> dispatcherRootChildren) {
-@@ -564,6 +660,10 @@ public class Commands {
+     private void sendAsync(ServerPlayer player, RootCommandNode<CommandSourceStack> dispatcherRoot) {
+@@ -567,6 +665,10 @@ public class Commands {
      }
  
      private void runSync(ServerPlayer player, java.util.Collection<String> bukkit, RootCommandNode<CommandSourceStack> root) {
@@ -1866,9 +1868,9 @@ index da358ed058ca5b6b5e958417e63c127f63c5d0b5..8eb8925d55ad84dcef9983f2395ec648
 +
 +    private ClientboundCommandsPacket carpetBuildCommandsPacket(ServerPlayer player, java.util.Collection<String> bukkit, RootCommandNode<CommandSourceStack> root) {
          // Paper end - Perf: Async command map building
-         new com.destroystokyo.paper.event.brigadier.AsyncPlayerSendCommandsEvent<CommandSourceStack>(player.getBukkitEntity(), (RootCommandNode) root, true).callEvent(); // Paper - Brigadier API
+         new com.destroystokyo.paper.event.brigadier.AsyncPlayerSendCommandsEvent<>(player.getBukkitEntity(), root, true).callEvent(); // Paper - Brigadier API
          org.bukkit.event.player.PlayerCommandSendEvent event = new org.bukkit.event.player.PlayerCommandSendEvent(player.getBukkitEntity(), new java.util.LinkedHashSet<>(bukkit));
-@@ -576,7 +676,7 @@ public class Commands {
+@@ -579,7 +681,7 @@ public class Commands {
              }
          }
          // CraftBukkit end
@@ -5387,7 +5389,7 @@ index 733b47fd1befdb85f58af0a841163ff740a62179..49c1dfc18de156578c762cb2f816baf0
      public void onEquippedItemBroken(final ItemStack brokenItem, final EquipmentSlot inSlot) {
          super.onEquippedItemBroken(brokenItem, inSlot);
 diff --git a/net/minecraft/server/level/ServerPlayerGameMode.java b/net/minecraft/server/level/ServerPlayerGameMode.java
-index ea46e434816a4a42bcf4a0b745ffe7c3374835be..36448bbe6e8edb1d3dd08fd83e3925fc237435f7 100644
+index abf9c737eab8ef2babdfbd4e2b97ea469f4a57ee..907d7b9c8b79498b7a9157a6109bd60b6f022448 100644
 --- a/net/minecraft/server/level/ServerPlayerGameMode.java
 +++ b/net/minecraft/server/level/ServerPlayerGameMode.java
 @@ -132,6 +132,10 @@ public class ServerPlayerGameMode {
@@ -5438,7 +5440,7 @@ index ea46e434816a4a42bcf4a0b745ffe7c3374835be..36448bbe6e8edb1d3dd08fd83e3925fc
          BlockState state = this.level.getBlockState(pos);
          // CraftBukkit start - fire BlockBreakEvent
          org.bukkit.block.Block bblock = org.bukkit.craftbukkit.block.CraftBlock.at(this.level, pos);
-@@ -482,6 +500,24 @@ public class ServerPlayerGameMode {
+@@ -487,6 +505,24 @@ public class ServerPlayerGameMode {
      }
  
      public InteractionResult useItem(final ServerPlayer player, final Level level, final ItemStack itemStack, final InteractionHand hand) {
@@ -5463,7 +5465,7 @@ index ea46e434816a4a42bcf4a0b745ffe7c3374835be..36448bbe6e8edb1d3dd08fd83e3925fc
          if (this.gameModeForPlayer == GameType.SPECTATOR) {
              return InteractionResult.PASS;
          }
-@@ -493,46 +529,12 @@ public class ServerPlayerGameMode {
+@@ -498,46 +534,12 @@ public class ServerPlayerGameMode {
          int oldCount = itemStack.getCount();
          int oldDamage = itemStack.getDamageValue();
          final ItemStack stackBeforeUse = itemStack.copy(); // Paper - Store stack before use for interact prediction check
@@ -5515,7 +5517,7 @@ index ea46e434816a4a42bcf4a0b745ffe7c3374835be..36448bbe6e8edb1d3dd08fd83e3925fc
  
      // CraftBukkit start - whole method
      public boolean interactResult = false;
-@@ -542,6 +544,28 @@ public class ServerPlayerGameMode {
+@@ -547,6 +549,28 @@ public class ServerPlayerGameMode {
      public ItemStack interactItemStack;
      public InteractionResult useItemOn(
          final ServerPlayer player, final Level level, final ItemStack itemStack, final InteractionHand hand, final BlockHitResult hitResult
@@ -5544,7 +5546,7 @@ index ea46e434816a4a42bcf4a0b745ffe7c3374835be..36448bbe6e8edb1d3dd08fd83e3925fc
      ) {
          BlockPos pos = hitResult.getBlockPos();
          BlockState state = level.getBlockState(pos);
-@@ -617,8 +641,10 @@ public class ServerPlayerGameMode {
+@@ -622,8 +646,10 @@ public class ServerPlayerGameMode {
              boolean suppressUsingBlock = player.isSecondaryUseActive() && haveSomethingInOurHands;
              ItemStack usedItemStack = itemStack.copy();
              if (!suppressUsingBlock) {
@@ -5556,7 +5558,7 @@ index ea46e434816a4a42bcf4a0b745ffe7c3374835be..36448bbe6e8edb1d3dd08fd83e3925fc
                      CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(player, pos, usedItemStack);
                      return itemUse;
                  }
-@@ -634,26 +660,11 @@ public class ServerPlayerGameMode {
+@@ -639,26 +665,11 @@ public class ServerPlayerGameMode {
  
              if (!itemStack.isEmpty() && !this.interactResult) { // Spigot -  add !this.interactResult SPIGOT-764
                  UseOnContext context = new UseOnContext(player, hand, hitResult);
@@ -5588,7 +5590,7 @@ index ea46e434816a4a42bcf4a0b745ffe7c3374835be..36448bbe6e8edb1d3dd08fd83e3925fc
              } else {
                  // Paper start - Properly cancel usable items; Cancel only if cancelled + if the interact result is different from default response
                  if (this.interactResult && this.interactResult != cancelledItem) {
-@@ -668,4 +679,70 @@ public class ServerPlayerGameMode {
+@@ -673,4 +684,70 @@ public class ServerPlayerGameMode {
      public void setLevel(final ServerLevel newLevel) {
          this.level = newLevel;
      }
@@ -8107,7 +8109,7 @@ index 90630d3528cb6c07b5242fe868a6b610df241570..c4d15884fb0118767143f3673746d280
          Vec3 position = this.position();
          return BlockPos.containing(position.x, position.y - 1.0E-6, position.z);
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index a4385d326db1d6da71f6d3a9c7a39ebaa7b0c8e4..5d07c28acc1292356593da4053bd92d056cd5e65 100644
+index a489e198f43c64968ee74447cb9b6c1c8baacbab..df8d77e146bd646c0a9da278792263460316a340 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -228,7 +228,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -9508,6 +9510,66 @@ index 1b38f4aca224674ff2d72ea945161f574384952f..54cfcfcba2ee9e9bfc81abde2f23c916
      private boolean hasRammedHornBreakingBlock(final ServerLevel level, final Goat body) {
          Vec3 horizontalMovementNormalized = body.getDeltaMovement().multiply(1.0, 0.0, 1.0).normalize();
          BlockPos facingBlockPosition = BlockPos.containing(body.position().add(horizontalMovementNormalized));
+diff --git a/net/minecraft/world/entity/ai/behavior/warden/SonicBoom.java b/net/minecraft/world/entity/ai/behavior/warden/SonicBoom.java
+index 2b4edd0cf371b164306d36dac920ea1a80791a57..0557a7a373dfe6f44f6ed966b6216c0d4350a1d7 100644
+--- a/net/minecraft/world/entity/ai/behavior/warden/SonicBoom.java
++++ b/net/minecraft/world/entity/ai/behavior/warden/SonicBoom.java
+@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerLevel;
+ import net.minecraft.sounds.SoundEvents;
+ import net.minecraft.util.Mth;
+ import net.minecraft.util.Unit;
++import net.minecraft.world.damagesource.DamageSource;
+ import net.minecraft.world.entity.EntityAttachment;
+ import net.minecraft.world.entity.EntityEvent;
+ import net.minecraft.world.entity.LivingEntity;
+@@ -61,6 +62,11 @@ public class SonicBoom extends Behavior<Warden> {
+ 
+     @Override
+     protected void tick(final ServerLevel level, final Warden body, final long timestamp) {
++        var pendingHit = carpet.script.external.ScarpetAttackContinuations.pendingHitResult(body);
++        if (pendingHit != null && !pendingHit.isDone()) {
++            carpet.script.external.ScarpetNativeWork.record(pendingHit);
++            return;
++        }
+         body.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).ifPresent(target -> body.getLookControl().setLookAt(target.position()));
+         if (!body.getBrain().hasMemoryValue(MemoryModuleType.SONIC_BOOM_SOUND_DELAY)
+             && !body.getBrain().hasMemoryValue(MemoryModuleType.SONIC_BOOM_SOUND_COOLDOWN)) {
+@@ -81,15 +87,31 @@ public class SonicBoom extends Behavior<Warden> {
+                     }
+ 
+                     body.playSound(SoundEvents.WARDEN_SONIC_BOOM, 3.0F, 1.0F);
+-                    if (target.hurtServer(level, level.damageSources().sonicBoom(body), 10.0F)) {
+-                        double knockbackVertical = 0.5 * (1.0 - target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
+-                        double knockbackHorizontal = 2.5 * (1.0 - target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
+-                        target.push(normalize.x() * knockbackHorizontal, normalize.y() * knockbackVertical, normalize.z() * knockbackHorizontal, body); // Paper - Add EntityKnockbackByEntityEvent and EntityPushedByEntityAttackEvent
++                    DamageSource damageSource = level.damageSources().sonicBoom(body);
++                    var before = carpet.script.external.ScarpetDamageContinuations.pendingResult(target);
++                    boolean hurt = target.hurtServer(level, damageSource, 10.0F);
++                    var outcome = carpet.script.external.ScarpetDamageContinuations.pendingResult(target);
++                    if (outcome != null && outcome != before) {
++                        var actual = carpet.script.external.ScarpetAttackContinuations.afterDamage(body, target, outcome, landed -> {
++                            if (landed) this.carpetFinishSonicKnockback(body, target, normalize);
++                            return landed;
++                        });
++                        carpet.script.external.ScarpetAttackContinuations.publishHit(body, actual);
++                        carpet.script.external.ScarpetDamageContinuations.publishExtendedResult(target, actual);
++                        carpet.script.external.ScarpetNativeWork.record(actual);
++                    } else if (hurt) {
++                        this.carpetFinishSonicKnockback(body, target, normalize);
+                     }
+                 });
+         }
+     }
+ 
++    private void carpetFinishSonicKnockback(final Warden body, final net.minecraft.world.entity.LivingEntity target, final Vec3 normalize) {
++        double knockbackVertical = KNOCKBACK_VERTICAL * (1.0 - target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
++        double knockbackHorizontal = KNOCKBACK_HORIZONTAL * (1.0 - target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
++        target.push(normalize.x() * knockbackHorizontal, normalize.y() * knockbackVertical, normalize.z() * knockbackHorizontal, body); // Paper - Add EntityKnockbackByEntityEvent and EntityPushedByEntityAttackEvent
++    }
++
+     @Override
+     protected void stop(final ServerLevel level, final Warden body, final long timestamp) {
+         setCooldown(body, COOLDOWN);
 diff --git a/net/minecraft/world/entity/ai/goal/RemoveBlockGoal.java b/net/minecraft/world/entity/ai/goal/RemoveBlockGoal.java
 index 5c18aa3fd0564a4e3e94e1be503e138bd3dc6268..77bccc6b1a53978807c3d1248a9bd8a9bc138141 100644
 --- a/net/minecraft/world/entity/ai/goal/RemoveBlockGoal.java
@@ -21409,10 +21471,10 @@ index ffa813ad111f05716c658e3a66a9eeb9b70c5e4c..f702fbb49da4b64782054d08743c1445
                  level.levelEvent(LevelEvent.ANIMATION_DRAGON_SUMMON_ROAR, new BlockPos(0, 128, 0), 0);
              }
 diff --git a/net/minecraft/world/level/dimension/end/EnderDragonFight.java b/net/minecraft/world/level/dimension/end/EnderDragonFight.java
-index cc1f4fb6c4e01888cb32aab10dcc486523a76d3b..256847494f7d2b7f551d4a44d3a961919f700211 100644
+index 0e8ba61877997c0a7b842c4e0002fc2d4e38c31a..007bdc63b15cd5801ff027a2708fb452609d9a4c 100644
 --- a/net/minecraft/world/level/dimension/end/EnderDragonFight.java
 +++ b/net/minecraft/world/level/dimension/end/EnderDragonFight.java
-@@ -210,7 +210,8 @@ public class EnderDragonFight extends SavedData {
+@@ -211,7 +211,8 @@ public class EnderDragonFight extends SavedData {
                      return;
                  }
  
@@ -21422,7 +21484,7 @@ index cc1f4fb6c4e01888cb32aab10dcc486523a76d3b..256847494f7d2b7f551d4a44d3a96191
                  this.setDirty();
              }
  
-@@ -358,15 +359,15 @@ public class EnderDragonFight extends SavedData {
+@@ -360,15 +361,15 @@ public class EnderDragonFight extends SavedData {
                  if (cachePortalOriginIteratorY != -1) {
                      i = cachePortalOriginIteratorY;
                  } else {
@@ -21441,7 +21503,7 @@ index cc1f4fb6c4e01888cb32aab10dcc486523a76d3b..256847494f7d2b7f551d4a44d3a96191
                      }
                      if (result2 != null) {
                          if (this.exitPortalLocation == null) {
-@@ -481,6 +482,68 @@ public class EnderDragonFight extends SavedData {
+@@ -483,6 +484,68 @@ public class EnderDragonFight extends SavedData {
          LOGGER.debug("Found {} end crystals still alive", this.aliveCrystals);
      }
  
@@ -21510,7 +21572,7 @@ index cc1f4fb6c4e01888cb32aab10dcc486523a76d3b..256847494f7d2b7f551d4a44d3a96191
      public void setDragonKilled(final EnderDragon dragon) {
          if (dragon.getUUID().equals(this.dragonUUID)) {
              this.dragonEvent.setProgress(0.0F);
-@@ -494,7 +557,7 @@ public class EnderDragonFight extends SavedData {
+@@ -496,7 +559,7 @@ public class EnderDragonFight extends SavedData {
              io.papermc.paper.event.block.DragonEggFormEvent eggEvent = new io.papermc.paper.event.block.DragonEggFormEvent(
                  org.bukkit.craftbukkit.block.CraftBlock.at(this.level, eggPosition), eggState, new org.bukkit.craftbukkit.boss.CraftDragonBattle(this)
              );
@@ -22791,64 +22853,3 @@ index 52a7da01ce84b93a4444a002effa261d20e1a707..d03e5f9004ab65d9435e2bf6896e7727
          }
      }
  
-
-diff --git a/net/minecraft/world/entity/ai/behavior/warden/SonicBoom.java b/net/minecraft/world/entity/ai/behavior/warden/SonicBoom.java
-index 2b4edd0cf371b164306d36dac920ea1a80791a57..0557a7a373dfe6f44f6ed966b6216c0d4350a1d7 100644
---- a/net/minecraft/world/entity/ai/behavior/warden/SonicBoom.java
-+++ b/net/minecraft/world/entity/ai/behavior/warden/SonicBoom.java
-@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerLevel;
- import net.minecraft.sounds.SoundEvents;
- import net.minecraft.util.Mth;
- import net.minecraft.util.Unit;
-+import net.minecraft.world.damagesource.DamageSource;
- import net.minecraft.world.entity.EntityAttachment;
- import net.minecraft.world.entity.EntityEvent;
- import net.minecraft.world.entity.LivingEntity;
-@@ -61,6 +62,11 @@ public class SonicBoom extends Behavior<Warden> {
- 
-     @Override
-     protected void tick(final ServerLevel level, final Warden body, final long timestamp) {
-+        var pendingHit = carpet.script.external.ScarpetAttackContinuations.pendingHitResult(body);
-+        if (pendingHit != null && !pendingHit.isDone()) {
-+            carpet.script.external.ScarpetNativeWork.record(pendingHit);
-+            return;
-+        }
-         body.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).ifPresent(target -> body.getLookControl().setLookAt(target.position()));
-         if (!body.getBrain().hasMemoryValue(MemoryModuleType.SONIC_BOOM_SOUND_DELAY)
-             && !body.getBrain().hasMemoryValue(MemoryModuleType.SONIC_BOOM_SOUND_COOLDOWN)) {
-@@ -81,15 +87,31 @@ public class SonicBoom extends Behavior<Warden> {
-                     }
- 
-                     body.playSound(SoundEvents.WARDEN_SONIC_BOOM, 3.0F, 1.0F);
--                    if (target.hurtServer(level, level.damageSources().sonicBoom(body), 10.0F)) {
--                        double knockbackVertical = 0.5 * (1.0 - target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
--                        double knockbackHorizontal = 2.5 * (1.0 - target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
--                        target.push(normalize.x() * knockbackHorizontal, normalize.y() * knockbackVertical, normalize.z() * knockbackHorizontal, body); // Paper - Add EntityKnockbackByEntityEvent and EntityPushedByEntityAttackEvent
-+                    DamageSource damageSource = level.damageSources().sonicBoom(body);
-+                    var before = carpet.script.external.ScarpetDamageContinuations.pendingResult(target);
-+                    boolean hurt = target.hurtServer(level, damageSource, 10.0F);
-+                    var outcome = carpet.script.external.ScarpetDamageContinuations.pendingResult(target);
-+                    if (outcome != null && outcome != before) {
-+                        var actual = carpet.script.external.ScarpetAttackContinuations.afterDamage(body, target, outcome, landed -> {
-+                            if (landed) this.carpetFinishSonicKnockback(body, target, normalize);
-+                            return landed;
-+                        });
-+                        carpet.script.external.ScarpetAttackContinuations.publishHit(body, actual);
-+                        carpet.script.external.ScarpetDamageContinuations.publishExtendedResult(target, actual);
-+                        carpet.script.external.ScarpetNativeWork.record(actual);
-+                    } else if (hurt) {
-+                        this.carpetFinishSonicKnockback(body, target, normalize);
-                     }
-                 });
-         }
-     }
- 
-+    private void carpetFinishSonicKnockback(final Warden body, final net.minecraft.world.entity.LivingEntity target, final Vec3 normalize) {
-+        double knockbackVertical = KNOCKBACK_VERTICAL * (1.0 - target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
-+        double knockbackHorizontal = KNOCKBACK_HORIZONTAL * (1.0 - target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
-+        target.push(normalize.x() * knockbackHorizontal, normalize.y() * knockbackVertical, normalize.z() * knockbackHorizontal, body); // Paper - Add EntityKnockbackByEntityEvent and EntityPushedByEntityAttackEvent
-+    }
-+
-     @Override
-     protected void stop(final ServerLevel level, final Warden body, final long timestamp) {
-         setCooldown(body, COOLDOWN);

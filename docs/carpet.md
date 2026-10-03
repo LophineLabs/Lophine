@@ -1,24 +1,5 @@
 # Carpet 规则
 
-| 能力 | 代码状态与边界 |
-| --- | --- |
-| `/player` | 原版完整语法与动作机、异步生成、shadow、原生玩家保存统计、TIS prefix/suffix、remoteSpawn、after/perTick；Org 扩展节点各自受权限控制，启用扩展不会开启原版动作 |
-| `/profile` | 实际 Folia timer、实体与方块实体调用次数与耗时；按全局刻窗口采集。独立采集器复用实际 timer 调用，已占用原生 profiler 的区域仍可统计；区分墙钟、全局工作与区域工作 |
-| `/spawn` | 刷怪跟踪、范围过滤、最近生成、mocking、rates、动态 cap、test、跨维度 mobcaps、各区域实体列表；各区域周期线程隔离，汇总实际区域上限。点位探针使用独立临时 FULL 票据，取得完整区域所有权后执行；未进行真实世界生成概率验证 |
-| `/info`、`carpets` | 方块属性、光照、供电、原版随机徘徊采样；六色地毯动作接实际放置状态入口。探针先加载连续范围并等待真实 Folia 所有权合并，再运行原版探针；超时会释放票据并报告 |
-| `/draw` | 原版 sphere/ball/diamond/pyramid/cone/cylinder/cuboid 几何与 replace 过滤、NBT 与容器处理、fillUpdates；生成坐标在解释工作线程，实际块写入逐区块 owner。结果异步报告，原生 command callback 在实际放置完成后给出最终改动数量 |
-| TIS `/speedtest` | 官方下载/上传/ping/abort 服务端协议；16KiB、三并发、确认节流、精确接收计数、单帧跳过压缩；未进行实际带客户端的测速 |
-| TIS `/manipulate` | block/entity/server/container/chunk 五树均有实际实现；所属区域列表重排与真正 erase/relight/inhabitedTime，未执行真实世界调试命令 |
-| `persistentLoggerSubscription` | UUID 保存、显式空订阅、首次加入恢复与权限过滤；单写入器原子替换并刷新磁盘，损坏文件保留。文件往返与损坏处理测试通过 |
-| `entityIdCounterLoggerSamplingDuration`、`lightQueueLoggerSamplingDuration`、`loggerMovement` | 实际 Entity AtomicInteger、Moonrise 光照任务、每次 Entity.move；跨 owner 使用不可变消息和位置快照。移动日志距离参照可延迟一全局刻 |
-| Org 在线背包与物品扩展拾取 | 普通 43 槽与 GCA 54 槽、动作按钮、末影箱及 `/orange ruleself` 玩家规则开关；非阻塞跨 owner escrow 和共享物品别名身份已接入；未知存档读回窗口会暂存所有受影响物品；扩展拾取先取得覆盖区域的所有权，再调用原生 `Player.touch`。对应 coordinator 测试通过，服务端编译通过；游戏内存档往返及真实跨区域行为未验证 |
-| Org 经验转账 | 精确整数 XP、双端 owner、持久 ledger 与 debit/credit marker、读取存档核验；损坏 ledger 不逃出 player tick，保留原文件并限频重试。新增四项实际 coordinator 保存/读取故障注入测试通过，款项先进入已核验托管再释放；未进行真实世界断电或磁盘故障验证 |
-| AMS 新服务端规则 | 真正 superLeash、redstoneComponentSound、renewableNetheriteScrap、preventAdministratorCheat、customBlockUpdateSuppressor 与 forceMode；AMS crashFix 使用 false/true/silence，上游 testRule 无运行逻辑 |
-| `creativeFlySpeed`、`creativeFlyDrag`、`cleanLogs` | 确认并接入服务端混入，编译通过；CLIENT 分类不代表仅客户端。死亡日志遵循源实际判断，默认 false 不输出该 named-death 日志 |
-| `/perimeterinfo`、`commandTrackAI` | 原版球形 24–128 格扫描与特定生物探针、村民繁殖与铁傀儡跟踪、床与路径粒子；区域票据保证扫描所有权。26.3 WeightedList 检查改为比较加权项 value，修正上游直接 contains(SpawnerData) 的类型失配 |
-
-### 规则摘要
-
 | 规则 | 说明 |
 | --- | --- |
 | `commandLog`、`defaultLoggers` | `/log` 命令树、列表按钮、订阅/取消反馈、管理员反馈与审计日志门控及新玩家默认订阅按 Carpet `f358000` 对照；UUID 持久订阅是 TIS 扩展。已接入 tps、mobcaps、counter、packets、tnt、projectiles、fallingBlocks、raid、xcounter、entityIdCounter、lightQueue、movement、lifetime、microTiming、explosions、pathfinding |
