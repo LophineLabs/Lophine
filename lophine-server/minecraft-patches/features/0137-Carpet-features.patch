@@ -722,7 +722,7 @@ index 53579b6faa9d55485088d59ec2fd1e4251c2fb01..020d5ff82d063c7b20a248cf6e57dd2e
              private void cancelInternal() {
                  this.run = null;
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 8e75cd913565841ce4bbe6b3a5832027f14216da..fded354cdf7c9220757c7a5ea3ef592f326c40c6 100644
+index 8e75cd913565841ce4bbe6b3a5832027f14216da..b78b417d4ec693ca41a697eb57c3a304ad297b79 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -79,6 +79,8 @@ public final class RegionizedWorldData {
@@ -812,40 +812,7 @@ index 8e75cd913565841ce4bbe6b3a5832027f14216da..fded354cdf7c9220757c7a5ea3ef592f
          this.tickData = this.world.tickData;
          this.hasPhysicsEvent = org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - BlockPhysicsEvent
          this.hasEntityMoveEvent = io.papermc.paper.event.entity.EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - Add EntityMoveEvent
-@@ -623,10 +644,13 @@ public final class RegionizedWorldData {
-         // note: ALL connections HERE have a player
-         final ServerPlayer player = conn.getPlayer();
-         // now that the connection is removed, we can allow this region to die
--        player.level().moonrise$getChunkTaskScheduler().chunkHolderManager.removeTicketAtLevel(
--            ServerGamePacketListenerImpl.DISCONNECT_TICKET, player.connection.disconnectPos,
--            ChunkHolderManager.MAX_TICKET_LEVEL,
--            player.connection.disconnectTicketId
--        );
-+        final ChunkPos disconnectPos = player.connection.disconnectPos;
-+        if (disconnectPos != null) {
-+            player.level().moonrise$getChunkTaskScheduler().chunkHolderManager.removeTicketAtLevel(
-+                ServerGamePacketListenerImpl.DISCONNECT_TICKET, disconnectPos,
-+                ChunkHolderManager.MAX_TICKET_LEVEL,
-+                player.connection.disconnectTicketId
-+            );
-+        }
-         player.connection.resumeFlushing();
-     }
-@@ -658,6 +682,13 @@ public final class RegionizedWorldData {
-                 conn.handleDisconnection();
-                 // global tick thread will not remove connections not owned by it, so we need to
-                 RegionizedServer.getInstance().removeConnection(conn);
-+                final ServerPlayer player = conn.getPlayer();
-+                if (!fun.bm.lophine.carpet.CarpetAsyncDisconnect.cleanupReady(
-+                    player.connection.hackSwitchingConfig, player.connection.disconnectPos
-+                )) {
-+                    // Lophine - the player-list removal is asynchronous; its caller installs the ticket later.
-+                    continue;
-+                }
-                 this.connections.remove(conn);
-                 cleanUpConnection(conn);
-                 continue;
-@@ -668,7 +699,7 @@ public final class RegionizedWorldData {
+@@ -668,7 +689,7 @@ public final class RegionizedWorldData {
              }
  
              try {
@@ -854,7 +821,7 @@ index 8e75cd913565841ce4bbe6b3a5832027f14216da..fded354cdf7c9220757c7a5ea3ef592f
              } catch (final Exception exception) {
                  if (conn.isMemoryConnection()) {
                      throw new ReportedException(CrashReport.forThrowable(exception, "Ticking memory connection"));
-@@ -744,6 +775,7 @@ public final class RegionizedWorldData {
+@@ -744,6 +765,7 @@ public final class RegionizedWorldData {
      }
  
      public void forEachTickingEntity(final Consumer<Entity> action) {
@@ -862,7 +829,7 @@ index 8e75cd913565841ce4bbe6b3a5832027f14216da..fded354cdf7c9220757c7a5ea3ef592f
          final IteratorSafeOrderedReferenceSet.Iterator<Entity> iterator = this.entityTickList.iterator();
          try {
              while (iterator.hasNext()) {
-@@ -751,9 +783,30 @@ public final class RegionizedWorldData {
+@@ -751,9 +773,30 @@ public final class RegionizedWorldData {
              }
          } finally {
              iterator.finishedIterating();
@@ -893,7 +860,7 @@ index 8e75cd913565841ce4bbe6b3a5832027f14216da..fded354cdf7c9220757c7a5ea3ef592f
      public void addEntity(final Entity entity) {
          if (!TickThread.isTickThreadFor(this.world, entity.chunkPosition())) {
              throw new IllegalArgumentException("Entity " + entity + " is not under this region's control");
-@@ -809,7 +862,10 @@ public final class RegionizedWorldData {
+@@ -809,7 +852,10 @@ public final class RegionizedWorldData {
      // make the code easier by simply discarding it in such an event
      public void pushBlockEvent(final BlockEventData blockEventData) {
          TickThread.ensureTickThread(this.world, blockEventData.pos(), "Cannot queue block even data async");
@@ -905,7 +872,7 @@ index 8e75cd913565841ce4bbe6b3a5832027f14216da..fded354cdf7c9220757c7a5ea3ef592f
      }
  
      public void pushBlockEvents(final Collection<? extends BlockEventData> blockEvents) {
-@@ -823,6 +879,7 @@ public final class RegionizedWorldData {
+@@ -823,6 +869,7 @@ public final class RegionizedWorldData {
              final BlockEventData blockEventData = iterator.next();
              if (predicate.test(blockEventData)) {
                  iterator.remove();
@@ -913,7 +880,7 @@ index 8e75cd913565841ce4bbe6b3a5832027f14216da..fded354cdf7c9220757c7a5ea3ef592f
              }
          }
      }
-@@ -834,6 +891,7 @@ public final class RegionizedWorldData {
+@@ -834,6 +881,7 @@ public final class RegionizedWorldData {
              if (TickThread.isTickThreadFor(this.world, ret.pos())) {
                  return ret;
              } // else: chunk must have been unloaded
@@ -1709,7 +1676,7 @@ index 8da43d6b187f41cb1f96f93c8759b2cdcc6a030a..de1b77479df200a8c066ccae3038088a
 +    }
  }
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index f30b2e998fd01d588d6581ac539ca867dae19791..4e5eb05a934682a3fd59fb77ae8783c36b68a7c3 100644
+index f30b2e998fd01d588d6581ac539ca867dae19791..bb68b80dd1c6b1a30b85c66edd502c0fac6172ac 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -197,6 +197,7 @@ public class Commands {
@@ -1731,10 +1698,12 @@ index f30b2e998fd01d588d6581ac539ca867dae19791..4e5eb05a934682a3fd59fb77ae8783c3
          // Luminol end - Add a config to enable tick command
          TimeCommand.register(this.dispatcher, context);
          TitleCommand.register(this.dispatcher, context);
-@@ -333,6 +332,19 @@ public class Commands {
-             UnpublishCommand.register(this.dispatcher);
+@@ -342,15 +341,43 @@ public class Commands {
+             }
          }
- 
+         // Paper end - Vanilla command permission fixes
++        java.util.List<CommandNode<CommandSourceStack>> minecraftNodes = new java.util.ArrayList<>(this.dispatcher.getRoot().getChildren());
++
 +        fun.bm.lophine.carpet.CarpetCompatCommand.register(this.dispatcher, context);
 +        fun.bm.lophine.carpet.AmsPlayerChunkLoading.register(this.dispatcher);
 +        fun.bm.lophine.carpet.OrgUtilityCommands.register(this.dispatcher);
@@ -1747,21 +1716,43 @@ index f30b2e998fd01d588d6581ac539ca867dae19791..4e5eb05a934682a3fd59fb77ae8783c3
 +        fun.bm.lophine.carpet.OrgCommandSettings.apply(this.dispatcher);
 +        fun.bm.lophine.carpet.AmsClientQueryCommands.register(this.dispatcher);
 +        fun.bm.lophine.carpet.AmsManagementCommands.register(this.dispatcher, context);
-+
-         // Paper start - Vanilla command permission fixes
-         for (final CommandNode<CommandSourceStack> node : this.dispatcher.getRoot().getChildren()) {
-             if (node.getRequirement() == com.mojang.brigadier.builder.ArgumentBuilder.<CommandSourceStack>defaultRequirement()) {
-@@ -342,6 +354,9 @@ public class Commands {
-             }
-         }
-         // Paper end - Vanilla command permission fixes
 +        fun.bm.lophine.carpet.AmsAdministratorProtection.apply(this.dispatcher);
 +        fun.bm.lophine.carpet.AmsUpdateSuppressor.register(this.dispatcher);
 +        fun.bm.lophine.carpet.AmsCommandPermissionLevels.apply(this.dispatcher);
++
++        java.util.List<CommandNode<CommandSourceStack>> carpetNodes = new java.util.ArrayList<>(this.dispatcher.getRoot().getChildren());
++        carpetNodes.removeAll(minecraftNodes);
          // Paper start - Brigadier Command API
          // Create legacy minecraft namespace commands
          for (final CommandNode<CommandSourceStack> node : new java.util.ArrayList<>(this.dispatcher.getRoot().getChildren())) {
-@@ -399,8 +414,15 @@ public class Commands {
++            String prefix;
++            if (minecraftNodes.contains(node)) {
++                prefix = "minecraft:";
++            } else if (carpetNodes.contains(node)) {
++                prefix = "carpet:";
++            } else {
++                continue;
++            }
+             if (modern) {
+                 // Modern behaviour that simply creates a full copy of the commands node.
+                 // Avoids plenty of issues around registering redirects *to* these nodes from the API
+                 this.dispatcher.getRoot().addChild(
+                     io.papermc.paper.command.brigadier.PaperBrigadier.copyLiteral(
+-                        "minecraft:" + node.getName(),
++                        prefix + node.getName(),
+                         (com.mojang.brigadier.tree.LiteralCommandNode<CommandSourceStack>) node
+                     )
+                 );
+@@ -363,7 +390,7 @@ public class Commands {
+             while (flattenedAliasTarget.getRedirect() != null) flattenedAliasTarget = flattenedAliasTarget.getRedirect();
+ 
+             this.dispatcher.register(
+-                com.mojang.brigadier.builder.LiteralArgumentBuilder.<CommandSourceStack>literal("minecraft:" + node.getName())
++                com.mojang.brigadier.builder.LiteralArgumentBuilder.<CommandSourceStack>literal(prefix + node.getName())
+                     .executes(flattenedAliasTarget.getCommand())
+                     .requires(flattenedAliasTarget.getRequirement())
+                     .redirect(flattenedAliasTarget));
+@@ -399,8 +426,15 @@ public class Commands {
          Profiler.get().push(() -> "/" + commandString);
          ContextChain<CommandSourceStack> commandChain = finishParsing(command, commandString, sender);
  
@@ -1777,7 +1768,7 @@ index f30b2e998fd01d588d6581ac539ca867dae19791..4e5eb05a934682a3fd59fb77ae8783c3
                  executeCommandInContext(
                      sender,
                      executionContext -> ExecutionContext.queueInitialCommandExecution(
-@@ -413,7 +435,8 @@ public class Commands {
+@@ -413,7 +447,8 @@ public class Commands {
              if (throwCommandError) throw e; // rethrow directly if requested
              MutableComponent hover = Component.literal(e.getMessage() == null ? e.getClass().getName() : e.getMessage());
              LOGGER.error("Command exception: /{}", commandString, e); // Paper - always show execution exception in console log
@@ -1787,7 +1778,7 @@ index f30b2e998fd01d588d6581ac539ca867dae19791..4e5eb05a934682a3fd59fb77ae8783c3
                  StackTraceElement[] stackTrace = e.getStackTrace();
  
                  for (int i = 0; i < Math.min(stackTrace.length, 3); i++) {
-@@ -432,6 +455,9 @@ public class Commands {
+@@ -432,6 +467,9 @@ public class Commands {
                  LOGGER.error("'/{}' threw an exception", commandString, e);
              }
          } finally {
@@ -1797,7 +1788,7 @@ index f30b2e998fd01d588d6581ac539ca867dae19791..4e5eb05a934682a3fd59fb77ae8783c3
              Profiler.get().pop();
          }
      }
-@@ -491,6 +517,12 @@ public class Commands {
+@@ -491,6 +529,12 @@ public class Commands {
              int forkLimit = gameRules.get(GameRules.MAX_COMMAND_FORKS);
  
              try (ExecutionContext<CommandSourceStack> executionContext = new ExecutionContext<>(chainLimit, forkLimit, Profiler.get())) {
@@ -1810,7 +1801,7 @@ index f30b2e998fd01d588d6581ac539ca867dae19791..4e5eb05a934682a3fd59fb77ae8783c3
                  CURRENT_EXECUTION_CONTEXT.set(executionContext);
                  config.accept(executionContext);
                  executionContext.runCommandQueue();
-@@ -518,6 +550,70 @@ public class Commands {
+@@ -518,6 +562,70 @@ public class Commands {
          COMMAND_SENDING_POOL.execute(() -> this.sendAsync(player, rootNode));
      }
  
@@ -1881,7 +1872,7 @@ index f30b2e998fd01d588d6581ac539ca867dae19791..4e5eb05a934682a3fd59fb77ae8783c3
      // Fixed pool, but with discard policy
      public static final java.util.concurrent.ExecutorService COMMAND_SENDING_POOL = new java.util.concurrent.ThreadPoolExecutor(
          2, 2, 0, java.util.concurrent.TimeUnit.MILLISECONDS,
-@@ -526,7 +622,9 @@ public class Commands {
+@@ -526,7 +634,9 @@ public class Commands {
              .setNameFormat("Paper Async Command Builder Thread Pool - %1$d")
              .setUncaughtExceptionHandler(new net.minecraft.DefaultUncaughtExceptionHandlerWithName(net.minecraft.server.MinecraftServer.LOGGER))
              .build(),
@@ -1892,7 +1883,7 @@ index f30b2e998fd01d588d6581ac539ca867dae19791..4e5eb05a934682a3fd59fb77ae8783c3
      );
  
      private void sendAsync(ServerPlayer player, RootCommandNode<CommandSourceStack> dispatcherRoot) {
-@@ -567,6 +665,10 @@ public class Commands {
+@@ -567,6 +677,10 @@ public class Commands {
      }
  
      private void runSync(ServerPlayer player, java.util.Collection<String> bukkit, RootCommandNode<CommandSourceStack> root) {
@@ -1903,7 +1894,7 @@ index f30b2e998fd01d588d6581ac539ca867dae19791..4e5eb05a934682a3fd59fb77ae8783c3
          // Paper end - Perf: Async command map building
          new com.destroystokyo.paper.event.brigadier.AsyncPlayerSendCommandsEvent<>(player.getBukkitEntity(), root, true).callEvent(); // Paper - Brigadier API
          org.bukkit.event.player.PlayerCommandSendEvent event = new org.bukkit.event.player.PlayerCommandSendEvent(player.getBukkitEntity(), new java.util.LinkedHashSet<>(bukkit));
-@@ -579,7 +681,7 @@ public class Commands {
+@@ -579,7 +693,7 @@ public class Commands {
              }
          }
          // CraftBukkit end
