@@ -63,7 +63,7 @@ public class FakeplayerConfig {
     public static boolean enableLocatorBar = false;
 
     @DoNotLoad
-    private BotCommand command = null;
+    private static BotCommand command = null;
 
     public static int getSimulationDistance(ServerBot bot) {
         return simulationDistance == -1 ? bot.getBukkitEntity().getSimulationDistance() : simulationDistance;
@@ -76,14 +76,21 @@ public class FakeplayerConfig {
     }
 
     public static boolean checkEnabled() {
-        return enable || FakePlayerCompatConfig.commandPlayer;
+        return enable || FakePlayerCompatConfig.playerCommandEnabled();
     }
 
     @NeedRun(when = EnumRunnableType.ON_LOADED)
     public void onLoaded() {
-        if (enable && command == null) {
-            command = new BotCommand("bot");
+        ensureCommandBackend();
+    }
+
+    public static synchronized void ensureCommandBackend() {
+        if (checkEnabled() && command == null) {
+            command = new BotCommand();
             command.register();
+        } else if (!checkEnabled() && command != null) {
+            command.unregister();
+            command = null;
         }
     }
 

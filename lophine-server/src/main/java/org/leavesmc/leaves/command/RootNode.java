@@ -17,6 +17,7 @@
 
 package org.leavesmc.leaves.command;
 
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -25,10 +26,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import static org.leavesmc.leaves.command.CommandUtils.registerPermissions;
 
 public abstract class RootNode extends LiteralNode {
     private final String permissionBase;
+
+    // Lophine - tracks manually registered Leaves commands so they survive Commands rebuilds
+    private static final Map<String, RootNode> REGISTERED = new ConcurrentHashMap<>();
 
     public RootNode(String name, String permissionBase) {
         super(name);
@@ -61,6 +68,7 @@ public abstract class RootNode extends LiteralNode {
         PaperCommands.INSTANCE.setValid();
         PaperCommands.INSTANCE.getDispatcher().register((LiteralArgumentBuilder<CommandSourceStack>) compile());
         PaperCommands.INSTANCE.invalidate();
+        REGISTERED.put(this.name, this);
         Bukkit.getOnlinePlayers().forEach(org.bukkit.entity.Player::updateCommands);
     }
 
@@ -68,6 +76,27 @@ public abstract class RootNode extends LiteralNode {
         PaperCommands.INSTANCE.setValid();
         PaperCommands.INSTANCE.getDispatcher().getRoot().removeCommand(name);
         PaperCommands.INSTANCE.invalidate();
+        REGISTERED.remove(this.name);
         Bukkit.getOnlinePlayers().forEach(org.bukkit.entity.Player::updateCommands);
+    }
+
+    // Lophine - replay all manually registered Leaves commands into the currently bound dispatcher.
+    // Must be called right after PaperCommands.setDispatcher(...), because a resource reload builds a
+    // brand-new net.minecraft.commands.Commands and only migrates Bukkit/lifecycle commands, leaving
+    // Leaves' raw-dispatcher registrations orphaned in the discarded Commands instance.
+    @SuppressWarnings("unchecked")
+    public static void rebindAll() {
+        if (REGISTERED.isEmpty()) {
+            return;
+        }
+        PaperCommands.INSTANCE.setValid();
+        try {
+            final CommandDispatcher<CommandSourceStack> dispatcher = PaperCommands.INSTANCE.getDispatcher();
+            for (final RootNode node : REGISTERED.values()) {
+                dispatcher.register((LiteralArgumentBuilder<CommandSourceStack>) node.compile());
+            }
+        } finally {
+            PaperCommands.INSTANCE.invalidate();
+        }
     }
 }
