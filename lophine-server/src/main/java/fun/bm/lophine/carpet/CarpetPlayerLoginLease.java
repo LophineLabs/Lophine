@@ -75,7 +75,7 @@ public final class CarpetPlayerLoginLease {
                 var lifetime=ScarpetNativeWork.completionOf(ScarpetNativeWork.capture());
                 ScarpetNativeWork.linkDependency(completion,lifetime);ScarpetNativeWork.aliasDependency(completion,lifetime);
                 CarpetPlayerBirths.admitPlayer(owner,completion);
-                ScarpetPlayerInventoryGate.trackAccepted(owner, ScarpetNativeWork.completionOf(ScarpetNativeWork.capture()));
+                ScarpetPlayerInventoryGate.admitBirth(owner, ScarpetNativeWork.completionOf(ScarpetNativeWork.capture()));
                 try (var accepted = ScarpetPlayerInventoryGate.acceptedScope(owner)) {
                     T value = operation.get(); immediate.set(value); return value;
                 }

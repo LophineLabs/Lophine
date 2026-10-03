@@ -100,6 +100,7 @@ public final class OrgHiddenPlayerActions {
         DebugTriggerException(String message) { super(message); }
     }
     public static void tick(ServerPlayer player) {
+        if (!(player instanceof ServerBot)) return;
         own(player); Holder holder = PLAYERS.get(player.getUUID());
         if (holder == null || holder.player != player || holder.completion.paused()) return;
         if (holder.pendingDebug != null) {
