@@ -10,11 +10,19 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class CarpetPlayerLoginLeaseTest {
     @BeforeAll static void bootstrap() { net.minecraft.SharedConstants.tryDetectVersion(); net.minecraft.server.Bootstrap.bootStrap(); }
+
+    @Test void regionConnectionCleanupWaitsForAsyncDisconnectTicket() {
+        assertFalse(CarpetAsyncDisconnect.cleanupReady(false, null));
+        assertTrue(CarpetAsyncDisconnect.cleanupReady(false, new ChunkPos(0, 0)));
+        assertTrue(CarpetAsyncDisconnect.cleanupReady(true, null));
+    }
+
 
     @Test void theFirstReadAndAllJoinChildrenHoldTheUuidAgainstOfflineEditingAndNextLogin() {
         var server = mock(MinecraftServer.class); var player = mock(ServerPlayer.class);

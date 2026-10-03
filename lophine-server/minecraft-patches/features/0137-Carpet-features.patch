@@ -722,7 +722,7 @@ index 53579b6faa9d55485088d59ec2fd1e4251c2fb01..020d5ff82d063c7b20a248cf6e57dd2e
              private void cancelInternal() {
                  this.run = null;
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 8e75cd913565841ce4bbe6b3a5832027f14216da..b78b417d4ec693ca41a697eb57c3a304ad297b79 100644
+index 8e75cd913565841ce4bbe6b3a5832027f14216da..fded354cdf7c9220757c7a5ea3ef592f326c40c6 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -79,6 +79,8 @@ public final class RegionizedWorldData {
@@ -812,7 +812,40 @@ index 8e75cd913565841ce4bbe6b3a5832027f14216da..b78b417d4ec693ca41a697eb57c3a304
          this.tickData = this.world.tickData;
          this.hasPhysicsEvent = org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - BlockPhysicsEvent
          this.hasEntityMoveEvent = io.papermc.paper.event.entity.EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - Add EntityMoveEvent
-@@ -668,7 +689,7 @@ public final class RegionizedWorldData {
+@@ -623,10 +644,13 @@ public final class RegionizedWorldData {
+         // note: ALL connections HERE have a player
+         final ServerPlayer player = conn.getPlayer();
+         // now that the connection is removed, we can allow this region to die
+-        player.level().moonrise$getChunkTaskScheduler().chunkHolderManager.removeTicketAtLevel(
+-            ServerGamePacketListenerImpl.DISCONNECT_TICKET, player.connection.disconnectPos,
+-            ChunkHolderManager.MAX_TICKET_LEVEL,
+-            player.connection.disconnectTicketId
+-        );
++        final ChunkPos disconnectPos = player.connection.disconnectPos;
++        if (disconnectPos != null) {
++            player.level().moonrise$getChunkTaskScheduler().chunkHolderManager.removeTicketAtLevel(
++                ServerGamePacketListenerImpl.DISCONNECT_TICKET, disconnectPos,
++                ChunkHolderManager.MAX_TICKET_LEVEL,
++                player.connection.disconnectTicketId
++            );
++        }
+         player.connection.resumeFlushing();
+     }
+@@ -658,6 +682,13 @@ public final class RegionizedWorldData {
+                 conn.handleDisconnection();
+                 // global tick thread will not remove connections not owned by it, so we need to
+                 RegionizedServer.getInstance().removeConnection(conn);
++                final ServerPlayer player = conn.getPlayer();
++                if (!fun.bm.lophine.carpet.CarpetAsyncDisconnect.cleanupReady(
++                    player.connection.hackSwitchingConfig, player.connection.disconnectPos
++                )) {
++                    // Lophine - the player-list removal is asynchronous; its caller installs the ticket later.
++                    continue;
++                }
+                 this.connections.remove(conn);
+                 cleanUpConnection(conn);
+                 continue;
+@@ -668,7 +699,7 @@ public final class RegionizedWorldData {
              }
  
              try {
@@ -821,7 +854,7 @@ index 8e75cd913565841ce4bbe6b3a5832027f14216da..b78b417d4ec693ca41a697eb57c3a304
              } catch (final Exception exception) {
                  if (conn.isMemoryConnection()) {
                      throw new ReportedException(CrashReport.forThrowable(exception, "Ticking memory connection"));
-@@ -744,6 +765,7 @@ public final class RegionizedWorldData {
+@@ -744,6 +775,7 @@ public final class RegionizedWorldData {
      }
  
      public void forEachTickingEntity(final Consumer<Entity> action) {
@@ -829,7 +862,7 @@ index 8e75cd913565841ce4bbe6b3a5832027f14216da..b78b417d4ec693ca41a697eb57c3a304
          final IteratorSafeOrderedReferenceSet.Iterator<Entity> iterator = this.entityTickList.iterator();
          try {
              while (iterator.hasNext()) {
-@@ -751,9 +773,30 @@ public final class RegionizedWorldData {
+@@ -751,9 +783,30 @@ public final class RegionizedWorldData {
              }
          } finally {
              iterator.finishedIterating();
@@ -860,7 +893,7 @@ index 8e75cd913565841ce4bbe6b3a5832027f14216da..b78b417d4ec693ca41a697eb57c3a304
      public void addEntity(final Entity entity) {
          if (!TickThread.isTickThreadFor(this.world, entity.chunkPosition())) {
              throw new IllegalArgumentException("Entity " + entity + " is not under this region's control");
-@@ -809,7 +852,10 @@ public final class RegionizedWorldData {
+@@ -809,7 +862,10 @@ public final class RegionizedWorldData {
      // make the code easier by simply discarding it in such an event
      public void pushBlockEvent(final BlockEventData blockEventData) {
          TickThread.ensureTickThread(this.world, blockEventData.pos(), "Cannot queue block even data async");
@@ -872,7 +905,7 @@ index 8e75cd913565841ce4bbe6b3a5832027f14216da..b78b417d4ec693ca41a697eb57c3a304
      }
  
      public void pushBlockEvents(final Collection<? extends BlockEventData> blockEvents) {
-@@ -823,6 +869,7 @@ public final class RegionizedWorldData {
+@@ -823,6 +879,7 @@ public final class RegionizedWorldData {
              final BlockEventData blockEventData = iterator.next();
              if (predicate.test(blockEventData)) {
                  iterator.remove();
@@ -880,7 +913,7 @@ index 8e75cd913565841ce4bbe6b3a5832027f14216da..b78b417d4ec693ca41a697eb57c3a304
              }
          }
      }
-@@ -834,6 +881,7 @@ public final class RegionizedWorldData {
+@@ -834,6 +891,7 @@ public final class RegionizedWorldData {
              if (TickThread.isTickThreadFor(this.world, ret.pos())) {
                  return ret;
              } // else: chunk must have been unloaded
