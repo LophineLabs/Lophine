@@ -1110,7 +1110,7 @@ index daf0f8d4511cad6c81b70894f8d893a993730d7c..bd63f447cb0647b370011461e512f420
 +    // Lophine end - Carpet features
  }
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index 4e660789661a7ea1bc5bf149a4edf384371642b2..e21e15bbdb7b52b9d235db5a37f9c54e2c5222f7 100644
+index de04d8393a1ef857711baeed086b213aa99a0dff..438e137ff3d33233eaad4f656dd21e5a3d24ae66 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -296,6 +296,10 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen

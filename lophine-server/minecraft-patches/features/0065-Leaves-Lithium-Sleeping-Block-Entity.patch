@@ -1574,7 +1574,7 @@ index 6109d8da984b398bb1eb6cd6ab9a55f0511a615c..1109013d0d321f96a11fc4eb437aecaf
 +    // Leaves end - Lithium Sleeping Block Entity
  }
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index 53675dbbcbd12ec30d851dc782cea5017fd38a4f..c0caf2ce9ca412bace47cda2f527851a34f9a1b4 100644
+index f06130a86af84bdaa23b483f94469a131abfc482..7e7f1d6f14d6de2fad5cda7f1f7d070ed67cd0cb 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -27,8 +27,29 @@ import net.minecraft.world.level.storage.ValueInput;
@@ -1661,7 +1661,7 @@ index 53675dbbcbd12ec30d851dc782cea5017fd38a4f..c0caf2ce9ca412bace47cda2f527851a
                  return true;
              }
          }
-@@ -424,6 +465,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -392,6 +433,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      private static void applyCooldown(final Hopper hopper) {
          if (hopper instanceof HopperBlockEntity blockEntity && blockEntity.getLevel() != null) {
              blockEntity.setCooldown(blockEntity.getLevel().spigotConfig.hopperTransfer);
@@ -1669,7 +1669,7 @@ index 53675dbbcbd12ec30d851dc782cea5017fd38a4f..c0caf2ce9ca412bace47cda2f527851a
          }
      }
  
-@@ -467,12 +509,20 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -435,12 +477,20 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      // Paper end - Perf: Optimize Hoppers
  
      private static boolean ejectItems(final Level level, final BlockPos blockPos, final HopperBlockEntity self) {
@@ -1691,7 +1691,7 @@ index 53675dbbcbd12ec30d851dc782cea5017fd38a4f..c0caf2ce9ca412bace47cda2f527851a
          if (isFullContainer(container, direction)) {
              return false;
          }
-@@ -528,13 +578,21 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -496,13 +546,21 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
          io.papermc.paper.threadedregions.RegionizedWorldData worldData = io.papermc.paper.threadedregions.TickRegionScheduler.getCurrentRegionizedWorldData(); // Folia - region threading
          BlockPos blockPos = BlockPos.containing(hopper.getLevelX(), hopper.getLevelY() + 1.0, hopper.getLevelZ());
          BlockState blockState = level.getBlockState(blockPos);
@@ -1717,7 +1717,7 @@ index 53675dbbcbd12ec30d851dc782cea5017fd38a4f..c0caf2ce9ca412bace47cda2f527851a
                      return true;
                  }
              }
-@@ -545,7 +603,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -513,7 +571,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
                  && blockState.isCollisionShapeFullBlock(level, blockPos)
                  && !blockState.is(BlockTags.DOES_NOT_BLOCK_HOPPERS);
              if (!isBlocked) {
@@ -1726,7 +1726,7 @@ index 53675dbbcbd12ec30d851dc782cea5017fd38a4f..c0caf2ce9ca412bace47cda2f527851a
                      if (addItem(hopper, entity)) {
                          return true;
                      }
-@@ -667,7 +725,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -635,7 +693,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
  
      // CraftBukkit start
      private static @Nullable Container runHopperInventorySearchEvent(
@@ -1735,7 +1735,7 @@ index 53675dbbcbd12ec30d851dc782cea5017fd38a4f..c0caf2ce9ca412bace47cda2f527851a
          org.bukkit.craftbukkit.block.CraftBlock hopper,
          org.bukkit.craftbukkit.block.CraftBlock searchLocation,
          org.bukkit.event.inventory.HopperInventorySearchEvent.ContainerType containerType
-@@ -793,6 +851,19 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -761,6 +819,19 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public void setCooldown(final int time) {
@@ -1755,7 +1755,7 @@ index 53675dbbcbd12ec30d851dc782cea5017fd38a4f..c0caf2ce9ca412bace47cda2f527851a
          this.cooldownTime = time;
      }
  
-@@ -812,6 +883,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -780,6 +851,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      @Override
      protected void setItems(final NonNullList<ItemStack> items) {
          this.items = items;
@@ -1763,7 +1763,7 @@ index 53675dbbcbd12ec30d851dc782cea5017fd38a4f..c0caf2ce9ca412bace47cda2f527851a
      }
  
      public static void entityInside(final Level level, final BlockPos pos, final BlockState blockState, final Entity entity, final HopperBlockEntity hopper) {
-@@ -826,4 +898,758 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -794,4 +866,758 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      protected AbstractContainerMenu createMenu(final int containerId, final Inventory inventory) {
          return new HopperMenu(containerId, inventory, this);
      }
