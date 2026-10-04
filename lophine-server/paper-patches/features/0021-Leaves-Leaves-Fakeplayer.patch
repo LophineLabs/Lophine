@@ -41,7 +41,7 @@ index 36fed8a2e33501f948e10fb47cb0efb876ad7d61..150e6e61fd7cf5ef219a29cda20e9a2d
              if (!registration.getPlugin().isEnabled()) {
                  continue;
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftRegionAccessor.java b/src/main/java/org/bukkit/craftbukkit/CraftRegionAccessor.java
-index 4b02b66f7b6d3787cc5e90fb7d2fba0dc2d7b861..a0a8b84b83c06ff440f1fccd0b6556a115d59824 100644
+index 40a49c50b0d468ebdcd5c9b9753c2a8b3c8e1116..d77333fdfc4bb5b177f704c922773d72651423c9 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftRegionAccessor.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftRegionAccessor.java
 @@ -375,6 +375,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
@@ -96,7 +96,7 @@ index b71a6cbb9114fbbfd8874b20d18701372b9d90f6..bc08a50576e29d580b78d015e81c2310
      /**
       * Gets the TPS from the region which owns the specified location, or {@code null} if no region owns
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index bb2f4b9d789ef9b918ddd0944256db8b407cc3db..dbd090a45c8749c777c32f34b597823773b0a511 100644
+index 285996ac7bfd4399abebebc70f238886486da60a..d0d61b5971d81d9b7c4d689d721f295d268e347d 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -248,7 +248,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
@@ -108,7 +108,7 @@ index bb2f4b9d789ef9b918ddd0944256db8b407cc3db..dbd090a45c8749c777c32f34b5978237
      }
  
      @Override
-@@ -1126,9 +1126,9 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+@@ -1121,9 +1121,9 @@ public class CraftWorld extends CraftRegionAccessor implements World {
  
      @Override
      public List<Player> getPlayers() {
@@ -120,7 +120,7 @@ index bb2f4b9d789ef9b918ddd0944256db8b407cc3db..dbd090a45c8749c777c32f34b5978237
              HumanEntity bukkitEntity = human.getBukkitEntity();
  
              if ((bukkitEntity != null) && (bukkitEntity instanceof Player)) {
-@@ -1633,7 +1633,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+@@ -1628,7 +1628,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
      public void playSound(final net.kyori.adventure.sound.Sound sound) {
          org.spigotmc.AsyncCatcher.catchOp("play sound"); // Paper
          final long seed = sound.seed().orElseGet(this.world.getRandom()::nextLong);
@@ -129,7 +129,7 @@ index bb2f4b9d789ef9b918ddd0944256db8b407cc3db..dbd090a45c8749c777c32f34b5978237
              player.connection.send(io.papermc.paper.adventure.PaperAdventure.asSoundPacket(sound, player.getX(), player.getY(), player.getZ(), seed, null));
          }
      }
-@@ -1661,7 +1661,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+@@ -1656,7 +1656,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
          org.spigotmc.AsyncCatcher.catchOp("play sound"); // Paper
          final long seed = sound.seed().orElseGet(this.getHandle().getRandom()::nextLong);
          if (emitter == net.kyori.adventure.sound.Sound.Emitter.self()) {

@@ -20125,7 +20125,7 @@ index eab53d1b4573529db6ebb5e16c0b6a4b1d0ac204..b5dd1ac0113e112d630495e17e0f37f7
  
          if (!Objects.equals(newDestroyTarget, entity.destroyTarget)) {
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index 4e660789661a7ea1bc5bf149a4edf384371642b2..e4da1881c1d422e35cb45cb48123ed2db200e89f 100644
+index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c81b3c5588 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -171,6 +171,23 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
@@ -20297,7 +20297,7 @@ index 4e660789661a7ea1bc5bf149a4edf384371642b2..e4da1881c1d422e35cb45cb48123ed2d
          io.papermc.paper.threadedregions.RegionizedWorldData worldData = level.getCurrentWorldData(); // Folia - region threading
          ItemStack movedItem = origItemStack;
          final int originalItemCount = origItemStack.getCount();
-@@ -531,6 +604,10 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -499,6 +572,10 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      // Paper end - Perf: Optimize Hoppers
  
      private static boolean ejectItems(final Level level, final BlockPos blockPos, final HopperBlockEntity self) {
@@ -20308,7 +20308,7 @@ index 4e660789661a7ea1bc5bf149a4edf384371642b2..e4da1881c1d422e35cb45cb48123ed2d
          // Leaves start - hopper counter
          if (org.leavesmc.leaves.util.HopperCounter.isEnabled()) {
              if (woolHopperCounter(level, blockPos, level.getBlockState(blockPos), HopperBlockEntity.getContainerAt(level, blockPos))) {
-@@ -624,6 +701,10 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -592,6 +669,10 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public static boolean suckInItems(final Level level, final Hopper hopper) {
@@ -20319,7 +20319,7 @@ index 4e660789661a7ea1bc5bf149a4edf384371642b2..e4da1881c1d422e35cb45cb48123ed2d
          io.papermc.paper.threadedregions.RegionizedWorldData worldData = io.papermc.paper.threadedregions.TickRegionScheduler.getCurrentRegionizedWorldData(); // Folia - region threading
          BlockPos blockPos = BlockPos.containing(hopper.getLevelX(), hopper.getLevelY() + 1.0, hopper.getLevelZ());
          BlockState blockState = level.getBlockState(blockPos);
-@@ -673,7 +754,14 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -641,7 +722,14 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public static boolean addItem(final Container container, final ItemEntity entity) {
@@ -20335,7 +20335,7 @@ index 4e660789661a7ea1bc5bf149a4edf384371642b2..e4da1881c1d422e35cb45cb48123ed2d
          boolean changed = false;
          // CraftBukkit start
          if (org.bukkit.event.inventory.InventoryPickupItemEvent.getHandlerList().getRegisteredListeners().length > 0) { // Paper - optimize hoppers
-@@ -686,9 +774,20 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -654,9 +742,20 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
          // CraftBukkit end
          } // Paper - Perf: Optimize Hoppers
          ItemStack copy = entity.getItem().copy();
@@ -20357,7 +20357,7 @@ index 4e660789661a7ea1bc5bf149a4edf384371642b2..e4da1881c1d422e35cb45cb48123ed2d
              entity.setItem(ItemStack.EMPTY);
              entity.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.PICKUP); // CraftBukkit - add Bukkit remove cause
          } else {
-@@ -699,6 +798,14 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -667,6 +766,14 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public static ItemStack addItem(final @Nullable Container from, final Container container, ItemStack itemStack, final @Nullable Direction direction) {
@@ -20372,7 +20372,7 @@ index 4e660789661a7ea1bc5bf149a4edf384371642b2..e4da1881c1d422e35cb45cb48123ed2d
          if (container instanceof WorldlyContainer worldly && direction != null) {
              int[] slots = worldly.getSlotsForFace(direction);
  
-@@ -856,6 +963,9 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -824,6 +931,9 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      private static @Nullable Container getBlockContainer(final Level level, final BlockPos pos, final BlockState state) {
          if (!level.spigotConfig.hopperCanLoadChunks && !level.hasChunkAt(pos)) return null; // Spigot
          Block block = state.getBlock();
@@ -20382,7 +20382,7 @@ index 4e660789661a7ea1bc5bf149a4edf384371642b2..e4da1881c1d422e35cb45cb48123ed2d
          if (block instanceof WorldlyContainerHolder worldlyContainerHolder) {
              return worldlyContainerHolder.getContainer(state, level, pos);
          } else if (state.hasBlockEntity() && level.getBlockEntity(pos) instanceof Container container) {
-@@ -992,6 +1102,12 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -960,6 +1070,12 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      private boolean shouldCheckSleep;
  
      private void checkSleepingConditions() {
@@ -20395,7 +20395,7 @@ index 4e660789661a7ea1bc5bf149a4edf384371642b2..e4da1881c1d422e35cb45cb48123ed2d
          if (this.cooldownTime > 0 || this.getLevel() == null || skipNextSleepCheckAfterCooldown) {
              return;
          }
-@@ -1104,6 +1220,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -1072,6 +1188,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
  
      @Override
      public boolean lithium$startSleeping() {
@@ -20403,7 +20403,7 @@ index 4e660789661a7ea1bc5bf149a4edf384371642b2..e4da1881c1d422e35cb45cb48123ed2d
          if (this.isSleeping()) {
              return false;
          }
-@@ -1207,6 +1324,11 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -1175,6 +1292,11 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
          wakeUpNow();
      }
  
@@ -20415,7 +20415,7 @@ index 4e660789661a7ea1bc5bf149a4edf384371642b2..e4da1881c1d422e35cb45cb48123ed2d
      private void invalidateCachedData() {
          this.shouldCheckSleep = false;
          this.invalidateInsertionData();
-@@ -1280,6 +1402,10 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -1248,6 +1370,10 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public @Nullable Container lithium$getExtractBlockInventory(Level world, BlockPos extractBlockPos, BlockState extractBlockState) {
@@ -20426,7 +20426,7 @@ index 4e660789661a7ea1bc5bf149a4edf384371642b2..e4da1881c1d422e35cb45cb48123ed2d
          Container blockInventory = this.extractBlockInventory;
          if (this.extractionMode == HopperCachingState.BlockInventory.NO_BLOCK_INVENTORY) {
              return null;
-@@ -1315,6 +1441,14 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -1283,6 +1409,14 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public @Nullable Container lithium$getInsertBlockInventory(Level world) {
@@ -20441,7 +20441,7 @@ index 4e660789661a7ea1bc5bf149a4edf384371642b2..e4da1881c1d422e35cb45cb48123ed2d
          Container blockInventory = this.insertBlockInventory;
          if (this.insertionMode == HopperCachingState.BlockInventory.NO_BLOCK_INVENTORY) {
              return null;
-@@ -1576,6 +1710,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -1544,6 +1678,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      private static @Nullable Boolean lithiumInsert(Level world, BlockPos pos, HopperBlockEntity hopperBlockEntity, @Nullable Container insertInventory) {
@@ -20449,7 +20449,7 @@ index 4e660789661a7ea1bc5bf149a4edf384371642b2..e4da1881c1d422e35cb45cb48123ed2d
          if (insertInventory == null || hopperBlockEntity instanceof net.minecraft.world.WorldlyContainer) {
              //call the vanilla code to allow other mods inject features
              //e.g. carpet mod allows hoppers to insert items into wool blocks
-@@ -1642,6 +1777,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -1610,6 +1745,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      private static @Nullable Boolean lithiumExtract(Level world, Hopper to, Container from) {
