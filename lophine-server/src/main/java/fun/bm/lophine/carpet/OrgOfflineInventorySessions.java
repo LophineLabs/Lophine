@@ -159,6 +159,7 @@ final class OrgOfflineInventorySessions {
         }
 
         <T> CompletableFuture<T> serial(Supplier<CompletableFuture<T>> action) {
+            var captured = carpet.script.external.ScarpetRuntime.captureNativeContinuation(action);
             var result = new CompletableFuture<T>();
             var next = new CompletableFuture<Void>();
             CompletableFuture<Void> previous;
@@ -169,7 +170,7 @@ final class OrgOfflineInventorySessions {
             previous.whenComplete((ignored, oldFailure) -> {
                 CompletableFuture<T> actual;
                 try {
-                    actual = action.get();
+                    actual = captured.get();
                 } catch (Throwable failure) {
                     actual = CompletableFuture.failedFuture(failure);
                 }

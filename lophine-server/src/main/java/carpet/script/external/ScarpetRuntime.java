@@ -253,7 +253,7 @@ public final class ScarpetRuntime {
     private final Set<CompletableFuture<?>> pendingActors = ConcurrentHashMap.newKeySet();
     private final WeakIdentityMap<Entity, Map<Object, CompletableFuture<Void>>> pendingDecisions = new WeakIdentityMap<>();
     private final AtomicLong ticks = new AtomicLong();
-    private final Map<Long, CompletableFuture<Void>> tickWaiters = new ConcurrentHashMap<>();
+    private final Map<Long, Set<CompletableFuture<Void>>> tickWaiters = new ConcurrentHashMap<>();
     private volatile CarpetScriptServer scripts;
     private volatile boolean closing;
     private final java.util.concurrent.atomic.AtomicBoolean initialized = new java.util.concurrent.atomic.AtomicBoolean();
@@ -617,6 +617,8 @@ public final class ScarpetRuntime {
             this.pendingActors.add(future);
             ScarpetNativeWork.record(future);
             future.whenComplete((result, failure) -> this.pendingActors.remove(future));
+            if (this.closing && !this.allowsClosingActors())
+                future.completeExceptionally(new IllegalStateException("Scarpet server is closing"));
         }
         return future;
     }
@@ -812,8 +814,9 @@ public final class ScarpetRuntime {
         ScarpetRuntime runtime = of(server);
         if (!runtime.closing) initialize(server);
         long tick = runtime.ticks.incrementAndGet();
-        runtime.tickWaiters.forEach((due, future) -> {
-            if (due <= tick && runtime.tickWaiters.remove(due, future)) future.complete(null);
+        runtime.tickWaiters.forEach((due, waiters) -> {
+            if (due <= tick && runtime.tickWaiters.remove(due, waiters))
+                waiters.forEach(future -> future.complete(null));
         });
         if (runtime.closing) return;
         runtime.submit(() -> {
@@ -833,9 +836,22 @@ public final class ScarpetRuntime {
     public static void awaitNextTick(MinecraftServer server) {
         assertMayWait();
         ScarpetRuntime runtime = of(server);
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        if (runtime.closing) throw new InternalExpressionException("Scarpet server is closing");
         long due = runtime.ticks.get() + 1L;
-        CompletableFuture<Void> future = runtime.tickWaiters.computeIfAbsent(due, key -> new CompletableFuture<>());
-        if (runtime.ticks.get() >= due) future.complete(null);
+        runtime.tickWaiters.compute(due, (key, waiters) -> {
+            if (waiters == null) waiters = ConcurrentHashMap.newKeySet();
+            waiters.add(future);
+            return waiters;
+        });
+        // Cancellation belongs to this caller, not every script waiting for the same tick.
+        future.whenComplete((ignored, failure) -> runtime.tickWaiters.computeIfPresent(due, (key, waiters) -> {
+            waiters.remove(future);
+            return waiters.isEmpty() ? null : waiters;
+        }));
+        // The tick or shutdown may have passed before this waiter was inserted.
+        if (runtime.closing) future.completeExceptionally(new IllegalStateException("Scarpet server is closing"));
+        else if (runtime.ticks.get() >= due) future.complete(null);
         await(future);
     }
 
@@ -1017,7 +1033,7 @@ public final class ScarpetRuntime {
         runtime.closing = true;
         IllegalStateException stopped = new IllegalStateException("Scarpet server is closing");
         runtime.pendingActors.forEach(future -> future.completeExceptionally(stopped));
-        runtime.tickWaiters.values().forEach(future -> future.completeExceptionally(stopped));
+        runtime.tickWaiters.values().forEach(waiters -> waiters.forEach(future -> future.completeExceptionally(stopped)));
         runtime.guestThreads.forEach(Thread::interrupt);
         CompletableFuture<Void> closed = new CompletableFuture<>();
         runtime.interpreter.execute(() -> {

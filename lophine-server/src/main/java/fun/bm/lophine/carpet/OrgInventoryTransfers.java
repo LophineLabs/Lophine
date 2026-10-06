@@ -36,9 +36,9 @@ public final class OrgInventoryTransfers {
     private static final ScopedValue<List<ItemStack>> PREVIEW_DROPS = ScopedValue.newInstance();
     private static final Map<MinecraftServer, Coordinator> COORDINATORS = Collections.synchronizedMap(new WeakHashMap<>());
     private static final Map<MinecraftServer, Long> LOAD_FAILURES = new WeakHashMap<>();
-    private static final Map<ServerPlayer, List<ItemStack>> RECOVERED_CURSOR = Collections.synchronizedMap(new WeakHashMap<>());
-    private static final Map<ServerPlayer, List<ItemStack>> DEFERRED_RETURNS = Collections.synchronizedMap(new WeakHashMap<>());
-    private static final Map<ServerPlayer, List<CompoundTag>> SHADOW_LOADS = Collections.synchronizedMap(new WeakHashMap<>());
+    private static final carpet.script.external.WeakIdentityMap<ServerPlayer, List<ItemStack>> RECOVERED_CURSOR = new carpet.script.external.WeakIdentityMap<>();
+    private static final carpet.script.external.WeakIdentityMap<ServerPlayer, List<ItemStack>> DEFERRED_RETURNS = new carpet.script.external.WeakIdentityMap<>();
+    private static final carpet.script.external.WeakIdentityMap<ServerPlayer, List<CompoundTag>> SHADOW_LOADS = new carpet.script.external.WeakIdentityMap<>();
     private static final String CURSOR_TAG = "CarpetOrgEscrowCursor";
     private static final String SHADOW_TAG = "CarpetOrgEscrowShadows";
 
@@ -496,7 +496,8 @@ public final class OrgInventoryTransfers {
     private static void quarantineShadowSlots(ServerPlayer player) {
         List<CompoundTag> identities = SHADOW_LOADS.get(player);
         if (identities == null) return;
-        List<ItemStack> held = new ArrayList<>(RECOVERED_CURSOR.getOrDefault(player, List.of()));
+        List<ItemStack> recovered = RECOVERED_CURSOR.get(player);
+        List<ItemStack> held = new ArrayList<>(recovered == null ? List.of() : recovered);
         List<CompoundTag> changed = new ArrayList<>();
         for (CompoundTag original : identities) {
             CompoundTag identity = original.copy();
@@ -550,7 +551,7 @@ public final class OrgInventoryTransfers {
             returning.removeIf(ItemStack::isEmpty);
             if (returning.isEmpty()) DEFERRED_RETURNS.remove(player);
         }
-        if (SHADOW_LOADS.containsKey(player)) {
+        if (SHADOW_LOADS.get(player) != null) {
             try {
                 restoreShadowIdentities(player);
             } catch (RuntimeException exception) {

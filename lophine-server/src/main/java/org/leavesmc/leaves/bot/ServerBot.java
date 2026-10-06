@@ -596,11 +596,15 @@ public class ServerBot extends ServerPlayer {
                             }))).thenCompose(value -> value));
             var afterDeath = carpet.script.external.ScarpetRuntime.captureNativeContinuation(() ->
                     carpet.script.external.ScarpetExplosionActors.entity(this, () -> {
-                        this.setHealth(20.0F);
-                        this.foodData = new net.minecraft.world.food.FoodData();
-                        // The true SP body already performed death drops/XP. The disconnect saves its final inventory once.
-                        this.carpetRestoreAfterDeath = true;
-                        return getServer().getBotList().carpetRemoveBotAsync(this, BotRemoveEvent.RemoveReason.DEATH, null, true, false);
+                        // Paper revives the player when PlayerDeathEvent is cancelled.
+                        if (this.getHealth() > 0.0F || this.isRemoved()) return java.util.concurrent.CompletableFuture.completedFuture(false);
+                        try (var accepted = carpet.script.external.ScarpetPlayerInventoryGate.acceptedScope(this)) {
+                            this.setHealth(20.0F);
+                            this.foodData = new net.minecraft.world.food.FoodData();
+                            // The true SP body already performed death drops/XP. The disconnect saves its final inventory once.
+                            this.carpetRestoreAfterDeath = true;
+                            return getServer().getBotList().carpetRemoveBotAsync(this, BotRemoveEvent.RemoveReason.DEATH, null, true, false);
+                        }
                     }).thenCompose(value -> value));
             var actual = carpet.script.external.ScarpetNativeDeaths.shakeOff(this)
                     .thenCompose(ignored -> originalDeath.get()).thenCompose(ignored -> afterDeath.get());

@@ -47,30 +47,35 @@ public class ServerBotGameMode extends ServerPlayerGameMode {
 
     @Override
     public boolean changeGameModeForPlayer(@NotNull GameType gameMode) {
-        return false;
+        return this.player instanceof ServerBot bot && bot.carpetNativePlayer && super.changeGameModeForPlayer(gameMode);
     }
 
     @Nullable
     @Override
     public PlayerGameModeChangeEvent changeGameModeForPlayer(@NotNull GameType gameMode, PlayerGameModeChangeEvent.@NotNull Cause cause, @Nullable Component cancelMessage) {
-        return null;
+        return this.player instanceof ServerBot bot && bot.carpetNativePlayer ? super.changeGameModeForPlayer(gameMode, cause, cancelMessage) : null;
     }
 
     @Override
     protected void setGameModeForPlayer(@NotNull GameType gameMode, @Nullable GameType previousGameMode) {
+        if (this.player instanceof ServerBot bot && bot.carpetNativePlayer)
+            super.setGameModeForPlayer(gameMode, previousGameMode);
     }
 
     @Override
     public void tick() {
+        if (this.player instanceof ServerBot bot && bot.carpetNativePlayer) super.tick();
     }
 
     @Override
     public void destroyAndAck(@NotNull BlockPos pos, int sequence, @NotNull String reason) {
-        this.destroyBlock(pos);
+        if (this.player instanceof ServerBot bot && bot.carpetNativePlayer) super.destroyAndAck(pos, sequence, reason);
+        else this.destroyBlock(pos);
     }
 
     @Override
     public boolean destroyBlock(@NotNull BlockPos pos) {
+        if (this.player instanceof ServerBot bot && bot.carpetNativePlayer) return super.destroyBlock(pos);
         BlockState blockState = this.level.getBlockState(pos);
         if (!this.player.getMainHandItem().canDestroyBlock(blockState, this.level, pos, this.player)) {
             return false;
@@ -103,6 +108,7 @@ public class ServerBotGameMode extends ServerPlayerGameMode {
     @NotNull
     @Override
     public InteractionResult useItemOn(@NotNull ServerPlayer player, Level level, @NotNull ItemStack stack, @NotNull InteractionHand hand, BlockHitResult hitResult) {
+        if (this.player instanceof ServerBot bot && bot.carpetNativePlayer) return super.useItemOn(player, level, stack, hand, hitResult);
         BlockPos blockPos = hitResult.getBlockPos();
         BlockState blockState = level.getBlockState(blockPos);
 

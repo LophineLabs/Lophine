@@ -17,6 +17,18 @@ public class AmsNativeManagementTest {
   }
  }
  @TempDir Path directory;
+ @Test void sequentialNativeBatchHandlesManyImmediatePhasesWithoutRecursing(){
+  var server=mock(MinecraftServer.class);var count=new java.util.concurrent.atomic.AtomicInteger();
+  var values=java.util.stream.IntStream.range(0,50_000).boxed().iterator();
+  var actual=AmsNativeCommandEffects.sequence(server,values,value->{assertEquals(value,count.getAndIncrement());return CompletableFuture.completedFuture(null);});
+  actual.join();assertEquals(50_000,count.get());assertFalse(actual.cancel(false));ScarpetNativeWork.whenIdle(server).join();
+ }
+ @Test void sequentialNativeBatchWaitsTrueChildrenAndStopsAtTheirNativeFailure(){
+  var server=mock(MinecraftServer.class);var first=new CompletableFuture<Void>();var second=new CompletableFuture<Void>();var calls=new ArrayList<Integer>();var sequence=new java.util.concurrent.atomic.AtomicReference<CompletableFuture<Void>>();
+  var parent=ScarpetNativeWork.observeNative(null,()->{sequence.set(AmsNativeCommandEffects.sequence(server,List.of(1,2,3).iterator(),value->{calls.add(value);return value==1?first:second;}));return 7;});
+  assertEquals(List.of(1),calls);assertFalse(parent.isDone());assertFalse(sequence.get().cancel(false));first.complete(null);assertEquals(List.of(1,2),calls);assertFalse(parent.isDone());
+  var failure=new IllegalStateException("actual second AMS batch child");second.completeExceptionally(failure);assertSame(failure,assertThrows(CompletionException.class,parent::join).getCause());assertEquals(List.of(1,2),calls);assertTrue(sequence.get().isCompletedExceptionally());ScarpetNativeWork.whenIdle(server).handle((value,error)->null).join();
+ }
  static final class Fixture implements AutoCloseable {
   final MinecraftServer server=mock(MinecraftServer.class);final ServerLevel world=mock(ServerLevel.class);
   final ServerPlayer sourcePlayer=mock(ServerPlayer.class),target=mock(ServerPlayer.class);
@@ -30,6 +42,8 @@ public class AmsNativeManagementTest {
    when(server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT)).thenReturn(path);when(world.getServer()).thenReturn(server);
    for(ServerPlayer player:List.of(sourcePlayer,target)){
     when(player.level()).thenReturn(world);when(player.carpetSpawnServer()).thenReturn(server);when(player.blockPosition()).thenReturn(BlockPos.ZERO);when(player.getUUID()).thenReturn(UUID.randomUUID());when(player.getScoreboardName()).thenReturn(player==sourcePlayer?"source":"target");
+    var profile = new com.mojang.authlib.GameProfile(player.getUUID(), player.getScoreboardName());
+    when(player.getGameProfile()).thenReturn(profile);
     player.connection=mock(ServerGamePacketListenerImpl.class);
     var nativeConnection=mock(net.minecraft.network.Connection.class);when(nativeConnection.isConnected()).thenReturn(true);
     nativeConnection.channel=mock(io.netty.channel.Channel.class);when(nativeConnection.channel.closeFuture()).thenReturn(mock(io.netty.channel.ChannelFuture.class));

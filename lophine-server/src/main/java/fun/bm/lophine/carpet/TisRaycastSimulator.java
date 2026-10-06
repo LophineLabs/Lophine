@@ -6,7 +6,8 @@
 package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
-import io.papermc.paper.threadedregions.RegionizedServer;
+import carpet.script.external.ScarpetNativeWork;
+import carpet.script.external.ScarpetRuntime;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -29,12 +30,17 @@ public final class TisRaycastSimulator {
     }
 
     public static void simulate(final CommandSourceStack source, final BlockPos start, final int maximumRadius) {
-        ServerLevel level = source.getLevel();
-        Thread.startVirtualThread(() -> {
+        var actual = new CompletableFuture<Void>();
+        ScarpetNativeWork.record(actual);
+        ScarpetNativeWork.trackNative(source.getServer(), actual);
+        try {
+        var captured = ScarpetRuntime.captureNativeContinuation(() -> {
+            Throwable problem = null;
             try {
                 BlockPos center = start;
                 for (int radius = 1; radius <= maximumRadius; ++radius) {
-                    dispatch(level, planLayer(center, radius)).join();
+                    ensureRunning(source);
+                    dispatch(source, planLayer(center, radius)).join();
                     if (radius == maximumRadius) break;
                     center = center.offset(0, 0, radius * 2 + 4);
                 }
@@ -42,12 +48,28 @@ public final class TisRaycastSimulator {
                 for (BlockPos pos : BlockPos.betweenClosed(start.offset(-maximumRadius - 1, -1, -2), center.offset(maximumRadius + 1, -1, maximumRadius + 1))) {
                     add(floor, pos, Blocks.CONCRETE.white().defaultBlockState(), true);
                 }
-                dispatch(level, floor).join();
-                TisRaycastCommand.feedback(source, "Endermelon raycast simulation created.");
+                dispatch(source, floor).join();
             } catch (Throwable failure) {
-                TisRaycastCommand.feedback(source, "Endermelon simulation failed: " + failure.getMessage());
+                problem = failure;
             }
+            Throwable failure = problem;
+            var delivered = TisCommandContinuations.feedback(source, () -> {
+                TisRaycastCommand.feedback(source, failure == null ? "Endermelon raycast simulation created."
+                        : "Endermelon simulation failed: " + failure.getMessage());
+                return null;
+            });
+            delivered.whenComplete((ignored, feedbackFailure) -> {
+                if (failure != null) actual.completeExceptionally(failure);
+                else if (feedbackFailure != null) actual.completeExceptionally(feedbackFailure);
+                else actual.complete(null);
+            });
+            return null;
         });
+            Thread.startVirtualThread(() -> {
+                try { captured.get(); }
+                catch (Throwable failure) { actual.completeExceptionally(failure); }
+            });
+        } catch (Throwable failure) { actual.completeExceptionally(failure); }
     }
 
     private static Map<ChunkPos, List<Placement>> planLayer(final BlockPos center, final int radius) {
@@ -102,13 +124,19 @@ public final class TisRaycastSimulator {
         changes.computeIfAbsent(ChunkPos.containing(immutable), ignored -> new ArrayList<>()).add(new Placement(immutable, state, onlyAir));
     }
 
-    private static CompletableFuture<Void> dispatch(final ServerLevel level, final Map<ChunkPos, List<Placement>> changes) {
+    private static void ensureRunning(CommandSourceStack source) {
+        if (ScarpetNativeWork.isDraining(source.getServer()))
+            throw new IllegalStateException("Server stopped during endermelon simulation");
+    }
+
+    private static CompletableFuture<Void> dispatch(final CommandSourceStack source, final Map<ChunkPos, List<Placement>> changes) {
+        ensureRunning(source);
+        ServerLevel level = source.getLevel();
         List<CompletableFuture<Void>> completions = new ArrayList<>();
         for (var entry : changes.entrySet()) {
-            CompletableFuture<Void> completion = new CompletableFuture<>();
-            completions.add(completion);
-            RegionizedServer.getInstance().taskQueue.queueTickTaskQueue(level, entry.getKey().x(), entry.getKey().z(), () -> {
-                try {
+            var origin = new BlockPos(entry.getKey().getMinBlockX(), 0, entry.getKey().getMinBlockZ());
+            completions.add(TisCommandContinuations.world(source, level, origin, () -> {
+                    ensureRunning(source);
                     Runnable place = () -> {
                         for (Placement update : entry.getValue()) {
                             if (!update.onlyAir() || level.getBlockState(update.pos()).isAir()) {
@@ -118,11 +146,8 @@ public final class TisRaycastSimulator {
                     };
                     if (GeneralCompatConfig.fillUpdates) place.run();
                     else InteractionUpdateHelper.runWithSuppressedUpdates(place);
-                    completion.complete(null);
-                } catch (Throwable failure) {
-                    completion.completeExceptionally(failure);
-                }
-            });
+                    return null;
+            }));
         }
         return CompletableFuture.allOf(completions.toArray(CompletableFuture[]::new));
     }

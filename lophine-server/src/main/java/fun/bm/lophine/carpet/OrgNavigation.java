@@ -325,12 +325,15 @@ public final class OrgNavigation {
         }
         return TisCommandContinuations.then(update.handle((ignored, failure) -> new UpdateOutcome(failure)), outcome -> {
             if (outcome.failure() == null) return CompletableFuture.completedFuture(null);
-            ACTIVE.remove(navigation.observer, navigation);
+            if (!ACTIVE.remove(navigation.observer, navigation))
+                return CompletableFuture.failedFuture(outcome.failure());
             return TisCommandContinuations.then(TisCommandContinuations.owned(navigation.observerActor, () -> {
-                navigation.observerActor.connection.send(new ClientboundSetActionBarTextPacket(translated("error", "Navigator is encountering unexpected problems")));
+                if (ACTIVE.get(navigation.observer) == null)
+                    navigation.observerActor.connection.send(new ClientboundSetActionBarTextPacket(translated("error", "Navigator is encountering unexpected problems")));
                 return null;
             }), ignored -> TisCommandContinuations.then(TisCommandContinuations.owned(navigation.observerActor, () -> {
-                OrgNavigationProtocol.clearManager(navigation.observerActor);
+                if (ACTIVE.get(navigation.observer) == null)
+                    OrgNavigationProtocol.clearManager(navigation.observerActor);
                 return null;
             }), cleared -> CompletableFuture.failedFuture(outcome.failure())));
         });
@@ -338,7 +341,7 @@ public final class OrgNavigation {
 
     public static void tick(ServerPlayer observer) {
         Navigation navigation = ACTIVE.get(observer.getUUID());
-        if (navigation == null) return;
+        if (navigation == null || navigation.observerActor != observer) return;
         if (ScarpetNativeWork.isDraining(observer.level().getServer()) || !OrgUtilityCommands.permitted(observer.createCommandSourceStack(), GeneralCompatConfig.commandNavigate)) {
             ACTIVE.remove(navigation.observer, navigation);
             if (!ScarpetNativeWork.isDraining(observer.level().getServer()))

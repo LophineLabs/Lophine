@@ -2,12 +2,77 @@ package fun.bm.lophine.carpet;
 
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class CarpetProfileObserverTest {
     private static final CarpetProfileObserver.Key REGION = new CarpetProfileObserver.Key("test:dimension", 7);
+
+    @Test
+    void aDelayedPreviousWindowCallbackCannotReplaceTheCurrentOwnerRoot() {
+        var work = new CarpetProfileObserver.Work(REGION, 123, "Full Tick", 20);
+        var first = new CarpetProfileObserver.Session(100);
+        work.begin(first);
+        first.finish(170);
+        var second = new CarpetProfileObserver.Session(200);
+        work.begin(second);
+        work.begin(first); // an owner callback captured the previous active window before replacement
+        work.finish(second, 250);
+        assertEquals(new CarpetProfileObserver.Timing(50, 50, 1),
+                second.finish(270).regions().getFirst().timers().get("Full Tick"));
+    }
+
+    @Test
+    void ownerWorkDoesNotWaitForTheGlobalWindowLifecycleMonitor() throws Exception {
+        CarpetProfileObserver.reset();
+        var field = CarpetProfileObserver.class.getDeclaredField("LIFECYCLE");
+        field.setAccessible(true);
+        try (var pool = Executors.newSingleThreadExecutor()) {
+            synchronized (field.get(null)) {
+                pool.submit(() -> {
+                    CarpetProfileObserver.startWork(REGION, 123, "Full Tick", 20);
+                    CarpetProfileObserver.stopWork(123, 90);
+                }).get(5, TimeUnit.SECONDS);
+            }
+        } finally { CarpetProfileObserver.reset(); }
+    }
+
+    @Test
+    void simultaneousNativeOwnersRetainClippedRootsAcrossWindowReplacement() throws Exception {
+        CarpetProfileObserver.reset();
+        var entered = new java.util.concurrent.CountDownLatch(8);
+        var leave = new java.util.concurrent.CountDownLatch(1);
+        try (var pool = Executors.newFixedThreadPool(8)) {
+            var jobs = new ArrayList<java.util.concurrent.Future<?>>();
+            for (int owner = 0; owner < 8; owner++) {
+                final int id = owner;
+                jobs.add(pool.submit(() -> {
+                    CarpetProfileObserver.startWork(new CarpetProfileObserver.Key("test:dimension", id), 123, "Full Tick", 20);
+                    entered.countDown();
+                    try { assertTrue(leave.await(5, TimeUnit.SECONDS)); }
+                    catch (InterruptedException interrupted) { throw new AssertionError(interrupted); }
+                    finally { CarpetProfileObserver.stopWork(123, 250); }
+                }));
+            }
+            try {
+                assertTrue(entered.await(5, TimeUnit.SECONDS));
+                var first = CarpetProfileObserver.begin(100);
+                var firstReport = CarpetProfileObserver.finish(first, 170);
+                assertEquals(8, firstReport.regions().size());
+                for (var region : firstReport.regions())
+                    assertEquals(new CarpetProfileObserver.Timing(70, 70, 1), region.timers().get("Full Tick"));
+                var second = CarpetProfileObserver.begin(200);
+                leave.countDown();
+                for (var job : jobs) job.get(5, TimeUnit.SECONDS);
+                var secondReport = CarpetProfileObserver.finish(second, 270);
+                assertEquals(8, secondReport.regions().size());
+                for (var region : secondReport.regions())
+                    assertEquals(new CarpetProfileObserver.Timing(50, 50, 1), region.timers().get("Full Tick"));
+            } finally { leave.countDown(); }
+        } finally { leave.countDown(); CarpetProfileObserver.reset(); }
+    }
 
     @Test
     void observesTheActualNoOpHandleIncludingDynamicNamesAndCounters() {

@@ -63,4 +63,14 @@ public final class WeakIdentityMap<K, V> {
         expunge();
         return values.remove(new Key<>(key, null), value);
     }
+
+    public V putIfAbsent(K key, V value) {
+        expunge();
+        return values.putIfAbsent(new Key<>(key, queue), value);
+    }
+
+    public V remove(K key) {
+        expunge();
+        return values.remove(new Key<>(key, null));
+    }
 }

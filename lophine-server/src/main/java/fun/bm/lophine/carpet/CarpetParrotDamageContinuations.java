@@ -38,7 +38,7 @@ public final class CarpetParrotDamageContinuations {
                 return release;
             }).thenCompose(ScarpetRuntime.captureNativeFunction(value -> value));
             ScarpetNativeWork.record(left);
-            var body = TisCommandContinuations.then(left, ignored -> right(player, chance, remainder));
+            var body = TisCommandContinuations.then(left, ignored -> right(player, chance, remainder, actual));
             ScarpetNativeWork.record(body);
             ScarpetNativeWork.aliasDependency(actual, body);
             body.whenComplete((value, failure) -> {
@@ -53,7 +53,8 @@ public final class CarpetParrotDamageContinuations {
         return caller;
     }
 
-    private static CompletableFuture<Boolean> right(ServerPlayer player, double chance, Supplier<Boolean> remainder) {
+    private static CompletableFuture<Boolean> right(ServerPlayer player, double chance, Supplier<Boolean> remainder,
+                                                     CompletableFuture<Boolean> wholeHurt) {
         var selected = OrgMenuNativeEffects.run(player, () -> {
             CompletableFuture<Entity> release = player.getRandom().nextFloat() < chance
                     ? player.carpetReleaseShoulderNativeAsync(false) : CompletableFuture.completedFuture(null);
@@ -63,7 +64,14 @@ public final class CarpetParrotDamageContinuations {
         ScarpetNativeWork.record(selected);
         return TisCommandContinuations.then(selected, ignored -> {
             var body = OrgMenuNativeEffects.run(player, () -> {
+                // Publish before the native remainder can request self-removal.
+                // A gate snapshot taken inline cannot later reclassify its waiters.
+                ScarpetNativeWork.aliasDependency(wholeHurt,
+                        ScarpetNativeWork.completionOf(ScarpetNativeWork.capture()));
                 var nativeBody = ScarpetDamageContinuations.observeNativeBody(player, remainder);
+                // The accepted whole hurt receipt awaits this real damage body,
+                // including a fake player's mandatory self-removal during death.
+                ScarpetNativeWork.aliasDependency(wholeHurt, nativeBody);
                 ScarpetNativeWork.record(nativeBody);
                 return nativeBody;
             }).thenCompose(ScarpetRuntime.captureNativeFunction(value -> value));

@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
@@ -22,12 +23,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
 public final class TisProjectileVisualizer {
     public static final String TAG = "##TISCM_VISPROJ_LOGGER##";
     private static final ThreadLocal<Entity> CONSTRUCTING = new ThreadLocal<>();
-    private static final Map<UUID, Entity> VISUALIZERS = new ConcurrentHashMap<>();
+    private static final Map<UUID, Marker> VISUALIZERS = new ConcurrentHashMap<>();
+    private static final carpet.script.external.WeakIdentityMap<Entity, Long> MARKER_GENERATIONS = new carpet.script.external.WeakIdentityMap<>();
+    private static final carpet.script.external.WeakIdentityMap<MinecraftServer, Boolean> CLOSING_SERVERS = new carpet.script.external.WeakIdentityMap<>();
     private static final AtomicLong GENERATION = new AtomicLong();
 
     private TisProjectileVisualizer() {
@@ -59,24 +63,36 @@ public final class TisProjectileVisualizer {
 
     public static boolean tick(Snowball snowball) {
         if (!isVisualizer(snowball)) return false;
-        if (CarpetLoggerProtocol.hasSubscribers("projectiles")) {
+        snowball.persist = false;
+        Long generation = MARKER_GENERATIONS.get(snowball);
+        MinecraftServer server = server(snowball);
+        if (generation != null && generation == GENERATION.get() && !closing(server) && CarpetLoggerProtocol.hasSubscribers("projectiles")) {
             if (snowball.getDeltaMovement().lengthSqr() > 0.0) {
                 snowball.needsSync = true;
                 snowball.setDeltaMovement(Vec3.ZERO);
             }
-            VISUALIZERS.put(snowball.getUUID(), snowball);
-        } else snowball.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD);
+            publish(snowball, generation);
+        } else {
+            remove(snowball);
+            snowball.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD);
+        }
         return true;
     }
 
     public static void clear() {
-        GENERATION.incrementAndGet();
-        var entities = List.copyOf(VISUALIZERS.values());
-        VISUALIZERS.clear();
-        for (Entity entity : entities)
-            entity.getBukkitEntity().taskScheduler.schedule(owner -> {
-                if (!owner.isRemoved()) owner.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD);
-            }, null, 1L);
+        long generation = GENERATION.incrementAndGet();
+        for (Marker marker : List.copyOf(VISUALIZERS.values())) {
+            if (marker.generation >= generation || !VISUALIZERS.remove(marker.entity.getUUID(), marker)) continue;
+            discard(marker);
+        }
+    }
+
+    /** Initiate before the server's native drain, while owner schedulers are still running. */
+    public static void clearAtShutdown(MinecraftServer server) {
+        if (CLOSING_SERVERS.put(server, Boolean.TRUE) != null) return;
+        for (Marker marker : List.copyOf(VISUALIZERS.values())) {
+            if (marker.server == server && VISUALIZERS.remove(marker.entity.getUUID(), marker)) discard(marker);
+        }
     }
 
     public static void reset() {
@@ -84,7 +100,13 @@ public final class TisProjectileVisualizer {
         CONSTRUCTING.remove();
     }
 
+    /** Removal metadata only; never inspect or write a foreign marker's live state. */
+    public static void removed(Entity entity) {
+        if (!VISUALIZERS.isEmpty()) remove(entity);
+    }
+
     public static void visualize(ServerLevel world, List<Vec3> positions, Vec3 hit) {
+        if (closing(world.getServer())) return;
         long generation = GENERATION.get();
         Map<Long, List<NamedPosition>> chunks = new java.util.LinkedHashMap<>();
         for (int i = 0; i < positions.size(); ++i) {
@@ -98,22 +120,91 @@ public final class TisProjectileVisualizer {
             var chunk = net.minecraft.world.level.ChunkPos.unpack(entry.getKey());
             List<NamedPosition> points = List.copyOf(entry.getValue());
             io.papermc.paper.threadedregions.RegionizedServer.getInstance().taskQueue.queueChunkTask(world, chunk.x(), chunk.z(), () -> {
-                if (GENERATION.get() != generation) return;
+                if (GENERATION.get() != generation || closing(world.getServer())) return;
                 world.getChunk(chunk.x(), chunk.z());
                 for (var point : points) {
                     if (GENERATION.get() != generation) break;
                     Snowball marker = new Snowball(world, point.position.x, point.position.y, point.position.z, new ItemStack(Items.SNOWBALL));
+                    marker.persist = false;
                     marker.setNoGravity(true);
                     marker.setCustomName(Component.literal(point.name));
                     marker.setCustomNameVisible(true);
                     marker.addTag(TAG);
-                    if (world.addFreshEntity(marker)) VISUALIZERS.put(marker.getUUID(), marker);
+                    MARKER_GENERATIONS.put(marker, generation);
+                    if (world.addFreshEntity(marker)) publish(marker, generation);
                 }
             });
         }
     }
 
     private record NamedPosition(Vec3 position, String name) {
+    }
+
+    private static final class Marker {
+        final Entity entity;
+        final long generation;
+        final MinecraftServer server;
+
+        Marker(Entity entity, long generation, MinecraftServer server) {
+            this.entity = entity;
+            this.generation = generation;
+            this.server = server;
+        }
+    }
+
+    private static void remove(Entity entity) {
+        VISUALIZERS.computeIfPresent(entity.getUUID(), (id, marker) -> marker.entity == entity ? null : marker);
+    }
+
+    /** Called by the marker's owner, including after the add-entity callback returns. */
+    private static void publish(Entity entity, long generation) {
+        MinecraftServer server = server(entity);
+        if (generation != GENERATION.get() || closing(server)) {
+            remove(entity);
+            entity.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD);
+            return;
+        }
+        Marker marker = new Marker(entity, generation, server);
+        VISUALIZERS.put(entity.getUUID(), marker);
+        // Clear may have run after the preflight check, while an add/tick callback
+        // was still executing. Its old marker must neither survive nor rejoin.
+        if (generation != GENERATION.get() || closing(server)) {
+            VISUALIZERS.remove(entity.getUUID(), marker);
+            entity.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD);
+        }
+    }
+
+    private static MinecraftServer server(Entity entity) {
+        return entity.level() instanceof ServerLevel world ? world.getServer() : null;
+    }
+
+    private static boolean closing(MinecraftServer server) {
+        return server != null && (CLOSING_SERVERS.get(server) != null || carpet.script.external.ScarpetNativeWork.isDraining(server));
+    }
+
+    private static void discard(Marker marker) {
+        var actual = new CompletableFuture<Void>();
+        carpet.script.external.ScarpetNativeWork.record(actual);
+        if (marker.server != null) carpet.script.external.ScarpetNativeWork.trackNative(marker.server, actual);
+        try {
+            var captured = carpet.script.external.ScarpetRuntime.captureNativeContinuation(() ->
+                    carpet.script.external.ScarpetNativeWork.<Void>observeNative(marker.entity, () -> {
+                        if (!marker.entity.isRemoved()) marker.entity.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD);
+                        return null;
+                    }));
+            boolean scheduled = marker.entity.getBukkitEntity().taskScheduler.schedule(owner -> {
+                try {
+                    if (owner != marker.entity) throw new IllegalStateException("Projectile marker owner changed");
+                    var observed = captured.get();
+                    carpet.script.external.ScarpetNativeWork.aliasDependency(actual, observed);
+                    observed.whenComplete((ignored, failure) -> {
+                        if (failure == null) actual.complete(null);
+                        else actual.completeExceptionally(failure);
+                    });
+                } catch (Throwable failure) { actual.completeExceptionally(failure); }
+            }, retired -> actual.complete(null), 1L);
+            if (!scheduled) actual.complete(null);
+        } catch (Throwable failure) { actual.completeExceptionally(failure); }
     }
 
     public record Hit(Vec3 position, String kind, String target) {

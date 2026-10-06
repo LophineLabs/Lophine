@@ -19,7 +19,7 @@ import java.util.function.Supplier;
  * Physical block drops retain their original world and their real stack until the final add result.
  */
 public final class OrgBlockDropRouting {
-    private static final Map<Entity, CompletableFuture<Boolean>> ADDS = Collections.synchronizedMap(new WeakHashMap<>());
+    private static final carpet.script.external.WeakIdentityMap<Entity, CompletableFuture<Boolean>> ADDS = new carpet.script.external.WeakIdentityMap<>();
 
     private OrgBlockDropRouting() {
     }

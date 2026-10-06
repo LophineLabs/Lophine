@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 /**
@@ -30,31 +31,38 @@ public final class CarpetResourceReloadCoordinator {
     }
 
     static final class Gate {
-        private int readers;
+        private final AtomicInteger readers = new AtomicInteger();
         private volatile boolean paused;
-        private CompletableFuture<Void> acknowledgement;
+        private volatile CompletableFuture<Void> acknowledgement;
 
-        synchronized boolean enter() {
+        boolean enter() {
             if (paused) return false;
-            readers++;
+            readers.incrementAndGet();
+            // A pause that raced the first check must count this entrant until it
+            // withdraws, without allowing resource use after the safe point.
+            if (paused) {
+                exit();
+                return false;
+            }
             return true;
         }
 
         void exit() {
-            CompletableFuture<Void> ready;
-            synchronized (this) {
-                if (--readers < 0) throw new IllegalStateException("Unbalanced resource reload region gate");
-                ready = paused && readers == 0 ? acknowledgement : null;
-            }
+            int remaining = readers.decrementAndGet();
+            if (remaining < 0) throw new IllegalStateException("Unbalanced resource reload region gate");
+            // Capture the barrier generation before checking the live count. A new
+            // reader can enter between decrement and pause, or a cancelled pause
+            // can already have been replaced by the next generation.
+            CompletableFuture<Void> ready = acknowledgement;
             // Only schedules global continuation; never performs the resource apply on this owner.
-            if (ready != null) ready.complete(null);
+            if (remaining == 0 && ready != null && paused && readers.get() == 0) ready.complete(null);
         }
 
         synchronized CompletableFuture<Void> pause() {
             if (paused) throw new IllegalStateException("Resource reload gate already paused");
-            paused = true;
             acknowledgement = new CompletableFuture<>();
-            if (readers == 0) acknowledgement.complete(null);
+            paused = true;
+            if (readers.get() == 0) acknowledgement.complete(null);
             return acknowledgement;
         }
 
@@ -205,6 +213,9 @@ public final class CarpetResourceReloadCoordinator {
         CompletableFuture<T> result = track();
         if (result.isDone()) return result;
         Barrier<T> request = new Barrier<>(server, action, retain, result);
+        result.whenComplete((value, failure) -> {
+            if (result.isCancelled()) GLOBAL.execute(() -> abandon(request));
+        });
         GLOBAL.execute(() -> {
             CompletableFuture<Void> ready;
             synchronized (LIFECYCLE) {
@@ -217,7 +228,7 @@ public final class CarpetResourceReloadCoordinator {
                 ready = GATE.pause();
             }
             ready.thenRunAsync(() -> apply(request), GLOBAL);
-            CompletableFuture.delayedExecutor(60, TimeUnit.SECONDS).execute(() -> GLOBAL.execute(() -> {
+            CompletableFuture<Void> timeout = CompletableFuture.runAsync(() -> GLOBAL.execute(() -> {
                 synchronized (LIFECYCLE) {
                     if (barrier == request && !request.started) {
                         barrier = null;
@@ -229,16 +240,25 @@ public final class CarpetResourceReloadCoordinator {
                         }
                     }
                 }
-            }));
+            }), CompletableFuture.delayedExecutor(60, TimeUnit.SECONDS));
+            result.whenComplete((value, failure) -> timeout.cancel(false));
         });
         return result;
     }
 
     private static <T> void apply(Barrier<T> request) {
+        boolean abandoned;
         synchronized (LIFECYCLE) {
-            if (barrier != request || request.result.isDone() || closed) return;
-            request.started = true;
-            if (request.retain != null) PREPARED.remove(request.retain);
+            if (barrier != request || closed) return;
+            abandoned = request.result.isDone();
+            if (!abandoned) {
+                request.started = true;
+                if (request.retain != null) PREPARED.remove(request.retain);
+            }
+        }
+        if (abandoned) {
+            abandon(request);
+            return;
         }
         T value = null;
         Throwable failure = null;
@@ -262,6 +282,17 @@ public final class CarpetResourceReloadCoordinator {
         }
         if (failure == null) request.result.complete(value);
         else request.result.completeExceptionally(failure);
+    }
+
+    private static void abandon(Barrier<?> request) {
+        synchronized (LIFECYCLE) {
+            // Cancellation of a view cannot release the gate beneath an apply that
+            // already started. Its native action retains the original finally tail.
+            if (barrier != request || request.started) return;
+            barrier = null;
+            GATE.resume();
+        }
+        if (!closed) notifyRegions(request.server);
     }
 
     private static void notifyRegions(MinecraftServer server) {

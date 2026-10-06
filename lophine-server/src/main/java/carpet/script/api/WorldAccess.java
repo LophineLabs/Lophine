@@ -633,27 +633,23 @@ public class WorldAccess {
             }
             BlockState finalSourceBlockState = sourceBlockState;
             BlockPos targetPos = targetLocator.block.getPos();
-            Boolean[] result = new Boolean[]{true};
-            cc.server().executeBlocking(() ->
-            {
-                boolean success = world.setBlock(targetPos, finalSourceBlockState, Block.UPDATE_CLIENTS | Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS);
-                if (finalData != null) {
-                    BlockEntity be = world.getBlockEntity(targetPos);
-                    if (be != null) {
-                        CompoundTag destTag = finalData.copy();
-                        destTag.putInt("x", targetPos.getX());
-                        destTag.putInt("y", targetPos.getY());
-                        destTag.putInt("z", targetPos.getZ());
-                        try (final ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(be.problemPath(), CarpetScriptServer.LOG)) {
-                            be.loadWithComponents(TagValueInput.create(reporter, world.registryAccess(), destTag));
-                        }
-                        be.setChanged();
-                        success = true;
+            // ActorFunctions.setBlock already runs this body on the destination's Folia owner.
+            boolean success = world.setBlock(targetPos, finalSourceBlockState, Block.UPDATE_CLIENTS | Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS);
+            if (finalData != null) {
+                BlockEntity be = world.getBlockEntity(targetPos);
+                if (be != null) {
+                    CompoundTag destTag = finalData.copy();
+                    destTag.putInt("x", targetPos.getX());
+                    destTag.putInt("y", targetPos.getY());
+                    destTag.putInt("z", targetPos.getZ());
+                    try (final ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(be.problemPath(), CarpetScriptServer.LOG)) {
+                        be.loadWithComponents(TagValueInput.create(reporter, world.registryAccess(), destTag));
                     }
+                    be.setChanged();
+                    success = true;
                 }
-                result[0] = success;
-            });
-            return !result[0] ? Value.FALSE : new BlockValue(finalSourceBlockState, world, targetLocator.block.getPos());
+            }
+            return !success ? Value.FALSE : new BlockValue(finalSourceBlockState, world, targetLocator.block.getPos());
         }));
 
         expression.addContextFunction("destroy", -1, ActorFunctions.block(0, true, (c, t, lv) ->
@@ -959,7 +955,7 @@ public class WorldAccess {
             CarpetContext cc = (CarpetContext) c;
             BlockPos pos = BlockArgument.findIn(cc, lv, 0).block.getPos();
             ServerLevel world = cc.level();
-            cc.server().executeBlocking(() -> WorldTools.forceChunkUpdate(pos, world));
+            WorldTools.forceChunkUpdate(pos, world);
             return Value.TRUE;
         }));
 

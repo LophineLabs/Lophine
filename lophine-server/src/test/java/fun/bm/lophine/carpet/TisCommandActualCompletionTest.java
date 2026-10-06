@@ -27,14 +27,18 @@ public class TisCommandActualCompletionTest {
  private final ServerPlayer player=mock(ServerPlayer.class);
  private final CommandSourceStack source=mock(CommandSourceStack.class);
  private final CommandResultCallback callback=mock(CommandResultCallback.class);
+ private io.netty.channel.embedded.EmbeddedChannel channel;
  @BeforeEach void setup() throws Exception {
   when(world.getServer()).thenReturn(server);when(player.level()).thenReturn(world);when(player.blockPosition()).thenReturn(BlockPos.ZERO);
   when(player.chunkPosition()).thenReturn(new ChunkPos(0,0));when(player.getUUID()).thenReturn(UUID.randomUUID());
   player.connection=mock(ServerGamePacketListenerImpl.class);
+  var connection=mock(net.minecraft.network.Connection.class);channel=new io.netty.channel.embedded.EmbeddedChannel();connection.channel=channel;when(connection.isConnected()).thenReturn(true);
+  Field network=ServerCommonPacketListenerImpl.class.getDeclaredField("connection");network.setAccessible(true);network.set(player.connection,connection);when(player.carpetSpawnServer()).thenReturn(server);
   when(source.getServer()).thenReturn(server);when(source.getLevel()).thenReturn(world);when(source.getEntity()).thenReturn(player);
   when(source.getPlayerOrException()).thenReturn(player);when(source.callback()).thenReturn(callback);
   when(source.getPosition()).thenReturn(net.minecraft.world.phys.Vec3.ZERO);
  }
+ @AfterEach void closeChannel(){channel.finishAndReleaseAll();}
  private org.mockito.MockedStatic<TickThread> owner(){var ticks=mockStatic(TickThread.class);ticks.when(()->TickThread.isTickThreadFor(any(Entity.class))).thenReturn(true);ticks.when(()->TickThread.isTickThreadFor(eq(world),any(BlockPos.class))).thenReturn(true);ticks.when(TickThread::isTickThread).thenReturn(true);return ticks;}
  private static Object invoke(Class<?> type,String name,Class<?>[] signature,Object...args)throws Exception{Method m=type.getDeclaredMethod(name,signature);m.setAccessible(true);try{return m.invoke(null,args);}catch(InvocationTargetException failure){throw (Exception)failure.getCause();}}
  @Test void realCommandResultWaitsActionAndOwnerCallbackChildren() throws Exception {
@@ -110,6 +114,14 @@ public class TisCommandActualCompletionTest {
    var network=mock(io.netty.channel.ChannelFuture.class);when(network.cause()).thenReturn(new IllegalStateException("real network failure"));receipt.get().operationComplete(network);assertFalse(ScarpetNativeWork.onlyGuestFailure(assertThrows(CompletionException.class,actual::join)));
   }
  }
+ @Test void closingAConnectionThatDropsItsWriteCallbackCompletesTheActualRefreshReport() throws Exception {
+  try(var ticks=owner()){
+   @SuppressWarnings("unchecked") var actual=(CompletableFuture<Integer>)invoke(TisRefreshCommand.class,"report",new Class[]{ServerPlayer.class,int.class},player,6);
+   assertFalse(actual.isDone());channel.close();
+   assertInstanceOf(java.nio.channels.ClosedChannelException.class,assertThrows(CompletionException.class,actual::join).getCause());
+   assertTrue(ScarpetNativeWork.whenIdle(server).isDone());
+  }
+ }
  @Test void refreshRangeUsesActualWatchedSectionInsteadOfCurrentChunk() throws Exception {
   var loader=mock(ca.spottedleaf.moonrise.patches.chunk_system.player.RegionizedPlayerChunkLoader.PlayerChunkLoaderData.class);when(player.moonrise$getChunkLoader()).thenReturn(loader);
   when(loader.getSentChunksRaw()).thenReturn(new it.unimi.dsi.fastutil.longs.LongOpenHashSet(new long[]{ChunkPos.pack(0,0),ChunkPos.pack(10,0)}));
@@ -159,8 +171,12 @@ public class TisCommandActualCompletionTest {
   when(loader.getSentChunksRaw()).thenReturn(new it.unimi.dsi.fastutil.longs.LongOpenHashSet(new long[]{ChunkPos.pack(0,0)}));
   Field controller=Level.class.getField("chunkPacketBlockController");controller.setAccessible(true);controller.set(world,io.papermc.paper.antixray.ChunkPacketBlockController.NO_OPERATION_INSTANCE);
   when(world.getChunkIfLoaded(0,0)).thenReturn(mock(net.minecraft.world.level.chunk.LevelChunk.class));var packetChild=new CompletableFuture<Void>();var receipt=new AtomicReference<io.netty.channel.ChannelFutureListener>();
-  doAnswer(call->{ScarpetNativeWork.record(packetChild);return null;}).when(player.connection).send(any(net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket.class));
-  doAnswer(call->{receipt.set(call.getArgument(1));return null;}).when(player.connection).send(any(net.minecraft.network.protocol.Packet.class),any(io.netty.channel.ChannelFutureListener.class));
+  doAnswer(call->{
+   io.netty.channel.ChannelFutureListener listener=call.getArgument(1);
+   if(call.getArgument(0) instanceof net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket){ScarpetNativeWork.record(packetChild);listener.operationComplete(channel.newSucceededFuture());}
+   else receipt.set(listener);
+   return null;
+  }).when(player.connection).send(any(net.minecraft.network.protocol.Packet.class),any(io.netty.channel.ChannelFutureListener.class));
   Class<?> selection=Class.forName("fun.bm.lophine.carpet.TisRefreshCommand$Selection");var ctor=selection.getDeclaredConstructor(boolean.class,ChunkPos.class,Integer.class);ctor.setAccessible(true);
   try(var ticks=owner();var lease=mockStatic(CarpetRegionLease.class);var event=mockStatic(io.papermc.paper.event.packet.PlayerChunkLoadEvent.class);
       var packet=mockConstruction(net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket.class);var scope=CarpetAsyncCommandResults.open()){

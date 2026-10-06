@@ -1379,8 +1379,10 @@ public final class OrgItemShadowGroups {
 
     public static List<ItemStack> inventory(net.minecraft.world.entity.player.Player player, Iterable<net.minecraft.world.inventory.Slot> slots) {
         List<ItemStack> stacks = new ArrayList<>();
-        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++)
-            stacks.add(player.getInventory().getItem(slot));
+        var inventory = player.getInventory();
+        int inventorySize = inventory.getContainerSize();
+        for (int slot = 0; slot < inventorySize; slot++)
+            stacks.add(inventory.getItem(slot));
         for (var slot : slots) stacks.add(slot.getItem());
         stacks.add(player.containerMenu.getCarried());
         return stacks;

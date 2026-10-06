@@ -69,12 +69,10 @@ public final class AmsWelcomeMessage {
     }
 
     private static CompletableFuture<Void> sendNext(ServerPlayer player, java.util.Iterator<String> lines) {
-        if (!lines.hasNext()) return CompletableFuture.completedFuture(null);
-        String line = lines.next();
-        return AmsNativeCommandEffects.then(AmsNativeCommandEffects.owned(player, () -> {
+        return AmsNativeCommandEffects.sequence(player.carpetSpawnServer(), lines, line -> AmsNativeCommandEffects.owned(player, () -> {
             player.sendSystemMessage(Component.literal(line));
             return (Void) null;
-        }), ignored -> sendNext(player, lines));
+        }));
     }
 
     private static List<String> load(final Admission admission) {

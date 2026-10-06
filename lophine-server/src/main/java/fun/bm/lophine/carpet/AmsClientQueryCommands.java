@@ -20,17 +20,40 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class AmsClientQueryCommands {
-    private static final Map<CommandSourceStack, PingJob> PINGS = new ConcurrentHashMap<>();
+    private static final Object PING_LIFECYCLE = new Object();
+    private static final Map<PingOwner, PingJob> PINGS = new ConcurrentHashMap<>();
+    private static final carpet.script.external.WeakIdentityMap<net.minecraft.server.MinecraftServer, Boolean> STOPPED_SERVERS = new carpet.script.external.WeakIdentityMap<>();
+
+    private record PingOwner(net.minecraft.server.MinecraftServer server, java.util.UUID player, Object output) {
+        static PingOwner of(CommandSourceStack source) {
+            var entity = source.getEntity();
+            return new PingOwner(source.getServer(), entity == null ? null : entity.getUUID(), entity == null ? source.source : null);
+        }
+
+        @Override public boolean equals(Object other) {
+            return other instanceof PingOwner owner && server == owner.server && java.util.Objects.equals(player, owner.player) && output == owner.output;
+        }
+
+        @Override public int hashCode() {
+            return 31 * (31 * System.identityHashCode(server) + java.util.Objects.hashCode(player)) + System.identityHashCode(output);
+        }
+    }
 
     private static final class PingJob {
         volatile boolean stopped;
         Thread worker;
+        volatile java.util.concurrent.CompletableFuture<Void> reply = java.util.concurrent.CompletableFuture.completedFuture(null);
         final java.util.concurrent.CompletableFuture<Void> actual = new java.util.concurrent.CompletableFuture<>() {
             @Override
             public boolean cancel(boolean interrupt) {
                 return false;
             }
         };
+
+        synchronized void stop() {
+            stopped = true;
+            if (worker != null) worker.interrupt();
+        }
     }
 
     private AmsClientQueryCommands() {
@@ -113,32 +136,31 @@ public final class AmsClientQueryCommands {
     }
 
     private static java.util.concurrent.CompletableFuture<Void> requestHandshakesAsync(CommandSourceStack source, java.util.Iterator<ServerPlayer> players) {
-        if (!players.hasNext()) return java.util.concurrent.CompletableFuture.completedFuture(null);
-        ServerPlayer target = players.next();
-        return AmsNativeCommandEffects.then(AmsNativeCommandEffects.owned(target, () -> {
+        return AmsNativeCommandEffects.sequence(source.getServer(), players, target -> AmsNativeCommandEffects.then(AmsNativeCommandEffects.owned(target, () -> {
             AmsNetworkProtocol.requestHandshake(target);
             return target.getGameProfile().name();
         }), name ->
-                AmsNativeCommandEffects.then(AmsNativeCommandEffects.source(source, () -> {
+                AmsNativeCommandEffects.source(source, () -> {
                     AmsNetworkProtocol.send(source, AmsTranslations.message(source, "command.amsp.request_handshake_feedback", name).withStyle(ChatFormatting.GREEN));
                     return (Void) null;
-                }), ignored -> requestHandshakesAsync(source, players)));
+                })));
     }
 
     private static int ping(CommandSourceStack source, String target, int quantity) {
-        PingJob previous = PINGS.get(source);
-        if (previous != null) previous.stopped = true;
+        PingOwner owner = PingOwner.of(source);
         PingJob job = new PingJob();
         carpet.script.external.ScarpetNativeWork.record(job.actual);
         carpet.script.external.ScarpetNativeWork.trackNative(source.getServer(), job.actual);
         job.worker = Thread.ofVirtual().name("AMS pings").unstarted(() -> {
             Throwable problem = null;
             try {
+                if (job.stopped) return;
                 int success = 0, lost = 0;
                 long total = 0;
                 for (int i = 0; i < quantity; ++i) {
                     if (job.stopped) return;
-                    long delay = pingAttempt(source, target, i == 0);
+                    long delay = pingAttempt(job, source, target, i == 0);
+                    if (job.stopped) return;
                     // Preserve pinned AMS's returned-zero timeout/error accounting.
                     if (delay >= 0) {
                         ++success;
@@ -146,40 +168,65 @@ public final class AmsClientQueryCommands {
                     } else ++lost;
                     Thread.sleep(1000L);
                 }
-                AmsNetworkProtocol.sendAsync(source, Component.literal("<commandPacketInternetGroper> Sent = " + quantity + ", Received = " + success + ", Lost = " + lost + ", Average delay = " + (success > 0 ? total / success : 0) + "ms").withStyle(ChatFormatting.GREEN)).join();
+                if (!job.stopped) pingReply(job, source, Component.literal("<commandPacketInternetGroper> Sent = " + quantity + ", Received = " + success + ", Lost = " + lost + ", Average delay = " + (success > 0 ? total / success : 0) + "ms").withStyle(ChatFormatting.GREEN));
             } catch (InterruptedException stopped) {
                 Thread.currentThread().interrupt();
             } catch (Throwable failure) {
                 problem = failure;
             } finally {
-                PINGS.remove(source, job);
-                if (problem == null) job.actual.complete(null);
-                else job.actual.completeExceptionally(problem);
+                PINGS.remove(owner, job);
+                Throwable workerFailure = problem;
+                // Interrupting the worker does not erase an already accepted source reply.
+                job.reply.whenComplete((ignored, failure) -> {
+                    Throwable actualFailure = workerFailure == null ? failure : workerFailure;
+                    if (actualFailure == null) job.actual.complete(null);
+                    else job.actual.completeExceptionally(actualFailure);
+                });
             }
         });
-        PINGS.put(source, job);
-        try {
-            job.worker.start();
-        } catch (Throwable failure) {
-            PINGS.remove(source, job);
-            job.actual.completeExceptionally(failure);
+        synchronized (PING_LIFECYCLE) {
+            if (STOPPED_SERVERS.get(source.getServer()) != null || carpet.script.external.ScarpetNativeWork.isDraining(source.getServer())) {
+                job.actual.completeExceptionally(new IllegalStateException("AMS ping server is stopping"));
+                return 1;
+            }
+            PingJob previous = PINGS.put(owner, job);
+            if (previous != null) previous.stop();
+            try {
+                job.worker.start();
+            } catch (Throwable failure) {
+                PINGS.remove(owner, job);
+                job.actual.completeExceptionally(failure);
+            }
         }
         return 1;
     }
 
-    private static long pingAttempt(CommandSourceStack source, String target, boolean first) {
+    private static void pingReply(PingJob job, CommandSourceStack source, Component message) throws InterruptedException, java.util.concurrent.ExecutionException {
+        java.util.concurrent.CompletableFuture<Void> actual;
+        synchronized (job) {
+            if (job.stopped) return;
+            actual = AmsNetworkProtocol.sendAsync(source, message);
+            job.reply = actual;
+        }
+        actual.get();
+    }
+
+    private static long pingAttempt(PingJob job, CommandSourceStack source, String target, boolean first) throws InterruptedException, java.util.concurrent.ExecutionException {
         try {
             InetAddress address = InetAddress.getByName(target);
+            if (job.stopped) return 0;
             if (first)
-                AmsNetworkProtocol.sendAsync(source, Component.literal("<commandPacketInternetGroper> Ping " + target + " [ " + address.getHostAddress() + " ] ...").withStyle(ChatFormatting.AQUA)).join();
+                pingReply(job, source, Component.literal("<commandPacketInternetGroper> Ping " + target + " [ " + address.getHostAddress() + " ] ...").withStyle(ChatFormatting.AQUA));
+            if (job.stopped) return 0;
             long start = System.currentTimeMillis();
             boolean reachable = address.isReachable(5000);
             long delay = System.currentTimeMillis() - start;
+            if (job.stopped) return 0;
             if (reachable) {
-                AmsNetworkProtocol.sendAsync(source, Component.literal("<commandPacketInternetGroper> Replay from [ " + address.getHostAddress() + " ] Time = " + delay + "ms").withStyle(ChatFormatting.GREEN)).join();
+                pingReply(job, source, Component.literal("<commandPacketInternetGroper> Replay from [ " + address.getHostAddress() + " ] Time = " + delay + "ms").withStyle(ChatFormatting.GREEN));
                 return delay;
             }
-            AmsNetworkProtocol.sendAsync(source, Component.literal("<commandPacketInternetGroper> Request time out.").withStyle(ChatFormatting.RED)).join();
+            pingReply(job, source, Component.literal("<commandPacketInternetGroper> Request time out.").withStyle(ChatFormatting.RED));
             return 0;
         } catch (java.io.IOException failure) {
             org.slf4j.LoggerFactory.getLogger("AMS-pings").error("[commandPacketInternetGroper] An error occurred while performing ping operation", failure);
@@ -188,19 +235,23 @@ public final class AmsClientQueryCommands {
     }
 
     private static int stop(CommandSourceStack source) {
-        PingJob job = PINGS.get(source);
+        PingJob job = PINGS.get(PingOwner.of(source));
         if (job == null) return tell(source, "command.ping.active_ping_is_null");
-        job.stopped = true;
+        job.stop();
         carpet.script.external.ScarpetNativeWork.record(job.actual);
         return tell(source, "command.ping.stop_ping");
     }
 
     public static void stopAtShutdown() {
-        PINGS.values().forEach(job -> {
-            job.stopped = true;
-            if (job.worker != null) job.worker.interrupt();
-        });
-        PINGS.clear();
+        synchronized (PING_LIFECYCLE) {
+            var server = net.minecraft.server.MinecraftServer.getServer();
+            if (server != null) STOPPED_SERVERS.put(server, Boolean.TRUE);
+            PINGS.forEach((owner, job) -> {
+                STOPPED_SERVERS.put(owner.server(), Boolean.TRUE);
+                job.stop();
+            });
+            PINGS.clear();
+        }
         AmsNetworkProtocol.denyAll();
     }
 }

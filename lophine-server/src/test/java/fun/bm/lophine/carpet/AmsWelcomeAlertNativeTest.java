@@ -7,6 +7,14 @@ import org.junit.jupiter.api.*;import org.junit.jupiter.api.io.TempDir;import st
 public class AmsWelcomeAlertNativeTest {
  @BeforeAll static void boot()throws Exception{AmsNativeManagementTest.bootstrap();}
  @TempDir Path directory;
+ @Test void longConfiguredWelcomeKeepsItsOwnerStackBoundedAndSendsEveryLineInOrder()throws Exception{
+  var lines=new com.google.gson.JsonArray();for(int line=0;line<1_000;line++)lines.add("line "+line);var json=new com.google.gson.JsonObject();json.add("welcomeMessage",lines);file(json.toString());
+  try(var f=new AmsNativeManagementTest.Fixture(directory)){
+   translations(f);GeneralCompatConfig.welcomeMessage=true;var sent=new java.util.concurrent.atomic.AtomicInteger();
+   doAnswer(call->{assertSame(f.sourcePlayer,f.current);assertEquals("line "+sent.getAndIncrement(),((Component)call.getArgument(0)).getString());return null;}).when(f.sourcePlayer).sendSystemMessage(any(Component.class));
+   var actual=AmsWelcomeMessage.sendAsync(f.sourcePlayer);waitFor(f,actual::isDone);actual.join();assertEquals(1_000,sent.get());ScarpetNativeWork.whenIdle(f.server).join();
+  }
+ }
  private String previousLanguage;
  @BeforeEach void preserveLanguage(){previousLanguage=GeneralCompatConfig.language;}
  @AfterEach void reset(){GeneralCompatConfig.welcomeMessage=false;GeneralCompatConfig.sendPlayerDeathLocation="false";GeneralCompatConfig.phantomSpawnAlert=false;GeneralCompatConfig.language=previousLanguage;}

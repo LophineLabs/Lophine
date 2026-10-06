@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public final class CarpetPlayerBirths {
     private static final Map<MinecraftServer, Table> TABLES = Collections.synchronizedMap(new WeakHashMap<>());
-    private static final Map<net.minecraft.server.level.ServerPlayer, Set<CompletableFuture<?>>> PLAYERS = Collections.synchronizedMap(new WeakHashMap<>());
+    private static final carpet.script.external.WeakIdentityMap<net.minecraft.server.level.ServerPlayer, Set<CompletableFuture<?>>> PLAYERS = new carpet.script.external.WeakIdentityMap<>();
 
     private CarpetPlayerBirths() {
     }

@@ -118,12 +118,10 @@ public final class AmsBlockChunkLoaders {
 
     private static java.util.concurrent.CompletableFuture<Void> addTileNext(final ServerLevel level, final BlockPos pos, final TicketType<?> type,
                                                                             final int radius, final java.util.Iterator<ChunkPos> tiles) {
-        if (!tiles.hasNext()) return java.util.concurrent.CompletableFuture.completedFuture(null);
-        final ChunkPos center = tiles.next();
-        return AmsNativeCommandEffects.then(AmsNativeCommandEffects.world(level, pos, () -> {
+        return AmsNativeCommandEffects.sequence(level.getServer(), tiles, center -> AmsNativeCommandEffects.world(level, pos, () -> {
             level.getChunkSource().addTicketWithRadius(type, center, radius);
             return (Void) null;
-        }), ignored -> addTileNext(level, pos, type, radius, tiles));
+        }));
     }
 
     static int[] tileOffsets(final int radius, final int tileRadius) {

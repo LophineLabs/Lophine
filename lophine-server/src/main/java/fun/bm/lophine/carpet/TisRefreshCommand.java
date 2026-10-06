@@ -161,7 +161,7 @@ public final class TisRefreshCommand {
                                         return 0;
                                     if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(view.world(), pos.x(), pos.z()))
                                         return -1;
-                                    player.connection.send(prepared.packet());
+                                    AmsNativeCommandEffects.packet(player, prepared.packet());
                                     if (io.papermc.paper.event.packet.PlayerChunkLoadEvent.getHandlerList().getRegisteredListeners().length > 0)
                                         new io.papermc.paper.event.packet.PlayerChunkLoadEvent(new org.bukkit.craftbukkit.CraftChunk(prepared.chunk()),
                                                 player.getBukkitEntity()).callEvent();
@@ -174,13 +174,8 @@ public final class TisRefreshCommand {
     private static CompletableFuture<Integer> report(ServerPlayer player, int count) {
         return TisCommandContinuations.owned(player, () -> {
             if (player.hasDisconnected() || player.isRemoved()) return count;
-            var sent = new CompletableFuture<Void>();
-            carpet.script.external.ScarpetNativeWork.record(sent);
             Component message = TisTranslations.translate(TisTranslations.text("command.refresh.chunk.done", count), player);
-            player.connection.send(new ClientboundSystemChatPacket(message, false), receipt -> {
-                if (receipt.isSuccess()) sent.complete(null);
-                else sent.completeExceptionally(receipt.cause());
-            });
+            AmsNativeCommandEffects.packet(player, new ClientboundSystemChatPacket(message, false));
             return count;
         });
     }

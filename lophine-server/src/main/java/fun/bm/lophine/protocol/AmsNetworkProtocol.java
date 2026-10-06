@@ -29,6 +29,7 @@ public final class AmsNetworkProtocol implements LeavesProtocol {
     public static final String IMPLEMENTATION = "Carpet AMS Addition";
     private static final Set<String> PACKETS = Set.of("unknown", "handshake_c2s", "handshake_s2c", "request_client_mod_version_s2c", "request_client_mod_version_c2s", "request_handshake_s2c", "sync_custom_block_hardness", "client_player_fps_c2s", "client_player_fps_s2c", "update_player_pose_s2c", "lazy_settings_s2c");
     private static final Set<String> NETWORK_RULES = Set.of("commandAmspDebug", "commandCustomBlockHardness", "commandGetClientPlayerFps", "commandSetPlayerPose");
+    private static final Object CLIENT_LIFECYCLE = new Object();
     private static final Map<UUID, Client> CLIENTS = new ConcurrentHashMap<>();
     private static final Map<UUID, CommandSourceStack> FPS = new ConcurrentHashMap<>();
     private static final Map<UUID, String> CLIENT_VERSIONS = new ConcurrentHashMap<>();
@@ -84,12 +85,19 @@ public final class AmsNetworkProtocol implements LeavesProtocol {
     }
 
     public static void deny(UUID player) {
-        CLIENTS.remove(player);
-
+        synchronized (CLIENT_LIFECYCLE) {
+            CLIENTS.remove(player);
+            FPS.remove(player);
+            CLIENT_VERSIONS.remove(player);
+        }
     }
 
     public static void denyAll() {
-        List.copyOf(CLIENTS.keySet()).forEach(AmsNetworkProtocol::deny);
+        synchronized (CLIENT_LIFECYCLE) {
+            CLIENTS.clear();
+            FPS.clear();
+            CLIENT_VERSIONS.clear();
+        }
     }
 
     public static void validateNetworkRule(String name, Object value) {
@@ -136,7 +144,10 @@ public final class AmsNetworkProtocol implements LeavesProtocol {
                 if (handshake == null) return true;
                 var actual = fun.bm.lophine.carpet.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(connectionPlayer, () -> {
                     if (!GeneralCompatConfig.amsNetworkProtocol) return false;
-                    CLIENTS.put(connectionPlayer.getUUID(), new Client(connectionPlayer.getGameProfile().name(), handshake.version(), handshake.packets()));
+                    Client client = new Client(connectionPlayer.getGameProfile().name(), handshake.version(), handshake.packets());
+                    synchronized (CLIENT_LIFECYCLE) {
+                        CLIENTS.put(connectionPlayer.getUUID(), client);
+                    }
                     return true;
                 }), accepted -> accepted ? fun.bm.lophine.carpet.AmsNativeCommandEffects.then(handshake(connectionPlayer), ignored ->
                         fun.bm.lophine.carpet.AmsNativeCommandEffects.then(syncHardness(connectionPlayer), unused ->
@@ -146,10 +157,15 @@ public final class AmsNetworkProtocol implements LeavesProtocol {
             case "client_player_fps_c2s" -> {
                 UUID claimed = buffer.readUUID();
                 int fps = buffer.readInt();
-                if (!claimed.equals(connectionPlayer.getUUID()) || fps < 0 || !CLIENTS.containsKey(claimed))
+                Client admitted = CLIENTS.get(claimed);
+                if (!claimed.equals(connectionPlayer.getUUID()) || fps < 0 || admitted == null)
                     return true;
                 var actual = fun.bm.lophine.carpet.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(connectionPlayer, () -> {
-                    var source = FPS.remove(claimed);
+                    CommandSourceStack source;
+                    synchronized (CLIENT_LIFECYCLE) {
+                        if (CLIENTS.get(claimed) != admitted) return null;
+                        source = FPS.remove(claimed);
+                    }
                     return source == null || connectionPlayer instanceof org.leavesmc.leaves.bot.ServerBot ? null : new FpsReply(source, connectionPlayer.getGameProfile().name(), fps);
                 }), reply -> reply == null ? java.util.concurrent.CompletableFuture.completedFuture(null) : feedback(reply.source(), net.minecraft.ChatFormatting.GREEN, "command.getClientPlayerFps.feedback", reply.name(), Integer.toString(reply.fps())));
                 carpet.script.external.ScarpetNativeWork.record(actual);
@@ -157,9 +173,14 @@ public final class AmsNetworkProtocol implements LeavesProtocol {
             case "request_client_mod_version_c2s" -> {
                 String version = buffer.readUtf(512);
                 UUID claimed = buffer.readUUID();
-                if (!claimed.equals(connectionPlayer.getUUID()) || !CLIENTS.containsKey(claimed)) return true;
+                Client admitted = CLIENTS.get(claimed);
+                if (!claimed.equals(connectionPlayer.getUUID()) || admitted == null) return true;
                 carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.AmsNativeCommandEffects.global(connectionPlayer.carpetSpawnServer(), () -> {
-                    CLIENT_VERSIONS.put(claimed, version);
+                    // A queued reply from a denied/disconnected session cannot populate
+                    // a replacement session that happens to use the same player UUID.
+                    synchronized (CLIENT_LIFECYCLE) {
+                        if (CLIENTS.get(claimed) == admitted) CLIENT_VERSIONS.put(claimed, version);
+                    }
                     return (Void) null;
                 }));
             }
@@ -236,13 +257,18 @@ public final class AmsNetworkProtocol implements LeavesProtocol {
 
     public static int requestFps(CommandSourceStack source, ServerPlayer target) {
         // Pinned AMS keeps the latest source per target, returns one even without protocol support and has no FPS timeout.
-        FPS.put(target.getUUID(), source);
+        synchronized (CLIENT_LIFECYCLE) {
+            FPS.put(target.getUUID(), source);
+        }
         carpet.script.external.ScarpetNativeWork.record(sendPacket(target, "client_player_fps_s2c", false, buffer -> buffer.writeUUID(target.getUUID())));
         return 1;
     }
 
     public static int requestVersion(CommandSourceStack source, ServerPlayer target) {
-        CLIENT_VERSIONS.clear();
+        // An unrelated player's query must not erase a reply already in flight.
+        synchronized (CLIENT_LIFECYCLE) {
+            CLIENT_VERSIONS.remove(target.getUUID());
+        }
         var actual = fun.bm.lophine.carpet.AmsNativeCommandEffects.then(sendPacket(target, "request_client_mod_version_s2c", false, buffer -> buffer.writeUUID(target.getUUID())), ignored ->
                 fun.bm.lophine.carpet.AmsNativeCommandEffects.then(feedback(source, net.minecraft.ChatFormatting.GREEN, "command.amsp.get_client_version_waiting"), unused -> versionCheck(source, target, 0)));
         carpet.script.external.ScarpetNativeWork.record(actual);

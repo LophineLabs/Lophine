@@ -18,7 +18,8 @@ public final class TisStackTraces {
     }
 
     public static void rebuildCauseChain(Throwable throwable) {
-        for (Throwable cause = throwable; cause != null; cause = cause.getCause()) {
+        var seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Throwable, Boolean>());
+        for (Throwable cause = throwable; cause != null && seen.add(cause); cause = cause.getCause()) {
             cause.setStackTrace(rebuild(cause.getStackTrace()));
         }
     }

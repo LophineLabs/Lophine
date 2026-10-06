@@ -286,13 +286,7 @@ public final class TisManipulateChunks {
                         }), packet -> TisCommandContinuations.owned(player, () -> {
                     if (packet == null || player.level() != world || player.hasDisconnected() || player.isRemoved() || player.moonrise$getChunkLoader() == null
                             || !player.moonrise$getChunkLoader().getSentChunksRaw().contains(pos.pack())) return null;
-                    var receipt = new CompletableFuture<Void>();
-                    carpet.script.external.ScarpetNativeWork.record(receipt);
-                    player.connection.send(packet, sent -> {
-                        if (sent.isSuccess()) receipt.complete(null);
-                        else
-                            receipt.completeExceptionally(sent.cause() == null ? new IllegalStateException("Chunk refresh packet rejected") : sent.cause());
-                    });
+                    AmsNativeCommandEffects.packet(player, packet);
                     return null;
                 }));
             }));

@@ -142,6 +142,12 @@ public final class AmsNativeCommandEffects {
         try {
             var listener = player.connection;
             var connection = listener.connection;
+            // Leaves' synthetic transport intentionally has no Netty channel, and
+            // its no-op listener never acknowledges a physical client packet.
+            if (connection instanceof org.leavesmc.leaves.bot.ServerBotPacketListenerImpl.BotConnection) {
+                actual.complete(null);
+                return actual;
+            }
             if (connection == null || connection.channel == null || !connection.isConnected()) {
                 actual.completeExceptionally(new java.nio.channels.ClosedChannelException());
                 return actual;
@@ -172,16 +178,53 @@ public final class AmsNativeCommandEffects {
     }
 
     public static CompletableFuture<Void> broadcast(MinecraftServer server, Consumer<ServerPlayer> body) {
-        return then(global(server, () -> List.copyOf(server.getPlayerList().getPlayers())), all -> broadcastNext(all.iterator(), body));
+        return then(global(server, () -> List.copyOf(server.getPlayerList().getPlayers())), all -> sequence(server, all.iterator(), player -> owned(player, () -> {
+            body.accept(player);
+            return (Void) null;
+        })));
     }
 
-    private static CompletableFuture<Void> broadcastNext(Iterator<ServerPlayer> players, Consumer<ServerPlayer> body) {
-        if (!players.hasNext()) return CompletableFuture.completedFuture(null);
-        ServerPlayer actual = players.next();
-        return then(owned(actual, () -> {
-            body.accept(actual);
-            return (Void) null;
-        }), ignored -> broadcastNext(players, body));
+    /**
+     * Already owned phases can complete immediately. Keep source order without a
+     * recursively growing tick-thread stack, and retain every real suspended child.
+     */
+    public static <T> CompletableFuture<Void> sequence(MinecraftServer server, Iterator<T> values, Function<T, CompletableFuture<?>> operation) {
+        return protectedValue(server, () -> {
+            var done = new CompletableFuture<Void>();
+            ScarpetNativeWork.record(done);
+            var captured = carpet.script.external.ScarpetRuntime.captureNativeFunction(operation);
+            class Pump {
+                final java.util.concurrent.atomic.AtomicInteger running = new java.util.concurrent.atomic.AtomicInteger();
+                CompletableFuture<?> current;
+
+                void run() {
+                    if (running.getAndIncrement() != 0) return;
+                    do {
+                        try {
+                            while (!done.isDone()) {
+                                if (current == null) {
+                                    if (!values.hasNext()) {
+                                        done.complete(null);
+                                        break;
+                                    }
+                                    current = java.util.Objects.requireNonNull(captured.apply(values.next()));
+                                    ScarpetNativeWork.record(current);
+                                    if (!current.isDone())
+                                        current.whenComplete(carpet.script.external.ScarpetRuntime.captureNativeConsumer((value, failure) -> run()));
+                                }
+                                if (!current.isDone()) break;
+                                current.join(); // Only inspect an already completed phase; never wait an owner.
+                                current = null;
+                            }
+                        } catch (Throwable failure) {
+                            done.completeExceptionally(failure);
+                        }
+                    } while (running.decrementAndGet() != 0);
+                }
+            }
+            new Pump().run();
+            return done;
+        });
     }
 
     public static CompletableFuture<Void> pause(MinecraftServer server, long millis) {

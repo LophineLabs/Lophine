@@ -86,14 +86,19 @@ public final class TisRaycastCommand {
         ClipContext.Block block = enumArgument(context, "shapeMode", ClipContext.Block.COLLIDER);
         ClipContext.Fluid fluid = enumArgument(context, "fluidMode", ClipContext.Fluid.NONE);
         Entity entity = source.getEntityOrException();
-        ClipContext traceContext = new SnapshotClipContext(from, to, block, fluid, entity);
-        Trace trace = new Trace(source.getLevel(), traceContext);
-        trace.completion.whenComplete((result, failure) -> feedback(source, failure == null
-                ? result.hit().getType() == HitResult.Type.MISS ? TisTranslations.message(source, "command.raycast.missed")
-                : TisTranslations.text("command.raycast.hit").append(Component.literal(" " + result.blockDescription() + " at " + result.hit().getBlockPos().toShortString() + " (" + result.hit().getLocation() + ")"))
-                : Component.literal("Raycast failed: " + failure.getMessage())));
-        trace.runNextRegion();
-        return 1;
+        return TisCommandContinuations.complete(source, 1, () -> TisCommandContinuations.then(
+                TisCommandContinuations.entity(source, entity, () -> TisCommandContinuations.phase(entity,
+                        () -> new SnapshotClipContext(from, to, block, fluid, entity))), traceContext -> {
+                    Trace trace = new Trace(source, traceContext);
+                    trace.runNextRegion();
+                    return TisCommandContinuations.then(trace.completion, result -> TisCommandContinuations.feedback(source, () -> {
+                        feedback(source, result.hit().getType() == HitResult.Type.MISS
+                                ? TisTranslations.message(source, "command.raycast.missed")
+                                : TisTranslations.text("command.raycast.hit").append(Component.literal(" " + result.blockDescription()
+                                        + " at " + result.hit().getBlockPos().toShortString() + " (" + result.hit().getLocation() + ")")));
+                        return 1;
+                    }));
+                }), null, () -> {});
     }
 
     private static <T extends Enum<T>> T enumArgument(final CommandContext<?> context, final String name, final T fallback) throws CommandSyntaxException {
@@ -130,42 +135,56 @@ public final class TisRaycastCommand {
     }
 
     private static final class Trace {
+        private final CommandSourceStack source;
         private final ServerLevel level;
         private final ClipContext context;
         private final RayWalker walker;
         private final CompletableFuture<TraceResult> completion = new CompletableFuture<>();
 
-        private Trace(final ServerLevel level, final ClipContext context) {
-            this.level = level;
+        private Trace(final CommandSourceStack source, final ClipContext context) {
+            this.source = source;
+            this.level = source.getLevel();
             this.context = context;
             this.walker = new RayWalker(context.getFrom(), context.getTo());
+            carpet.script.external.ScarpetNativeWork.record(this.completion);
         }
 
         private void runNextRegion() {
-            if (this.walker.pos == null) {
-                Vec3 delta = this.context.getFrom().subtract(this.context.getTo());
-                this.completion.complete(new TraceResult(BlockHitResult.miss(this.context.getTo(),
-                        Direction.getApproximateNearest(delta.x(), delta.y(), delta.z()), BlockPos.containing(this.context.getTo())), ""));
-                return;
-            }
-            BlockPos first = this.walker.pos;
-            RegionizedServer.getInstance().taskQueue.queueTickTaskQueue(this.level, first.getX() >> 4, first.getZ() >> 4, () -> {
-                try {
+            if (this.completion.isDone()) return;
+            try {
+                if (carpet.script.external.ScarpetNativeWork.isDraining(this.level.getServer())) {
+                    this.completion.completeExceptionally(new IllegalStateException("Server stopped during raycast"));
+                    return;
+                }
+                if (this.walker.pos == null) {
+                    Vec3 delta = this.context.getFrom().subtract(this.context.getTo());
+                    this.completion.complete(new TraceResult(BlockHitResult.miss(this.context.getTo(),
+                            Direction.getApproximateNearest(delta.x(), delta.y(), delta.z()), BlockPos.containing(this.context.getTo())), ""));
+                    return;
+                }
+                BlockPos first = this.walker.pos;
+                var step = TisCommandContinuations.world(this.source, this.level, first, () -> {
+                    if (carpet.script.external.ScarpetNativeWork.isDraining(this.level.getServer()))
+                        throw new IllegalStateException("Server stopped during raycast");
                     while (this.walker.pos != null && (this.walker.pos.getX() >> 4) == (first.getX() >> 4)
                             && (this.walker.pos.getZ() >> 4) == (first.getZ() >> 4)) {
                         BlockHitResult hit = this.level.clip(this.context, this.walker.pos);
                         if (hit != null) {
                             String state = hit.getType() == HitResult.Type.BLOCK ? this.level.getBlockState(hit.getBlockPos()).toString() : "";
-                            this.completion.complete(new TraceResult(hit, state));
-                            return;
+                            return new TraceResult(hit, state);
                         }
                         this.walker.advance();
                     }
-                    this.runNextRegion();
-                } catch (Throwable failure) {
-                    this.completion.completeExceptionally(failure);
-                }
-            });
+                    return null;
+                });
+                step.whenComplete(carpet.script.external.ScarpetRuntime.captureNativeConsumer((result, failure) -> {
+                    if (failure != null) this.completion.completeExceptionally(failure);
+                    else if (result != null) this.completion.complete(result);
+                    else this.runNextRegion();
+                }));
+            } catch (Throwable failure) {
+                this.completion.completeExceptionally(failure);
+            }
         }
     }
 

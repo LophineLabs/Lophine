@@ -52,10 +52,11 @@ class OrgPlayerManagerPersistenceTest {
         CompoundTag restored=manager.readLatestState(metadata,new GameProfile(id,"Ada"));assertEquals(7,restored.getIntOr("XpTotal",-1));assertEquals(9,restored.getIntOr("item_count",-1));
         metadata.addProperty("_lophine_state_file","../foreign.dat");assertThrows(IllegalArgumentException.class,()->manager.readLatestState(metadata,new GameProfile(id,"Ada")));
     }
-    @Test void aFakePlayerOutsideTheHumanRosterIsFoundThroughTheRealNameIndex() {
+    @Test void aFakePlayerOutsideTheHumanRosterIsFoundThroughTheRealNameIndex() throws Exception {
         MinecraftServer server=mock(MinecraftServer.class);var players=mock(net.minecraft.server.players.PlayerList.class);var source=mock(net.minecraft.commands.CommandSourceStack.class);
         var fake=mock(org.leavesmc.leaves.bot.ServerBot.class);when(source.getServer()).thenReturn(server);when(server.getPlayerList()).thenReturn(players);when(players.getPlayers()).thenReturn(List.of());when(players.getPlayerByName("fake")).thenReturn(fake);
-        assertSame(fake,OrgFakePlayerActionCommands.find(source,"fake"));
+        assertSame(fake,net.minecraft.commands.arguments.EntityArgument.player()
+                .parse(new com.mojang.brigadier.StringReader("fake")).findSinglePlayer(source));
     }
     @Test void aLegacyFakeTargetOutsideTheRosterCompletesItsSerialOwnerInventoryTransaction()throws Exception{
         try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory,true)){

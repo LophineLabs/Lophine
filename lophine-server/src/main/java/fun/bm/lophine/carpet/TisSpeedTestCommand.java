@@ -128,7 +128,7 @@ public final class TisSpeedTestCommand {
 
     public static void disconnected(ServerPlayer player) {
         Session session = SESSIONS.get(player.getUUID());
-        if (session != null) session.abort("disconnected");
+        if (session != null && session.player == player) session.abort("disconnected");
     }
 
     public static void reset() {
@@ -138,7 +138,7 @@ public final class TisSpeedTestCommand {
     // Invoked on the network thread: these paths only touch atomic session data and immutable identity.
     public static void handleUpload(ServerPlayer player, CompoundTag payload) {
         Session session = SESSIONS.get(player.getUUID());
-        if (session instanceof Transfer transfer && !transfer.download) {
+        if (session instanceof Transfer transfer && session.player == player && !transfer.download) {
             byte[] bytes = payload.getByteArray("buf").orElse(null);
             if (bytes == null || bytes.length != BUFFER.length) transfer.abort("invalid upload payload size");
             else transfer.completedOne();
@@ -154,7 +154,7 @@ public final class TisSpeedTestCommand {
             });
         } else if ("pong".equals(type)) {
             Session session = SESSIONS.get(player.getUUID());
-            if (session != null) session.pong(payload);
+            if (session != null && session.player == player) session.pong(payload);
         }
     }
 

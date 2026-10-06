@@ -55,7 +55,7 @@ class OrgNativeMenuSequenceTest {
         CompletableFuture<Void> tick(){return ScarpetNativeWork.observeNative(player,()->{OrgFakePlayerActions.tick(player);return null;});}
         @SuppressWarnings("unchecked") <T> CompletableFuture<T> step(String name,Class<?>[] types,Object... values) {
             try {
-                var statesField=OrgFakePlayerActions.class.getDeclaredField("STATES");statesField.setAccessible(true);Object state=((Map<?,?>)statesField.get(null)).get(player);
+                var statesField=OrgFakePlayerActions.class.getDeclaredField("STATES");statesField.setAccessible(true);Object state=((carpet.script.external.WeakIdentityMap<net.minecraft.server.level.ServerPlayer,?>)statesField.get(null)).get(player);
                 Class<?> type=Arrays.stream(OrgFakePlayerActions.class.getDeclaredClasses()).filter(candidate->candidate.getSimpleName().equals("MenuSteps")).findFirst().orElseThrow();
                 var constructor=type.getDeclaredConstructors()[0];constructor.setAccessible(true);Object steps=constructor.newInstance(player,state,menu);
                 var method=type.getDeclaredMethod(name,types);method.setAccessible(true);return (CompletableFuture<T>)method.invoke(steps,values);
@@ -63,10 +63,19 @@ class OrgNativeMenuSequenceTest {
         }
         void librarian(net.minecraft.world.entity.npc.villager.Villager villager,MerchantOffer offer) {
             try {
-                var statesField=OrgFakePlayerActions.class.getDeclaredField("STATES");statesField.setAccessible(true);Object state=((Map<?,?>)statesField.get(null)).get(player);
+                var statesField=OrgFakePlayerActions.class.getDeclaredField("STATES");statesField.setAccessible(true);Object state=((carpet.script.external.WeakIdentityMap<net.minecraft.server.level.ServerPlayer,?>)statesField.get(null)).get(player);
                 var method=OrgFakePlayerActions.class.getDeclaredMethod("librarianLock",ServerBot.class,state.getClass(),net.minecraft.world.entity.npc.villager.Villager.class,MerchantOffer.class,int.class);method.setAccessible(true);
                 try(var accepted=ScarpetPlayerInventoryGate.acceptedScope(player)) { OrgGameplayHelper.withOrgAction(()->{try{method.invoke(null,player,state,villager,offer,4);}catch(ReflectiveOperationException failure){throw new AssertionError(failure);}}); }
             } catch(ReflectiveOperationException failure){throw new AssertionError(failure);}
+        }
+        void forgetHotPathInvocations() {
+            var view=menu.getBukkitView();
+            // The 1000-round bound generates hundreds of native ownership checks per
+            // round. Keep stubbing, physical counters and the complete order trace,
+            // but do not retain every Mockito stack frame until the final assertion.
+            clearInvocations(menu,player,player.level(),actors.server,view,view.getTopInventory(),view.getMerchant(),menu.getOffers().getFirst());
+            actors.ticks.clearInvocations();
+            global.clearInvocations();
         }
         public void close(){global.close();actors.close();}
     }
@@ -142,10 +151,13 @@ class OrgNativeMenuSequenceTest {
         }
     }
     private void singleOutputPerRound(TradeFixture fixture) {
+        singleOutputPerRound(fixture,false);
+    }
+    private void singleOutputPerRound(TradeFixture fixture,boolean boundMockHistory) {
         var visible=new java.util.concurrent.atomic.AtomicBoolean();var diamond=new ItemStack(Items.DIAMOND);
         fixture.menu.slots.set(2,new Slot(new SimpleContainer(3),2,0,0){@Override public ItemStack getItem(){return visible.get()?diamond:ItemStack.EMPTY;}});
         doAnswer(call->{visible.set(true);return null;}).when(fixture.menu).setSelectionHint(0);
-        doAnswer(call->{visible.set(false);int number=fixture.clicks.incrementAndGet();fixture.order.add("click "+number);ScarpetNativeWork.record(number==1?fixture.first:fixture.last);return null;}).when(fixture.menu).clicked(2,0,ContainerInput.THROW,fixture.player);
+        doAnswer(call->{visible.set(false);int number=fixture.clicks.incrementAndGet();fixture.order.add("click "+number);ScarpetNativeWork.record(number==1?fixture.first:fixture.last);if(boundMockHistory&&number%10==0)fixture.forgetHotPathInvocations();return null;}).when(fixture.menu).clicked(2,0,ContainerInput.THROW,fixture.player);
     }
     @Test void actualVoidTradeWithoutInfiniteTradesDoesNotUseTheInfiniteTradeCountLimit()throws Exception {
         int maximum=fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fakePlayerMaxItemOperationCount;boolean infinite=fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.villagerInfiniteTrade;
@@ -164,8 +176,9 @@ class OrgNativeMenuSequenceTest {
     @Test void actualEndlessVoidTradeThrowsBeforeTheSource1001stRoundAndDoesNotClose()throws Exception {
         int maximum=fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fakePlayerMaxItemOperationCount;boolean infinite=fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.villagerInfiniteTrade;
         try(var f=new TradeFixture()) {
-            fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fakePlayerMaxItemOperationCount=0;fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.villagerInfiniteTrade=false;singleOutputPerRound(f);f.first.complete(null);f.last.complete(null);var offer=f.menu.getOffers().getFirst();doReturn(false).when(offer).isOutOfStock();
+            fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fakePlayerMaxItemOperationCount=0;fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.villagerInfiniteTrade=false;singleOutputPerRound(f,true);f.first.complete(null);f.last.complete(null);var offer=f.menu.getOffers().getFirst();doReturn(false).when(offer).isOutOfStock();
             var actual=f.<Void>step("trade",new Class<?>[0]);var failure=assertThrows(ExecutionException.class,()->actual.get(3,TimeUnit.SECONDS));assertInstanceOf(OrgActionInfiniteLoopException.class,failure.getCause());assertEquals("Maximum loop count exceeded, possible infinite loop detected",failure.getCause().getMessage());assertEquals(1000,f.clicks.get());verify(f.player,never()).closeContainer();
+            assertFalse(f.order.contains("close"),"No round before the limit may close the container");
         }finally{fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fakePlayerMaxItemOperationCount=maximum;fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.villagerInfiniteTrade=infinite;}
     }
 

@@ -70,7 +70,12 @@ public final class OrgShadowDamageContinuations {
                 // snapshot gate; otherwise a snapshot could wait on its own group release.
                 ScarpetPlayerInventoryGate.trackAccepted(player, actual);
                 try (var accepted = ScarpetPlayerInventoryGate.acceptedScope(player)) {
-                    return ScarpetDamageContinuations.observeNativeBody(player, body);
+                    return ScarpetDamageContinuations.observeNativeBody(player, () -> {
+                        // Native death may reach its removal gate before this call returns.
+                        ScarpetNativeWork.aliasDependency(actual,
+                                ScarpetNativeWork.completionOf(ScarpetNativeWork.capture()));
+                        return body.get();
+                    });
                 }
             });
             if (!borrowed.completed()) {

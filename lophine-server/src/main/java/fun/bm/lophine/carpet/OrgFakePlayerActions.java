@@ -81,10 +81,10 @@ public final class OrgFakePlayerActions {
     }
 
     // Values contain no player reference: retiring players and their actions can be collected.
-    private static final Map<ServerPlayer, State> STATES = Collections.synchronizedMap(new WeakHashMap<>());
+    private static final carpet.script.external.WeakIdentityMap<ServerPlayer, State> STATES = new carpet.script.external.WeakIdentityMap<>();
     // Keep accepted work separate from the selected action. Replacing/stopping an action
     // cannot hide the native effects already accepted by its previous state.
-    private static final Map<ServerPlayer, CarpetActionCompletion> COMPLETIONS = Collections.synchronizedMap(new WeakHashMap<>());
+    private static final carpet.script.external.WeakIdentityMap<ServerPlayer, CarpetActionCompletion> COMPLETIONS = new carpet.script.external.WeakIdentityMap<>();
 
     private OrgFakePlayerActions() {
     }
@@ -145,16 +145,16 @@ public final class OrgFakePlayerActions {
 
     static <T> CompletableFuture<T> owned(ServerPlayer player, Supplier<T> work) {
         var result = new CompletableFuture<T>();
-        java.util.function.Consumer<ServerPlayer> run = owner -> {
+        java.util.function.Consumer<ServerPlayer> run = carpet.script.external.ScarpetRuntime.captureNativeConsumer(owner -> {
             try {
-                if (owner.isRemoved()) throw new IllegalStateException("Fake-player owner retired before its snapshot");
+                if (owner != player || owner.isRemoved()) throw new IllegalStateException("Fake-player owner retired before its snapshot");
                 result.complete(work.get());
             } catch (Throwable failure) {
                 result.completeExceptionally(failure);
             }
-        };
+        });
         if (TickThread.isTickThreadFor(player)) run.accept(player);
-        else if (!player.getBukkitEntity().taskScheduler.schedule(run, retired -> result.completeExceptionally(new IllegalStateException("Fake-player owner retired before its snapshot")), 1L))
+        else if (!player.getBukkitEntity().taskScheduler.schedule(run, carpet.script.external.ScarpetRuntime.captureNativeConsumer(retired -> result.completeExceptionally(new IllegalStateException("Fake-player owner retired before its snapshot"))), 1L))
             result.completeExceptionally(new IllegalStateException("Fake-player owner retired before its snapshot"));
         return result;
     }

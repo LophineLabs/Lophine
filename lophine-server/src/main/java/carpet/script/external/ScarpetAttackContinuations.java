@@ -111,6 +111,9 @@ public final class ScarpetAttackContinuations {
         CompletableFuture<CompletableFuture<T>> actual = ScarpetNativeWork.observeNative(attacker, () -> {
             var token = ScarpetNativeWork.capture();
             ScarpetNativeWork.record(completed);
+            // This sibling tail waits for the damage body. Mandatory self-removal
+            // inside that body must recognize the actual wait instead of awaiting it.
+            ScarpetNativeWork.linkDependency(completed, outcome);
             Function<Boolean, T> tail = hurt -> ScarpetNativeWork.with(token, () -> withAcceptedPlayer(attacker, () -> nativeTail.apply(hurt)));
             var resolved = new java.util.concurrent.atomic.AtomicReference<Boolean>();
             var captured = ScarpetRuntime.captureNativeContinuation(() -> tail.apply(Boolean.TRUE.equals(resolved.get())));
@@ -167,11 +170,13 @@ public final class ScarpetAttackContinuations {
                 return false;
             }
         };
+        ScarpetNativeWork.aliasDependency(actual, outcome);
         ScarpetNativeWork.record(actual);
         ScarpetNativeWork.trackNative(attacker.carpetSpawnServer(), actual);
         var continuation = ScarpetRuntime.captureNativeFunction((Boolean hurt) -> ScarpetExplosionActors.entity(attacker, () -> {
             var observed = ScarpetNativeWork.observeNative(attacker, () -> {
                 try (var accepted = ScarpetPlayerInventoryGate.acceptedScope(attacker)) {
+                    ScarpetNativeWork.aliasDependency(actual, ScarpetNativeWork.completionOf(ScarpetNativeWork.capture()));
                     var result = nativeTail.apply(Boolean.TRUE.equals(hurt));
                     ScarpetNativeWork.record(result);
                     return result;

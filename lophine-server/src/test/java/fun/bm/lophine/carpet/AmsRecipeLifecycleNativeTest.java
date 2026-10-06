@@ -25,6 +25,75 @@ public class AmsRecipeLifecycleNativeTest {
  }
  static RecipeHolder<?> recipe(String namespace,String name){return new RecipeHolder<>(ResourceKey.create(Registries.RECIPE,Identifier.fromNamespaceAndPath(namespace,name)),mock(ShapedRecipe.class));}
  static ServerPlayer player(MinecraftServer server){var player=mock(ServerPlayer.class);var world=mock(ServerLevel.class);when(world.getServer()).thenReturn(server);when(player.level()).thenReturn(world);when(player.carpetSpawnServer()).thenReturn(server);when(player.blockPosition()).thenReturn(BlockPos.ZERO);when(player.getAdvancements()).thenReturn(mock(PlayerAdvancements.class));return player;}
+ /** Real resource command construction and Paper/Leaves registrars; only vanilla command population is isolated. */
+ static final class RegistrarFixture implements AutoCloseable {
+  final net.minecraft.commands.Commands previous=mock(net.minecraft.commands.Commands.class);
+  final MinecraftServer server=mock(MinecraftServer.class);
+  final ReloadableServerRegistries.LoadResult registries;
+  final net.minecraft.commands.CommandBuildContext previousContext;
+  final Map<java.lang.reflect.Field,Object> savedRegistrar=new HashMap<>();
+  final Map<String,org.leavesmc.leaves.command.RootNode> registered;
+  final Map<String,org.leavesmc.leaves.command.RootNode> savedRoots;
+  final org.mockito.MockedStatic<org.bukkit.Bukkit> bukkit=mockStatic(org.bukkit.Bukkit.class);
+  final org.mockito.MockedStatic<MinecraftServer> servers=mockStatic(MinecraftServer.class);
+  @SuppressWarnings("unchecked") RegistrarFixture()throws Exception {
+   var paper=io.papermc.paper.command.brigadier.PaperCommands.INSTANCE;
+   for(String name:List.of("dispatcher","buildContext","invalid","currentContext")){var field=paper.getClass().getDeclaredField(name);field.setAccessible(true);savedRegistrar.put(field,field.get(paper));}
+   var roots=org.leavesmc.leaves.command.RootNode.class.getDeclaredField("REGISTERED");roots.setAccessible(true);registered=(Map<String,org.leavesmc.leaves.command.RootNode>)roots.get(null);savedRoots=Map.copyOf(registered);registered.clear();
+   try {
+   var recipes=new net.minecraft.core.MappedRegistry<Recipe<?>>(Registries.RECIPE,com.mojang.serialization.Lifecycle.stable());
+   var advancements=new net.minecraft.core.MappedRegistry<net.minecraft.advancements.Advancement>(Registries.ADVANCEMENT,com.mojang.serialization.Lifecycle.stable());
+   var reloadable=new RegistryAccess.ImmutableRegistryAccess(List.of(recipes.freeze(),advancements.freeze())).freeze();
+   var layers=RegistryLayer.createRegistryAccess().replaceFrom(RegistryLayer.RELOADABLE,reloadable);registries=new ReloadableServerRegistries.LoadResult(layers,layers.compositeAccess());
+   previousContext=net.minecraft.commands.CommandBuildContext.simple(registries.lookupWithUpdatedTags(),net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS);
+   when(previous.getDispatcher()).thenReturn(new com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack>());when(server.getCommands()).thenReturn(previous);servers.when(MinecraftServer::getServer).thenReturn(server);
+   var api=mock(org.bukkit.Server.class);var plugins=mock(org.bukkit.plugin.PluginManager.class);when(api.getPluginManager()).thenReturn(plugins);bukkit.when(org.bukkit.Bukkit::getServer).thenReturn(api);bukkit.when(org.bukkit.Bukkit::getOnlinePlayers).thenReturn(List.of());
+   paper.setDispatcher(previous,previousContext);new org.leavesmc.leaves.command.RootNode("carpet_reload_lifecycle_test","carpet.reload.lifecycle.test"){}.register();
+   assertThrows(IllegalStateException.class,paper::getDispatcher);
+   } catch(Exception|Error failure) {
+    try{close();}catch(Exception cleanup){failure.addSuppressed(cleanup);}throw failure;
+   }
+  }
+  org.mockito.MockedConstruction<net.minecraft.commands.Commands> commandConstruction(){
+   return mockConstruction(net.minecraft.commands.Commands.class,(commands,context)->when(commands.getDispatcher()).thenReturn(new com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack>()));
+  }
+  void verifyCommands(ReloadableServerResources resources){
+   var root=resources.getCommands().getDispatcher().getRoot();
+   // Folia disables Paper's mspt command; these are the actual internal registrations.
+   for(String name:List.of("carpet_reload_lifecycle_test","version","plugins","bukkit:version"))
+    assertNotNull(root.getChild(name),()->"Missing "+name+" from "+root.getChildren().stream().map(com.mojang.brigadier.tree.CommandNode::getName).toList());
+  }
+  @Override public void close()throws Exception {
+   try{registered.clear();registered.putAll(savedRoots);for(var entry:savedRegistrar.entrySet())entry.getKey().set(io.papermc.paper.command.brigadier.PaperCommands.INSTANCE,entry.getValue());}finally{servers.close();bukkit.close();}
+  }
+ }
+ @Test void realResourceConstructorReopensInternalRegistrationAfterLeavesRebindInvalidatesIt()throws Exception {
+  try(var fixture=new RegistrarFixture();var commands=fixture.commandConstruction()){
+   var constructor=ReloadableServerResources.class.getDeclaredConstructors()[0];constructor.setAccessible(true);
+   var resources=(ReloadableServerResources)constructor.newInstance(fixture.registries,net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS,net.minecraft.commands.Commands.CommandSelection.ALL,List.of(),net.minecraft.server.permissions.PermissionSet.NO_PERMISSIONS,List.of());
+   fixture.verifyCommands(resources);assertEquals(1,commands.constructed().size());
+  }
+ }
+ @Test void actualDetachedFactoryRestoresThePreviousDispatcherAndClosesItsRegistrarWindow()throws Exception {
+  try(var fixture=new RegistrarFixture();var commands=fixture.commandConstruction()){
+   // Invoke the actual compiled Supplier body so unrelated datapack/component IO
+   // cannot mask the dispatcher lifecycle contract being exercised here.
+   var factory=Arrays.stream(ReloadableServerResources.class.getDeclaredMethods()).filter(method->method.isSynthetic()&&method.getReturnType()==ReloadableServerResources.class&&Arrays.asList(method.getParameterTypes()).contains(boolean.class)&&Arrays.asList(method.getParameterTypes()).contains(ReloadableServerRegistries.LoadResult.class)).findFirst().orElseThrow();
+   factory.setAccessible(true);Object[] arguments=new Object[factory.getParameterCount()];var types=factory.getParameterTypes();
+   for(int index=0;index<types.length;index++){
+    if(types[index]==boolean.class)arguments[index]=true;
+    else if(types[index]==ReloadableServerRegistries.LoadResult.class)arguments[index]=fixture.registries;
+    else if(types[index]==net.minecraft.world.flag.FeatureFlagSet.class)arguments[index]=net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS;
+    else if(types[index]==net.minecraft.commands.Commands.CommandSelection.class)arguments[index]=net.minecraft.commands.Commands.CommandSelection.ALL;
+    else if(types[index]==net.minecraft.server.permissions.PermissionSet.class)arguments[index]=net.minecraft.server.permissions.PermissionSet.NO_PERMISSIONS;
+    else if(types[index]==List.class)arguments[index]=List.of();
+    else throw new AssertionError("Unexpected detached factory capture "+types[index]);
+   }
+   var resources=(ReloadableServerResources)factory.invoke(null,arguments);fixture.verifyCommands(resources);assertEquals(1,commands.constructed().size());
+   var paper=io.papermc.paper.command.brigadier.PaperCommands.INSTANCE;assertSame(fixture.previousContext,paper.getBuildContext());
+   var mirror=(io.papermc.paper.command.brigadier.ApiMirrorRootNode)paper.getDispatcherInternal().getRoot();assertSame(fixture.previous.getDispatcher(),mirror.getDispatcher());assertThrows(IllegalStateException.class,paper::getDispatcher);
+  }
+ }
  @Test void actualSelectedPackReloadAndItsChildFinishBeforeAMSRecipeQueryAndGrants()throws Exception{
   var server=mock(MinecraftServer.class);when(server.isRunning()).thenReturn(true);var packs=mock(net.minecraft.server.packs.repository.PackRepository.class);when(server.getPackRepository()).thenReturn(packs);when(packs.getSelectedIds()).thenReturn(List.of("vanilla","custom"));
   var reload=new CompletableFuture<Void>();var reloadChild=new CompletableFuture<Void>();when(server.reloadResources(List.of("vanilla","custom"))).thenAnswer(call->{ScarpetNativeWork.record(reloadChild);return reload;});

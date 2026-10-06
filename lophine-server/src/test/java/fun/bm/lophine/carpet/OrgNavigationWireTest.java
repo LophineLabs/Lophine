@@ -49,7 +49,36 @@ class OrgNavigationWireTest {
             var feedback=new ArrayList<Component>();var hud=new ArrayList<Component>();var source=OrgNavigationSourcePresentationTest.source(f,feedback,hud);var old=f.viewer.player();var dispatcher=new CommandDispatcher<CommandSourceStack>();OrgNavigation.register(dispatcher);dispatcher.execute("navigate blockPos 60 73 0",source);f.drain(f.viewer);scope.resultFuture(source).join();
             var next=mock(ServerPlayer.class);var world=old.level();var identity=old.getUUID();when(next.getUUID()).thenReturn(identity);when(next.level()).thenReturn(world);when(next.blockPosition()).thenReturn(BlockPos.ZERO);when(next.getEyeY()).thenReturn(73.5);when(next.createCommandSourceStack()).thenReturn(source);next.connection=mock(ServerGamePacketListenerImpl.class);
             doAnswer(call->{assertSame(next,f.owner.get());hud.add(((net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket)call.getArgument(0)).text());return null;}).when(next.connection).send(any(net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket.class));
-            f.owner.set(next);OrgNavigation.copyFrom(next,old);OrgNavigation.disconnected(old);OrgNavigation.tick(next);ScarpetNativeWork.whenIdle(f.server).join();assertNotNull(OrgNavigationSourcePresentationTest.translation(hud.getLast(),"hud.distance"));verify(next.connection,never()).send(any(ClientboundCustomPayloadPacket.class));OrgNavigation.disconnected(next);
+            f.owner.set(next);OrgNavigation.copyFrom(next,old);f.owner.set(old);OrgNavigation.tick(old);f.drain(f.viewer);OrgNavigation.disconnected(old);f.owner.set(next);OrgNavigation.tick(next);ScarpetNativeWork.whenIdle(f.server).join();assertNotNull(OrgNavigationSourcePresentationTest.translation(hud.getLast(),"hud.distance"));verify(next.connection,never()).send(any(ClientboundCustomPayloadPacket.class));OrgNavigation.disconnected(next);
         }finally{fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandNavigate=previous;}
+    }
+
+    @Test void failureOfAnOldPollCannotClearTheNewlySelectedDestination() throws Exception {
+        String previous = fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandNavigate;
+        try (var fixture = new OrgInventoryPersistenceTest.Fixture(directory); var continuations = mockStatic(TisCommandContinuations.class, CALLS_REAL_METHODS)) {
+            fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandNavigate = "true";
+            var feedback = new ArrayList<Component>(); var hud = new ArrayList<Component>();
+            var source = OrgNavigationSourcePresentationTest.source(fixture, feedback, hud); var player = fixture.viewer.player();
+            var packets = new ArrayList<DiscardedPayload>();
+            doAnswer(call -> { assertSame(player, fixture.owner.get()); packets.add((DiscardedPayload) ((ClientboundCustomPayloadPacket) call.getArgument(0)).payload()); return null; })
+                    .when(player.connection).send(any(ClientboundCustomPayloadPacket.class));
+            var dispatcher = new CommandDispatcher<CommandSourceStack>(); OrgNavigation.register(dispatcher);
+            dispatcher.execute("navigate blockPos 60 73 0", source); fixture.drain(fixture.viewer);
+            var pendingPoll = new CompletableFuture<Void>(); var intercept = new java.util.concurrent.atomic.AtomicBoolean(true);
+            continuations.when(() -> TisCommandContinuations.owned(eq((net.minecraft.world.entity.Entity) player), any(java.util.function.Supplier.class)))
+                    .thenAnswer(call -> intercept.get() ? pendingPoll : call.callRealMethod());
+            fixture.owner.set(player); OrgNavigation.tick(player); assertFalse(pendingPoll.isDone());
+            intercept.set(false); dispatcher.execute("navigate blockPos 90 73 0", source); fixture.drain(fixture.viewer);
+            long clears = packets.stream().filter(packet -> packet.id().equals(OrgNavigationProtocol.CLEAR)).count();
+            pendingPoll.completeExceptionally(new IllegalStateException("old native HUD poll failed")); fixture.drain(fixture.viewer);
+            assertEquals(clears, packets.stream().filter(packet -> packet.id().equals(OrgNavigationProtocol.CLEAR)).count());
+            assertTrue(hud.stream().flatMap(message -> OrgNavigationSourcePresentationTest.translations(message).stream())
+                    .noneMatch(message -> message.getKey().equals("carpet-org-addition.command.navigate.error")));
+            OrgNavigation.tick(player); fixture.drain(fixture.viewer);
+            var update = packets.stream().filter(packet -> packet.id().equals(OrgNavigationProtocol.UPDATE)).findFirst().orElseThrow();
+            var buffer = new FriendlyByteBuf(Unpooled.wrappedBuffer(update.data()));
+            try { assertEquals(90.5, buffer.readDouble()); } finally { buffer.release(); }
+            OrgNavigation.disconnected(player); ScarpetNativeWork.whenIdle(fixture.server).handle((ignored, failure) -> null).join();
+        } finally { fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandNavigate = previous; }
     }
 }

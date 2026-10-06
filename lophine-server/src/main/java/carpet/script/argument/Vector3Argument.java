@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 public class Vector3Argument extends Argument {
-    private static final ThreadLocal<java.util.Map<Entity, Vec3>> CAPTURED_POSITIONS = ThreadLocal.withInitial(java.util.HashMap::new);
+    private static final ThreadLocal<java.util.Map<Entity, Vec3>> CAPTURED_POSITIONS = ThreadLocal.withInitial(java.util.IdentityHashMap::new);
 
     /**
      * A locator is captured before dispatch and reused by the original argument parser on its actor.

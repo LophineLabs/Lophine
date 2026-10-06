@@ -275,24 +275,48 @@ public class ScarpetNativeDeathsTest {
             assertFalse(player.queueHealthUpdatePacket);assertNull(ScarpetDamageContinuations.pendingResult(player));
         }
     }
-    @Test void nativeFakeDeathActuallyFiresBothOriginalEventsBeforeTheBotDeathBody() throws Exception { nativeFakeDeath(false); }
-    @Test void aRealGuestFailureCannotSkipTheNativeFakeSuperDeathResetAndTrueDisconnect() throws Exception { nativeFakeDeath(true); }
-    private void nativeFakeDeath(boolean failGuest) throws Exception {
+    @Test void nativeFakeDeathActuallyFiresBothOriginalEventsBeforeTheBotDeathBody() throws Exception { nativeFakeDeath(false,false,false); }
+    @Test void aRealGuestFailureCannotSkipTheNativeFakeSuperDeathResetAndTrueDisconnect() throws Exception { nativeFakeDeath(true,false,false); }
+    @Test void cancelledPaperDeathRevivesTheNativeFakeWithoutResettingOrDisconnectingIt() throws Exception { nativeFakeDeath(false,true,false); }
+    @Test void aGuestFailureCannotTurnACancelledPaperDeathIntoAFakeDisconnect() throws Exception { nativeFakeDeath(true,true,false); }
+    @Test void cancelledPaperDeathPreservesHealthAlreadyRestoredByThePlugin() throws Exception { nativeFakeDeath(false,true,true); }
+    private void nativeFakeDeath(boolean failGuest, boolean cancelDeath, boolean pluginRevives) throws Exception {
         try(Fixture f=new Fixture();var adventure=mockStatic(io.papermc.paper.adventure.PaperAdventure.class)) {
             adventure.when(()->io.papermc.paper.adventure.PaperAdventure.asAdventure(any(net.minecraft.network.chat.Component.class))).thenReturn(net.kyori.adventure.text.Component.text("fake"));
+            adventure.when(()->io.papermc.paper.adventure.PaperAdventure.asVanilla(any(net.kyori.adventure.text.Component.class))).thenReturn(net.minecraft.network.chat.Component.empty());
             var bot=mock(org.leavesmc.leaves.bot.ServerBot.class,CALLS_REAL_METHODS);bot.carpetNativePlayer=true;
+            // Mockito skips Entity/Player construction; the real Paper death body sends an entity-ID packet.
+            bot.setId(73);bot.setUUID(new UUID(0,73));bot.gameProfile=new com.mojang.authlib.GameProfile(bot.getUUID(),"NativeDeathFixture");
+            doReturn(EntityTypes.PLAYER).when(bot).getType();doReturn(net.minecraft.world.phys.Vec3.ZERO).when(bot).position();
+            doReturn(new net.minecraft.world.entity.ai.attributes.AttributeMap(net.minecraft.world.entity.player.Player.createAttributes().build())).when(bot).getAttributes();
+            doReturn(new net.minecraft.world.entity.player.Abilities()).when(bot).getAbilities();
+            doReturn(net.minecraft.util.RandomSource.create(19)).when(bot).getRandom();
+            Field nativeServer=ServerPlayer.class.getDeclaredField("server");nativeServer.setAccessible(true);nativeServer.set(bot,f.server);
             doReturn(f.world).when(bot).level();doReturn(BlockPos.ZERO).when(bot).blockPosition();doReturn(false).when(bot).isRemoved();
             doReturn(null).when(bot).getVehicle();doReturn(List.of()).when(bot).getPassengers();doReturn(true).when(bot).isSpectator();
             doReturn(mock(net.minecraft.world.entity.player.Inventory.class)).when(bot).getInventory();
+            doReturn(f.server).when(bot).carpetSpawnServer();
+            bot.connection=mock(net.minecraft.server.network.ServerGamePacketListenerImpl.class);
+            doNothing().when(bot).gameEvent(any(net.minecraft.core.Holder.class));
+            doNothing().when(bot).removeEntitiesOnShoulder();doNothing().when(bot).setCamera(any());
+            doNothing().when(bot).awardStat(any(net.minecraft.stats.Stat.class));doNothing().when(bot).resetStat(any(net.minecraft.stats.Stat.class));
+            doNothing().when(bot).clearFire();doNothing().when(bot).setTicksFrozen(anyInt());doNothing().when(bot).setSharedFlagOnFire(anyBoolean());
+            doNothing().when(bot).setLastDeathLocation(any());
             f.attach(bot,mock(org.leavesmc.leaves.entity.bot.CraftBot.class));
             var combat=mock(net.minecraft.world.damagesource.CombatTracker.class);when(combat.getDeathMessage()).thenReturn(net.minecraft.network.chat.Component.literal("fake"));doReturn(combat).when(bot).getCombatTracker();
-            doReturn(0F).when(bot).getHealth();doAnswer(call->{f.order.add("health:"+call.getArgument(0));return null;}).when(bot).setHealth(anyFloat());
+            var health=new java.util.concurrent.atomic.AtomicReference<>(0F);
+            doAnswer(call->health.get()).when(bot).getHealth();doAnswer(call->{float value=call.getArgument(0);health.set(value);f.order.add("health:"+value);return null;}).when(bot).setHealth(anyFloat());
+            var food=new net.minecraft.world.food.FoodData();Field foodField=net.minecraft.world.entity.player.Player.class.getDeclaredField("foodData");foodField.setAccessible(true);foodField.set(bot,food);
             Field event=Entity.class.getDeclaredField("carpetEvents");event.setAccessible(true);event.set(bot,f.events);
-            var rules=mock(GameRules.class);when(rules.get(GameRules.SHOW_DEATH_MESSAGES)).thenReturn(false);when(rules.get(GameRules.KEEP_INVENTORY)).thenReturn(true);when(f.world.getGameRules()).thenReturn(rules);
+            var rules=spy(new GameRules(net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS));
+            doReturn(false).when(rules).get(GameRules.SHOW_DEATH_MESSAGES);doReturn(true).when(rules).get(GameRules.KEEP_INVENTORY);
+            doReturn(false).when(rules).get(GameRules.FORGIVE_DEAD_PLAYERS);when(f.world.getGameRules()).thenReturn(rules);
             var craftServer=mock(org.bukkit.craftbukkit.CraftServer.class);var plugins=mock(org.bukkit.plugin.PluginManager.class);when(craftServer.getPluginManager()).thenReturn(plugins);
+            when(f.world.getCraftServer()).thenReturn(craftServer);when(f.world.dimension()).thenReturn(net.minecraft.world.level.Level.OVERWORLD);
+            when(craftServer.getScoreboardManager()).thenReturn(mock(org.bukkit.craftbukkit.scoreboard.CraftScoreboardManager.class));
             Field server=MinecraftServer.class.getField("server");server.setAccessible(true);server.set(f.server,craftServer);
-            var deathEvent=mock(org.bukkit.event.entity.PlayerDeathEvent.class);when(deathEvent.isCancelled()).thenReturn(true);when(deathEvent.getReviveHealth()).thenReturn(1D);
-            f.craft.when(()->org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerDeathEvent(eq(bot),eq(f.source),anyList(),any(net.kyori.adventure.text.Component.class),eq(false),eq(true))).thenAnswer(call->{f.order.add("player death body");return deathEvent;});
+            var deathEvent=mock(org.bukkit.event.entity.PlayerDeathEvent.class);when(deathEvent.isCancelled()).thenReturn(cancelDeath);when(deathEvent.getReviveHealth()).thenReturn(1D);when(deathEvent.getKeepInventory()).thenReturn(true);
+            f.craft.when(()->org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerDeathEvent(eq(bot),eq(f.source),anyList(),any(net.kyori.adventure.text.Component.class),eq(false),eq(true))).thenAnswer(call->{f.order.add("player death body");if(pluginRevives)bot.setHealth(7F);return deathEvent;});
             var bots=mock(org.leavesmc.leaves.bot.BotList.class);when(f.server.getBotList()).thenReturn(bots);var removed=new CompletableFuture<Boolean>();
             when(bots.carpetRemoveBotAsync(eq(bot),eq(org.leavesmc.leaves.event.bot.BotRemoveEvent.RemoveReason.DEATH),isNull(),eq(true),eq(false))).thenAnswer(call->{f.order.add("typed disconnect");return removed;});
             var handler=mock(CarpetEventServer.CallbackList.class);Field calls=CarpetEventServer.CallbackList.class.getDeclaredField("callList");calls.setAccessible(true);calls.set(handler,List.of(mock(CarpetEventServer.Callback.class)));
@@ -317,8 +341,20 @@ public class ScarpetNativeDeathsTest {
                 if(failGuest){release.countDown();assertSame(problem,assertThrows(ExecutionException.class,()->guest.get().get(3,TimeUnit.SECONDS)).getCause());f.drainUntil(()->f.order.contains("player_dies"));}
                 else f.decision.complete(null);
                 assertEquals(List.of("event","player_dies"),f.order);assertFalse(actual.isDone());
-                playerDecision.complete(false);assertEquals(List.of("event","player_dies","player death body","health:1.0","health:20.0","typed disconnect"),f.order);assertFalse(actual.isDone());
-                removed.complete(true);assertTrue(actual.get(3,TimeUnit.SECONDS));verify(plugins,never()).callEvent(any(org.leavesmc.leaves.event.bot.BotDeathEvent.class));
+                playerDecision.complete(false);
+                if(actual.isCompletedExceptionally())actual.join();
+                Field restored=org.leavesmc.leaves.bot.ServerBot.class.getDeclaredField("carpetRestoreAfterDeath");restored.setAccessible(true);
+                if(cancelDeath) {
+                    assertEquals(List.of("event","player_dies","player death body",pluginRevives?"health:7.0":"health:1.0"),f.order);
+                    assertEquals(pluginRevives?7F:1F,bot.getHealth());assertSame(food,bot.getFoodData());assertFalse(restored.getBoolean(bot));
+                    verify(bots,never()).carpetRemoveBotAsync(any(),any(),any(),anyBoolean(),anyBoolean());
+                } else {
+                    assertEquals(List.of("event","player_dies","player death body","health:20.0","typed disconnect"),f.order);assertFalse(actual.isDone());
+                    assertEquals(20F,bot.getHealth());assertNotSame(food,bot.getFoodData());assertTrue(restored.getBoolean(bot));
+                    removed.complete(true);
+                }
+                assertTrue(actual.get(3,TimeUnit.SECONDS));assertFalse(ScarpetNativeDeaths.isPending(bot));assertTrue(ScarpetNativeWork.whenIdle(f.server).isDone());
+                verify(plugins,never()).callEvent(any(org.leavesmc.leaves.event.bot.BotDeathEvent.class));
             } finally {hf.set(CarpetEventServer.Event.PLAYER_DIES,original);}
         }
     }

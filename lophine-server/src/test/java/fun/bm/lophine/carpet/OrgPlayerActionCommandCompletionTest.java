@@ -5,7 +5,7 @@ import static org.mockito.Mockito.*;
 import carpet.script.external.ScarpetNativeWork;
 import carpet.script.external.ScarpetPlayerInventoryGate;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.StringArgumentType;
+import net.minecraft.commands.arguments.EntityArgument;
 import com.mojang.brigadier.context.CommandContext;
 import java.nio.file.Path;
 import java.util.concurrent.*;
@@ -36,7 +36,7 @@ public class OrgPlayerActionCommandCompletionTest {
         catch(Exception failure){throw new AssertionError(failure);}
     }
     private static int invoke(Class<?> facade,CommandSourceStack source,Consumer<ServerPlayer> body){
-        var dispatcher=new CommandDispatcher<CommandSourceStack>();dispatcher.register(Commands.literal("entry").then(Commands.argument("player",StringArgumentType.word()).executes(context->target(facade,context,body))));
+        var dispatcher=new CommandDispatcher<CommandSourceStack>();dispatcher.register(Commands.literal("entry").then(Commands.argument("player",EntityArgument.player()).executes(context->target(facade,context,body))));
         try{return dispatcher.execute("entry fake",source);}catch(Exception failure){throw new AssertionError(failure);}
     }
     @Test void ordinaryAndHiddenActionEntryResultsWaitActualAssignmentChildrenAndTheirRealSourceCallback()throws Exception{

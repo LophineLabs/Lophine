@@ -37,7 +37,7 @@ public final class OrgMailService {
     static final String DIRECTORY = "config/carpet-org-addition/express/";
     private static final Map<MinecraftServer, OrgMailService> SERVICES = Collections.synchronizedMap(new WeakHashMap<>());
     private static Executor fileExecutor = java.util.concurrent.ForkJoinPool.commonPool();
-    private static final Map<ServerPlayer, Boolean> NOTICED = Collections.synchronizedMap(new WeakHashMap<>());
+    private static final carpet.script.external.WeakIdentityMap<ServerPlayer, Boolean> NOTICED = new carpet.script.external.WeakIdentityMap<>();
     private final MinecraftServer server;
     private final Path root;
     private final ConcurrentSkipListMap<Integer, CompoundTag> documents = new ConcurrentSkipListMap<>();

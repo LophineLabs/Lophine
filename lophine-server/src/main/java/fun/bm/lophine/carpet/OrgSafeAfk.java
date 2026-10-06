@@ -64,55 +64,80 @@ public final class OrgSafeAfk {
         // Capture the wrapper's parent scope before original enters its independent
         // death/body observer. Recording back into the awaited child would self-wait.
         var parent = carpet.script.external.ScarpetNativeWork.capture();
-        var continuation = carpet.script.external.ScarpetRuntime.captureNativeContinuation(() -> {
+        var continuation = carpet.script.external.ScarpetRuntime.captureNativeFunction((java.util.concurrent.CompletableFuture<Void> checked) -> {
             try (var accepted = carpet.script.external.ScarpetPlayerInventoryGate.acceptedScope(player)) {
                 return carpet.script.external.ScarpetNativeWork.<Void>observeNative(player, () -> {
+                    // The same private receipt now follows the post-damage check and
+                    // its mandatory removal, rather than the completed damage body.
+                    carpet.script.external.ScarpetNativeWork.aliasDependency(checked,
+                            carpet.script.external.ScarpetNativeWork.completionOf(carpet.script.external.ScarpetNativeWork.capture()));
                     afterDamage(player, source, amount, frame.totem);
                     return null;
                 });
             }
         });
+        // Restore the wrapper's still-live parent before the retirement actor helper
+        // records its dispatch. The completed damage token may be current in callbacks.
+        var retiredContinuation = carpet.script.external.ScarpetRuntime.captureNativeFunction((java.util.concurrent.CompletableFuture<Void> checked) ->
+                carpet.script.external.ScarpetExplosionActors.entity(player, () -> continuation.apply(checked)).thenCompose(next -> next));
         return ScopedValue.where(DAMAGE, frame).call(() -> {
             T result = original.get();
             var actual = carpet.script.external.ScarpetDamageContinuations.pendingBodyResult(player);
             if (actual != null && actual != before && !actual.isDone()) {
                 if (frame.checked.compareAndSet(false, true)) {
                     var checked = new java.util.concurrent.CompletableFuture<Void>();
+                    // A lethal damage body already awaits the fake player's removal.
+                    // Its inventory gate must recognize this waiter as part of that body.
+                    carpet.script.external.ScarpetNativeWork.aliasDependency(checked, actual);
                     carpet.script.external.ScarpetNativeWork.with(parent, () -> carpet.script.external.ScarpetNativeWork.record(checked));
                     carpet.script.external.ScarpetNativeWork.trackNative(player.level().getServer(), checked);
                     carpet.script.external.ScarpetPlayerInventoryGate.trackAccepted(player, checked);
+                    var delivered = new java.util.concurrent.atomic.AtomicBoolean();
+                    java.util.function.Consumer<Boolean> deliver = retired -> {
+                        if (!delivered.compareAndSet(false, true)) return;
+                        try {
+                            var check = retired ? retiredContinuation.apply(checked) : continuation.apply(checked);
+                            check.whenComplete((ignored, error) -> {
+                                if (error == null) checked.complete(null);
+                                else checked.completeExceptionally(error);
+                            });
+                        } catch (Throwable error) {
+                            checked.completeExceptionally(error);
+                        }
+                    };
+                    Runnable retire = () -> {
+                        if (carpet.script.external.ScarpetRetiredActors.knownRetired(player)) deliver.accept(true);
+                        else if (delivered.compareAndSet(false, true))
+                            checked.completeExceptionally(new IllegalStateException("SafeAFK actual damage owner retired"));
+                    };
                     actual.whenComplete((value, failure) -> {
                         if (failure != null) {
                             checked.completeExceptionally(failure);
                             return;
                         }
-                        if (ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(player)) {
-                            try {
-                                continuation.get().whenComplete((ignored, error) -> {
-                                    if (error == null) checked.complete(null);
-                                    else checked.completeExceptionally(error);
-                                });
-                            } catch (Throwable error) {
-                                checked.completeExceptionally(error);
-                            }
+                        // Physical death may have retired the scheduler. Keep the real
+                        // health/failure check on the captured final region owner.
+                        if (carpet.script.external.ScarpetRetiredActors.knownRetired(player)) {
+                            deliver.accept(true);
                             return;
                         }
-                        boolean scheduled = player.getBukkitEntity().taskScheduler.schedule(owner -> {
-                            if (owner != player) {
-                                checked.completeExceptionally(new IllegalStateException("SafeAFK damage owner identity changed"));
-                                return;
-                            }
-                            try {
-                                continuation.get().whenComplete((ignored, error) -> {
-                                    if (error == null) checked.complete(null);
-                                    else checked.completeExceptionally(error);
-                                });
-                            } catch (Throwable error) {
-                                checked.completeExceptionally(error);
-                            }
-                        }, retired -> checked.completeExceptionally(new IllegalStateException("SafeAFK actual damage owner retired")), 1L);
-                        if (!scheduled)
-                            checked.completeExceptionally(new IllegalStateException("SafeAFK actual damage owner retired"));
+                        if (ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(player)) {
+                            deliver.accept(false);
+                            return;
+                        }
+                        try {
+                            boolean scheduled = player.getBukkitEntity().taskScheduler.schedule(owner -> {
+                                if (owner != player) {
+                                    if (delivered.compareAndSet(false, true))
+                                        checked.completeExceptionally(new IllegalStateException("SafeAFK damage owner identity changed"));
+                                    return;
+                                }
+                                deliver.accept(carpet.script.external.ScarpetRetiredActors.knownRetired(player));
+                            }, retired -> retire.run(), 1L);
+                            if (!scheduled) retire.run();
+                        } catch (Throwable error) {
+                            if (delivered.compareAndSet(false, true)) checked.completeExceptionally(error);
+                        }
                     });
                 }
             } else if ((!outer || frame.actual || carpet.script.external.ScarpetDamageContinuations.pendingCompletion(player) == null) && frame.checked.compareAndSet(false, true))

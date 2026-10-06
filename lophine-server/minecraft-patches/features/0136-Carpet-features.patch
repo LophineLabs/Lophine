@@ -2914,12 +2914,13 @@ index cd56cae73a21800b8a8663836b050784e7fb3c79..ba48b106d08fb78a625bfacf6ca46e52
          boolean startedWorldLoadProfiling = !JvmProfiler.INSTANCE.isRunning()
              && SharedConstants.DEBUG_JFR_PROFILING_ENABLE_LEVEL_LOADING
              && JvmProfiler.INSTANCE.start(Environment.from(this));
-@@ -1040,6 +1043,31 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1040,6 +1043,32 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      // Folia end - region threading
  
      public void stopServer() { // Folia - region threading - public
 +        this.tickRateManager.carpetSetDeeplyFrozen(false);
 +        carpet.script.external.ScarpetNativeWork.beginDrain(this);
++        fun.bm.lophine.carpet.TisProjectileVisualizer.clearAtShutdown(this);
 +        fun.bm.lophine.carpet.CarpetResourceReloadCoordinator.shutdown();
 +        fun.bm.lophine.carpet.CarpetPlayerTargetArea.closeAtShutdown(this);
 +        fun.bm.lophine.carpet.OrgPlayerStatusSync.reset(this);
@@ -2955,12 +2956,13 @@ index cd56cae73a21800b8a8663836b050784e7fb3c79..ba48b106d08fb78a625bfacf6ca46e52
          org.spigotmc.WatchdogThread.doStop(); // Paper - Improved watchdog support
          // CraftBukkit end
          //this.packetProcessor.close(); // Folia - region threading
-@@ -1184,6 +1214,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1184,6 +1215,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      }
  
      public void halt(final boolean wait, final boolean isRestarting, boolean force) {
 +        this.tickRateManager.carpetSetDeeplyFrozen(false);
 +        carpet.script.external.ScarpetNativeWork.beginDrain(this);
++        fun.bm.lophine.carpet.TisProjectileVisualizer.clearAtShutdown(this);
 +        if (carpet.script.external.ScarpetRuntime.beginShutdown(this, () -> this.halt(wait, isRestarting, force))) return;
 +        if (fun.bm.lophine.carpet.OrgPlayerManagerLifecycle.beforeStop(this, () -> this.halt(wait, isRestarting, force))) return;
          if (!force && !this.getBotList().forceShutdown && !this.getBotList().removeAll()) { // Leaves - save or remove bot
@@ -3245,7 +3247,7 @@ index 4b7cb2ba2e1f05d73768e62bb93cd129514166d0..c4db67211ab725939b73616fecadd463
      private final RecipeManager recipes;
      private final ServerAdvancementManager advancements;
      private final ServerFunctionLibrary functionLibrary;
-@@ -42,8 +43,9 @@ public class ReloadableServerResources {
+@@ -42,8 +43,10 @@ public class ReloadableServerResources {
          this.postponedTags = postponedTags;
          this.newComponents = newComponents;
          this.recipes = new RecipeManager(loadingContext.lookupWithUpdatedTags());
@@ -3254,10 +3256,11 @@ index 4b7cb2ba2e1f05d73768e62bb93cd129514166d0..c4db67211ab725939b73616fecadd463
 +        this.carpetCommandContext = CommandBuildContext.simple(loadingContext.lookupWithUpdatedTags(), enabledFeatures);
 +        this.commands = new Commands(commandSelection, this.carpetCommandContext, true); // Paper - Brigadier Command API - use modern alias registration
 +        this.carpetBindCommands(); // Paper - Brigadier Command API
++        io.papermc.paper.command.brigadier.PaperCommands.INSTANCE.setValid(); // Lophine - rebind closes the registrar; internal construction still needs it
          io.papermc.paper.command.PaperCommands.registerCommands(); // Paper
          this.advancements = new ServerAdvancementManager(loadingContext.lookupWithUpdatedTags());
          this.functionLibrary = new ServerFunctionLibrary(functionCompilationPermissions, this.commands.getDispatcher());
-@@ -61,6 +63,11 @@ public class ReloadableServerResources {
+@@ -61,6 +64,11 @@ public class ReloadableServerResources {
          return this.recipes;
      }
  
@@ -3269,7 +3272,7 @@ index 4b7cb2ba2e1f05d73768e62bb93cd129514166d0..c4db67211ab725939b73616fecadd463
      public Commands getCommands() {
          return this.commands;
      }
-@@ -82,43 +89,49 @@ public class ReloadableServerResources {
+@@ -82,43 +90,52 @@ public class ReloadableServerResources {
          final PermissionSet functionCompilationPermissions,
          final Executor backgroundExecutor,
          final Executor mainThreadExecutor
@@ -3335,7 +3338,10 @@ index 4b7cb2ba2e1f05d73768e62bb93cd129514166d0..c4db67211ab725939b73616fecadd463
 +                            if (carpetDetachedReload) io.papermc.paper.command.brigadier.PaperBrigadier.moveBukkitCommands(previousCommands, result.commands);
 +                            return result;
 +                        } finally {
-+                            if (carpetDetachedReload) io.papermc.paper.command.brigadier.PaperCommands.INSTANCE.setDispatcher(previousCommands, previousContext);
++                            if (carpetDetachedReload) {
++                                io.papermc.paper.command.brigadier.PaperCommands.INSTANCE.setDispatcher(previousCommands, previousContext);
++                                io.papermc.paper.command.brigadier.PaperCommands.INSTANCE.invalidate();
++                            }
                          }
 -                    )
 -            );
@@ -3455,7 +3461,7 @@ index 9ec141359c4422c1574dac71a88b7f5043350901..b32f692f075dd05693b255e8c2760dbb
              // this.remainingSprintTicks--; // Luminol - Add tick command support
              return true;
          } else {
-@@ -119,13 +130,17 @@ public class ServerTickRateManager extends TickRateManager {
+@@ -119,13 +130,20 @@ public class ServerTickRateManager extends TickRateManager {
      }
  
      // Lophine start - Add tick command support
@@ -3468,16 +3474,19 @@ index 9ec141359c4422c1574dac71a88b7f5043350901..b32f692f075dd05693b255e8c2760dbb
  
 -    public void endTickWork() {
 -        this.sprintTimeSpend = this.sprintTimeSpend + (System.nanoTime() - this.sprintTickStartTime);
-+    public synchronized void endTickWork() {
++    public void endTickWork() {
 +        CarpetSprintTick tick = this.carpetSprintTick.get();
++        if (tick == null) return;
 +        this.carpetSprintTick.remove();
-+        if (tick != null && tick.epoch() == this.carpetSprintEpoch && this.isSprinting()) {
-+            this.sprintTimeSpend.addAndGet(System.nanoTime() - tick.startedAt());
++        synchronized (this) {
++            if (tick.epoch() == this.carpetSprintEpoch && this.isSprinting()) {
++                this.sprintTimeSpend.addAndGet(System.nanoTime() - tick.startedAt());
++            }
 +        }
      }
  
      @Override
-@@ -145,4 +160,34 @@ public class ServerTickRateManager extends TickRateManager {
+@@ -145,4 +163,34 @@ public class ServerTickRateManager extends TickRateManager {
          return remainingSprintTicks;
      }
      // Leaves end - servux
@@ -4910,7 +4919,7 @@ index 733b47fd1befdb85f58af0a841163ff740a62179..49c1dfc18de156578c762cb2f816baf0
              if (!this.level().paperConfig().entities.behavior.parrotsAreUnaffectedByPlayerMovement) // Paper - Add option to make parrots stay
              this.removeEntitiesOnShoulder();
          }
-@@ -1213,64 +1203,84 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1213,64 +1203,88 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          }
      }
  
@@ -4920,6 +4929,10 @@ index 733b47fd1befdb85f58af0a841163ff740a62179..49c1dfc18de156578c762cb2f816baf0
      @Override
      public void removeEntitiesOnShoulder() {
          if (this.timeEntitySatOnShoulder + 20L < this.level().getGameTime()) {
++            if (this.getShoulderEntityLeft().isEmpty() && this.getShoulderEntityRight().isEmpty()
++                    && (this.carpetLeftShoulderRelease == null || this.carpetLeftShoulderRelease.isDone())
++                    && (this.carpetRightShoulderRelease == null || this.carpetRightShoulderRelease.isDone()))
++                return; // Lophine - an already drained death tail needs no live inventory admission
 -            // CraftBukkit start
 -            if (this.respawnEntityOnShoulder(this.getShoulderEntityLeft())) {
 -                this.setShoulderEntityLeft(new CompoundTag());
@@ -7684,10 +7697,11 @@ index f7aa06905ec1e2b80e5b56bb8dd860bde5b116d6..bc21e70f371da8fae6304024db926738
          // Folia start - region threading
          this.preRemove(removalReason);
          // Folia end - region threading
-@@ -6514,6 +6706,10 @@ public abstract class Entity
+@@ -6514,6 +6706,11 @@ public abstract class Entity
              this.removeEventCause = cause; // Paper
          }
  
++        if (!alreadyRemoved) fun.bm.lophine.carpet.TisProjectileVisualizer.removed(this);
 +        if (!alreadyRemoved && reason == Entity.RemovalReason.UNLOADED_WITH_PLAYER) {
 +            fun.bm.lophine.carpet.TisLifetimeTracker.removed(this, "player_logout");
 +        }
@@ -7695,7 +7709,7 @@ index f7aa06905ec1e2b80e5b56bb8dd860bde5b116d6..bc21e70f371da8fae6304024db926738
          if (this.removalReason.shouldDestroy()) {
              this.stopRiding();
          }
-@@ -6837,4 +7033,18 @@ public abstract class Entity
+@@ -6837,4 +7034,18 @@ public abstract class Entity
      }
  
      // Lophine end - Add config to enable raytracing tracker
@@ -22184,6 +22198,19 @@ index 90145a3ea384b568897ee665b80b24cccba1b6c5..1c2719965f402d284b6e98e780c80d5f
 +        } finally { carpetMicroScope.close(); }
      }
  }
+diff --git a/net/minecraft/world/level/storage/LevelStorageSource.java b/net/minecraft/world/level/storage/LevelStorageSource.java
+index 01b4ea4159d1885c4f409cca85297342bf485d56..63b51eb79331edf61029e7173d60bb17697fda07 100644
+--- a/net/minecraft/world/level/storage/LevelStorageSource.java
++++ b/net/minecraft/world/level/storage/LevelStorageSource.java
+@@ -460,7 +460,7 @@ public class LevelStorageSource {
+         private DirectoryLock lock;
+         private final LevelStorageSource.LevelDirectory levelDirectory;
+         private final String levelId;
+-        private final Map<LevelResource, Path> resources = Maps.newHashMap();
++        private final Map<LevelResource, Path> resources = new java.util.concurrent.ConcurrentHashMap<>(); // Lophine - fake player births resolve paths on independent region owners
+
+         private LevelStorageAccess(final String levelId, final Path path) throws IOException {
+             this.levelId = levelId;
 diff --git a/net/minecraft/world/level/storage/SavedDataStorage.java b/net/minecraft/world/level/storage/SavedDataStorage.java
 index 81c1541d8fa272e84316e87c3418ee727111a65c..139ed16df15af699590c9b482104f4c707c76a25 100644
 --- a/net/minecraft/world/level/storage/SavedDataStorage.java

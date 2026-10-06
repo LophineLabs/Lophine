@@ -46,7 +46,12 @@ final class OrgMenuNativeEffects {
         Supplier<CompletableFuture<T>> body = ScarpetRuntime.captureNativeContinuation(() -> {
             ScarpetPlayerInventoryGate.trackAccepted(player, actual);
             try (var accepted = ScarpetPlayerInventoryGate.acceptedScope(player)) {
-                var observed = ScarpetNativeWork.observeNative(player, operation);
+                var observed = ScarpetNativeWork.observeNative(player, () -> {
+                    // Self-removal can snapshot accepted work inside operation.get().
+                    // Publish the actor's causal token before that snapshot is taken.
+                    ScarpetNativeWork.aliasDependency(actual, ScarpetNativeWork.completionOf(ScarpetNativeWork.capture()));
+                    return operation.get();
+                });
                 ScarpetNativeWork.aliasDependency(actual, observed);
                 ScarpetNativeWork.trackNative(player.level().getServer(), observed);
                 return ScarpetNativeWork.recoverGuestValue(observed);

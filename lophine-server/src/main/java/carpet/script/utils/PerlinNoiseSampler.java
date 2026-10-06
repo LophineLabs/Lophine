@@ -1,10 +1,10 @@
 package carpet.script.utils;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.util.Mth;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 // extracted from import net.minecraft.util.math.noise.PerlinNoiseSampler
 public class PerlinNoiseSampler {
@@ -22,7 +22,7 @@ public class PerlinNoiseSampler {
     public final double originY;
     public final double originZ;
     public static PerlinNoiseSampler instance = new PerlinNoiseSampler(new Random(0));
-    public static Map<Long, PerlinNoiseSampler> samplers = new Long2ObjectOpenHashMap<>();
+    public static Map<Long, PerlinNoiseSampler> samplers = new ConcurrentHashMap<>();
 
     public static PerlinNoiseSampler getPerlin(long aLong) {
         if (samplers.size() > 256) {

@@ -7,9 +7,7 @@ import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.function.Predicate;
 
 /**
@@ -19,7 +17,7 @@ public final class AmsCommandPermissionLevels {
     private record Requirement(Predicate<CommandSourceStack> original, Predicate<CommandSourceStack> installed) {
     }
 
-    private static final Map<CommandNode<CommandSourceStack>, Requirement> DEFAULTS = new WeakHashMap<>();
+    private static final carpet.script.external.WeakIdentityMap<CommandNode<CommandSourceStack>, Requirement> DEFAULTS = new carpet.script.external.WeakIdentityMap<>();
     private static final Set<String> AMS_RESTRICTED = Set.of("advancement", "data", "defaultgamemode", "difficulty", "effect", "enchant", "experience", "xp", "fill", "gamemode", "gamerule", "give", "kill", "setblock", "summon", "teleport", "tp", "time", "weather");
     private static final Set<String> TIS_RESTRICTED = Set.of("fill", "gamemode", "give", "setblock", "summon", "teleport", "tp");
 
@@ -30,7 +28,10 @@ public final class AmsCommandPermissionLevels {
         for (var node : dispatcher.getRoot().getChildren()) {
             String name = node.getName();
             Requirement previous = DEFAULTS.get(node);
-            Predicate<CommandSourceStack> original = previous == null || node.getRequirement() != previous.installed() ? node.getRequirement() : previous.original();
+            // The installed predicate reads live settings. Replacing it on every
+            // global tick only races the asynchronous per-player command builders.
+            if (previous != null && node.getRequirement() == previous.installed()) continue;
+            Predicate<CommandSourceStack> original = node.getRequirement();
             Predicate<CommandSourceStack> installed = source -> {
                 Integer level = AmsManagementSettings.enabled(GeneralCompatConfig.commandCustomCommandPermissionLevel) ? AmsManagementSettings.PERMISSIONS.get(name) : null;
                 if (level == null) return original.test(source);

@@ -13,9 +13,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.phys.AABB;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -23,7 +20,7 @@ import java.util.function.Function;
  * A loaded-only native area owns both the player and items before normal pickup is invoked.
  */
 public final class OrgExpandedItemPickup {
-    private static final Map<ServerPlayer, Boolean> PENDING = Collections.synchronizedMap(new WeakHashMap<>());
+    private static final carpet.script.external.WeakIdentityMap<ServerPlayer, Object> PENDING = new carpet.script.external.WeakIdentityMap<>();
 
     private OrgExpandedItemPickup() {
     }
@@ -43,7 +40,8 @@ public final class OrgExpandedItemPickup {
             });
             return;
         }
-        if (PENDING.putIfAbsent(player, true) != null) return;
+        Object request = new Object();
+        if (PENDING.putIfAbsent(player, request) != null) return;
         var actual = ScarpetNativeWork.<CompletableFuture<Void>>observeNative(player, () -> {
             var inherited = ScarpetRuntime.<CompletableFuture<Void>>captureNativeContinuation(() -> {
                 if (!TickThread.isTickThreadFor(player)) return CompletableFuture.<Void>completedFuture(null);
@@ -61,7 +59,7 @@ public final class OrgExpandedItemPickup {
             ScarpetNativeWork.record(area);
             var committed = area.handle((ignored, error) -> error).thenCompose(error -> OrgFakePlayerActions.owned(player, () -> {
                 try (var accepted = ScarpetPlayerInventoryGate.acceptedScope(player)) {
-                    PENDING.remove(player);
+                    PENDING.remove(player, request);
                     if (error != null) throw new java.util.concurrent.CompletionException(error);
                     return (Void) null;
                 }
@@ -72,7 +70,7 @@ public final class OrgExpandedItemPickup {
         ScarpetPlayerInventoryGate.trackAccepted(player, actual);
         actual.whenComplete((ignored, error) -> {
             if (error != null) {
-                PENDING.remove(player);
+                PENDING.remove(player, request);
                 net.minecraft.server.MinecraftServer.LOGGER.error("Expanded item pickup area failed", error);
             }
         });

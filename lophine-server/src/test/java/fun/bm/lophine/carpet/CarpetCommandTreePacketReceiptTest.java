@@ -23,6 +23,35 @@ public class CarpetCommandTreePacketReceiptTest {
     }
     @Test void actualEmptyCommandTreeWaitsItsPhysicalPacketAndLateNativeChildren()throws Exception{check(false);}
     @Test void actualEmptyCommandTreeKeepsPhysicalWriteFailure()throws Exception{check(true);}
+    @Test void actualSyntheticBotTransportCompletesReloadWithoutAChannelOrWriteCallback()throws Exception{
+        int before=org.spigotmc.SpigotConfig.tabComplete;
+        var config=new io.papermc.paper.configuration.GlobalConfiguration();config.packetLimiter=config.new PacketLimiter();
+        try(var ticks=mockStatic(TickThread.class);var configurations=mockStatic(io.papermc.paper.configuration.GlobalConfiguration.class)){
+            configurations.when(io.papermc.paper.configuration.GlobalConfiguration::get).thenReturn(config);
+            org.spigotmc.SpigotConfig.tabComplete=-1;
+            var player=mock(org.leavesmc.leaves.bot.ServerBot.class);var server=mock(MinecraftServer.class);when(player.carpetSpawnServer()).thenReturn(server);
+            var listener=mock(org.leavesmc.leaves.bot.ServerBotPacketListenerImpl.class);
+            var wire=new org.leavesmc.leaves.bot.ServerBotPacketListenerImpl.BotConnection();
+            assertTrue(wire.isConnected());assertNull(wire.channel);
+            var connectionField=net.minecraft.server.network.ServerCommonPacketListenerImpl.class.getField("connection");connectionField.setAccessible(true);connectionField.set(listener,wire);player.connection=listener;
+            ticks.when(()->TickThread.isTickThreadFor(player)).thenReturn(true);
+            var commands=mock(Commands.class,CALLS_REAL_METHODS);commands.carpetReloadCommands(player).get(3,TimeUnit.SECONDS);ScarpetNativeWork.whenIdle(server).get(3,TimeUnit.SECONDS);
+            verify(listener,never()).send(any(Packet.class),any(io.netty.channel.ChannelFutureListener.class));
+        }finally{org.spigotmc.SpigotConfig.tabComplete=before;}
+    }
+    @Test void aRealTransportWithoutAChannelStillFailsTheReloadReceipt()throws Exception{
+        int before=org.spigotmc.SpigotConfig.tabComplete;
+        try(var ticks=mockStatic(TickThread.class)){
+            org.spigotmc.SpigotConfig.tabComplete=-1;
+            var player=mock(ServerPlayer.class);var server=mock(MinecraftServer.class);when(player.carpetSpawnServer()).thenReturn(server);
+            var listener=mock(ServerGamePacketListenerImpl.class);var wire=mock(net.minecraft.network.Connection.class);
+            var connectionField=net.minecraft.server.network.ServerCommonPacketListenerImpl.class.getField("connection");connectionField.setAccessible(true);connectionField.set(listener,wire);player.connection=listener;
+            ticks.when(()->TickThread.isTickThreadFor(player)).thenReturn(true);
+            var commands=mock(Commands.class,CALLS_REAL_METHODS);var failure=assertThrows(ExecutionException.class,()->commands.carpetReloadCommands(player).get(3,TimeUnit.SECONDS));
+            assertInstanceOf(java.nio.channels.ClosedChannelException.class,failure.getCause());assertFalse(ScarpetNativeWork.onlyGuestFailure(failure.getCause()));
+            verify(listener,never()).send(any(Packet.class),any(io.netty.channel.ChannelFutureListener.class));
+        }finally{org.spigotmc.SpigotConfig.tabComplete=before;}
+    }
     void check(boolean fail)throws Exception{
         int before=org.spigotmc.SpigotConfig.tabComplete;
         try(var ticks=mockStatic(TickThread.class)){

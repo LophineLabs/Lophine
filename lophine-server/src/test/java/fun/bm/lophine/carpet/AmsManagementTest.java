@@ -58,6 +58,47 @@ class AmsManagementTest {
         }
     }
 
+    @Test void concurrentCommandTreeBuildersKeepTheInstalledRequirementWhileGlobalRefreshRuns() throws Exception {
+        String old=GeneralCompatConfig.commandCustomCommandPermissionLevel;
+        var saved=java.util.Map.copyOf(AmsManagementSettings.PERMISSIONS);
+        try {
+            GeneralCompatConfig.commandCustomCommandPermissionLevel="true";
+            var dispatcher=new CommandDispatcher<CommandSourceStack>();
+            var node=dispatcher.register(Commands.literal("ams_concurrent_test").requires(source -> false));
+            AmsCommandPermissionLevels.apply(dispatcher);
+            var installed=node.getRequirement();
+            AmsManagementSettings.PERMISSIONS.put(node.getName(),0);
+            assertTrue(installed.test(mock(CommandSourceStack.class)));
+            try(var workers=java.util.concurrent.Executors.newFixedThreadPool(4)) {
+                var start=new java.util.concurrent.CountDownLatch(1);
+                var jobs=new java.util.ArrayList<java.util.concurrent.Future<?>>();
+                for(int worker=0;worker<4;worker++) {
+                    boolean refresh=worker==0;
+                    jobs.add(workers.submit(() -> {
+                        start.await();
+                        for(int iteration=0;iteration<2_000;iteration++) {
+                            if(refresh) AmsCommandPermissionLevels.apply(dispatcher);
+                            else assertSame(installed,node.createBuilder().getRequirement());
+                        }
+                        return null;
+                    }));
+                }
+                start.countDown();
+                for(var job:jobs) job.get(5,java.util.concurrent.TimeUnit.SECONDS);
+            }
+            AmsManagementSettings.PERMISSIONS.remove(node.getName());
+            assertFalse(installed.test(mock(CommandSourceStack.class)));
+            var pluginRequirement=(java.util.function.Predicate<CommandSourceStack>)source -> true;
+            node.requirement=pluginRequirement;
+            AmsCommandPermissionLevels.apply(dispatcher);
+            assertNotSame(installed,node.getRequirement());
+            assertTrue(node.canUse(mock(CommandSourceStack.class)));
+        } finally {
+            GeneralCompatConfig.commandCustomCommandPermissionLevel=old;
+            AmsManagementSettings.PERMISSIONS.clear();AmsManagementSettings.PERMISSIONS.putAll(saved);
+        }
+    }
+
     @Test void malformedListIsRetainedAndNeverPartiallyPublished() throws Exception {
         MinecraftServer server=mock(MinecraftServer.class);
         when(server.getWorldPath(LevelResource.ROOT)).thenReturn(directory);

@@ -19,6 +19,48 @@ public class AmsNativeNetworkQueryTest {
  static FriendlyByteBuf packet(String name){return new FriendlyByteBuf(Unpooled.buffer()).writeUtf(name);}
  static void acknowledge(ChannelFutureListener listener,Throwable failure)throws Exception{var channel=mock(ChannelFuture.class);when(channel.isSuccess()).thenReturn(failure==null);when(channel.cause()).thenReturn(failure);listener.operationComplete(channel);}
  static void install(ServerPlayer target)throws Exception{AmsNativeNetworkQueryTest.<UUID,AmsNetworkProtocol.Client>map("CLIENTS").put(target.getUUID(),new AmsNetworkProtocol.Client("target","26.3",Set.of("handshake_s2c","sync_custom_block_hardness","update_player_pose_s2c","lazy_settings_s2c","request_client_mod_version_s2c","client_player_fps_s2c")));}
+ static Object pingCall(String name,Class<?>[] arguments,Object... values)throws Exception{var method=AmsClientQueryCommands.class.getDeclaredMethod(name,arguments);method.setAccessible(true);return method.invoke(null,values);}
+ static Map<?,?> pingJobs()throws Exception{var field=AmsClientQueryCommands.class.getDeclaredField("PINGS");field.setAccessible(true);return (Map<?,?>)field.get(null);}
+ @SuppressWarnings("unchecked")static <T>T pingField(Object job,String name)throws Exception{var field=job.getClass().getDeclaredField(name);field.setAccessible(true);return (T)field.get(job);}
+ static CommandSourceStack samePlayerSource(AmsNativeManagementTest.Fixture fixture){var source=mock(CommandSourceStack.class);when(source.getServer()).thenReturn(fixture.server);when(source.getEntity()).thenReturn(fixture.sourcePlayer);when(source.getLevel()).thenReturn(fixture.world);return source;}
+ @Test void aFreshCommandStackStopsItsPlayersWorkerButRetainsTheAcceptedReplyTail()throws Exception{
+  try(var f=new AmsNativeManagementTest.Fixture(directory)){
+   var child=new CompletableFuture<Void>();doAnswer(call->{ScarpetNativeWork.record(child);return null;}).when(f.source).sendSuccess(any(),eq(false));
+   pingCall("ping",new Class<?>[]{CommandSourceStack.class,String.class,int.class},f.source,"never-resolved.invalid",0);
+   long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(3);while(f.tasks.isEmpty()&&System.nanoTime()<deadline)Thread.sleep(1);assertFalse(f.tasks.isEmpty());assertEquals(1,pingJobs().size());Object job=pingJobs().values().iterator().next();Thread worker=pingField(job,"worker");CompletableFuture<Void> actual=pingField(job,"actual");
+   var fresh=samePlayerSource(f);assertEquals(1,pingCall("stop",new Class<?>[]{CommandSourceStack.class},fresh));worker.join(3_000);assertFalse(worker.isAlive());assertFalse(actual.isDone());f.translations.verify(()->AmsTranslations.message(eq(fresh),eq("command.ping.stop_ping"),any(Object[].class)));
+   f.drain();assertFalse(actual.isDone());child.complete(null);f.drain();actual.get(3,TimeUnit.SECONDS);ScarpetNativeWork.whenIdle(f.server).join();
+  }
+ }
+ @Test void concurrentFreshStacksReplaceOnePlayerJobAndShutdownRejectsAnyLateReplacement()throws Exception{
+  try(var f=new AmsNativeManagementTest.Fixture(directory)){
+   try(var workers=Executors.newFixedThreadPool(4)){
+    var start=new CountDownLatch(1);var jobs=new ArrayList<Future<?>>();for(int caller=0;caller<4;caller++){var source=samePlayerSource(f);jobs.add(workers.submit(()->{start.await();pingCall("ping",new Class<?>[]{CommandSourceStack.class,String.class,int.class},source,"never-resolved.invalid",0);return null;}));}start.countDown();for(var job:jobs)job.get(3,TimeUnit.SECONDS);
+   }
+   assertEquals(1,pingJobs().size());AmsClientQueryCommands.stopAtShutdown();f.drain();ScarpetNativeWork.whenIdle(f.server).get(3,TimeUnit.SECONDS);assertTrue(pingJobs().isEmpty());
+   var late=ScarpetNativeWork.observeNative(f.sourcePlayer,()->{try{pingCall("ping",new Class<?>[]{CommandSourceStack.class,String.class,int.class},f.source,"never-resolved.invalid",0);}catch(Exception failure){throw new RuntimeException(failure);}return 1;});assertThrows(CompletionException.class,late::join);assertTrue(pingJobs().isEmpty());
+  }
+ }
+ @Test void denyingAClientAlsoDropsItsPendingSourcesAndCachedVersion()throws Exception{
+  UUID player=UUID.randomUUID(),other=UUID.randomUUID();var source=mock(CommandSourceStack.class);
+  AmsNativeNetworkQueryTest.<UUID,AmsNetworkProtocol.Client>map("CLIENTS").put(player,new AmsNetworkProtocol.Client("player","26.3",Set.of()));map("FPS").put(player,source);map("CLIENT_VERSIONS").put(player,"26.3");map("FPS").put(other,source);map("CLIENT_VERSIONS").put(other,"other");
+  AmsNetworkProtocol.deny(player);assertFalse(map("CLIENTS").containsKey(player));assertFalse(map("FPS").containsKey(player));assertFalse(map("CLIENT_VERSIONS").containsKey(player));assertSame(source,map("FPS").get(other));
+  AmsNetworkProtocol.denyAll();assertTrue(map("FPS").isEmpty());assertTrue(map("CLIENT_VERSIONS").isEmpty());
+ }
+ @Test void aVersionQueryDoesNotEraseAnUnrelatedPlayersReadyReply()throws Exception{
+  try(var f=new AmsNativeManagementTest.Fixture(directory);var effects=mockStatic(AmsNativeCommandEffects.class,CALLS_REAL_METHODS)){
+   effects.when(()->AmsNativeCommandEffects.pause(f.server,3000L)).thenReturn(CompletableFuture.completedFuture(null));UUID other=UUID.randomUUID();map("CLIENT_VERSIONS").put(other,"26.3-other");
+   AmsNetworkProtocol.requestVersion(f.source,f.target);f.drain();assertEquals("26.3-other",map("CLIENT_VERSIONS").get(other));ScarpetNativeWork.whenIdle(f.server).join();
+  }
+ }
+ @Test void queuedRepliesFromThePreviousSessionCannotConsumeOrRepopulateItsReplacement()throws Exception{
+  try(var f=new AmsNativeManagementTest.Fixture(directory)){
+   install(f.target);var version=packet("request_client_mod_version_c2s").writeUtf("old session").writeUUID(f.target.getUUID());try{AmsNetworkProtocol.receive(f.target,version);}finally{version.release();}
+   AmsNetworkProtocol.deny(f.target.getUUID());install(f.target);f.drain();assertFalse(map("CLIENT_VERSIONS").containsKey(f.target.getUUID()));
+   map("FPS").put(f.target.getUUID(),f.source);var fps=packet("client_player_fps_c2s").writeUUID(f.target.getUUID()).writeInt(120);try{AmsNetworkProtocol.receive(f.target,fps);}finally{fps.release();}
+   AmsNetworkProtocol.deny(f.target.getUUID());install(f.target);var replacement=mock(CommandSourceStack.class);map("FPS").put(f.target.getUUID(),replacement);f.drain();assertSame(replacement,map("FPS").get(f.target.getUUID()));assertTrue(f.order.isEmpty());ScarpetNativeWork.whenIdle(f.server).join();
+  }
+ }
  @Test void unsupportedFpsKeepsOfficialOneLatestSourceAndNoTimeout()throws Exception{
   try(var f=new AmsNativeManagementTest.Fixture(directory)){
    var second=mock(CommandSourceStack.class);assertEquals(1,AmsNetworkProtocol.requestFps(f.source,f.target));assertEquals(1,AmsNetworkProtocol.requestFps(second,f.target));f.drain();

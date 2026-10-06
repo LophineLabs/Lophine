@@ -1,10 +1,10 @@
 package carpet.script.utils;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.util.Mth;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 // extracted from import net.minecraft.util.math.noise.SimplexNoiseSampler
 public class SimplexNoiseSampler extends PerlinNoiseSampler {
@@ -13,7 +13,7 @@ public class SimplexNoiseSampler extends PerlinNoiseSampler {
     private static final double UNSKEW_FACTOR_2D;
 
     public static SimplexNoiseSampler instance = new SimplexNoiseSampler(new Random(0));
-    public static Map<Long, SimplexNoiseSampler> samplers = new Long2ObjectOpenHashMap<>();
+    public static Map<Long, SimplexNoiseSampler> samplers = new ConcurrentHashMap<>();
 
     public static SimplexNoiseSampler getSimplex(long aLong) {
         if (samplers.size() > 256) {

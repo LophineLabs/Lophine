@@ -210,7 +210,10 @@ public final class ScarpetDamageContinuations {
             }
             return provisional;
         });
-        return ScarpetNativeWork.recoverGuestValue(actual).thenCompose(provisional -> inner.get() == null ? CompletableFuture.completedFuture(provisional) : inner.get());
+        var completed = ScarpetNativeWork.recoverGuestValue(actual).thenCompose(provisional ->
+                inner.get() == null ? CompletableFuture.completedFuture(provisional) : inner.get());
+        ScarpetNativeWork.aliasDependency(completed, actual);
+        return completed;
     }
 
     private ScarpetDamageContinuations() {

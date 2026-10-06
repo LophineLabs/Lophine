@@ -51,10 +51,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class CarpetEventServer {
-    public final List<ScheduledCall> scheduledCalls = new LinkedList<>();
+    public final List<ScheduledCall> scheduledCalls = new java.util.concurrent.CopyOnWriteArrayList<>();
     public final CarpetScriptServer scriptServer;
     private static final List<Value> NOARGS = Collections.emptyList();
-    public final Map<String, Event> customEvents = new HashMap<>();
+    public final Map<String, Event> customEvents = new java.util.concurrent.ConcurrentHashMap<>();
     public GlocalFlag handleEvents = new GlocalFlag(true);
 
     public enum CallbackResult {
@@ -150,6 +150,7 @@ public class CarpetEventServer {
 
         private volatile List<Callback> callList;
         private final List<Callback> removedCalls;
+        private final Object dispatchLock = new Object();
         private int callDepth;
         private int signalDepth;
         public final int reqArgs;
@@ -171,15 +172,24 @@ public class CarpetEventServer {
         }
 
         private void removeCallsIf(Predicate<Callback> when) {
-            if (callDepth == 0 && signalDepth == 0) {
-                callList.removeIf(when);
-                return;
+            synchronized (dispatchLock) {
+                if (callDepth == 0 && signalDepth == 0) {
+                    callList.removeIf(when);
+                    return;
+                }
+                for (Callback call : callList) {
+                    if (when.test(call)) removedCalls.add(call);
+                }
             }
-            // we are ok with list growing in the meantime and parallel access, we are only scanning.
-            for (int i = 0; i < callList.size(); i++) {
-                Callback call = callList.get(i);
-                if (when.test(call)) {
-                    removedCalls.add(call);
+        }
+
+        private void finishDispatch(boolean signal) {
+            synchronized (dispatchLock) {
+                if (signal) signalDepth--;
+                else callDepth--;
+                if (callDepth == 0 && signalDepth == 0) {
+                    callList.removeAll(removedCalls);
+                    removedCalls.clear();
                 }
             }
         }
@@ -215,12 +225,18 @@ public class CarpetEventServer {
                 String nameCheck = perPlayerDistribution ? source.getTextName() : null;
                 assert argv.size() == reqArgs;
                 boolean cancelled = false;
-                try {
-                    // we are ok with list growing in the meantime
-                    // which might happen during inCall or inSignal
+                List<Callback> activeCalls;
+                List<Callback> snapshot;
+                synchronized (dispatchLock) {
                     callDepth++;
-                    for (int i = 0; i < callList.size(); i++) {
-                        Callback call = callList.get(i);
+                    activeCalls = callList;
+                    snapshot = new ArrayList<>(activeCalls);
+                }
+                try {
+                    // Actor waits release the interpreter lock: other callbacks may reload or
+                    // edit handlers before this dispatch resumes. Never index the live list.
+                    for (Callback call : snapshot) {
+                        if (callList != activeCalls) break;
                         // supressing calls where target player hosts simply don't match
                         // handling global hosts with player targets is left to when the host is resolved (few calls deeper).
                         if (nameCheck != null && call.optionalTarget != null && !nameCheck.equals(call.optionalTarget)) {
@@ -232,17 +248,15 @@ public class CarpetEventServer {
                             break;
                         }
                         if (result == CallbackResult.FAIL) {
-                            removedCalls.add(call);
+                            synchronized (dispatchLock) {
+                                removedCalls.add(call);
+                            }
                         }
                     }
                 } finally {
-                    callDepth--;
+                    finishDispatch(false);
+                    profilerToken.run();
                 }
-                if (callDepth == 0 && signalDepth == 0) {
-                    for (Callback call : removedCalls) callList.remove(call);
-                    removedCalls.clear();
-                }
-                profilerToken.run();
                 return cancelled;
             });
             return isCancelled != null && isCancelled;
@@ -253,16 +267,23 @@ public class CarpetEventServer {
                 return 0;
             }
             int successes = 0;
-            try {
+            List<Callback> activeCalls;
+            List<Callback> snapshot;
+            synchronized (dispatchLock) {
                 signalDepth++;
-                for (int i = 0; i < callList.size(); i++) {
+                activeCalls = callList;
+                snapshot = new ArrayList<>(activeCalls);
+            }
+            try {
+                for (Callback call : snapshot) {
+                    if (callList != activeCalls) break;
                     // skipping tracking of fails, its explicit call
-                    if (callList.get(i).signal(sender, recipient, callArg) == CallbackResult.SUCCESS) {
+                    if (call.signal(sender, recipient, callArg) == CallbackResult.SUCCESS) {
                         successes++;
                     }
                 }
             } finally {
-                signalDepth--;
+                finishDispatch(true);
             }
             return successes;
         }
@@ -293,8 +314,10 @@ public class CarpetEventServer {
             //all clear
             //remove duplicates
 
-            removeEventCall(hostName, target, udf.getString());
-            callList.add(new Callback(hostName, target, udf, null, scriptServer));
+            synchronized (dispatchLock) {
+                removeEventCall(hostName, target, udf.getString());
+                callList.add(new Callback(hostName, target, udf, null, scriptServer));
+            }
             return true;
         }
 
@@ -303,8 +326,10 @@ public class CarpetEventServer {
                 return false;
             }
             //removing duplicates
-            removeEventCall(host.getName(), host.user, function.getString());
-            callList.add(new Callback(host.getName(), host.user, function, args, (CarpetScriptServer) host.scriptServer()));
+            synchronized (dispatchLock) {
+                removeEventCall(host.getName(), host.user, function.getString());
+                callList.add(new Callback(host.getName(), host.user, function, args, (CarpetScriptServer) host.scriptServer()));
+            }
             return true;
         }
 
@@ -333,11 +358,13 @@ public class CarpetEventServer {
         }
 
         public void clearEverything() {
-            // when some moron puts /reload in an event call.
-            if (signalDepth != 0 || callDepth != 0) {
-                callList = new java.util.concurrent.CopyOnWriteArrayList<>();
+            synchronized (dispatchLock) {
+                // Stop suspended dispatches before invoking handlers from a new reload.
+                if (signalDepth != 0 || callDepth != 0) {
+                    callList = new java.util.concurrent.CopyOnWriteArrayList<>();
+                }
+                callList.clear();
             }
-            callList.clear();
         }
 
         public void sortByPriority(CarpetScriptServer scriptServer) {
@@ -966,11 +993,8 @@ public class CarpetEventServer {
         }
 
         public static Event getOrCreateCustom(String name, CarpetScriptServer server) {
-            Event event = getEvent(name, server);
-            if (event != null) {
-                return event;
-            }
-            return new Event(name, server);
+            Event builtin = byName.get(name);
+            return builtin != null ? builtin : server.events.customEvents.computeIfAbsent(name, Event::new);
         }
 
         public static void removeAllHostEvents(CarpetScriptHost host) {
@@ -988,11 +1012,10 @@ public class CarpetEventServer {
         }
 
         // custom event constructor
-        private Event(String name, CarpetScriptServer server) {
+        private Event(String name) {
             this.name = name;
             this.handler = new CallbackList(1, false, false);
             this.isPublic = true;
-            server.events.customEvents.put(name, this);
         }
 
         //handle_event('event', function...)
@@ -1129,14 +1152,11 @@ public class CarpetEventServer {
         if (!scriptServer.server.tickRateManager().runsNormally()) {
             return;
         }
-        Iterator<ScheduledCall> eventIterator = scheduledCalls.iterator();
         List<ScheduledCall> currentCalls = new ArrayList<>();
-        while (eventIterator.hasNext()) {
-            ScheduledCall call = eventIterator.next();
+        for (ScheduledCall call : scheduledCalls) {
             call.dueTime--;
-            if (call.dueTime <= 0) {
+            if (call.dueTime <= 0 && scheduledCalls.remove(call)) {
                 currentCalls.add(call);
-                eventIterator.remove();
             }
         }
         for (ScheduledCall call : currentCalls) {

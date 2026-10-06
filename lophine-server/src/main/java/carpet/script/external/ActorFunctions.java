@@ -38,6 +38,15 @@ public final class ActorFunctions {
         return result == null ? null : result.deepcopy();
     }
 
+    private static CarpetContext blockContext(CarpetContext context, BlockValue block) {
+        if (!(block.getWorld() instanceof net.minecraft.server.level.ServerLevel world) || world == context.level())
+            return context;
+        CarpetContext located = (CarpetContext) context.recreate();
+        located.swapSource(context.source().withLevel(world));
+        located.variables = context.variables;
+        return located;
+    }
+
     public static TriFunction<Context, Context.Type, List<Value>, Value> global(TriFunction<Context, Context.Type, List<Value>, Value> function) {
         return (context, type, args) -> {
             List<Value> captured = snapshotArguments(args);
@@ -63,7 +72,8 @@ public final class ActorFunctions {
             if (captured.size() <= offset) return function.apply(context, type, captured);
             BlockValue block = BlockArgument.findIn(cc, captured, offset, acceptString).block;
             if (block.getPos() == null) return function.apply(context, type, captured);
-            return ScarpetRuntime.atBlock(cc.level(), block.getPos(), () -> detached(function, context, type, captured));
+            CarpetContext located = blockContext(cc, block);
+            return ScarpetRuntime.atBlock(located.level(), block.getPos(), () -> detached(function, located, type, captured));
         };
     }
 
@@ -101,14 +111,15 @@ public final class ActorFunctions {
             CarpetContext cc = (CarpetContext) context;
             List<Value> captured = snapshotArguments(args);
             BlockArgument target = BlockArgument.findIn(cc, captured, 0);
+            CarpetContext located = blockContext(cc, target.block);
             BlockArgument source = BlockArgument.findIn(cc, captured, target.offset, true);
             BlockState state = source.block.getBlockState();
             var originalData = source.block.getData();
             var data = originalData == null ? null : originalData.copy();
             List<Value> normalized = new ArrayList<>(captured.subList(0, target.offset));
-            normalized.add(new BlockValue(state, cc.level(), data));
+            normalized.add(new BlockValue(state, located.level(), data));
             normalized.addAll(captured.subList(source.offset, captured.size()));
-            return ScarpetRuntime.atBlock(cc.level(), target.block.getPos(), () -> detached(function, context, type, normalized));
+            return ScarpetRuntime.atBlock(located.level(), target.block.getPos(), () -> detached(function, located, type, normalized));
         };
     }
 
@@ -161,7 +172,8 @@ public final class ActorFunctions {
             }
             if (position == null)
                 throw new InternalExpressionException("Inventory block must be positioned in the world");
-            return ScarpetRuntime.atBlock(cc.level(), position, () -> detached(function, context, type, captured));
+            CarpetContext located = first instanceof BlockValue block ? blockContext(cc, block) : cc;
+            return ScarpetRuntime.atBlock(located.level(), position, () -> detached(function, located, type, captured));
         };
     }
 }

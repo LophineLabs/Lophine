@@ -193,17 +193,18 @@ public class CarpetPlayerCommand {
             return 0;
         }
         var result = CarpetAsyncCommandResults.defer(context.getSource());
-        bot.getBukkitEntity().taskScheduler.scheduleOrExecute(entity -> {
-            ServerBot owned = (ServerBot) entity;
-            owned.carpetActionPack.stopAll();
-            context.getSource().getServer().getBotList().carpetRemoveBotAsync(owned,
+        OrgFakePlayerActions.owned(bot, carpet.script.external.ScarpetRuntime.captureNativeContinuation(() -> {
+            bot.carpetActionPack.stopAll();
+            return context.getSource().getServer().getBotList().carpetRemoveBotAsync(bot,
                             org.leavesmc.leaves.event.bot.BotRemoveEvent.RemoveReason.COMMAND,
-                            context.getSource().getBukkitSender(), owned.carpetNativePlayer, false)
-                    .whenComplete((removed, failure) -> {
-                        if (failure != null)
-                            feedback(context.getSource(), "Cannot remove fake player: " + failure.getMessage(), true);
-                        result.complete(failure == null && Boolean.TRUE.equals(removed), failure == null && Boolean.TRUE.equals(removed) ? 1 : 0);
-                    });
+                            context.getSource().getBukkitSender(), bot.carpetNativePlayer, false);
+        })).thenCompose(java.util.function.Function.identity()).whenComplete((removed, failure) -> {
+            try {
+                if (failure != null)
+                    feedback(context.getSource(), "Cannot remove fake player: " + failure.getMessage(), true);
+            } finally {
+                result.complete(failure == null && Boolean.TRUE.equals(removed), failure == null && Boolean.TRUE.equals(removed) ? 1 : 0);
+            }
         });
         return 1;
     }
@@ -421,52 +422,86 @@ public class CarpetPlayerCommand {
             feedback(source, "Cannot shadow this player", true);
             return 0;
         }
-        player.getBukkitEntity().taskScheduler.scheduleOrExecute(entity -> {
-            ServerPlayer owned = (ServerPlayer) entity;
-            GameProfile profile = owned.getGameProfile();
-            if (!SPAWNING.add(profile.name().toLowerCase(Locale.ROOT))) {
-                feedback(source, "Player is already logging on", true);
-                return;
+        String key = player.getGameProfile().name().toLowerCase(Locale.ROOT);
+        if (!SPAWNING.add(key)) {
+            feedback(source, "Player is already logging on", true);
+            return 0;
+        }
+        var result = CarpetAsyncCommandResults.defer(source);
+        var job = new CarpetPlayerShadowJob(source.getServer());
+        job.actual.whenComplete((ignored, failure) -> {
+            SPAWNING.remove(key);
+            try {
+                if (failure != null) feedback(source, "Cannot shadow player: " + failure.getMessage(), true);
+            } finally {
+                result.complete(failure == null, failure == null ? 1 : 0);
             }
-            ServerLevel level = owned.level();
-            Vec3 position = owned.position();
-            Vec2 rotation = new Vec2(owned.getXRot(), owned.getYRot());
-            GameType mode = owned.gameMode.getGameModeForPlayer();
-            boolean flying = owned.getAbilities().flying;
-            net.minecraft.server.level.ClientInformation information = owned.clientInformation();
-            net.minecraft.network.chat.RemoteChatSession chatSession = owned.getChatSession();
-            net.minecraft.world.level.storage.TagValueOutput output = net.minecraft.world.level.storage.TagValueOutput.createWithContext(
-                    net.minecraft.util.ProblemReporter.DISCARDING, owned.registryAccess());
-            owned.saveWithoutId(output);
-            net.minecraft.nbt.CompoundTag saved = output.buildResult();
-            net.minecraft.nbt.CompoundTag actions = owned.carpetActionPack.save();
-            owned.connection.disconnect(net.minecraft.network.chat.Component.translatable("multiplayer.disconnect.duplicate_login"),
-                    io.papermc.paper.connection.DisconnectionReason.UNKNOWN);
-            waitForShadow(source, profile, level, position, rotation, mode, flying, saved, actions, information, chatSession, 40);
         });
+        var snapshot = OrgFakePlayerActions.owned(player, carpet.script.external.ScarpetRuntime.captureNativeContinuation(() ->
+                OrgFakePlayerActions.whenIdle(player, () -> {
+                    job.ensureOpen();
+                    var frozen = player.carpetActionPack.captureForRemoval();
+                    // Keep the old controls for the shadow, while finishing their real item
+                    // release before saving inventory and stopping the original connection.
+                    return player.carpetActionPack.stopForRemoval(frozen).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored ->
+                            OrgFakePlayerActions.owned(player, () -> {
+                                job.ensureOpen();
+                                GameProfile profile = player.getGameProfile();
+                                ServerLevel level = player.level();
+                                Vec3 position = player.position();
+                                Vec2 rotation = new Vec2(player.getXRot(), player.getYRot());
+                                GameType mode = player.gameMode.getGameModeForPlayer();
+                                boolean flying = player.getAbilities().flying;
+                                net.minecraft.server.level.ClientInformation information = player.clientInformation();
+                                net.minecraft.network.chat.RemoteChatSession chatSession = player.getChatSession();
+                                net.minecraft.world.level.storage.TagValueOutput output = net.minecraft.world.level.storage.TagValueOutput.createWithContext(
+                                        net.minecraft.util.ProblemReporter.DISCARDING, player.registryAccess());
+                                player.saveWithoutId(output);
+                                player.connection.disconnect(net.minecraft.network.chat.Component.translatable("multiplayer.disconnect.duplicate_login"),
+                                        io.papermc.paper.connection.DisconnectionReason.UNKNOWN);
+                                return new ShadowState(profile, level, position, rotation, mode, flying, output.buildResult(), frozen.metadata(), information, chatSession);
+                            })));
+                }))).thenCompose(java.util.function.Function.identity()).thenCompose(java.util.function.Function.identity());
+        var chain = snapshot.thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(state -> {
+            waitForShadow(source, state, job, 40);
+            return job.disconnected.thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored ->
+                    OrgPlayerFileLease.withLease(source.getServer(), state.profile().id(), "Carpet player shadow", carpet.script.external.ScarpetRuntime.captureNativeFunction((OrgPlayerFileLease.Lease lease) ->
+                            CarpetRegionLease.<java.util.concurrent.CompletableFuture<ServerBot>>runValue(state.level(),
+                                    state.positionBlock().getX() >> 4, state.positionBlock().getZ() >> 4,
+                                    state.positionBlock().getX() >> 4, state.positionBlock().getZ() >> 4, carpet.script.external.ScarpetRuntime.captureNativeFunction(region -> {
+                                        job.beginPlacement();
+                                        ServerBot created = create(source, state.profile(), state.level(), state.position(), state.rotation(),
+                                                state.mode(), state.flying(), state.saved(), true, state.actions(), state.information(), state.chatSession(), job.actual);
+                                        return source.getServer().getBotList().carpetPlacementCompletion(created);
+                                    })).thenCompose(java.util.function.Function.identity())))));
+        }));
+        job.finish(chain);
         return 1;
     }
 
-    private static void waitForShadow(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
-                                      GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, net.minecraft.nbt.CompoundTag actions,
-                                      net.minecraft.server.level.ClientInformation information, net.minecraft.network.chat.RemoteChatSession chatSession, int remaining) {
-        org.bukkit.Bukkit.getRegionScheduler().runDelayed(org.leavesmc.leaves.plugin.MinecraftInternalPlugin.INSTANCE, level.getWorld(),
-                BlockPos.containing(position).getX() >> 4, BlockPos.containing(position).getZ() >> 4, task -> {
-                    if (source.getServer().getPlayerList().getPlayerByName(profile.name()) != null) {
-                        if (remaining > 0)
-                            waitForShadow(source, profile, level, position, rotation, mode, flying, saved, actions, information, chatSession, remaining - 1);
-                        else {
-                            SPAWNING.remove(profile.name().toLowerCase(Locale.ROOT));
-                            feedback(source, "Shadow creation was blocked because the player did not disconnect", true);
-                        }
-                    } else {
-                        try {
-                            create(source, profile, level, position, rotation, mode, flying, saved, true, actions, information, chatSession);
-                        } finally {
-                            SPAWNING.remove(profile.name().toLowerCase(Locale.ROOT));
-                        }
-                    }
-                }, 1L);
+    private record ShadowState(GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation, GameType mode, boolean flying,
+                               net.minecraft.nbt.CompoundTag saved, net.minecraft.nbt.CompoundTag actions,
+                               net.minecraft.server.level.ClientInformation information, net.minecraft.network.chat.RemoteChatSession chatSession) {
+        BlockPos positionBlock() { return BlockPos.containing(position); }
+    }
+
+    private static void waitForShadow(CommandSourceStack source, ShadowState state, CarpetPlayerShadowJob job, int remaining) {
+        if (job.disconnected.isDone()) return;
+        try {
+            org.bukkit.Bukkit.getGlobalRegionScheduler().runDelayed(org.leavesmc.leaves.plugin.MinecraftInternalPlugin.INSTANCE, task -> {
+                try {
+                    if (job.disconnected.isDone()) return;
+                    if (source.getServer().getPlayerList().getPlayerByName(state.profile().name()) == null)
+                        job.disconnected.complete(null);
+                    else if (remaining > 0) waitForShadow(source, state, job, remaining - 1);
+                    else job.disconnected.completeExceptionally(new IllegalStateException("The player did not disconnect"));
+                } catch (Throwable failure) {
+                    job.disconnected.completeExceptionally(failure);
+                }
+            }, 1L);
+        } catch (Throwable failure) {
+            job.disconnected.completeExceptionally(failure);
+        }
     }
 
     private static void feedback(CommandSourceStack source, String message, boolean failure) {

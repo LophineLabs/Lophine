@@ -192,4 +192,95 @@ public class ScarpetEngineTest {
         }
         assertThrows(carpet.script.exception.InternalExpressionException.class, () -> eval(host, "42", true));
     }
+
+    @Test void seededRandomCacheSupportsConcurrentTasksAndPreservesResetSequences() throws Exception {
+        Host host = new Host(Map.of());
+        long commonSeed = Long.MIN_VALUE + 53;
+        host.resetRandom(commonSeed);
+        var expected = host.getRandom(commonSeed);
+        try (var tasks = java.util.concurrent.Executors.newFixedThreadPool(8)) {
+            var start = new java.util.concurrent.CountDownLatch(1);
+            var jobs = new java.util.ArrayList<java.util.concurrent.Future<?>>();
+            for (int worker = 0; worker < 8; worker++) {
+                int offset = worker * 1_024;
+                jobs.add(tasks.submit(() -> {
+                    start.await();
+                    for (int index = 0; index < 1_024; index++) {
+                        long seed = Long.MIN_VALUE + 10_000 + offset + index;
+                        host.resetRandom(seed);
+                        var random = host.getRandom(seed);
+                        assertSame(expected, host.getRandom(commonSeed));
+                        assertSame(random, host.getRandom(seed));
+                        assertEquals(new java.util.Random(seed).nextLong(), random.nextLong());
+                    }
+                    return null;
+                }));
+            }
+            start.countDown();
+            for (var job : jobs) job.get(5, java.util.concurrent.TimeUnit.SECONDS);
+        }
+        assertTrue(host.resetRandom(commonSeed));
+        assertNotSame(expected, host.getRandom(commonSeed));
+        assertEquals(new java.util.Random(commonSeed).nextLong(), host.getRandom(commonSeed).nextLong());
+    }
+
+    @Test void noiseCachesPreserveSeededSamplesUnderParallelInsertionAndEviction() throws Exception {
+        try (var tasks = java.util.concurrent.Executors.newFixedThreadPool(8)) {
+            var start = new java.util.concurrent.CountDownLatch(1);
+            var jobs = new java.util.ArrayList<java.util.concurrent.Future<?>>();
+            for (int worker = 0; worker < 8; worker++) {
+                int offset = worker * 256;
+                jobs.add(tasks.submit(() -> {
+                    start.await();
+                    for (int index = 0; index < 256; index++) {
+                        long seed = Long.MIN_VALUE + offset + index;
+                        var perlin = carpet.script.utils.PerlinNoiseSampler.getPerlin(seed);
+                        var simplex = carpet.script.utils.SimplexNoiseSampler.getSimplex(seed);
+                        assertEquals(new carpet.script.utils.PerlinNoiseSampler(new java.util.Random(seed)).sample3d(1.25, 2.5, -3.75), perlin.sample3d(1.25, 2.5, -3.75));
+                        assertEquals(new carpet.script.utils.SimplexNoiseSampler(new java.util.Random(seed)).sample3d(1.25, 2.5, -3.75), simplex.sample3d(1.25, 2.5, -3.75));
+                    }
+                    return null;
+                }));
+            }
+            start.countDown();
+            for (var job : jobs) job.get(5, java.util.concurrent.TimeUnit.SECONDS);
+        }
+    }
+
+    @Test void realParallelTasksRetainIndependentGlobalAssignmentsAndFunctionDefinitions() throws Exception {
+        for (boolean optimized : new boolean[] {false, true}) {
+            var server = org.mockito.Mockito.mock(net.minecraft.server.MinecraftServer.class);
+            var runtime = carpet.script.external.ScarpetRuntime.of(server);
+            Host host = new Host(Map.of());
+            var entered = new java.util.concurrent.CountDownLatch(8);
+            try {
+                runtime.submit(() -> {
+                    CarpetContext context = taskContext(host, server);
+                    Expression expression = new Expression("compat_parallel_writer(offset) -> (compat_parallel_start(); loop(128, (var('global_parallel_' + (offset + _)) = offset + _; call('compat_parallel_function_' + (offset + _)) -> 42))); jobs = map(range(8), task('compat_parallel_writer', _ * 128)); map(jobs, task_join(_))");
+                    expression.addContextFunction("compat_parallel_start", 0, (guest, type, args) -> {
+                        entered.countDown();
+                        try {
+                            if (!entered.await(5, java.util.concurrent.TimeUnit.SECONDS))
+                                throw new AssertionError("Parallel script tasks did not enter together");
+                        } catch (InterruptedException failure) {
+                            Thread.currentThread().interrupt();
+                            throw new AssertionError(failure);
+                        }
+                        return Value.NULL;
+                    });
+                    carpet.script.api.Threading.apply(expression);
+                    expression.executeAndEvaluate(context, optimized, Expression.LoadOverride.DEFAULT, null);
+                    for (int index = 0; index < 1_024; index++) {
+                        assertEquals(index, host.getGlobalVariable("global_parallel_" + index).evalValue(context).readInteger());
+                        assertNotNull(host.getFunction("compat_parallel_function_" + index));
+                    }
+                    assertEquals(42L, eval(host, "compat_parallel_function_1023()", optimized).readInteger());
+                    return null;
+                }).get(10, java.util.concurrent.TimeUnit.SECONDS);
+            } finally {
+                host.onClose();
+                carpet.script.external.ScarpetRuntime.beginShutdown(server, () -> {});
+            }
+        }
+    }
 }

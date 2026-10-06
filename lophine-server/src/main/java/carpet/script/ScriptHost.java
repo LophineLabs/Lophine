@@ -5,7 +5,6 @@ import carpet.script.exception.IntegrityException;
 import carpet.script.exception.InternalExpressionException;
 import carpet.script.value.FunctionValue;
 import carpet.script.value.Value;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -18,7 +17,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public abstract class ScriptHost {
-    private static final Map<Long, Random> randomizers = new Long2ObjectOpenHashMap<>();
+    private static final Map<Long, Random> randomizers = new ConcurrentHashMap<>();
 
     public static Thread mainThread = null;
     private final Map<Value, ThreadPoolExecutor> executorServices = new java.util.concurrent.ConcurrentHashMap<>();
@@ -63,11 +62,11 @@ public abstract class ScriptHost {
 
     public static class ModuleData {
         Module parent;
-        public final Map<String, FunctionValue> globalFunctions = new Object2ObjectOpenHashMap<>();
-        public final Map<String, LazyValue> globalVariables = new Object2ObjectOpenHashMap<>();
-        public final Map<String, ModuleData> functionImports = new Object2ObjectOpenHashMap<>(); // imported functions string to module
-        public final Map<String, ModuleData> globalsImports = new Object2ObjectOpenHashMap<>(); // imported global variables string to module
-        public final Map<String, ModuleData> futureImports = new Object2ObjectOpenHashMap<>(); // imports not known before used
+        public final Map<String, FunctionValue> globalFunctions = new ConcurrentHashMap<>();
+        public final Map<String, LazyValue> globalVariables = new ConcurrentHashMap<>();
+        public final Map<String, ModuleData> functionImports = new ConcurrentHashMap<>(); // imported functions string to module
+        public final Map<String, ModuleData> globalsImports = new ConcurrentHashMap<>(); // imported global variables string to module
+        public final Map<String, ModuleData> futureImports = new ConcurrentHashMap<>(); // imports not known before used
 
         public ModuleData(Module parent, ModuleData other) {
             super();
@@ -254,11 +253,13 @@ public abstract class ScriptHost {
         if (source.globalFunctions.containsKey(name)) {
             return source;
         }
-        if (source.functionImports.containsKey(name)) {
-            return findModuleDataFromFunctionImports(name, source.functionImports.get(name), ttl + 1);
+        ModuleData imported = source.functionImports.get(name);
+        if (imported != null) {
+            return findModuleDataFromFunctionImports(name, imported, ttl + 1);
         }
-        if (source.futureImports.containsKey(name)) {
-            return findModuleDataFromFunctionImports(name, source.futureImports.get(name), ttl + 1);
+        imported = source.futureImports.get(name);
+        if (imported != null) {
+            return findModuleDataFromFunctionImports(name, imported, ttl + 1);
         }
         return null;
     }
@@ -301,11 +302,13 @@ public abstract class ScriptHost {
         if (source.globalVariables.containsKey(name)) {
             return source;
         }
-        if (source.globalsImports.containsKey(name)) {
-            return findModuleDataFromGlobalImports(name, source.globalsImports.get(name), ttl + 1);
+        ModuleData imported = source.globalsImports.get(name);
+        if (imported != null) {
+            return findModuleDataFromGlobalImports(name, imported, ttl + 1);
         }
-        if (source.futureImports.containsKey(name)) {
-            return findModuleDataFromGlobalImports(name, source.futureImports.get(name), ttl + 1);
+        imported = source.futureImports.get(name);
+        if (imported != null) {
+            return findModuleDataFromGlobalImports(name, imported, ttl + 1);
         }
         return null;
     }

@@ -12,7 +12,7 @@ import java.util.function.Supplier;
  */
 public final class CarpetProfileObserver {
     private static final Object LIFECYCLE = new Object();
-    private static final Map<Thread, Work> WORK = new HashMap<>();
+    private static final Map<Thread, Work> WORK = new ConcurrentHashMap<>();
     private static final ThreadLocal<Work> CURRENT_WORK = new ThreadLocal<>();
     private static final ThreadLocal<ArrayDeque<Span>> TIMERS = ThreadLocal.withInitial(ArrayDeque::new);
     private static volatile Session active;
@@ -34,18 +34,36 @@ public final class CarpetProfileObserver {
     public record Result(long startNanos, long endNanos, List<RegionResult> regions) {
     }
 
-    private static final class Work {
+    static final class Work {
         final Key key;
         final int id;
         final String name;
         final long start;
-        volatile Span span;
+        private Span span;
+        private boolean finished;
 
         Work(Key key, int id, String name, long start) {
             this.key = key;
             this.id = id;
             this.name = name;
             this.start = start;
+        }
+
+        synchronized Span begin(Session session) {
+            // A delayed callback may still hold the previous window after its
+            // replacement already attached this work. Never replace that new root.
+            if (finished || session.end != Long.MAX_VALUE) return null;
+            if (span == null || span.session != session)
+                span = session.begin(key, id, name, start, null);
+            return span;
+        }
+
+        synchronized void finish(Session session, long now) {
+            // The window can start after this owner publishes its work but before the
+            // global actor observes it. Attach before removal so that tail is retained.
+            if (session != null) begin(session);
+            finished = true;
+            if (span != null) span.finish(now);
         }
     }
 
@@ -177,9 +195,11 @@ public final class CarpetProfileObserver {
         synchronized (LIFECYCLE) {
             if (active != null) throw new IllegalStateException("Profile already active");
             Session session = new Session(now);
-            // These snapshots were taken by their owners. Do not inspect foreign world data here.
-            for (Work work : WORK.values()) work.span = session.begin(work.key, work.id, work.name, now, null);
+            // Publish before taking the snapshot: newly entering/leaving owners attach
+            // themselves to this same window without taking the lifecycle monitor.
             active = session;
+            // These snapshots were taken by their owners. Do not inspect foreign world data here.
+            for (Work work : WORK.values()) work.begin(session);
             return session;
         }
     }
@@ -197,6 +217,7 @@ public final class CarpetProfileObserver {
                 active.finish(System.nanoTime());
                 active = null;
             }
+            for (Work work : WORK.values()) work.finish(null, System.nanoTime());
             WORK.clear();
             CURRENT_WORK.remove();
         }
@@ -224,14 +245,14 @@ public final class CarpetProfileObserver {
     }
 
     static void startWork(Key key, int id, String name, long now) {
-        synchronized (LIFECYCLE) {
-            Work previous = WORK.remove(Thread.currentThread());
-            if (previous != null && previous.span != null) previous.span.finish(now);
-            Work work = new Work(key, id, name, now);
-            WORK.put(Thread.currentThread(), work);
-            CURRENT_WORK.set(work);
-            if (active != null) work.span = active.begin(key, id, name, now, null);
-        }
+        Thread owner = Thread.currentThread();
+        Work previous = WORK.remove(owner);
+        if (previous != null) previous.finish(active, now);
+        Work work = new Work(key, id, name, now);
+        WORK.put(owner, work);
+        CURRENT_WORK.set(work);
+        Session session = active;
+        if (session != null) work.begin(session);
     }
 
     public static void stopWork(int id) {
@@ -239,17 +260,16 @@ public final class CarpetProfileObserver {
     }
 
     static void stopWork(int id, long now) {
-        synchronized (LIFECYCLE) {
-            Work work = WORK.get(Thread.currentThread());
-            if (work == null) {
-                CURRENT_WORK.remove();
-                return;
-            }
-            if (work.id != id) return;
-            WORK.remove(Thread.currentThread());
+        Thread owner = Thread.currentThread();
+        Work work = WORK.get(owner);
+        if (work == null) {
             CURRENT_WORK.remove();
-            if (work.span != null) work.span.finish(now);
+            return;
         }
+        if (work.id != id) return;
+        work.finish(active, now);
+        WORK.remove(owner, work);
+        CURRENT_WORK.remove();
     }
 
     private static String timerName(int id) {
@@ -263,7 +283,7 @@ public final class CarpetProfileObserver {
         Span span = stack.peekLast();
         if (span != null && span.session == session && span.record.key.equals(key)) return span;
         Work work = CURRENT_WORK.get();
-        return work == null ? null : work.span;
+        return work == null ? null : work.begin(session);
     }
 
     public static void startTimer(int id) {

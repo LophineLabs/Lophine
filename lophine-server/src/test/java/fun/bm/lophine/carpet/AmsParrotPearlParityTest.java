@@ -19,6 +19,41 @@ public class AmsParrotPearlParityTest {
  }
  @Test void actualFoliaPearlTeleportProducerRetainsOriginalWorldRandomDrawWhenEnabled()throws Exception{pearl(true);}
  @Test void actualFoliaPearlTeleportProducerKeepsDefaultChanceAndOriginalDraw()throws Exception{pearl(false);}
+ @Test void retiredEmptyShouldersDoNotStartAPlayerBorrowOrFailTheirNativeTail()throws Exception{emptyRetiredShoulders(false);}
+ @Test void retiredEmptyShouldersWithCompletedReceiptsStillDoNotStartAPlayerBorrow()throws Exception{emptyRetiredShoulders(true);}
+ private void emptyRetiredShoulders(boolean completedReceipts)throws Exception{
+  try(var f=new OrgInventoryPersistenceTest.Fixture(directory,true);var routing=mockStatic(OrgBlockDropRouting.class,CALLS_REAL_METHODS)){
+   var player=emptyShoulders(f,true);
+   if(completedReceipts){shoulderReceipt(player,true,java.util.concurrent.CompletableFuture.completedFuture(null));shoulderReceipt(player,false,java.util.concurrent.CompletableFuture.completedFuture(null));}
+   var actual=carpet.script.external.ScarpetNativeWork.observeNative(player,()->{player.removeEntitiesOnShoulder();return 13;});
+   assertEquals(13,actual.join());assertTrue(carpet.script.external.ScarpetNativeWork.whenIdle(f.server).isDone());
+   verify(player,never()).carpetReleaseShoulderNativeAsync(anyBoolean());
+   routing.verify(()->OrgBlockDropRouting.playerNative(eq(player),any()),never());
+   assertFalse(carpet.script.external.ScarpetPlayerInventoryGate.paused(player));
+  }
+ }
+ @Test void emptyShoulderSlotStillWaitsItsUnfinishedLeftNativeRelease()throws Exception{pendingEmptyShoulder(true);}
+ @Test void emptyShoulderSlotStillWaitsItsUnfinishedRightNativeRelease()throws Exception{pendingEmptyShoulder(false);}
+ private void pendingEmptyShoulder(boolean left)throws Exception{
+  try(var f=new OrgInventoryPersistenceTest.Fixture(directory,true)){
+   var player=emptyShoulders(f,false);var pending=new java.util.concurrent.CompletableFuture<Entity>();shoulderReceipt(player,left,pending);
+   var actual=carpet.script.external.ScarpetNativeWork.observeNative(player,()->{player.removeEntitiesOnShoulder();return 17;});
+   var idle=carpet.script.external.ScarpetNativeWork.whenIdle(f.server);
+   assertFalse(actual.isDone());assertFalse(idle.isDone());assertFalse(pending.isDone());
+   pending.complete(null);f.drain(f.target);assertEquals(17,actual.join());assertTrue(idle.isDone());
+   verify(player).carpetReleaseShoulderNativeAsync(true);verify(player).carpetReleaseShoulderNativeAsync(false);
+  }
+ }
+ private static ServerPlayer emptyShoulders(OrgInventoryPersistenceTest.Fixture f,boolean removed)throws Exception{
+  var player=f.target.player();((org.leavesmc.leaves.bot.ServerBot)player).carpetNativePlayer=true;f.owner.set(player);
+  when(player.carpetSpawnServer()).thenReturn(f.server);when(player.blockPosition()).thenReturn(net.minecraft.core.BlockPos.ZERO);when(player.isRemoved()).thenReturn(removed);
+  when(player.level().getGameTime()).thenReturn(100L);when(player.getShoulderEntityLeft()).thenReturn(new net.minecraft.nbt.CompoundTag());when(player.getShoulderEntityRight()).thenReturn(new net.minecraft.nbt.CompoundTag());
+  var server=ServerPlayer.class.getDeclaredField("server");server.setAccessible(true);server.set(player,f.server);
+  doCallRealMethod().when(player).removeEntitiesOnShoulder();doCallRealMethod().when(player).carpetReleaseShoulderNativeAsync(anyBoolean());return player;
+ }
+ private static void shoulderReceipt(ServerPlayer player,boolean left,java.util.concurrent.CompletableFuture<Entity> receipt)throws Exception{
+  var field=ServerPlayer.class.getDeclaredField(left?"carpetLeftShoulderRelease":"carpetRightShoulderRelease");field.setAccessible(true);field.set(player,receipt);
+ }
  void pearl(boolean enabled)throws Exception{
   try(var f=new AmsNativeManagementTest.Fixture(directory)){
    GeneralCompatConfig.mitePearl=enabled;GeneralCompatConfig.notDamageEnderPearl=true;var source=f.sourcePlayer;when(source.isAlive()).thenReturn(true);when(source.position()).thenReturn(Vec3.ZERO);when(source.getDeltaMovement()).thenReturn(Vec3.ZERO);var random=mock(net.minecraft.util.RandomSource.class);when(f.world.getRandom()).thenReturn(random);when(random.nextFloat()).thenAnswer(call->{assertSame(source,f.current);f.order.add("original world rng");return .9F;});when(f.world.isSpawningMonsters()).thenReturn(false);
