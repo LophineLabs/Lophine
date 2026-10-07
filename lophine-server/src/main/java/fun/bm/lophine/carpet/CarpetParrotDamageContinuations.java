@@ -54,7 +54,7 @@ public final class CarpetParrotDamageContinuations {
     }
 
     private static CompletableFuture<Boolean> right(ServerPlayer player, double chance, Supplier<Boolean> remainder,
-                                                     CompletableFuture<Boolean> wholeHurt) {
+                                                    CompletableFuture<Boolean> wholeHurt) {
         var selected = OrgMenuNativeEffects.run(player, () -> {
             CompletableFuture<Entity> release = player.getRandom().nextFloat() < chance
                     ? player.carpetReleaseShoulderNativeAsync(false) : CompletableFuture.completedFuture(null);

@@ -9,7 +9,9 @@ import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-/** Collect a client command's output until its actual Folia continuations finish. */
+/**
+ * Collect a client command's output until its actual Folia continuations finish.
+ */
 public final class CarpetClientCommandResult {
     private static final int MAX_LINES = 12;
     private static final int MAX_CODE_POINTS = 512;

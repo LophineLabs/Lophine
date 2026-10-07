@@ -5,9 +5,9 @@
  */
 package fun.bm.lophine.carpet;
 
-import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import carpet.script.external.ScarpetNativeWork;
 import carpet.script.external.ScarpetRuntime;
+import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,42 +34,47 @@ public final class TisRaycastSimulator {
         ScarpetNativeWork.record(actual);
         ScarpetNativeWork.trackNative(source.getServer(), actual);
         try {
-        var captured = ScarpetRuntime.captureNativeContinuation(() -> {
-            Throwable problem = null;
-            try {
-                BlockPos center = start;
-                for (int radius = 1; radius <= maximumRadius; ++radius) {
-                    ensureRunning(source);
-                    dispatch(source, planLayer(center, radius)).join();
-                    if (radius == maximumRadius) break;
-                    center = center.offset(0, 0, radius * 2 + 4);
+            var captured = ScarpetRuntime.captureNativeContinuation(() -> {
+                Throwable problem = null;
+                try {
+                    BlockPos center = start;
+                    for (int radius = 1; radius <= maximumRadius; ++radius) {
+                        ensureRunning(source);
+                        dispatch(source, planLayer(center, radius)).join();
+                        if (radius == maximumRadius) break;
+                        center = center.offset(0, 0, radius * 2 + 4);
+                    }
+                    Map<ChunkPos, List<Placement>> floor = new LinkedHashMap<>();
+                    for (BlockPos pos : BlockPos.betweenClosed(start.offset(-maximumRadius - 1, -1, -2), center.offset(maximumRadius + 1, -1, maximumRadius + 1))) {
+                        add(floor, pos, Blocks.CONCRETE.white().defaultBlockState(), true);
+                    }
+                    dispatch(source, floor).join();
+                } catch (Throwable failure) {
+                    problem = failure;
                 }
-                Map<ChunkPos, List<Placement>> floor = new LinkedHashMap<>();
-                for (BlockPos pos : BlockPos.betweenClosed(start.offset(-maximumRadius - 1, -1, -2), center.offset(maximumRadius + 1, -1, maximumRadius + 1))) {
-                    add(floor, pos, Blocks.CONCRETE.white().defaultBlockState(), true);
-                }
-                dispatch(source, floor).join();
-            } catch (Throwable failure) {
-                problem = failure;
-            }
-            Throwable failure = problem;
-            var delivered = TisCommandContinuations.feedback(source, () -> {
-                TisRaycastCommand.feedback(source, failure == null ? "Endermelon raycast simulation created."
-                        : "Endermelon simulation failed: " + failure.getMessage());
+                Throwable failure = problem;
+                var delivered = TisCommandContinuations.feedback(source, () -> {
+                    TisRaycastCommand.feedback(source, failure == null ? "Endermelon raycast simulation created."
+                            : "Endermelon simulation failed: " + failure.getMessage());
+                    return null;
+                });
+                delivered.whenComplete((ignored, feedbackFailure) -> {
+                    if (failure != null) actual.completeExceptionally(failure);
+                    else if (feedbackFailure != null) actual.completeExceptionally(feedbackFailure);
+                    else actual.complete(null);
+                });
                 return null;
             });
-            delivered.whenComplete((ignored, feedbackFailure) -> {
-                if (failure != null) actual.completeExceptionally(failure);
-                else if (feedbackFailure != null) actual.completeExceptionally(feedbackFailure);
-                else actual.complete(null);
-            });
-            return null;
-        });
             Thread.startVirtualThread(() -> {
-                try { captured.get(); }
-                catch (Throwable failure) { actual.completeExceptionally(failure); }
+                try {
+                    captured.get();
+                } catch (Throwable failure) {
+                    actual.completeExceptionally(failure);
+                }
             });
-        } catch (Throwable failure) { actual.completeExceptionally(failure); }
+        } catch (Throwable failure) {
+            actual.completeExceptionally(failure);
+        }
     }
 
     private static Map<ChunkPos, List<Placement>> planLayer(final BlockPos center, final int radius) {
@@ -136,17 +141,17 @@ public final class TisRaycastSimulator {
         for (var entry : changes.entrySet()) {
             var origin = new BlockPos(entry.getKey().getMinBlockX(), 0, entry.getKey().getMinBlockZ());
             completions.add(TisCommandContinuations.world(source, level, origin, () -> {
-                    ensureRunning(source);
-                    Runnable place = () -> {
-                        for (Placement update : entry.getValue()) {
-                            if (!update.onlyAir() || level.getBlockState(update.pos()).isAir()) {
-                                level.setBlockAndUpdate(update.pos(), update.state());
-                            }
+                ensureRunning(source);
+                Runnable place = () -> {
+                    for (Placement update : entry.getValue()) {
+                        if (!update.onlyAir() || level.getBlockState(update.pos()).isAir()) {
+                            level.setBlockAndUpdate(update.pos(), update.state());
                         }
-                    };
-                    if (GeneralCompatConfig.fillUpdates) place.run();
-                    else InteractionUpdateHelper.runWithSuppressedUpdates(place);
-                    return null;
+                    }
+                };
+                if (GeneralCompatConfig.fillUpdates) place.run();
+                else InteractionUpdateHelper.runWithSuppressedUpdates(place);
+                return null;
             }));
         }
         return CompletableFuture.allOf(completions.toArray(CompletableFuture[]::new));

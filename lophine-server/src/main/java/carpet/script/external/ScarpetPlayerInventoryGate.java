@@ -68,7 +68,9 @@ public final class ScarpetPlayerInventoryGate {
         return deferPausedReceipt(player, nativeOperation) != null;
     }
 
-    /** The private queued native receipt also fences later client prediction acknowledgements. */
+    /**
+     * The private queued native receipt also fences later client prediction acknowledgements.
+     */
     public static CompletableFuture<Void> deferPausedReceipt(ServerPlayer player, Runnable nativeOperation) {
         if (!paused(player)) return null;
         TickThread.ensureTickThread(player, "Paused native player intent must be queued by its owner");
@@ -116,7 +118,10 @@ public final class ScarpetPlayerInventoryGate {
 
     private static <T> CompletableFuture<T> intentReceipt(ServerPlayer player) {
         var done = new CompletableFuture<T>() {
-            @Override public boolean cancel(boolean interrupt) { return false; }
+            @Override
+            public boolean cancel(boolean interrupt) {
+                return false;
+            }
         };
         ScarpetNativeWork.trackNative(player.carpetSpawnServer(), done);
         return done;
@@ -126,7 +131,9 @@ public final class ScarpetPlayerInventoryGate {
         INTENTS.computeIfAbsent(player, IntentQueue::new).add(new Intent<>(operation, done));
     }
 
-    /** Only not-yet-admitted intents are abandoned; executing native children keep their true receipt. */
+    /**
+     * Only not-yet-admitted intents are abandoned; executing native children keep their true receipt.
+     */
     public static void retired(ServerPlayer player) {
         IntentQueue queue = INTENTS.get(player);
         if (queue != null) queue.failUnstarted(new IllegalStateException("Paused player retired"), true);
@@ -149,12 +156,17 @@ public final class ScarpetPlayerInventoryGate {
 
         void finish(T value, Throwable failure) {
             if (done.isDone()) return;
-            try { publish.accept(value, failure); }
-            catch (Throwable problem) { done.completeExceptionally(problem); }
+            try {
+                publish.accept(value, failure);
+            } catch (Throwable problem) {
+                done.completeExceptionally(problem);
+            }
         }
     }
 
-    /** A single gate callback and active native body preserve packet admission order across CompletableFuture's LIFO listeners. */
+    /**
+     * A single gate callback and active native body preserve packet admission order across CompletableFuture's LIFO listeners.
+     */
     private static final class IntentQueue {
         final java.lang.ref.WeakReference<ServerPlayer> player;
         final java.util.ArrayDeque<Intent<?>> waiting = new java.util.ArrayDeque<>();
@@ -162,7 +174,9 @@ public final class ScarpetPlayerInventoryGate {
         Intent<?> current;
         boolean retired;
 
-        IntentQueue(ServerPlayer player) { this.player = new java.lang.ref.WeakReference<>(player); }
+        IntentQueue(ServerPlayer player) {
+            this.player = new java.lang.ref.WeakReference<>(player);
+        }
 
         void add(Intent<?> intent) {
             boolean rejected;
@@ -178,42 +192,54 @@ public final class ScarpetPlayerInventoryGate {
             if (pumping.getAndIncrement() != 0) return;
             int missed = 1;
             do {
-                for (;;) {
+                for (; ; ) {
                     Intent<?> next;
                     synchronized (this) {
                         if (current != null || retired || waiting.isEmpty()) break;
                         current = next = waiting.removeFirst();
                     }
                     awaitOpen(next);
-                    synchronized (this) { if (current != null) break; }
+                    synchronized (this) {
+                        if (current != null) break;
+                    }
                 }
                 missed = pumping.addAndGet(-missed);
             } while (missed != 0);
         }
 
-        synchronized boolean isCurrent(Intent<?> intent) { return current == intent; }
+        synchronized boolean isCurrent(Intent<?> intent) {
+            return current == intent;
+        }
 
         void awaitOpen(Intent<?> intent) {
             ServerPlayer owner = player.get();
-            if (owner == null) { failUnstarted(new IllegalStateException("Paused player was collected"), true); return; }
+            if (owner == null) {
+                failUnstarted(new IllegalStateException("Paused player was collected"), true);
+                return;
+            }
             try {
                 whenOpen(owner).whenComplete((ignored, failure) -> {
                     if (!isCurrent(intent)) return;
                     if (failure != null) failUnstarted(failure, false);
                     else dispatch(owner, intent);
                 });
-            } catch (Throwable failure) { failUnstarted(failure, false); }
+            } catch (Throwable failure) {
+                failUnstarted(failure, false);
+            }
         }
 
         void dispatch(ServerPlayer owner, Intent<?> intent) {
             try {
                 if (TickThread.isTickThreadFor(owner)) run(owner, intent);
                 else if (!owner.getBukkitEntity().taskScheduler.schedule(owned -> {
-                    if (owned != owner) failUnstarted(new IllegalStateException("Paused player identity changed"), true);
+                    if (owned != owner)
+                        failUnstarted(new IllegalStateException("Paused player identity changed"), true);
                     else run(owner, intent);
                 }, ignored -> failUnstarted(new IllegalStateException("Paused player scheduler retired"), true), 1L))
                     failUnstarted(new IllegalStateException("Paused player scheduler retired"), true);
-            } catch (Throwable failure) { failUnstarted(failure, true); }
+            } catch (Throwable failure) {
+                failUnstarted(failure, true);
+            }
         }
 
         <T> void run(ServerPlayer owner, Intent<T> intent) {
@@ -224,23 +250,34 @@ public final class ScarpetPlayerInventoryGate {
                     failUnstarted(new IllegalStateException("Paused player retired"), true);
                     return;
                 }
-                if (paused(owner)) { awaitOpen(intent); return; }
+                if (paused(owner)) {
+                    awaitOpen(intent);
+                    return;
+                }
                 synchronized (this) {
                     if (current != intent || retired) return;
                     intent.started = true;
                 }
                 CompletableFuture<T> actual;
                 trackAccepted(owner, intent.done);
-                try { actual = intent.operation.get(); }
-                catch (Throwable failure) { completed(intent, null, failure); return; }
+                try {
+                    actual = intent.operation.get();
+                } catch (Throwable failure) {
+                    completed(intent, null, failure);
+                    return;
+                }
                 ScarpetNativeWork.aliasDependency(intent.done, actual);
                 actual.whenComplete((value, failure) -> completed(intent, value, failure));
-            } catch (Throwable failure) { completed(intent, null, failure); }
+            } catch (Throwable failure) {
+                completed(intent, null, failure);
+            }
         }
 
         <T> void completed(Intent<T> intent, T value, Throwable failure) {
             intent.finish(value, failure);
-            synchronized (this) { if (current == intent) current = null; }
+            synchronized (this) {
+                if (current == intent) current = null;
+            }
             pump();
         }
 
@@ -250,7 +287,10 @@ public final class ScarpetPlayerInventoryGate {
                 if (terminal) retired = true;
                 failed = new java.util.ArrayList<>(waiting);
                 waiting.clear();
-                if (current != null && !current.started) { failed.add(0, current); current = null; }
+                if (current != null && !current.started) {
+                    failed.add(0, current);
+                    current = null;
+                }
             }
             for (Intent<?> intent : failed) intent.finish(null, failure);
             pump();
@@ -287,7 +327,7 @@ public final class ScarpetPlayerInventoryGate {
             if (TickThread.isTickThreadFor(player)) body.accept(player);
             else try {
                 boolean scheduled = player.getBukkitEntity().taskScheduler.schedule(body,
-                    retired -> result.completeExceptionally(new IllegalStateException("Player retired before inventory snapshot")), 1L);
+                        retired -> result.completeExceptionally(new IllegalStateException("Player retired before inventory snapshot")), 1L);
                 if (!scheduled)
                     result.completeExceptionally(new IllegalStateException("Player scheduler retired before inventory snapshot"));
             } catch (Throwable failure) {

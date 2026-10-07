@@ -213,13 +213,17 @@ public final class ScarpetAttackContinuations {
         return actual;
     }
 
-    /** The tail may read or mutate only its initiating actor. */
+    /**
+     * The tail may read or mutate only its initiating actor.
+     */
     public static <T> CompletableFuture<T> afterDamageSource(Entity attacker, CompletableFuture<Boolean> outcome,
                                                              Function<Boolean, T> nativeTail) {
         return afterDamageNativeAsync(attacker, outcome, hurt -> CompletableFuture.completedFuture(nativeTail.apply(hurt)));
     }
 
-    /** The tail may read or mutate only the victim, even after that victim changes worlds. */
+    /**
+     * The tail may read or mutate only the victim, even after that victim changes worlds.
+     */
     public static <T> CompletableFuture<T> afterDamageTarget(Entity attacker, Entity target, CompletableFuture<Boolean> outcome,
                                                              Function<Boolean, T> nativeTail) {
         return afterDamageNativeAsync(attacker, outcome, hurt -> target instanceof net.minecraft.world.entity.LivingEntity living
@@ -227,15 +231,19 @@ public final class ScarpetAttackContinuations {
                 : ScarpetNativeDeathActors.entity(target, () -> nativeTail.apply(hurt)));
     }
 
-    /** Capture the original native world and its random source before admitting an asynchronous attack tail. */
+    /**
+     * Capture the original native world and its random source before admitting an asynchronous attack tail.
+     */
     public static ScarpetAttackEnchantments.SourceAdmission postAttackAdmission(Entity caller, ServerLevel world) {
         TickThread.ensureTickThread(caller, "Attack effect admission must be captured by its caller");
         return new ScarpetAttackEnchantments.SourceAdmission(world, caller.blockPosition().immutable(), world.getRandom(), caller);
     }
 
-    /** Victim equipment and the damage source's weapon effects execute on their own actual actors in native order. */
+    /**
+     * Victim equipment and the damage source's weapon effects execute on their own actual actors in native order.
+     */
     public static CompletableFuture<Void> postAttackEffects(ScarpetAttackEnchantments.SourceAdmission admission, Entity victim,
-                                                             net.minecraft.world.damagesource.DamageSource source) {
+                                                            net.minecraft.world.damagesource.DamageSource source) {
         var weapon = source.getEntity() instanceof net.minecraft.world.entity.LivingEntity living
                 ? ScarpetNativeDeathActors.entity(living, living::getWeaponItem)
                 : CompletableFuture.<net.minecraft.world.item.ItemStack>completedFuture(null);

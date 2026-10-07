@@ -107,7 +107,9 @@ public final class ScarpetExplosionActors {
         return blocks(explosion, positions, operation, false);
     }
 
-    /** A completed block phase retains no live chunk references across its following owner dispatch. */
+    /**
+     * A completed block phase retains no live chunk references across its following owner dispatch.
+     */
     public static <T> CompletableFuture<T> blockPhase(net.minecraft.world.level.ServerExplosion explosion, java.util.Collection<BlockPos> positions, Supplier<T> operation) {
         var held = blocks(explosion, positions, () -> ScarpetNativeWork.recoverGuestValue(ScarpetNativeWork.observeNative(null, operation)), true);
         var actual = held.thenCompose(ScarpetRuntime.captureNativeFunction(value -> value));
@@ -126,8 +128,8 @@ public final class ScarpetExplosionActors {
         }
         Supplier<T> captured = ScarpetRuntime.captureNativeContinuation(operation);
         CompletableFuture<T> completed = ownedPhase
-            ? fun.bm.lophine.carpet.CarpetRegionLease.runOwnedPhaseValue(explosion.level(), minX, minZ, maxX, maxZ, lease -> captured.get())
-            : fun.bm.lophine.carpet.CarpetRegionLease.runValue(explosion.level(), minX, minZ, maxX, maxZ, lease -> captured.get());
+                ? fun.bm.lophine.carpet.CarpetRegionLease.runOwnedPhaseValue(explosion.level(), minX, minZ, maxX, maxZ, lease -> captured.get())
+                : fun.bm.lophine.carpet.CarpetRegionLease.runValue(explosion.level(), minX, minZ, maxX, maxZ, lease -> captured.get());
         ScarpetNativeWork.record(completed);
         return completed;
     }

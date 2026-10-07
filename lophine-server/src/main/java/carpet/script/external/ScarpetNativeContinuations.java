@@ -249,7 +249,9 @@ public final class ScarpetNativeContinuations {
         return future == null ? CompletableFuture.completedFuture(result) : future;
     }
 
-    /** Observes the already submitted block operation without replaying or initiating a second break. */
+    /**
+     * Observes the already submitted block operation without replaying or initiating a second break.
+     */
     public static CompletableFuture<?> pendingBlockResult(ServerPlayerGameMode mode, BlockPos position) {
         Operation key = new Operation(Event.PLAYER_BREAK_BLOCK, position.immutable());
         var queued = PAUSED_BLOCK_RESULTS.get(mode);

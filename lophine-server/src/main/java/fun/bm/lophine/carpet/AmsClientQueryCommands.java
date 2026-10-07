@@ -30,11 +30,13 @@ public final class AmsClientQueryCommands {
             return new PingOwner(source.getServer(), entity == null ? null : entity.getUUID(), entity == null ? source.source : null);
         }
 
-        @Override public boolean equals(Object other) {
+        @Override
+        public boolean equals(Object other) {
             return other instanceof PingOwner owner && server == owner.server && java.util.Objects.equals(player, owner.player) && output == owner.output;
         }
 
-        @Override public int hashCode() {
+        @Override
+        public int hashCode() {
             return 31 * (31 * System.identityHashCode(server) + java.util.Objects.hashCode(player)) + System.identityHashCode(output);
         }
     }
@@ -168,7 +170,8 @@ public final class AmsClientQueryCommands {
                     } else ++lost;
                     Thread.sleep(1000L);
                 }
-                if (!job.stopped) pingReply(job, source, Component.literal("<commandPacketInternetGroper> Sent = " + quantity + ", Received = " + success + ", Lost = " + lost + ", Average delay = " + (success > 0 ? total / success : 0) + "ms").withStyle(ChatFormatting.GREEN));
+                if (!job.stopped)
+                    pingReply(job, source, Component.literal("<commandPacketInternetGroper> Sent = " + quantity + ", Received = " + success + ", Lost = " + lost + ", Average delay = " + (success > 0 ? total / success : 0) + "ms").withStyle(ChatFormatting.GREEN));
             } catch (InterruptedException stopped) {
                 Thread.currentThread().interrupt();
             } catch (Throwable failure) {

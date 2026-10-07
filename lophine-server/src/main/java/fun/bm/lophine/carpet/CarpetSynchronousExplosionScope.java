@@ -25,7 +25,9 @@ public final class CarpetSynchronousExplosionScope {
         return ScarpetNativeWork.recoverGuestValue(actual).getNow(null);
     }
 
-    /** The asynchronous native API preserves its true count and every unexpected committed callback child. */
+    /**
+     * The asynchronous native API preserves its true count and every unexpected committed callback child.
+     */
     public static <T> java.util.concurrent.CompletableFuture<T> observeCore(ServerLevel world, net.minecraft.world.entity.Entity owner, Supplier<T> operation) {
         return ScarpetNativeWork.recoverGuestValue(observe(world, owner, operation));
     }

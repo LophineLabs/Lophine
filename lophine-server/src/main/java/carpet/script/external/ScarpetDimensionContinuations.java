@@ -43,13 +43,13 @@ public final class ScarpetDimensionContinuations {
         var actual = new CompletableFuture<T>();
         try {
             world.getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, world.getWorld(),
-                position.getX() >> 4, position.getZ() >> 4, () -> {
-                    try {
-                        actual.complete(owned.get());
-                    } catch (Throwable failure) {
-                        actual.completeExceptionally(failure);
-                    }
-                });
+                    position.getX() >> 4, position.getZ() >> 4, () -> {
+                        try {
+                            actual.complete(owned.get());
+                        } catch (Throwable failure) {
+                            actual.completeExceptionally(failure);
+                        }
+                    });
         } catch (Throwable failure) {
             actual.completeExceptionally(failure);
         }

@@ -95,10 +95,11 @@ public final class TisRaycastCommand {
                         feedback(source, result.hit().getType() == HitResult.Type.MISS
                                 ? TisTranslations.message(source, "command.raycast.missed")
                                 : TisTranslations.text("command.raycast.hit").append(Component.literal(" " + result.blockDescription()
-                                        + " at " + result.hit().getBlockPos().toShortString() + " (" + result.hit().getLocation() + ")")));
+                                + " at " + result.hit().getBlockPos().toShortString() + " (" + result.hit().getLocation() + ")")));
                         return 1;
                     }));
-                }), null, () -> {});
+                }), null, () -> {
+        });
     }
 
     private static <T extends Enum<T>> T enumArgument(final CommandContext<?> context, final String name, final T fallback) throws CommandSyntaxException {

@@ -22,7 +22,9 @@ import org.leavesmc.leaves.protocol.core.ProtocolHandler;
 import org.leavesmc.leaves.protocol.core.ProtocolUtils;
 import org.slf4j.Logger;
 
-import java.util.*;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @LeavesProtocol.Register(namespace = "carpet")
@@ -36,7 +38,10 @@ public class CarpetServerProtocol implements LeavesProtocol {
     private static final String HELLO = "420";
     private static final int MAX_CLIENT_COMMAND_LENGTH = 16_384;
     private static final int MAX_CLIENT_COMMAND_ID_LENGTH = 1_024;
-    private record ClientSession(ServerPlayer player, String version) { }
+
+    private record ClientSession(ServerPlayer player, String version) {
+    }
+
     private static final Map<UUID, ClientSession> clients = new ConcurrentHashMap<>();
     private static boolean batchingRules = false;
     private static boolean rulesDirty = false;
@@ -140,13 +145,13 @@ public class CarpetServerProtocol implements LeavesProtocol {
             });
             fun.bm.lophine.carpet.AmsNativeCommandEffects.then(actual, result ->
                     fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(player, () -> {
-                if (player.hasDisconnected() || player.isRemoved() || !hasClient(player)) return null;
-                CompoundTag response = new CompoundTag();
-                response.put("clientCommand", result);
-                fun.bm.lophine.carpet.AmsNativeCommandEffects.packet(player,
-                        new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(new CarpetPayload(response)));
-                return (Void) null;
-            }));
+                        if (player.hasDisconnected() || player.isRemoved() || !hasClient(player)) return null;
+                        CompoundTag response = new CompoundTag();
+                        response.put("clientCommand", result);
+                        fun.bm.lophine.carpet.AmsNativeCommandEffects.packet(player,
+                                new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(new CarpetPayload(response)));
+                        return (Void) null;
+                    }));
         }, null, 1L);
     }
 

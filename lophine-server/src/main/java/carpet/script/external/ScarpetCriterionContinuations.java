@@ -78,7 +78,7 @@ public final class ScarpetCriterionContinuations {
     }
 
     private static <T extends SimpleCriterionTrigger.SimpleInstance> CompletableFuture<Boolean> matchOne(ServerPlayer player,
-            Function<T, CompletableFuture<Boolean>> matcher, Listener<T> listener, LootContext[] playerContext) {
+                                                                                                         Function<T, CompletableFuture<Boolean>> matcher, Listener<T> listener, LootContext[] playerContext) {
         var observed = ScarpetNativeWork.observeNative(player, () -> {
             var result = matcher.apply(listener.value());
             ScarpetNativeWork.record(result);

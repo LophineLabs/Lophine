@@ -108,7 +108,8 @@ public class ServerBotGameMode extends ServerPlayerGameMode {
     @NotNull
     @Override
     public InteractionResult useItemOn(@NotNull ServerPlayer player, Level level, @NotNull ItemStack stack, @NotNull InteractionHand hand, BlockHitResult hitResult) {
-        if (this.player instanceof ServerBot bot && bot.carpetNativePlayer) return super.useItemOn(player, level, stack, hand, hitResult);
+        if (this.player instanceof ServerBot bot && bot.carpetNativePlayer)
+            return super.useItemOn(player, level, stack, hand, hitResult);
         BlockPos blockPos = hitResult.getBlockPos();
         BlockState blockState = level.getBlockState(blockPos);
 

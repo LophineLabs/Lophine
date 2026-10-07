@@ -597,7 +597,8 @@ public class ServerBot extends ServerPlayer {
             var afterDeath = carpet.script.external.ScarpetRuntime.captureNativeContinuation(() ->
                     carpet.script.external.ScarpetExplosionActors.entity(this, () -> {
                         // Paper revives the player when PlayerDeathEvent is cancelled.
-                        if (this.getHealth() > 0.0F || this.isRemoved()) return java.util.concurrent.CompletableFuture.completedFuture(false);
+                        if (this.getHealth() > 0.0F || this.isRemoved())
+                            return java.util.concurrent.CompletableFuture.completedFuture(false);
                         try (var accepted = carpet.script.external.ScarpetPlayerInventoryGate.acceptedScope(this)) {
                             this.setHealth(20.0F);
                             this.foodData = new net.minecraft.world.food.FoodData();

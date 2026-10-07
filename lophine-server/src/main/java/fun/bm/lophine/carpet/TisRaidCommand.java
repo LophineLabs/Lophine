@@ -60,16 +60,17 @@ public final class TisRaidCommand {
             }
             return TisCommandContinuations.then(CompletableFuture.allOf(results.toArray(CompletableFuture[]::new)),
                     ignored -> TisCommandContinuations.feedback(source, () -> {
-                if (results.isEmpty()) {
-                    TisRaycastCommand.feedback(source, TisTranslations.message(source, "command.raid.no_raid"));
-                } else {
-                    for (CompletableFuture<List<String>> result : results) {
-                        for (String line : result.join()) TisRaycastCommand.feedback(source, line);
-                    }
-                }
-                return 1;
-            }));
-        }, null, () -> {});
+                        if (results.isEmpty()) {
+                            TisRaycastCommand.feedback(source, TisTranslations.message(source, "command.raid.no_raid"));
+                        } else {
+                            for (CompletableFuture<List<String>> result : results) {
+                                for (String line : result.join()) TisRaycastCommand.feedback(source, line);
+                            }
+                        }
+                        return 1;
+                    }));
+        }, null, () -> {
+        });
     }
 
     private static CompletableFuture<List<String>> snapshotRaid(final ServerLevel level, final int id, final Raid raid,
@@ -83,32 +84,32 @@ public final class TisRaidCommand {
             BlockPos center = raid.getCenter();
             var captured = carpet.script.external.ScarpetRuntime.captureNativeContinuation(() ->
                     carpet.script.external.ScarpetNativeWork.observeNative(null, () -> {
-                if (carpet.script.external.ScarpetNativeWork.isDraining(level.getServer()))
-                    throw new IllegalStateException("Server stopped during raid listing");
-                if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(level, raid.getCenter())) {
-                    return snapshotRaid(level, id, raid, full, attempts - 1);
-                }
-                if (level.getRaids().get(id) != raid) {
-                    return CompletableFuture.completedFuture(List.<String>of());
-                }
-                Raid.CarpetRaidView view = raid.carpetView();
-                List<String> lines = new ArrayList<>();
-                lines.add(level.dimension().identifier() + " - Raid #" + id + "; status " + view.status()
-                        + "; center " + view.center().toShortString() + "; raid omen " + view.omenLevel()
-                        + "; waves " + view.currentWave() + "/" + view.waveCount() + "; raiders " + view.raiders().size());
-                List<CompletableFuture<String>> raiders = new ArrayList<>();
-                for (Raider raider : view.raiders()) {
-                    raiders.add(snapshotRaider(raider, raider == view.captain()));
-                }
-                var listed = CompletableFuture.allOf(raiders.toArray(CompletableFuture[]::new)).thenApply(ignored -> {
-                    if (full) for (var raider : raiders) lines.add(" - " + raider.join());
-                    else if (!raiders.isEmpty())
-                        lines.add(String.join(" | ", raiders.stream().map(CompletableFuture::join).toList()));
-                    return List.copyOf(lines);
-                });
-                carpet.script.external.ScarpetNativeWork.record(listed);
-                return listed;
-            }));
+                        if (carpet.script.external.ScarpetNativeWork.isDraining(level.getServer()))
+                            throw new IllegalStateException("Server stopped during raid listing");
+                        if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(level, raid.getCenter())) {
+                            return snapshotRaid(level, id, raid, full, attempts - 1);
+                        }
+                        if (level.getRaids().get(id) != raid) {
+                            return CompletableFuture.completedFuture(List.<String>of());
+                        }
+                        Raid.CarpetRaidView view = raid.carpetView();
+                        List<String> lines = new ArrayList<>();
+                        lines.add(level.dimension().identifier() + " - Raid #" + id + "; status " + view.status()
+                                + "; center " + view.center().toShortString() + "; raid omen " + view.omenLevel()
+                                + "; waves " + view.currentWave() + "/" + view.waveCount() + "; raiders " + view.raiders().size());
+                        List<CompletableFuture<String>> raiders = new ArrayList<>();
+                        for (Raider raider : view.raiders()) {
+                            raiders.add(snapshotRaider(raider, raider == view.captain()));
+                        }
+                        var listed = CompletableFuture.allOf(raiders.toArray(CompletableFuture[]::new)).thenApply(ignored -> {
+                            if (full) for (var raider : raiders) lines.add(" - " + raider.join());
+                            else if (!raiders.isEmpty())
+                                lines.add(String.join(" | ", raiders.stream().map(CompletableFuture::join).toList()));
+                            return List.copyOf(lines);
+                        });
+                        carpet.script.external.ScarpetNativeWork.record(listed);
+                        return listed;
+                    }));
             RegionizedServer.getInstance().taskQueue.queueTickTaskQueue(level, center.getX() >> 4, center.getZ() >> 4, () -> {
                 try {
                     var observed = captured.get();
@@ -121,7 +122,9 @@ public final class TisRaidCommand {
                     result.completeExceptionally(failure);
                 }
             });
-        } catch (Throwable failure) { result.completeExceptionally(failure); }
+        } catch (Throwable failure) {
+            result.completeExceptionally(failure);
+        }
         return result;
     }
 
@@ -141,10 +144,14 @@ public final class TisRaidCommand {
                         if (failure == null) result.complete(text);
                         else result.completeExceptionally(failure);
                     });
-                } catch (Throwable failure) { result.completeExceptionally(failure); }
+                } catch (Throwable failure) {
+                    result.completeExceptionally(failure);
+                }
             }, retired -> result.complete("[Removed raider]"), 1L);
             if (!scheduled) result.complete("[Removed raider]");
-        } catch (Throwable failure) { result.completeExceptionally(failure); }
+        } catch (Throwable failure) {
+            result.completeExceptionally(failure);
+        }
         return result;
     }
 

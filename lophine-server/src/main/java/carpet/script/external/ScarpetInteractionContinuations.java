@@ -210,7 +210,9 @@ public final class ScarpetInteractionContinuations {
             finish.add(action);
         }
 
-        /** Owner-local recovery for an exceptional native body, including client prediction repair. */
+        /**
+         * Owner-local recovery for an exceptional native body, including client prediction repair.
+         */
         public void onFailure(Consumer<Throwable> action) {
             building();
             failed.add(action);
@@ -233,10 +235,10 @@ public final class ScarpetInteractionContinuations {
         private void scheduleLater(boolean cancelled, Throwable failure) {
             try {
                 boolean accepted = owner.getBukkitEntity().taskScheduler.schedule(owned -> {
-                    if (owned != owner || owner.isRemoved())
-                        future.completeExceptionally(new IllegalStateException("Interaction owner retired or changed"));
-                    else resume(cancelled, failure);
-                },
+                            if (owned != owner || owner.isRemoved())
+                                future.completeExceptionally(new IllegalStateException("Interaction owner retired or changed"));
+                            else resume(cancelled, failure);
+                        },
                         retired -> future.completeExceptionally(new IllegalStateException("Interaction owner retired")), 1);
                 if (!accepted) future.completeExceptionally(new IllegalStateException("Interaction scheduler retired"));
             } catch (Throwable rejected) {
@@ -297,11 +299,17 @@ public final class ScarpetInteractionContinuations {
             } catch (Throwable problem) {
                 try {
                     for (var recovery : failed) {
-                        try { recovery.accept(problem); }
-                        catch (Throwable recoveryFailure) { if (recoveryFailure != problem) problem.addSuppressed(recoveryFailure); }
+                        try {
+                            recovery.accept(problem);
+                        } catch (Throwable recoveryFailure) {
+                            if (recoveryFailure != problem) problem.addSuppressed(recoveryFailure);
+                        }
                     }
-                    try { owner.containerMenu.sendAllDataToRemote(); }
-                    catch (Throwable recoveryFailure) { if (recoveryFailure != problem) problem.addSuppressed(recoveryFailure); }
+                    try {
+                        owner.containerMenu.sendAllDataToRemote();
+                    } catch (Throwable recoveryFailure) {
+                        if (recoveryFailure != problem) problem.addSuppressed(recoveryFailure);
+                    }
                 } finally {
                     future.completeExceptionally(problem);
                 }

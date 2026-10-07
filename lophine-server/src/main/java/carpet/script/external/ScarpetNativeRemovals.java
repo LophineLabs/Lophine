@@ -188,17 +188,17 @@ public final class ScarpetNativeRemovals {
         }
         try {
             location.world().getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, location.world().getWorld(), location.position().getX() >> 4,
-                location.position().getZ() >> 4, () -> {
-                    if (!ScarpetRetiredActors.matchesLastOwner(entity, location)) {
-                        dispatchCurrentOwner(entity, operation, result);
-                        return;
-                    }
-                    try {
-                        result.complete(operation.get());
-                    } catch (Throwable failure) {
-                        result.completeExceptionally(failure);
-                    }
-                });
+                    location.position().getZ() >> 4, () -> {
+                        if (!ScarpetRetiredActors.matchesLastOwner(entity, location)) {
+                            dispatchCurrentOwner(entity, operation, result);
+                            return;
+                        }
+                        try {
+                            result.complete(operation.get());
+                        } catch (Throwable failure) {
+                            result.completeExceptionally(failure);
+                        }
+                    });
         } catch (Throwable failure) {
             result.completeExceptionally(failure);
         }
@@ -221,35 +221,35 @@ public final class ScarpetNativeRemovals {
         // This is mandatory Native cleanup, so Runtime's guest-closing admission must not reject it.
         try {
             location.world().getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, location.world().getWorld(),
-                location.position().getX() >> 4, location.position().getZ() >> 4, () -> {
-                    if (!ScarpetRetiredActors.matchesLastOwner(plan.entity, location)) {
-                        dispatchLastOwner(plan);
-                        return;
-                    }
-                    Set<Entity> replaying = REPLAYING.get();
-                    boolean added = replaying.add(plan.entity);
-                    try {
-                        Runnable actual = () -> ScarpetNativeWork.with(plan.nativeToken, () -> ScarpetAttribution.with(plan.attribution, () -> {
-                            plan.physicalRemoval.run();
-                            List<Runnable> tails;
-                            synchronized (plan.callerTails) {
-                                tails = List.copyOf(plan.callerTails);
-                            }
-                            for (Runnable tail : tails) tail.run();
-                        }));
-                        if (plan.entity instanceof net.minecraft.server.level.ServerPlayer player) {
-                            try (var accepted = ScarpetPlayerInventoryGate.acceptedScope(player)) {
-                                actual.run();
-                            }
-                        } else actual.run();
-                        finish(plan, null);
-                    } catch (Throwable failure) {
-                        finish(plan, failure);
-                    } finally {
-                        if (added) replaying.remove(plan.entity);
-                        ScarpetRetiredActors.capture(plan.entity);
-                    }
-                });
+                    location.position().getX() >> 4, location.position().getZ() >> 4, () -> {
+                        if (!ScarpetRetiredActors.matchesLastOwner(plan.entity, location)) {
+                            dispatchLastOwner(plan);
+                            return;
+                        }
+                        Set<Entity> replaying = REPLAYING.get();
+                        boolean added = replaying.add(plan.entity);
+                        try {
+                            Runnable actual = () -> ScarpetNativeWork.with(plan.nativeToken, () -> ScarpetAttribution.with(plan.attribution, () -> {
+                                plan.physicalRemoval.run();
+                                List<Runnable> tails;
+                                synchronized (plan.callerTails) {
+                                    tails = List.copyOf(plan.callerTails);
+                                }
+                                for (Runnable tail : tails) tail.run();
+                            }));
+                            if (plan.entity instanceof net.minecraft.server.level.ServerPlayer player) {
+                                try (var accepted = ScarpetPlayerInventoryGate.acceptedScope(player)) {
+                                    actual.run();
+                                }
+                            } else actual.run();
+                            finish(plan, null);
+                        } catch (Throwable failure) {
+                            finish(plan, failure);
+                        } finally {
+                            if (added) replaying.remove(plan.entity);
+                            ScarpetRetiredActors.capture(plan.entity);
+                        }
+                    });
         } catch (Throwable failure) {
             finish(plan, failure);
         }

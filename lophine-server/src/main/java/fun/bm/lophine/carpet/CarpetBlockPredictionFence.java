@@ -1,28 +1,30 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 package fun.bm.lophine.carpet;
 
-import carpet.script.external.WeakIdentityMap;
-import java.util.TreeMap;
-import java.util.concurrent.CompletableFuture;
-import java.util.ArrayList;
-import java.util.List;
+import carpet.script.external.*;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
-import carpet.script.external.ScarpetExplosionActors;
-import carpet.script.external.ScarpetNativeDeathActors;
-import carpet.script.external.ScarpetNativeWork;
-import carpet.script.external.ScarpetRuntime;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
-/** A prediction ack cannot pass a block interaction whose actual native result is still pending. */
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeMap;
+import java.util.concurrent.CompletableFuture;
+
+/**
+ * A prediction ack cannot pass a block interaction whose actual native result is still pending.
+ */
 public final class CarpetBlockPredictionFence {
     private static final WeakIdentityMap<ServerGamePacketListenerImpl, State> STATES = new WeakIdentityMap<>();
+
     private static final class State {
         final TreeMap<Integer, CompletableFuture<?>> pending = new TreeMap<>();
     }
-    private CarpetBlockPredictionFence() { }
+
+    private CarpetBlockPredictionFence() {
+    }
 
     public static void retain(ServerGamePacketListenerImpl connection, int sequence, CompletableFuture<?> actual) {
         if (sequence < 0) throw new IllegalArgumentException("Block prediction sequence must be nonnegative");
@@ -36,7 +38,9 @@ public final class CarpetBlockPredictionFence {
         }
         var job = retained;
         retained.whenComplete((ignored, failure) -> {
-            synchronized (state) { state.pending.remove(sequence, job); }
+            synchronized (state) {
+                state.pending.remove(sequence, job);
+            }
         });
     }
 
@@ -49,7 +53,9 @@ public final class CarpetBlockPredictionFence {
         }
     }
 
-    /** Read block/BE snapshots on their original owners, then deliver on the same live player session. */
+    /**
+     * Read block/BE snapshots on their original owners, then deliver on the same live player session.
+     */
     public static void resyncBlocks(ServerGamePacketListenerImpl connection, ServerLevel world, BlockPos... positions) {
         var player = connection.player;
         var reads = new ArrayList<CompletableFuture<List<Packet<?>>>>();

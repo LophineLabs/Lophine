@@ -6,7 +6,9 @@ import net.minecraft.server.MinecraftServer;
 
 import java.util.concurrent.CompletableFuture;
 
-/** Shutdown may abandon a waiting shadow, but must drain an admitted native placement. */
+/**
+ * Shutdown may abandon a waiting shadow, but must drain an admitted native placement.
+ */
 final class CarpetPlayerShadowJob {
     final CompletableFuture<Void> actual = new CompletableFuture<>();
     final CompletableFuture<Void> disconnected = new CompletableFuture<>();
@@ -24,7 +26,8 @@ final class CarpetPlayerShadowJob {
             closed = true;
             abandon = !placed;
         }
-        if (abandon) disconnected.completeExceptionally(new IllegalStateException("Server stopped before shadow placement"));
+        if (abandon)
+            disconnected.completeExceptionally(new IllegalStateException("Server stopped before shadow placement"));
     }
 
     synchronized void beginPlacement() {

@@ -38,7 +38,9 @@ public final class CarpetSynchronousExplosionPreflight {
         require(world, source, damage, calculator, center, power, true);
     }
 
-    /** No native effect occurs before this admission decision; packets choose their own recipients' owners. */
+    /**
+     * No native effect occurs before this admission decision; packets choose their own recipients' owners.
+     */
     public static boolean canRunCore(ServerLevel world, Entity source, net.minecraft.world.damagesource.DamageSource damage, ExplosionDamageCalculator calculator, Vec3 center, float power) {
         try {
             require(world, source, damage, calculator, center, power, false);

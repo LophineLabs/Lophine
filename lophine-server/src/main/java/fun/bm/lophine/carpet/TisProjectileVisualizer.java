@@ -6,8 +6,8 @@ import fun.bm.lophine.protocol.CarpetLoggerProtocol;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public final class TisProjectileVisualizer {
@@ -87,7 +87,9 @@ public final class TisProjectileVisualizer {
         }
     }
 
-    /** Initiate before the server's native drain, while owner schedulers are still running. */
+    /**
+     * Initiate before the server's native drain, while owner schedulers are still running.
+     */
     public static void clearAtShutdown(MinecraftServer server) {
         if (CLOSING_SERVERS.put(server, Boolean.TRUE) != null) return;
         for (Marker marker : List.copyOf(VISUALIZERS.values())) {
@@ -100,7 +102,9 @@ public final class TisProjectileVisualizer {
         CONSTRUCTING.remove();
     }
 
-    /** Removal metadata only; never inspect or write a foreign marker's live state. */
+    /**
+     * Removal metadata only; never inspect or write a foreign marker's live state.
+     */
     public static void removed(Entity entity) {
         if (!VISUALIZERS.isEmpty()) remove(entity);
     }
@@ -156,7 +160,9 @@ public final class TisProjectileVisualizer {
         VISUALIZERS.computeIfPresent(entity.getUUID(), (id, marker) -> marker.entity == entity ? null : marker);
     }
 
-    /** Called by the marker's owner, including after the add-entity callback returns. */
+    /**
+     * Called by the marker's owner, including after the add-entity callback returns.
+     */
     private static void publish(Entity entity, long generation) {
         MinecraftServer server = server(entity);
         if (generation != GENERATION.get() || closing(server)) {
@@ -189,7 +195,8 @@ public final class TisProjectileVisualizer {
         try {
             var captured = carpet.script.external.ScarpetRuntime.captureNativeContinuation(() ->
                     carpet.script.external.ScarpetNativeWork.<Void>observeNative(marker.entity, () -> {
-                        if (!marker.entity.isRemoved()) marker.entity.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD);
+                        if (!marker.entity.isRemoved())
+                            marker.entity.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD);
                         return null;
                     }));
             boolean scheduled = marker.entity.getBukkitEntity().taskScheduler.schedule(owner -> {
@@ -201,10 +208,14 @@ public final class TisProjectileVisualizer {
                         if (failure == null) actual.complete(null);
                         else actual.completeExceptionally(failure);
                     });
-                } catch (Throwable failure) { actual.completeExceptionally(failure); }
+                } catch (Throwable failure) {
+                    actual.completeExceptionally(failure);
+                }
             }, retired -> actual.complete(null), 1L);
             if (!scheduled) actual.complete(null);
-        } catch (Throwable failure) { actual.completeExceptionally(failure); }
+        } catch (Throwable failure) {
+            actual.completeExceptionally(failure);
+        }
     }
 
     public record Hit(Vec3 position, String kind, String target) {

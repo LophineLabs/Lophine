@@ -196,8 +196,8 @@ public class CarpetPlayerCommand {
         OrgFakePlayerActions.owned(bot, carpet.script.external.ScarpetRuntime.captureNativeContinuation(() -> {
             bot.carpetActionPack.stopAll();
             return context.getSource().getServer().getBotList().carpetRemoveBotAsync(bot,
-                            org.leavesmc.leaves.event.bot.BotRemoveEvent.RemoveReason.COMMAND,
-                            context.getSource().getBukkitSender(), bot.carpetNativePlayer, false);
+                    org.leavesmc.leaves.event.bot.BotRemoveEvent.RemoveReason.COMMAND,
+                    context.getSource().getBukkitSender(), bot.carpetNativePlayer, false);
         })).thenCompose(java.util.function.Function.identity()).whenComplete((removed, failure) -> {
             try {
                 if (failure != null)
@@ -479,10 +479,14 @@ public class CarpetPlayerCommand {
         return 1;
     }
 
-    private record ShadowState(GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation, GameType mode, boolean flying,
+    private record ShadowState(GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation, GameType mode,
+                               boolean flying,
                                net.minecraft.nbt.CompoundTag saved, net.minecraft.nbt.CompoundTag actions,
-                               net.minecraft.server.level.ClientInformation information, net.minecraft.network.chat.RemoteChatSession chatSession) {
-        BlockPos positionBlock() { return BlockPos.containing(position); }
+                               net.minecraft.server.level.ClientInformation information,
+                               net.minecraft.network.chat.RemoteChatSession chatSession) {
+        BlockPos positionBlock() {
+            return BlockPos.containing(position);
+        }
     }
 
     private static void waitForShadow(CommandSourceStack source, ShadowState state, CarpetPlayerShadowJob job, int remaining) {
@@ -494,7 +498,8 @@ public class CarpetPlayerCommand {
                     if (source.getServer().getPlayerList().getPlayerByName(state.profile().name()) == null)
                         job.disconnected.complete(null);
                     else if (remaining > 0) waitForShadow(source, state, job, remaining - 1);
-                    else job.disconnected.completeExceptionally(new IllegalStateException("The player did not disconnect"));
+                    else
+                        job.disconnected.completeExceptionally(new IllegalStateException("The player did not disconnect"));
                 } catch (Throwable failure) {
                     job.disconnected.completeExceptionally(failure);
                 }

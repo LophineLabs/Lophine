@@ -54,13 +54,15 @@ public final class CarpetRegionLease {
      * General asynchronous consumers must use runValue's ticket-backed lifetime instead.
      */
     public static <T> CompletableFuture<T> runOwnedPhaseValue(ServerLevel world, int minChunkX, int minChunkZ,
-            int maxChunkX, int maxChunkZ, Function<Lease<T>, T> action) {
+                                                              int maxChunkX, int maxChunkZ, Function<Lease<T>, T> action) {
         return runValue(world, minChunkX, minChunkZ, maxChunkX, maxChunkZ, 60_000L, action, false, true);
     }
 
-    /** A native loaded-only query phase, with the same later-phase revalidation requirement. */
+    /**
+     * A native loaded-only query phase, with the same later-phase revalidation requirement.
+     */
     public static <T> CompletableFuture<T> runOwnedLoadedPhaseValue(ServerLevel world, int minChunkX, int minChunkZ,
-            int maxChunkX, int maxChunkZ, Function<Lease<T>, T> action) {
+                                                                    int maxChunkX, int maxChunkZ, Function<Lease<T>, T> action) {
         return runValue(world, minChunkX, minChunkZ, maxChunkX, maxChunkZ, 60_000L, action, true, true);
     }
 
@@ -80,14 +82,17 @@ public final class CarpetRegionLease {
     }
 
     private static <T> CompletableFuture<T> runValue(ServerLevel world, int minChunkX, int minChunkZ, int maxChunkX, int maxChunkZ,
-            long timeoutMillis, Function<Lease<T>, T> action, boolean loadedOnly, boolean inlineOwnedPhase) {
+                                                     long timeoutMillis, Function<Lease<T>, T> action, boolean loadedOnly, boolean inlineOwnedPhase) {
         if (minChunkX > maxChunkX || minChunkZ > maxChunkZ || timeoutMillis <= 0L)
             throw new IllegalArgumentException("Invalid region lease bounds or timeout");
         boolean inline = inlineOwnedPhase && TickThread.isTickThreadFor(world, minChunkX, minChunkZ, maxChunkX, maxChunkZ);
         if (inline && !loadedOnly) {
             for (long x = minChunkX; x <= maxChunkX && inline; x++)
                 for (long z = minChunkZ; z <= maxChunkZ; z++)
-                    if (world.getChunkIfLoaded((int) x, (int) z) == null) { inline = false; break; }
+                    if (world.getChunkIfLoaded((int) x, (int) z) == null) {
+                        inline = false;
+                        break;
+                    }
         }
         MinecraftServer server = world.getServer();
         boolean nativeContinuation = carpet.script.external.ScarpetNativeWork.capture() != null;

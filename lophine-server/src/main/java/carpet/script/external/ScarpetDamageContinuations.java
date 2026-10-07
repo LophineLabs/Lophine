@@ -108,7 +108,9 @@ public final class ScarpetDamageContinuations {
         publishExtendedResult(server, target, actual);
     }
 
-    /** Registers an asynchronous source tail without inspecting its independently owned victim. */
+    /**
+     * Registers an asynchronous source tail without inspecting its independently owned victim.
+     */
     public static void publishExtendedResult(net.minecraft.server.MinecraftServer server, LivingEntity target, CompletableFuture<Boolean> actual) {
         EXTENDED_RESULTS.put(target, actual);
         CompletableFuture<Void> serial = actual.thenApply(ignored -> (Void) null);

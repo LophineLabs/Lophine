@@ -25,7 +25,8 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.phys.Vec3;
 import org.leavesmc.leaves.bot.ServerBot;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -147,7 +148,8 @@ public final class OrgFakePlayerActions {
         var result = new CompletableFuture<T>();
         java.util.function.Consumer<ServerPlayer> run = carpet.script.external.ScarpetRuntime.captureNativeConsumer(owner -> {
             try {
-                if (owner != player || owner.isRemoved()) throw new IllegalStateException("Fake-player owner retired before its snapshot");
+                if (owner != player || owner.isRemoved())
+                    throw new IllegalStateException("Fake-player owner retired before its snapshot");
                 result.complete(work.get());
             } catch (Throwable failure) {
                 result.completeExceptionally(failure);

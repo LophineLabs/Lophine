@@ -1004,7 +1004,8 @@ public final class ScarpetRuntime {
                         Runnable body = () -> {
                             if (failure != null || Boolean.TRUE.equals(cancelled) || !stillValid.get()) {
                                 resynchronize.run();
-                                if (failure != null) CarpetScriptServer.LOG.error("Scarpet deferred event failed", failure);
+                                if (failure != null)
+                                    CarpetScriptServer.LOG.error("Scarpet deferred event failed", failure);
                             } else runReplaying(eventKey, continuation);
                         };
                         if (owner instanceof ServerPlayer player) {
