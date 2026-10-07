@@ -68,7 +68,7 @@ index 59d4742330ca7e0c17ec840a27d1f3dbbcb33116..6c076c3dcb6d6ac7e573a19382609fb8
              this.lastServerStatus = nano;
              this.status = this.buildServerStatus();
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index cb42b920f7187b1e6130aa4d37d72aad0cf0293b..0b34d31c06282cd4fbc3f3c2b895584166020859 100644
+index 05c62341b2bb8a78ead6724fdc4f8c8a115140d7..02a5da8897169cb91af4a70ab1bba186b9a156ec 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -1500,6 +1500,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -106,7 +106,7 @@ index cb42b920f7187b1e6130aa4d37d72aad0cf0293b..0b34d31c06282cd4fbc3f3c2b8955841
      }
  
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 167da06374f4b2f8c0b244e778f9e4be626ba79b..4c0ada0198d79d871a9453f3d14872bd03bdc906 100644
+index 1258e4b0329699f43d251286a44aaaf1dbb76a34..8038a3e3bb1f51d227b2f44c05bf72cd40467115 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -446,7 +446,9 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -183,7 +183,7 @@ index c5a212e73c2efeb1f440778cb3f1fa6ee8165e63..52f0b0ad01d852f5bd17202eeaccd9a5
 +    // KioCG end
  }
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index b6505868acdf569bbdcadbc5575137ad74215c2d..fdeff02058c230d038bcd086988fdbf4dcc31ba7 100644
+index bf7f622df9b2130b93263aa2f9f6a11bfcc686c7..f95c2478be0c1d30a564853b361efca4a2b63ad6 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -6646,4 +6646,6 @@ public abstract class Entity
@@ -210,7 +210,7 @@ index c756d28b396520264336832f17527981248556f3..90630d3528cb6c07b5242fe868a6b610
 +    // KioCG end
  }
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
-index 1f84a99b2e44657882fc56ec0756a4b1074d9145..758f8477e798ba730a413904ee02e9cc9239f805 100644
+index e8ce301801452e6b22506bf5648c76497e708802..7d6220ebbfe5669751ed1f8057f3f9308283dc34 100644
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
 @@ -1749,4 +1749,11 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs

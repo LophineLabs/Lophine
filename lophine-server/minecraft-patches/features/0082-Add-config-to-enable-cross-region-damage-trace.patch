@@ -5,7 +5,7 @@ Subject: [PATCH] Add config to enable cross region damage trace
 
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 315e7df8ac0fcfeef235146107c278770ece47d0..a3c600c542fa19b2863d7cf94c1888c0b5954c41 100644
+index 4068149ccf4dc065f4ec654d12fca65881e9056c..51d7a8f34f0fc96b5691e9798e6158cdda5194e0 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -1459,6 +1459,13 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc

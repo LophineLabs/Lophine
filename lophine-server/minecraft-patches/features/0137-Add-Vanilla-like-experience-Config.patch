@@ -5,10 +5,10 @@ Subject: [PATCH] Add Vanilla-like experience Config
 
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 49c1dfc18de156578c762cb2f816baf020775686..5bb450e8a4458964a4ba8aa0b208b3b65094e43e 100644
+index 97a44bd7196551477a124cb05368c9e7e9bad22b..3a60137dbd4409ce1880eb68780c4b2889f292d5 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
-@@ -2543,7 +2543,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2547,7 +2547,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          }
          // Paper start - disable player cramming
          return (super.isInvulnerableTo(level, source) || this.isChangingDimension() && !source.is(DamageTypes.ENDER_PEARL) || !this.connection.hasClientLoaded())
@@ -31,7 +31,7 @@ index 11ac254964674714a5a506fb059236cef870d814..c6208f1c30649acdec8d0ff039ce3276
          this.applyGravity();
          if (carpet.script.external.ScarpetExplosionContinuations.pending(this)) return;
 diff --git a/net/minecraft/world/level/block/piston/PistonBaseBlock.java b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
-index f47ae948a40990d946f1d345f40c2c78e03faf6c..a6619242e8ba5000d6536fe02769445f6d8293ae 100644
+index d0dbb3897f906a141a8fcca1588737335c3d808a..f6671f97bd70dbf9964c9cd119199c16799e0a40 100644
 --- a/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 +++ b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 @@ -142,7 +142,7 @@ public class PistonBaseBlock extends DirectionalBlock {

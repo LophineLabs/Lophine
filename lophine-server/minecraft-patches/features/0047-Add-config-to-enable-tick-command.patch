@@ -6,7 +6,7 @@ Subject: [PATCH] Add config to enable tick command
 only freeze/unfreeze/step/query/rate can run when enabled
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedServer.java b/io/papermc/paper/threadedregions/RegionizedServer.java
-index ff90abb47203c03636d3175f2b3efcf43517b3b0..a96da8ab0d8ca8241df79fbfca33f3e6072db367 100644
+index 1e4edb1f53afa51fe85e3fd3dac9668a92597247..11c3c670103a575b6cc3d5c737e8edc6824d4f6d 100644
 --- a/io/papermc/paper/threadedregions/RegionizedServer.java
 +++ b/io/papermc/paper/threadedregions/RegionizedServer.java
 @@ -239,6 +239,11 @@ public final class RegionizedServer {
@@ -36,7 +36,7 @@ index ff90abb47203c03636d3175f2b3efcf43517b3b0..a96da8ab0d8ca8241df79fbfca33f3e6
          // tick connections
          this.tickConnections();
  
-@@ -415,7 +428,7 @@ public final class RegionizedServer {
+@@ -418,7 +431,7 @@ public final class RegionizedServer {
      }
  
      private void tickTime(final ServerLevel world, final long tickCount) {

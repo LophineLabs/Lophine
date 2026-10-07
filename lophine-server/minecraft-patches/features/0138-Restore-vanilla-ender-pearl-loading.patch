@@ -5,7 +5,7 @@ Subject: [PATCH] Restore vanilla ender pearl loading
 
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 5bb450e8a4458964a4ba8aa0b208b3b65094e43e..0c41004dbb829c698ecc6dee38e9bc91fd120474 100644
+index 3a60137dbd4409ce1880eb68780c4b2889f292d5..76a1755fa7d6364071daca279cb753a67f38e887 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -281,7 +281,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -51,7 +51,7 @@ index 5bb450e8a4458964a4ba8aa0b208b3b65094e43e..0c41004dbb829c698ecc6dee38e9bc91
          }
      }
  
-@@ -3772,11 +3774,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3776,11 +3778,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      }
  
      public void registerEnderPearl(final ThrownEnderpearl enderPearl) {
@@ -66,10 +66,10 @@ index 5bb450e8a4458964a4ba8aa0b208b3b65094e43e..0c41004dbb829c698ecc6dee38e9bc91
  
      public Set<ThrownEnderpearl> getEnderPearls() {
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 120c93adf0133804c28bad00b615d55c450f37df..43bb8e4c2f3ee2503a40b156dda64b945514fcfe 100644
+index 3061ed3a94b5a83c4d205fd71f48062d95eeb224..a035d4fa9f254ade272e98118d9ee4c7276bebe7 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -767,11 +767,13 @@ public abstract class PlayerList {
+@@ -765,11 +765,13 @@ public abstract class PlayerList {
          player.unRide();
  
          for (ThrownEnderpearl enderpearl : player.getEnderPearls()) {

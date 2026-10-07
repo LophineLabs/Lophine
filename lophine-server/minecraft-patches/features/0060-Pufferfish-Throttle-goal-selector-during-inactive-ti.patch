@@ -9,7 +9,7 @@ Original patch: https://github.com/pufferfish-gg/Pufferfish/blob/ver/1.21/puffer
 Original license(GPL-3.0): https://github.com/pufferfish-gg/Pufferfish/blob/ver/1.21/PATCH-LICENSE
 
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
-index 758f8477e798ba730a413904ee02e9cc9239f805..5aa3e60299861fe3d3bd21efa348c0a002940c1c 100644
+index 7d6220ebbfe5669751ed1f8057f3f9308283dc34..9658bdcb36abd8c3acbf91cacdee097675b71482 100644
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
 @@ -217,12 +217,14 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs

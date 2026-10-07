@@ -8,7 +8,7 @@ On folia, entity usually cannot move out of the tickregion, but sometimes it act
 Reference from : https://github.com/KaiijuMC/Kaiiju/blob/ver/1.20.1/patches/server/0040-Teleport-async-if-we-cannot-move-entity-off-main.patch
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index c4805d8cbd5730471e6fb8d587bc3980a6bfb67d..850366a24f1848488141163db13adddea5e849ac 100644
+index 6cd843fbcefe1bd70866e86bb75f7d0f27423419..5a0f269632292778ae21fb79e5592c88890d3601 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1191,6 +1191,19 @@ public abstract class Entity
