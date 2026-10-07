@@ -20,7 +20,7 @@ class OrgMannequinSourceWorldTest {
     @Test void failedConstructionNativeChildPreventsDestinationPublication()throws Exception {check(true,true);}
     void check(boolean added,boolean fail)throws Exception {
         String prior=fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.playerCommandSummonMannequin;fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.playerCommandSummonMannequin="true";
-        try(var actors=new OrgInventoryPersistenceTest.Fixture(directory);var leases=mockStatic(CarpetRegionLease.class)){
+        try(var actors=new OrgInventoryPersistenceTest.Fixture(directory);var leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open()){
             var player=actors.viewer.player();var commandWorld=mock(ServerLevel.class);var destination=player.level();var source=mock(CommandSourceStack.class);when(source.getServer()).thenReturn(actors.server);when(source.getLevel()).thenReturn(commandWorld);when(source.getEntity()).thenReturn(player);when(source.getPlayerOrException()).thenReturn(player);when(source.permissions()).thenReturn(net.minecraft.server.permissions.PermissionSet.ALL_PERMISSIONS);when(source.callback()).thenReturn(CommandResultCallback.EMPTY);
             when(player.blockPosition()).thenReturn(net.minecraft.core.BlockPos.ZERO);var point=new net.minecraft.world.phys.Vec3(33,64,-49);when(player.position()).thenReturn(point);when(player.getYRot()).thenReturn(15F);when(player.getXRot()).thenReturn(30F);
             var calls=new ArrayList<ServerLevel>();var prepared=new CompletableFuture<Void>();var physical=new CompletableFuture<Void>();var spawned=new AtomicInteger();var callback=new AtomicReference<String>();when(source.callback()).thenReturn((success,value)->callback.set(success+":"+value));

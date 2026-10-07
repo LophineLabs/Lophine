@@ -22,7 +22,8 @@ class CarpetChestStickySourceTest {
             var second = chest.defaultBlockState().setValue(ChestBlock.FACING, Direction.NORTH).setValue(ChestBlock.TYPE, secondType);
             var blocks = Map.of(front, first, paired, second);
             when(world.getBlockState(any(BlockPos.class))).thenAnswer(call -> blocks.getOrDefault(call.getArgument(0), Blocks.AIR.defaultBlockState()));
-            try (var pistons = mockStatic(PistonBaseBlock.class)) {
+            try (var ticks = mockStatic(ca.spottedleaf.moonrise.common.util.TickThread.class); var pistons = mockStatic(PistonBaseBlock.class)) {
+                ticks.when(() -> ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(eq(world), any(BlockPos.class))).thenReturn(true);
                 pistons.when(() -> PistonBaseBlock.isPushable(any(BlockState.class), eq(world), any(BlockPos.class), any(Direction.class), anyBoolean(), any(Direction.class))).thenReturn(true);
                 var resolver = new PistonStructureResolver(world, pos, Direction.NORTH, true);
                 assertTrue(resolver.resolve()); assertTrue(resolver.getToPush().contains(front)); assertEquals(expected, resolver.getToPush().contains(paired));

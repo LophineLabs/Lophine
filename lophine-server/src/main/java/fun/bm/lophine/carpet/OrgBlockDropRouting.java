@@ -187,7 +187,7 @@ public final class OrgBlockDropRouting {
 
     private static <T> CompletableFuture<T> full(ServerLevel world, BlockPos origin, Supplier<T> body) {
         var captured = ScarpetRuntime.captureNativeContinuation(() -> TisCommandContinuations.phase(null, body));
-        var held = CarpetRegionLease.<CompletableFuture<T>>runValue(world, (origin.getX() - 1) >> 4, (origin.getZ() - 1) >> 4,
+        var held = CarpetRegionLease.<CompletableFuture<T>>runOwnedPhaseValue(world, (origin.getX() - 1) >> 4, (origin.getZ() - 1) >> 4,
                 (origin.getX() + 1) >> 4, (origin.getZ() + 1) >> 4, lease -> captured.get());
         var actual = held.thenCompose(value -> value);
         ScarpetNativeWork.record(actual);

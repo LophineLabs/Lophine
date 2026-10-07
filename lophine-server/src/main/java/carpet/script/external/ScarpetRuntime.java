@@ -957,14 +957,15 @@ public final class ScarpetRuntime {
             ScarpetNativeWork.record(existing);
             return true;
         }
-        var token = ScarpetNativeWork.capture();
         ScarpetNativeWork.record(tail);
         runtime.pendingActors.add(tail);
         tail.whenComplete((ignored, failure) -> {
             runtime.pendingActors.remove(tail);
             pending.remove(eventKey, tail);
-            if (pending.isEmpty()) runtime.pendingDecisions.remove(owner, pending);
+            // The weak owner key can retire an empty table. Removing the table here
+            // races a new actor admission which already obtained this same map.
         });
+        ScarpetNativeWork.trackNative(runtime.server, tail);
         CompletableFuture<Boolean> decision;
         NativeDecision previousDecision = NATIVE_DECISION.get();
         NATIVE_DECISION.set(new NativeDecision(owner, eventKey));
@@ -977,30 +978,63 @@ public final class ScarpetRuntime {
             if (previousDecision == null) NATIVE_DECISION.remove();
             else NATIVE_DECISION.set(previousDecision);
         }
-        decision.whenComplete((cancelled, failure) -> {
-            boolean scheduled = owner.getBukkitEntity().taskScheduler.schedule(entity -> {
-                if (tail.isDone()) return;
+        var resumeDecision = ScarpetRuntime.<Boolean, Throwable>captureNativeConsumer((cancelled, failure) -> {
+            java.util.function.Consumer<Throwable> finish = problem -> {
+                if (problem != null) {
+                    if (failure != null && failure != problem) problem.addSuppressed(failure);
+                    tail.completeExceptionally(problem);
+                } else if (failure != null) tail.completeExceptionally(failure);
+                else tail.complete(null);
+            };
+            java.util.function.Consumer<Entity> resume = ScarpetRuntime.<Entity>captureNativeConsumer(entity -> {
+                synchronized (tail) {
+                    if (tail.isDone()) return;
+                    // Shutdown may cancel an unadmitted decision, never the real
+                    // replay/resync body and children which are about to start.
+                    runtime.pendingActors.remove(tail);
+                }
                 try {
-                    ScarpetNativeWork.with(token, () -> {
+                    var observed = ScarpetNativeWork.<Void>observeNative(owner, () -> {
+                        // Removal reached by replay/resync must see the accepted
+                        // decision receipt as its own real body, before that body runs.
+                        ScarpetNativeWork.aliasDependency(tail, ScarpetNativeWork.completionOf(ScarpetNativeWork.capture()));
+                        TickThread.ensureTickThread(owner, "Scarpet continuation must own its entity");
                         if (entity != owner || owner.isRemoved())
                             throw new InternalExpressionException("Entity retired before scarpet continuation");
-                        if (failure != null || Boolean.TRUE.equals(cancelled) || !stillValid.get()) {
-                            resynchronize.run();
-                            if (failure != null) CarpetScriptServer.LOG.error("Scarpet deferred event failed", failure);
-                        } else if (owner instanceof ServerPlayer player) {
+                        Runnable body = () -> {
+                            if (failure != null || Boolean.TRUE.equals(cancelled) || !stillValid.get()) {
+                                resynchronize.run();
+                                if (failure != null) CarpetScriptServer.LOG.error("Scarpet deferred event failed", failure);
+                            } else runReplaying(eventKey, continuation);
+                        };
+                        if (owner instanceof ServerPlayer player) {
                             try (var accepted = ScarpetPlayerInventoryGate.acceptedScope(player)) {
-                                runReplaying(eventKey, continuation);
+                                body.run();
                             }
-                        } else runReplaying(eventKey, continuation);
+                        } else body.run();
+                        return null;
                     });
-                    if (failure == null) tail.complete(null);
-                    else tail.completeExceptionally(failure);
+                    ScarpetNativeWork.aliasDependency(tail, observed);
+                    ScarpetNativeWork.trackNative(runtime.server, observed);
+                    observed.whenComplete((ignored, problem) -> finish.accept(problem));
                 } catch (Throwable problem) {
-                    tail.completeExceptionally(problem);
+                    finish.accept(problem);
                 }
-            }, retired -> tail.completeExceptionally(new InternalExpressionException("Entity retired before scarpet continuation")), 1L);
-            if (!scheduled) tail.completeExceptionally(new InternalExpressionException("Entity scheduler retired"));
+            });
+            if (tail.isDone()) return;
+            if (TickThread.isTickThreadFor(owner) && !owner.isRemoved()) {
+                resume.accept(owner);
+                return;
+            }
+            try {
+                boolean scheduled = owner.getBukkitEntity().taskScheduler.schedule(resume,
+                        retired -> finish.accept(new InternalExpressionException("Entity retired before scarpet continuation")), 1L);
+                if (!scheduled) finish.accept(new InternalExpressionException("Entity scheduler retired"));
+            } catch (Throwable problem) {
+                finish.accept(problem);
+            }
         });
+        decision.whenComplete(resumeDecision);
         return true;
     }
 
@@ -1032,7 +1066,11 @@ public final class ScarpetRuntime {
         if (!runtime.shutdownStarted.compareAndSet(false, true)) return !runtime.nativeShutdownReady;
         runtime.closing = true;
         IllegalStateException stopped = new IllegalStateException("Scarpet server is closing");
-        runtime.pendingActors.forEach(future -> future.completeExceptionally(stopped));
+        runtime.pendingActors.forEach(future -> {
+            synchronized (future) {
+                if (runtime.pendingActors.contains(future)) future.completeExceptionally(stopped);
+            }
+        });
         runtime.tickWaiters.values().forEach(waiters -> waiters.forEach(future -> future.completeExceptionally(stopped)));
         runtime.guestThreads.forEach(Thread::interrupt);
         CompletableFuture<Void> closed = new CompletableFuture<>();
@@ -1067,7 +1105,11 @@ public final class ScarpetRuntime {
                 runtime.guestThreads.forEach(Thread::interrupt);
                 runtime.interpreter.shutdownNow();
             } finally {
-                runtime.pendingActors.forEach(future -> future.completeExceptionally(stopped));
+                runtime.pendingActors.forEach(future -> {
+                    synchronized (future) {
+                        if (runtime.pendingActors.contains(future)) future.completeExceptionally(stopped);
+                    }
+                });
                 HEADERS.clear();
                 FOOTERS.clear();
                 runtime.nativeShutdownReady = true;

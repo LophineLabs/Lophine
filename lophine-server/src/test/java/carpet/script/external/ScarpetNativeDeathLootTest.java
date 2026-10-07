@@ -51,7 +51,7 @@ public class ScarpetNativeDeathLootTest {
         final List<String> order=new ArrayList<>();
         final org.mockito.MockedStatic<TickThread> ticks=mockStatic(TickThread.class);
         final org.mockito.MockedStatic<MinecraftServer> servers=mockStatic(MinecraftServer.class);
-        final org.mockito.MockedStatic<fun.bm.lophine.carpet.CarpetRegionLease> leases=mockStatic(fun.bm.lophine.carpet.CarpetRegionLease.class);
+        final org.mockito.MockedStatic<fun.bm.lophine.carpet.CarpetRegionLease> leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
         final org.mockito.MockedStatic<org.bukkit.craftbukkit.event.CraftEventFactory> craft=mockStatic(org.bukkit.craftbukkit.event.CraftEventFactory.class);
         final org.mockito.MockedStatic<org.bukkit.Bukkit> bukkit=mockStatic(org.bukkit.Bukkit.class);
         final org.mockito.MockedStatic<io.papermc.paper.adventure.PaperAdventure> adventure=mockStatic(io.papermc.paper.adventure.PaperAdventure.class);

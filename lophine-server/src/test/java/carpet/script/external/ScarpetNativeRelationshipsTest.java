@@ -33,7 +33,7 @@ public class ScarpetNativeRelationshipsTest {
         final MockedStatic<TickThread> ticks=mockStatic(TickThread.class);
         final MockedStatic<MinecraftServer> servers=mockStatic(MinecraftServer.class);
         final MockedStatic<org.bukkit.Bukkit> bukkit=mockStatic(org.bukkit.Bukkit.class);
-        final MockedStatic<fun.bm.lophine.carpet.CarpetRegionLease> leases=mockStatic(fun.bm.lophine.carpet.CarpetRegionLease.class);
+        final MockedStatic<fun.bm.lophine.carpet.CarpetRegionLease> leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
         final ScarpetRuntime runtime;
         Entity owner;boolean shared;final Map<ServerLevel,Integer> footprints=new IdentityHashMap<>();
         Fixture(boolean player,boolean crossWorld) throws Exception {this(player,crossWorld,Entity.class);}

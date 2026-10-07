@@ -11,7 +11,7 @@ class OrgCustodyDrainCadenceTest {
     @TempDir Path directory;
     @BeforeAll static void bootstrap(){OrgInventoryPersistenceTest.bootstrap();}
     @Test void frozenWorldTimeCannotPreventTheAcceptedUnknownInventoryCustodyRetryFromEnding()throws Exception{
-        try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory)){
+        try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory, false, true)){
             fixture.unreadable.add(3);fixture.start();fixture.process(fixture.target);assertEquals(3,fixture.reads);assertTrue(fixture.target.inventory().getItem(0).isEmpty());
             when(fixture.viewer.player().level().getGameTime()).thenReturn(17L);when(fixture.target.player().level().getGameTime()).thenReturn(17L);carpet.script.external.ScarpetNativeWork.beginDrain(fixture.server);
             for(int pass=0;pass<10&&!OrgInventoryTransfers.whenAvailable(fixture.server,fixture.viewer.id()).isDone();pass++){

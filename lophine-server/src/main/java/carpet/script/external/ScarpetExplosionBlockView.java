@@ -91,7 +91,7 @@ public final class ScarpetExplosionBlockView {
     }
 
     private static CompletableFuture<Void> fill(ServerExplosion explosion, View view, BlockPos position) {
-        return ScarpetExplosionActors.blocks(explosion, List.of(position), () -> {
+        return ScarpetExplosionActors.blockPhase(explosion, List.of(position), () -> {
             BlockState state = explosion.carpetBlockStateForCalculator(position);
             view.states.put(position.immutable(), state == null ? Blocks.VOID_AIR.defaultBlockState() : state);
             return null;

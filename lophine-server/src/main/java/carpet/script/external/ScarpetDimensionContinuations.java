@@ -41,7 +41,8 @@ public final class ScarpetDimensionContinuations {
             }
         }
         var actual = new CompletableFuture<T>();
-        world.getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, world.getWorld(),
+        try {
+            world.getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, world.getWorld(),
                 position.getX() >> 4, position.getZ() >> 4, () -> {
                     try {
                         actual.complete(owned.get());
@@ -49,6 +50,9 @@ public final class ScarpetDimensionContinuations {
                         actual.completeExceptionally(failure);
                     }
                 });
+        } catch (Throwable failure) {
+            actual.completeExceptionally(failure);
+        }
         return actual;
     }
 
@@ -62,6 +66,26 @@ public final class ScarpetDimensionContinuations {
             var token = ScarpetNativeWork.capture();
             var accepted = ScarpetPlayerInventoryGate.captureAccepted();
             ScarpetNativeWork.record(done);
+            var terminal = new java.util.concurrent.atomic.AtomicBoolean();
+            Consumer<Throwable> finished = problem -> {
+                if (!terminal.compareAndSet(false, true)) return;
+                if (problem == null) done.complete(null);
+                else done.completeExceptionally(problem);
+            };
+            Consumer<Throwable> cleanup = ScarpetRuntime.captureNativeConsumer(problem -> {
+                try {
+                    failed.run();
+                } catch (Throwable cleanupFailure) {
+                    if (cleanupFailure != problem) problem.addSuppressed(cleanupFailure);
+                } finally {
+                    done.completeExceptionally(problem);
+                }
+            });
+            Consumer<Throwable> abort = problem -> {
+                // Claim termination before re-entering the captured token. An already
+                // completed placement has released its lease and must not clean up twice.
+                if (terminal.compareAndSet(false, true)) cleanup.accept(problem);
+            };
             CompletableFuture<Void> sequence = CompletableFuture.completedFuture(null);
             for (var node : nodes) {
                 Entity original = node.root;
@@ -75,23 +99,14 @@ public final class ScarpetDimensionContinuations {
                 Supplier<Void> finish = () -> {
                     try (var scope = ScarpetPlayerInventoryGate.inheritAccepted(accepted)) {
                         return ScarpetNativeWork.with(token, () -> {
-                            if (failure == null) place.accept(problem -> {
-                                if (problem == null) done.complete(null);
-                                else done.completeExceptionally(problem);
-                            });
-                            else {
-                                try {
-                                    failed.run();
-                                } finally {
-                                    done.completeExceptionally(failure);
-                                }
-                            }
+                            if (failure == null) place.accept(finished);
+                            else abort.accept(failure);
                             return null;
                         });
                     }
                 };
                 atOrigin(origin, originPosition, finish).whenComplete((started, problem) -> {
-                    if (problem != null) done.completeExceptionally(problem);
+                    if (problem != null) abort.accept(problem);
                 });
             }));
             return done;

@@ -51,7 +51,7 @@ public class ScarpetNativeDeathCustomTest {
         final Queue<CompletableFuture<Void>> children=new ArrayDeque<>();
         final org.mockito.MockedStatic<TickThread> ticks=mockStatic(TickThread.class);
         final org.mockito.MockedStatic<MinecraftServer> servers=mockStatic(MinecraftServer.class);
-        final org.mockito.MockedStatic<fun.bm.lophine.carpet.CarpetRegionLease> leases=mockStatic(fun.bm.lophine.carpet.CarpetRegionLease.class);
+        final org.mockito.MockedStatic<fun.bm.lophine.carpet.CarpetRegionLease> leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
         Fixture(){
             when(world.getServer()).thenReturn(server);when(foreign.getServer()).thenReturn(server);when(world.getRandom()).thenReturn(worldRandom);
             servers.when(MinecraftServer::getServer).thenReturn(server);ticks.when(()->TickThread.isTickThreadFor(any(Entity.class))).thenReturn(true);

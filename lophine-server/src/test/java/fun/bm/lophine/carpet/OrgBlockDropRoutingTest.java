@@ -41,7 +41,7 @@ class OrgBlockDropRoutingTest {
         var item=mock(ItemEntity.class); when(item.getItem()).thenReturn(stack);when(item.blockPosition()).thenReturn(new BlockPos(27,70,-20)); return item;
     }
     private static final class WorldQueue implements AutoCloseable {
-        final ArrayDeque<Runnable> tasks=new ArrayDeque<>(); final MockedStatic<CarpetRegionLease> leases=mockStatic(CarpetRegionLease.class);
+        final ArrayDeque<Runnable> tasks=new ArrayDeque<>(); final MockedStatic<CarpetRegionLease> leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
         boolean owned; final ServerLevel world;
         WorldQueue(ServerLevel world) {
             this.world=world;
@@ -119,9 +119,15 @@ class OrgBlockDropRoutingTest {
     @Test void inventorySnapshotGateAdmitsTheDropOnlyAfterItsActualSnapshotEnds() throws Exception {
         String old=GeneralCompatConfig.blockDropsDirectlyEnterInventory;GeneralCompatConfig.blockDropsDirectlyEnterInventory="true";
         try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory);var source=new WorldQueue(fixture.viewer.player().level())) {
-            fill(fixture.target,4);var player=fixture.target.player();var world=player.level();when(world.registryAccess()).thenReturn(fixture.lookup);fixture.owner.set(player);var snapshot=ScarpetPlayerInventoryGate.whenIdle(player,()->fixture.target.inventory().getItem(0).getCount());assertTrue(ScarpetPlayerInventoryGate.paused(player));
+            fill(fixture.target,4);var player=fixture.target.player();var world=player.level();when(world.registryAccess()).thenReturn(fixture.lookup);fixture.owner.set(player);
+            var snapshotTail=new CompletableFuture<Void>();
+            var snapshot=ScarpetPlayerInventoryGate.whenIdle(player,()->snapshotTail.thenApply(ignored->fixture.target.inventory().getItem(0).getCount()))
+                .thenCompose(java.util.function.Function.identity());
+            assertFalse(snapshot.isDone());assertTrue(ScarpetPlayerInventoryGate.paused(player));
             fixture.owner.set(null);var stack=new ItemStack(Items.DIAMOND,4);var actual=OrgBlockDropRouting.routeNative(source.world,item(stack),player,()->true);
-            assertFalse(snapshot.isDone());assertFalse(actual.isDone());assertEquals(4,stack.getCount());fixture.drain(fixture.target);assertEquals(60,snapshot.join());source.drain();assertTrue(actual.join());assertTrue(stack.isEmpty());assertEquals(64,fixture.target.inventory().getItem(0).getCount());
+            assertFalse(snapshot.isDone());assertFalse(actual.isDone());assertEquals(4,stack.getCount());
+            fixture.owner.set(player);snapshotTail.complete(null);assertEquals(60,snapshot.join());fixture.drain(fixture.target);source.drain();
+            assertTrue(actual.join());assertTrue(stack.isEmpty());assertEquals(64,fixture.target.inventory().getItem(0).getCount());
         } finally {GeneralCompatConfig.blockDropsDirectlyEnterInventory=old;}
     }
 
@@ -138,7 +144,8 @@ class OrgBlockDropRoutingTest {
             var actual=player.carpetReleaseShoulderNativeAsync(true);if(actual.isCompletedExceptionally())actual.join();assertFalse(actual.isDone());assertSame(tag,shoulder.get());
             var repeat=player.carpetReleaseShoulderNativeAsync(true);assertFalse(repeat.isDone());creation.verify(()->net.minecraft.world.entity.EntityType.create(any(net.minecraft.world.level.storage.ValueInput.class),eq(world),any(net.minecraft.world.entity.EntitySpawnRequest.class)),times(1));
             var snapshot=ScarpetPlayerInventoryGate.whenIdle(player,()->shoulder.get().isEmpty());assertFalse(snapshot.isDone());assertTrue(ScarpetPlayerInventoryGate.paused(player));
-            spawn.complete(true);assertSame(entity,actual.join());assertSame(entity,repeat.join());assertTrue(shoulder.get().isEmpty());assertFalse(snapshot.isDone());fixture.drain(fixture.target);assertTrue(snapshot.join());
+            spawn.complete(true);assertSame(entity,actual.join());assertSame(entity,repeat.join());assertTrue(shoulder.get().isEmpty());
+            assertTrue(snapshot.isDone());assertTrue(snapshot.join());assertFalse(ScarpetPlayerInventoryGate.paused(player));
         }
     }
 }

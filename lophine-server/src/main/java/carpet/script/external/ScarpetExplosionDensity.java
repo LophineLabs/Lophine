@@ -135,7 +135,7 @@ public final class ScarpetExplosionDensity {
                 snapshot.blocks.put(position.asLong(), explosion.carpetCollisionEntry(position));
             return null;
         });
-        CompletableFuture<Void> done = fun.bm.lophine.carpet.CarpetRegionLease.runValue(explosion.level(), minX, minZ, maxX, maxZ, lease -> owned.get());
+        CompletableFuture<Void> done = fun.bm.lophine.carpet.CarpetRegionLease.runOwnedPhaseValue(explosion.level(), minX, minZ, maxX, maxZ, lease -> owned.get());
         ScarpetNativeWork.record(done);
         return done;
     }

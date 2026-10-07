@@ -66,7 +66,7 @@ public class ScarpetNativeDeathsTest {
         final MockedStatic<MinecraftServer> servers=mockStatic(MinecraftServer.class);
         final MockedStatic<org.bukkit.Bukkit> bukkit=mockStatic(org.bukkit.Bukkit.class);
         final MockedStatic<org.bukkit.craftbukkit.event.CraftEventFactory> craft=mockStatic(org.bukkit.craftbukkit.event.CraftEventFactory.class);
-        final MockedStatic<fun.bm.lophine.carpet.CarpetRegionLease> leases=mockStatic(fun.bm.lophine.carpet.CarpetRegionLease.class);
+        final MockedStatic<fun.bm.lophine.carpet.CarpetRegionLease> leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
         final ScarpetRuntime runtime;
         Fixture() throws Exception {
             servers.when(MinecraftServer::getServer).thenReturn(server); when(world.getServer()).thenReturn(server);

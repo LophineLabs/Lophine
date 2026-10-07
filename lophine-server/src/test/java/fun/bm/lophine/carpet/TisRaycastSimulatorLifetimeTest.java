@@ -49,7 +49,7 @@ class TisRaycastSimulatorLifetimeTest {
         when(world.getServer()).thenReturn(server);
         var child = new CompletableFuture<Void>();
         when(world.setBlockAndUpdate(BlockPos.ZERO, state)).thenAnswer(call -> { ScarpetNativeWork.record(child); return true; });
-        try (var ticks = mockStatic(TickThread.class); var leases = mockStatic(CarpetRegionLease.class)) {
+        try (var ticks = mockStatic(TickThread.class); var leases = fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open()) {
             ticks.when(() -> TickThread.isTickThreadFor(eq(world), any(BlockPos.class))).thenReturn(true);
             leases.when(() -> CarpetRegionLease.runValue(eq(world), anyInt(), anyInt(), anyInt(), anyInt(), any(Function.class)))
                     .thenAnswer(call -> CompletableFuture.completedFuture(((Function<?, ?>) call.getArgument(5)).apply(null)));

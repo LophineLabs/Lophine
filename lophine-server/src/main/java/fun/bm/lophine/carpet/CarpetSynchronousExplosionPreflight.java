@@ -35,6 +35,20 @@ public final class CarpetSynchronousExplosionPreflight {
     }
 
     public static void require(ServerLevel world, Entity source, net.minecraft.world.damagesource.DamageSource damage, ExplosionDamageCalculator calculator, Vec3 center, float power) {
+        require(world, source, damage, calculator, center, power, true);
+    }
+
+    /** No native effect occurs before this admission decision; packets choose their own recipients' owners. */
+    public static boolean canRunCore(ServerLevel world, Entity source, net.minecraft.world.damagesource.DamageSource damage, ExplosionDamageCalculator calculator, Vec3 center, float power) {
+        try {
+            require(world, source, damage, calculator, center, power, false);
+            return true;
+        } catch (CarpetSynchronousExplosionScope.Unavailable unavailable) {
+            return false;
+        }
+    }
+
+    private static void require(ServerLevel world, Entity source, net.minecraft.world.damagesource.DamageSource damage, ExplosionDamageCalculator calculator, Vec3 center, float power, boolean packetAudience) {
         if (!Double.isFinite(center.x) || !Double.isFinite(center.y) || !Double.isFinite(center.z) || !Float.isFinite(power) || power < 0F)
             reject("Explosion coordinates and nonnegative power must be finite");
         if (ScarpetNativeWork.isDraining(world.getServer()) && ScarpetNativeWork.capture() == null)
@@ -43,7 +57,7 @@ public final class CarpetSynchronousExplosionPreflight {
             reject("Scarpet explosion, damage or death callbacks require asynchronous owner continuations");
         if (calculator != null && calculator.getClass() != ExplosionDamageCalculator.class && calculator.getClass() != SimpleExplosionDamageCalculator.class && calculator.getClass() != EntityBasedExplosionDamageCalculator.class)
             reject("A custom explosion calculator requires the asynchronous interface");
-        double physical = Math.ceil(power * 2D) + 2D, extent = Math.max(physical, packetRange());
+        double physical = Math.ceil(power * 2D) + 2D, extent = packetAudience ? Math.max(physical, packetRange()) : physical;
         requireRectangle(world, center, extent, physical);
         if (source != null) {
             requireEntity(world, source);
@@ -56,7 +70,14 @@ public final class CarpetSynchronousExplosionPreflight {
             if (causing != null) requireEntity(world, causing);
         }
         AABB affected = new AABB(center.x - physical, center.y - physical, center.z - physical, center.x + physical, center.y + physical, center.z + physical);
-        for (Entity target : world.getEntities((Entity) null, affected, entity -> true)) requireEntity(world, target);
+        for (Entity target : world.getEntities((Entity) null, affected, entity -> true)) {
+            requireEntity(world, target);
+            if (!packetAudience && target instanceof LivingEntity)
+                // Native death/loot phases query a 32-block neighborhood. Admission
+                // must also prove these helpers cannot introduce a foreign/loading phase.
+                requireRectangle(world, target.position(), 32D, 32D);
+        }
+        if (!packetAudience) return;
         // Complete ownership of the packet rectangle puts every eligible recipient in this region's live audience.
         for (ServerPlayer player : List.copyOf(world.getLocalPlayers())) {
             if (!TickThread.isTickThreadFor(player)) reject("A local packet recipient is changing native owner");

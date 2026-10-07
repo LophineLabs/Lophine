@@ -51,7 +51,7 @@ class ScarpetNativeInteractionTest {
         final MinecraftServer server=mock(MinecraftServer.class);
         final ItemStack held=new ItemStack(Items.STONE,8);
         final io.papermc.paper.threadedregions.EntityScheduler scheduler=mock(io.papermc.paper.threadedregions.EntityScheduler.class);
-        final ArrayDeque<Consumer<Entity>> tasks=new ArrayDeque<>();
+        final LinkedBlockingQueue<Consumer<Entity>> tasks=new LinkedBlockingQueue<>();
         final MockedStatic<TickThread> ticks=mockStatic(TickThread.class);
         Owner() throws Exception {
             var bukkit=mock(CraftPlayer.class); when(player.getBukkitEntity()).thenReturn(bukkit);
@@ -72,7 +72,7 @@ class ScarpetNativeInteractionTest {
             ticks.when(()->TickThread.isTickThreadFor(world,0,0,8)).thenReturn(true);
             when(scheduler.schedule(any(),any(),anyLong())).thenAnswer(call -> { tasks.add(call.getArgument(0)); return true; });
         }
-        void tick() { Consumer<Entity> task=tasks.removeFirst(); task.accept(player); }
+        void tick() { Consumer<Entity> task=tasks.remove(); task.accept(player); }
         @Override public void close() { ticks.close(); }
     }
 
@@ -104,7 +104,13 @@ class ScarpetNativeInteractionTest {
                     pending.plan().onComplete(result -> order.add("packet tail"));
                     assertEquals(0,item.writes); assertEquals(8,owner.held.getCount()); assertTrue(owner.tasks.isEmpty());
                 }
-                owner.tick();
+                // A decision already ready at Scope.close runs on this owner
+                // immediately. A later interpreter completion dispatches here.
+                if (!pending.plan().future().isDone()) {
+                    var task=owner.tasks.poll(2,TimeUnit.SECONDS);
+                    if (task != null) task.accept(owner.player);
+                    else assertTrue(pending.plan().future().isDone(),"Pending placement must have an actual owner dispatch");
+                }
                 assertEquals(!cancelled,pending.plan().future().get(2,TimeUnit.SECONDS).consumesAction());
                 assertEquals(cancelled ? 0 : 1,item.writes);
                 assertEquals(cancelled ? 8 : 7,owner.held.getCount());

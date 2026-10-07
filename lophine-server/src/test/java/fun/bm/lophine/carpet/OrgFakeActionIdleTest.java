@@ -31,8 +31,8 @@ class OrgFakeActionIdleTest {
             var saved = OrgFakePlayerActions.whenIdle(fixture.player, value::get);
             assertFalse(saved.isDone()); assertDoesNotThrow(() -> OrgFakePlayerActions.tick(fixture.player));
             accepted.finish(); assertFalse(saved.isDone()); assertTrue(ScarpetPlayerInventoryGate.paused(fixture.player));
-            value.set(7); nativeTail.complete(null); assertFalse(saved.isDone());
-            fixture.run(); assertEquals(7, saved.join()); assertFalse(ScarpetPlayerInventoryGate.paused(fixture.player));
+            value.set(7); nativeTail.complete(null); assertTrue(saved.isDone());
+            assertTrue(fixture.tasks.isEmpty());assertEquals(7, saved.join());assertFalse(ScarpetPlayerInventoryGate.paused(fixture.player));
         }
     }
     @Test void cancellingCallerDoesNotUnpauseWhileActualNestedSnapshotRuns() throws Exception {
@@ -64,7 +64,7 @@ class OrgFakeActionIdleTest {
             var saved = OrgFakePlayerActions.whenIdleForRemoval(fixture.player, value::get);
             publicJob.finish(new IllegalStateException("old guest cancelled")); fixture.run(); assertFalse(saved.isDone());
             value.set(7); nativeTail.completeExceptionally(new IllegalStateException("actual native old tail terminated"));
-            assertFalse(saved.isDone()); fixture.run(); assertEquals(7, saved.join());
+            assertTrue(saved.isDone());assertTrue(fixture.tasks.isEmpty());assertEquals(7, saved.join());
         }
     }
     @Test void mandatorySnapshotStillPropagatesItsNewSaveFailure() throws Exception {
@@ -89,7 +89,7 @@ class OrgFakeActionIdleTest {
         final org.mockito.MockedStatic<TickThread> ticks;
         final org.mockito.MockedStatic<OrgHiddenPlayerActions> hidden;
         Fixture() throws Exception {
-            var server=mock(net.minecraft.server.MinecraftServer.class);var level=mock(net.minecraft.server.level.ServerLevel.class);when(level.getServer()).thenReturn(server);when(player.level()).thenReturn(level);
+            var server=mock(net.minecraft.server.MinecraftServer.class);var level=mock(net.minecraft.server.level.ServerLevel.class);when(level.getServer()).thenReturn(server);when(player.level()).thenReturn(level);when(player.carpetSpawnServer()).thenReturn(server);
             CraftBot bukkit = mock(CraftBot.class); when(player.getBukkitEntity()).thenReturn(bukkit);
             var scheduler = mock(io.papermc.paper.threadedregions.EntityScheduler.class);
             var field = org.bukkit.craftbukkit.entity.CraftEntity.class.getField("taskScheduler"); field.setAccessible(true); field.set(bukkit, scheduler);

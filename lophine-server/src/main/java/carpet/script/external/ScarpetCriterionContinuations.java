@@ -57,14 +57,28 @@ public final class ScarpetCriterionContinuations {
             if (listeners != null)
                 for (var entry : listeners.entrySet()) snapshot.add(new Listener<>(entry.getKey(), entry.getValue()));
             return new Snapshot<T>(advancements, List.copyOf(snapshot));
-        }).thenCompose(ScarpetRuntime.captureNativeFunction(snapshot -> match(player, matcher, snapshot, 0, new ArrayList<>(), new LootContext[1]))));
+        }).thenCompose(ScarpetRuntime.captureNativeFunction(snapshot -> match(player, matcher, snapshot))));
     }
 
     private static <T extends SimpleCriterionTrigger.SimpleInstance> CompletableFuture<Void> match(ServerPlayer player,
-                                                                                                   Function<T, CompletableFuture<Boolean>> matcher, Snapshot<T> snapshot, int index, List<PlayerAdvancements.TriggerInstanceKey> matched, LootContext[] playerContext) {
-        if (index == snapshot.listeners().size()) return award(player, snapshot.advancements(), matched, 0);
-        Listener<T> listener = snapshot.listeners().get(index);
-        Supplier<CompletableFuture<Void>> next = ScarpetRuntime.captureNativeContinuation(() -> match(player, matcher, snapshot, index + 1, matched, playerContext));
+                                                                                                   Function<T, CompletableFuture<Boolean>> matcher, Snapshot<T> snapshot) {
+        List<PlayerAdvancements.TriggerInstanceKey> matched = new ArrayList<>();
+        LootContext[] playerContext = new LootContext[1];
+        CompletableFuture<Void> sequence = CompletableFuture.completedFuture(null);
+        // Most inventory matchers complete inline. Recursing through all vanilla listeners
+        // exhausts the owner stack during login and can strand its native lifetime.
+        for (Listener<T> listener : snapshot.listeners()) {
+            sequence = sequence.thenCompose(ScarpetRuntime.captureNativeFunction(ignored ->
+                    matchOne(player, matcher, listener, playerContext).thenApply(passed -> {
+                        if (passed) matched.add(listener.key());
+                        return null;
+                    })));
+        }
+        return sequence.thenCompose(ScarpetRuntime.captureNativeFunction(ignored -> award(player, snapshot.advancements(), matched)));
+    }
+
+    private static <T extends SimpleCriterionTrigger.SimpleInstance> CompletableFuture<Boolean> matchOne(ServerPlayer player,
+            Function<T, CompletableFuture<Boolean>> matcher, Listener<T> listener, LootContext[] playerContext) {
         var observed = ScarpetNativeWork.observeNative(player, () -> {
             var result = matcher.apply(listener.value());
             ScarpetNativeWork.record(result);
@@ -72,7 +86,7 @@ public final class ScarpetCriterionContinuations {
         });
         return ScarpetNativeWork.recoverGuestValue(observed).thenCompose(ScarpetRuntime.captureNativeFunction(value -> value))
                 .thenCompose(ScarpetRuntime.captureNativeFunction(passed -> {
-                    if (!passed) return next.get();
+                    if (!passed) return CompletableFuture.completedFuture(false);
                     var predicate = listener.value().player();
                     CompletableFuture<Boolean> allowed;
                     if (predicate.isEmpty()) allowed = CompletableFuture.completedFuture(true);
@@ -80,21 +94,20 @@ public final class ScarpetCriterionContinuations {
                         if (playerContext[0] == null) playerContext[0] = context(player, player);
                         return playerContext[0];
                     }).thenCompose(ScarpetRuntime.captureNativeFunction(context -> ScarpetLootConditions.test(predicate.get().value(), context)));
-                    return allowed.thenCompose(ScarpetRuntime.captureNativeFunction(value -> {
-                        if (value) matched.add(listener.key());
-                        return next.get();
-                    }));
+                    return allowed;
                 }));
     }
 
-    private static CompletableFuture<Void> award(ServerPlayer player, PlayerAdvancements advancements, List<PlayerAdvancements.TriggerInstanceKey> matched, int index) {
-        if (index == matched.size()) return CompletableFuture.completedFuture(null);
-        var criterion = matched.get(index);
-        Supplier<CompletableFuture<Void>> next = ScarpetRuntime.captureNativeContinuation(() -> award(player, advancements, matched, index + 1));
-        return ScarpetExplosionActors.admitTarget(player, () -> ScarpetNativeWork.recoverGuestValue(ScarpetNativeWork.observeNative(player, () -> {
-            advancements.award(criterion.advancement(), criterion.criterion());
-            return (Void) null;
-        }))).thenCompose(ScarpetRuntime.captureNativeFunction(ignored -> next.get()));
+    private static CompletableFuture<Void> award(ServerPlayer player, PlayerAdvancements advancements, List<PlayerAdvancements.TriggerInstanceKey> matched) {
+        CompletableFuture<Void> sequence = CompletableFuture.completedFuture(null);
+        for (var criterion : matched) {
+            sequence = sequence.thenCompose(ScarpetRuntime.captureNativeFunction(ignored ->
+                    ScarpetExplosionActors.admitTarget(player, () -> ScarpetNativeWork.recoverGuestValue(ScarpetNativeWork.observeNative(player, () -> {
+                        advancements.award(criterion.advancement(), criterion.criterion());
+                        return (Void) null;
+                    })))));
+        }
+        return sequence;
     }
 
     public static CompletableFuture<Void> killed(KilledTrigger trigger, ServerPlayer player, Entity entity, DamageSource killingBlow) {

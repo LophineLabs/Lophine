@@ -33,7 +33,7 @@ public class ScarpetExplosionDensityTest {
         var target=mock(LivingEntity.class); var explosion=mock(ServerExplosion.class);
         var owner=new AtomicReference<ServerLevel>(); var boots=new AtomicReference<>(new ItemStack(Items.LEATHER_BOOTS));
         var shapeCache=new AtomicInteger();
-        try(var bukkitServer=mockStatic(org.bukkit.Bukkit.class);var ticks=mockStatic(TickThread.class); var leases=mockStatic(fun.bm.lophine.carpet.CarpetRegionLease.class)) {
+        try(var bukkitServer=mockStatic(org.bukkit.Bukkit.class);var ticks=mockStatic(TickThread.class); var leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open()) {
             CraftServer craft=mock(CraftServer.class);when(craft.getLogger()).thenReturn(java.util.logging.Logger.getAnonymousLogger());bukkitServer.when(org.bukkit.Bukkit::getServer).thenReturn(craft); var sf=MinecraftServer.class.getField("server"); sf.setAccessible(true); sf.set(server,craft);
             when(world.getServer()).thenReturn(server); when(world.getWorld()).thenReturn(mock(CraftWorld.class));
             var region=mock(io.papermc.paper.threadedregions.scheduler.RegionScheduler.class);when(craft.getRegionScheduler()).thenReturn(region);

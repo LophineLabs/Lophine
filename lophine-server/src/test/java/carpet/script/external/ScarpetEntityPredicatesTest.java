@@ -37,7 +37,7 @@ public class ScarpetEntityPredicatesTest {
         final MockedStatic<TickThread> ticks=mockStatic(TickThread.class);
         final MockedStatic<MinecraftServer> servers=mockStatic(MinecraftServer.class);
         final MockedStatic<org.bukkit.Bukkit> bukkit=mockStatic(org.bukkit.Bukkit.class);
-        final MockedStatic<fun.bm.lophine.carpet.CarpetRegionLease> leases=mockStatic(fun.bm.lophine.carpet.CarpetRegionLease.class);
+        final MockedStatic<fun.bm.lophine.carpet.CarpetRegionLease> leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
         final ScarpetRuntime runtime;Entity owner;
         Fixture()throws Exception {this(Entity.class);}
         Fixture(Class<? extends Entity> type)throws Exception {

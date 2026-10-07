@@ -19,6 +19,18 @@ public final class CarpetSynchronousExplosionScope {
     }
 
     public static <T> T run(ServerLevel world, net.minecraft.world.entity.Entity owner, Supplier<T> operation) {
+        var actual = observe(world, owner, operation);
+        if (!actual.isDone())
+            throw new Unavailable("A Bukkit callback introduced deferred native work; accepted work remains registered and will drain", true);
+        return ScarpetNativeWork.recoverGuestValue(actual).getNow(null);
+    }
+
+    /** The asynchronous native API preserves its true count and every unexpected committed callback child. */
+    public static <T> java.util.concurrent.CompletableFuture<T> observeCore(ServerLevel world, net.minecraft.world.entity.Entity owner, Supplier<T> operation) {
+        return ScarpetNativeWork.recoverGuestValue(observe(world, owner, operation));
+    }
+
+    private static <T> java.util.concurrent.CompletableFuture<T> observe(ServerLevel world, net.minecraft.world.entity.Entity owner, Supplier<T> operation) {
         var actual = ScarpetNativeWork.observeNative(owner, () -> {
             ServerLevel previous = CURRENT.get();
             CURRENT.set(world);
@@ -30,9 +42,7 @@ public final class CarpetSynchronousExplosionScope {
             }
         });
         ScarpetNativeWork.trackNative(world.getServer(), actual);
-        if (!actual.isDone())
-            throw new Unavailable("A Bukkit callback introduced deferred native work; accepted work remains registered and will drain", true);
-        return ScarpetNativeWork.recoverGuestValue(actual).getNow(null);
+        return actual;
     }
 
     public static Unavailable unavailable(String reason) {

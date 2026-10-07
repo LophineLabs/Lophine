@@ -30,7 +30,7 @@ public class TisRenewableEggNativeTest {
         final AreaEffectCloud cloud=mock(AreaEffectCloud.class);final List<AreaEffectCloud> clouds=new ArrayList<>();
         final ArrayDeque<Task> tasks=new ArrayDeque<>();final List<String> order=new ArrayList<>();final List<Integer> draws=new ArrayList<>();
         final org.mockito.MockedStatic<TickThread> ticks=mockStatic(TickThread.class);
-        final org.mockito.MockedStatic<CarpetRegionLease> leases=mockStatic(CarpetRegionLease.class);
+        final org.mockito.MockedStatic<CarpetRegionLease> leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
         final org.mockito.MockedStatic<org.bukkit.Bukkit> bukkit=mockStatic(org.bukkit.Bukkit.class);
         final boolean previous=GeneralCompatConfig.renewableDragonEgg;
         BlockPos owner;Entity running;CompletableFuture<Void> setChild,aliveChild;boolean setResult=false;int xDraw;

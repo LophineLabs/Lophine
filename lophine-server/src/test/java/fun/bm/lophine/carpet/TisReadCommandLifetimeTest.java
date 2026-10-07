@@ -76,7 +76,7 @@ class TisReadCommandLifetimeTest {
         }
 
         org.mockito.MockedStatic<CarpetRegionLease> delayedLease() {
-            var leases = mockStatic(CarpetRegionLease.class);
+            var leases = fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
             leases.when(() -> CarpetRegionLease.runValue(eq(world), anyInt(), anyInt(), anyInt(), anyInt(), any(Function.class)))
                     .thenAnswer(call -> {
                         var actual = new CompletableFuture<Object>();

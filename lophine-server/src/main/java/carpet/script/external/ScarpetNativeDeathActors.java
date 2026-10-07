@@ -99,7 +99,7 @@ public final class ScarpetNativeDeathActors {
                 var observed = ScarpetNativeWork.observeNative(recipient, () -> nativeValue(operation));
                 return ScarpetNativeWork.recoverGuestValue(observed);
             }).thenCompose(ScarpetRuntime.captureNativeFunction(value -> value)));
-            return fun.bm.lophine.carpet.CarpetRegionLease.<CompletableFuture<T>>runValue(world, minX, minZ, maxX, maxZ, lease -> perform.get())
+            return fun.bm.lophine.carpet.CarpetRegionLease.<CompletableFuture<T>>runOwnedPhaseValue(world, minX, minZ, maxX, maxZ, lease -> perform.get())
                     .thenCompose(ScarpetRuntime.captureNativeFunction(value -> value));
         }).thenCompose(ScarpetRuntime.captureNativeFunction(value -> value));
     }

@@ -38,7 +38,7 @@ public class CarpetPlayerSpawnContinuationsTest {
         final AtomicInteger released=new AtomicInteger();
         final AtomicBoolean riding=new AtomicBoolean();
         final MockedStatic<ScarpetExplosionActors> actor=mockStatic(ScarpetExplosionActors.class);
-        final MockedStatic<CarpetRegionLease> lease=mockStatic(CarpetRegionLease.class);
+        final MockedStatic<CarpetRegionLease> lease=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
         final MockedStatic<EntityType> types=mockStatic(EntityType.class);
         final MockedStatic<TisLifetimeTracker> lifetime=mockStatic(TisLifetimeTracker.class);
         final MockedStatic<ca.spottedleaf.moonrise.common.util.TickThread> ownership=mockStatic(ca.spottedleaf.moonrise.common.util.TickThread.class);

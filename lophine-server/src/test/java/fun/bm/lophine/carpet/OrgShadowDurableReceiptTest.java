@@ -45,14 +45,14 @@ class OrgShadowDurableReceiptTest {
     }
     @Test void coldCompletedLedgerRecoveryCannotReplaceNewerSavedFourteenWithOldSeventeenOrTwenty()throws Exception{
         Started started;CompoundTag newer;UUID viewer;
-        try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory)){
+        try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory, false, true)){
             started=start(fixture);viewer=fixture.viewer.id();finishWithUnretiredLedger(fixture,started);started.original.shrink(3);
             fixture.owner.set(fixture.viewer.player());fixture.storage.save(fixture.viewer.player());newer=fixture.saved.get(viewer).copy();fixture.owner.set(null);
             assertEquals(14,((CompoundTag)newer.getListOrEmpty("Inventory").getFirst()).getIntOr("count",-1));
             assertFalse(((CompoundTag)newer.getListOrEmpty("CarpetOrgEscrowShadows").getFirst()).getListOrEmpty("completed").isEmpty());
         }
         simulateColdGroup(started.group);
-        try(var cold=new OrgInventoryPersistenceTest.Fixture(directory)){
+        try(var cold=new OrgInventoryPersistenceTest.Fixture(directory, false, true)){
             // This constructor runs the real persisted ledger loader and canonical file reader.
             var before=OrgItemShadowGroups.restore(started.group,0,new ItemStack(Items.EMERALD,20));var live=OrgItemShadowGroups.materialize(before);assertEquals(14,live.getCount());
             OrgItemShadowGroups.recoverComplete(started.transaction,started.changes,true,true);assertEquals(14,live.getCount());
@@ -62,7 +62,7 @@ class OrgShadowDurableReceiptTest {
     }
     @Test void unknownCanonicalReadbackKeepsLiveAssetsHeldUntilTheActualFileIsVerified()throws Exception{
         var tasks=new ArrayDeque<Runnable>();var executor=OrgItemShadowGroups.class.getDeclaredField("journalExecutor");executor.setAccessible(true);Object previous=executor.get(null);executor.set(null,(java.util.concurrent.Executor)tasks::add);
-        try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory)){
+        try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory, false, true)){
             Started started=start(fixture);finishWithUnretiredLedger(fixture,started);started.original.shrink(3);Path canonical=directory.resolve("carpet-org-item-shadow-receipts").resolve(started.group+".nbt");var fail=new AtomicBoolean(true);
             try(var io=mockStatic(NbtIo.class,CALLS_REAL_METHODS)){
                 io.when(()->NbtIo.readCompressed(eq(canonical),any(NbtAccounter.class))).thenAnswer(call->{CompoundTag actual=(CompoundTag)call.callRealMethod();if(actual.getCompoundOrEmpty("state").getIntOr("count",-1)==14&&fail.getAndSet(false))throw new IOException("canonical readback unavailable");return actual;});
@@ -73,18 +73,18 @@ class OrgShadowDurableReceiptTest {
         }finally{executor.set(null,previous);}
     }
     @Test void aStaleActiveLedgerCannotAcquireNewerCanonicalStockAndRollItBack()throws Exception{
-        try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory)){
+        try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory, false, true)){
             Started started=start(fixture);finishWithUnretiredLedger(fixture,started);started.original.shrink(3);OrgItemShadowGroups.persistLatest(started.original);
             assertFalse(OrgItemShadowGroups.prepare(UUID.randomUUID(),started.changes,true));assertEquals(14,started.original.getCount());assertTrue(OrgItemShadowGroups.attempt(List.of(started.original),()->true).completed());
         }
     }
     @Test void aZeroCountLiveAliasKeepsItsDurableIdentityAndDoesNotRecreateStockOnColdRestore()throws Exception{
         Started started;
-        try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory)){
+        try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory, false, true)){
             started=start(fixture);finishWithUnretiredLedger(fixture,started);started.original.setCount(0);OrgItemShadowGroups.persistLatest(started.original);assertTrue(started.original.isEmpty());
         }
         simulateColdGroup(started.group);
-        try(var cold=new OrgInventoryPersistenceTest.Fixture(directory)){
+        try(var cold=new OrgInventoryPersistenceTest.Fixture(directory, false, true)){
             ItemStack live=OrgItemShadowGroups.materialize(OrgItemShadowGroups.restore(started.group,0,new ItemStack(Items.EMERALD,20)));assertTrue(live.isEmpty());assertEquals(0,live.getCount());assertNotNull(live.carpetOrgShadowAnchor);
         }
     }

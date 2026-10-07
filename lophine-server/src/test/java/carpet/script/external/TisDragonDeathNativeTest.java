@@ -78,7 +78,7 @@ public class TisDragonDeathNativeTest {
     }
     private final class Owners implements AutoCloseable {
         final MockedStatic<TickThread> ticks=mockStatic(TickThread.class);
-        final MockedStatic<CarpetRegionLease> leases=mockStatic(CarpetRegionLease.class);
+        final MockedStatic<CarpetRegionLease> leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
         @SuppressWarnings({"rawtypes","unchecked"}) Owners(){
             ticks.when(()->TickThread.isTickThreadFor(any(Entity.class))).thenReturn(true);
             ticks.when(()->TickThread.isTickThreadFor(any(ServerLevel.class),any(BlockPos.class))).thenReturn(true);

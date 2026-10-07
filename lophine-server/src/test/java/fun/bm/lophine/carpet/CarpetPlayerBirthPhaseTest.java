@@ -18,7 +18,7 @@ class CarpetPlayerBirthPhaseTest {
         final MinecraftServer server=mock(MinecraftServer.class);final ServerLevel world=mock(ServerLevel.class);final ServerPlayer player=mock(ServerPlayer.class);
         final org.mockito.MockedStatic<TickThread> ticks=mockStatic(TickThread.class);
         final org.mockito.MockedStatic<ScarpetExplosionActors> actors=mockStatic(ScarpetExplosionActors.class);
-        final org.mockito.MockedStatic<CarpetRegionLease> leases=mockStatic(CarpetRegionLease.class);
+        final org.mockito.MockedStatic<CarpetRegionLease> leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
         Fixture(){
             when(player.level()).thenReturn(world);when(world.getServer()).thenReturn(server);when(player.carpetSpawnServer()).thenReturn(server);when(player.blockPosition()).thenReturn(BlockPos.ZERO);
             ticks.when(()->TickThread.isTickThreadFor(player)).thenReturn(true);

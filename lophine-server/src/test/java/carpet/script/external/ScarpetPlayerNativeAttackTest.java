@@ -29,7 +29,7 @@ public class ScarpetPlayerNativeAttackTest {
         Entity current=attacker;final ItemStack stack;
         final org.mockito.MockedStatic<TickThread> ticks=mockStatic(TickThread.class);
         final org.mockito.MockedStatic<MinecraftServer> servers=mockStatic(MinecraftServer.class);
-        final org.mockito.MockedStatic<fun.bm.lophine.carpet.CarpetRegionLease> leases=mockStatic(fun.bm.lophine.carpet.CarpetRegionLease.class);
+        final org.mockito.MockedStatic<fun.bm.lophine.carpet.CarpetRegionLease> leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
         final org.mockito.MockedStatic<org.bukkit.Bukkit> bukkit=mockStatic(org.bukkit.Bukkit.class);
         Fixture() throws Exception {
             when(from.getServer()).thenReturn(server);when(to.getServer()).thenReturn(server);servers.when(MinecraftServer::getServer).thenReturn(server);

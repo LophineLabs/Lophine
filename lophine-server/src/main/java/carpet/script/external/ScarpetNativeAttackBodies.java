@@ -61,7 +61,7 @@ public final class ScarpetNativeAttackBodies {
     public static <T> CompletableFuture<T> worldArea(ServerLevel world, AABB area, Entity observer, Supplier<T> operation) {
         Supplier<CompletableFuture<T>> captured = ScarpetRuntime.captureNativeContinuation(() ->
                 ScarpetNativeWork.recoverGuestValue(ScarpetNativeWork.observeNative(observer, operation)));
-        var result = fun.bm.lophine.carpet.CarpetRegionLease.<CompletableFuture<T>>runLoadedValue(world,
+        var result = fun.bm.lophine.carpet.CarpetRegionLease.<CompletableFuture<T>>runOwnedLoadedPhaseValue(world,
                         (int) Math.floor((area.minX - 1D) / 16D), (int) Math.floor((area.minZ - 1D) / 16D),
                         (int) Math.floor((area.maxX + 1D) / 16D), (int) Math.floor((area.maxZ + 1D) / 16D), lease -> captured.get())
                 .thenCompose(ScarpetRuntime.captureNativeFunction(value -> value));
@@ -90,7 +90,7 @@ public final class ScarpetNativeAttackBodies {
                 return ScarpetNativeWork.recoverGuestValue(ScarpetNativeWork.observeNative(actor, operation));
             }).thenCompose(ScarpetRuntime.captureNativeFunction(value -> value)));
             // Native attack queries existing entities; a foreign projection must not load empty chunks.
-            return fun.bm.lophine.carpet.CarpetRegionLease.<CompletableFuture<T>>runLoadedValue(world, minX, minZ, maxX, maxZ, lease -> perform.get())
+            return fun.bm.lophine.carpet.CarpetRegionLease.<CompletableFuture<T>>runOwnedLoadedPhaseValue(world, minX, minZ, maxX, maxZ, lease -> perform.get())
                     .thenCompose(ScarpetRuntime.captureNativeFunction(value -> value));
         }).thenCompose(ScarpetRuntime.captureNativeFunction(value -> value));
     }

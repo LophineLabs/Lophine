@@ -104,12 +104,19 @@ public final class ScarpetDamageContinuations {
      * Extends a deferred damage result through entity overrides that have vanilla post-damage work.
      */
     public static void publishExtendedResult(LivingEntity target, CompletableFuture<Boolean> actual) {
+        var server = target.level() instanceof ServerLevel world ? world.getServer() : null;
+        publishExtendedResult(server, target, actual);
+    }
+
+    /** Registers an asynchronous source tail without inspecting its independently owned victim. */
+    public static void publishExtendedResult(net.minecraft.server.MinecraftServer server, LivingEntity target, CompletableFuture<Boolean> actual) {
         EXTENDED_RESULTS.put(target, actual);
         CompletableFuture<Void> serial = actual.thenApply(ignored -> (Void) null);
+        ScarpetNativeWork.aliasDependency(serial, actual);
         SERIAL.put(target, serial);
         ScarpetNativeWork.record(actual);
         ScarpetNativeWork.record(serial);
-        if (target.level() instanceof ServerLevel world) ScarpetNativeWork.trackNative(world.getServer(), serial);
+        if (server != null) ScarpetNativeWork.trackNative(server, serial);
         actual.whenComplete((ignored, failure) -> EXTENDED_RESULTS.remove(target, actual));
         serial.whenComplete((ignored, failure) -> SERIAL.remove(target, serial));
     }
@@ -119,10 +126,11 @@ public final class ScarpetDamageContinuations {
      */
     public static CompletableFuture<Boolean> appendNativeResult(LivingEntity target, CompletableFuture<Boolean> outcome,
                                                                 java.util.function.Function<Boolean, Boolean> nativeTail) {
+        var server = target.level() instanceof ServerLevel world ? world.getServer() : null;
         var captured = ScarpetRuntime.captureNativeFunction((Boolean hurt) -> ScarpetExplosionActors.entity(target,
                 () -> nativeTail.apply(Boolean.TRUE.equals(hurt))));
         CompletableFuture<Boolean> actual = outcome.thenCompose(captured);
-        publishExtendedResult(target, actual);
+        publishExtendedResult(server, target, actual);
         return actual;
     }
 

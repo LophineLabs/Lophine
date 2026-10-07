@@ -46,7 +46,7 @@ public class ScarpetNativeRemovalsTest {
         final MockedStatic<TickThread> ticks = mockStatic(TickThread.class);
         final MockedStatic<MinecraftServer> servers = mockStatic(MinecraftServer.class);
         final MockedStatic<org.bukkit.Bukkit> bukkit = mockStatic(org.bukkit.Bukkit.class);
-        final MockedStatic<fun.bm.lophine.carpet.CarpetRegionLease> leases = mockStatic(fun.bm.lophine.carpet.CarpetRegionLease.class);
+        final MockedStatic<fun.bm.lophine.carpet.CarpetRegionLease> leases = fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
         final ScarpetRuntime runtime;
         Fixture() throws Exception {
             CraftServer craft = mock(CraftServer.class); when(craft.getLogger()).thenReturn(java.util.logging.Logger.getAnonymousLogger());
@@ -54,7 +54,8 @@ public class ScarpetNativeRemovalsTest {
             assertNotNull(org.leavesmc.leaves.plugin.MinecraftInternalPlugin.INSTANCE);
             var serverField = MinecraftServer.class.getField("server"); serverField.setAccessible(true); serverField.set(server, craft);
             var scheduler = mock(io.papermc.paper.threadedregions.scheduler.RegionScheduler.class); when(craft.getRegionScheduler()).thenReturn(scheduler);
-            when(world.getServer()).thenReturn(server); when(world.getWorld()).thenReturn(mock(CraftWorld.class));
+            var craftWorld=mock(CraftWorld.class);
+            when(world.getServer()).thenReturn(server); when(world.getWorld()).thenReturn(craftWorld);
             doReturn(world).when(entity).level(); doReturn(BlockPos.ZERO).when(entity).blockPosition();
             doAnswer(call -> removed.get()).when(entity).isRemoved();
             doReturn(false).when(entity).hasContainerOpen();
@@ -138,6 +139,58 @@ public class ScarpetNativeRemovalsTest {
             idle.get(3, TimeUnit.SECONDS);
             assertTrue(fixture.removed.get());
             assertEquals(List.of("physical", "brain", "combat", "inventory", "retire/maps"), fixture.sequence);
+        }
+    }
+
+    @Test void rejectedPhysicalRemovalSettlesOnlyAfterItsAlreadyAcceptedNativeChildren() throws Exception {
+        try (Fixture fixture = new Fixture()) {
+            var callback = new CompletableFuture<Void>();
+            var child = new CompletableFuture<Void>();
+            var failure = new RejectedExecutionException("Owner scheduler closed after removal admission");
+            when(fixture.events.onEventFuture(EntityEventsGroup.Event.ON_REMOVED)).thenAnswer(call -> {
+                ScarpetNativeWork.record(child);
+                return callback;
+            });
+            try {
+                fixture.own(() -> fixture.entity.remove(Entity.RemovalReason.UNLOADED_WITH_PLAYER));
+                var actual = ScarpetNativeRemovals.completion(fixture.entity);
+                var idle = ScarpetNativeRemovals.whenIdle(fixture.server);
+                var regions = fixture.server.server.getRegionScheduler();
+                doThrow(failure).when(regions).execute(any(), any(org.bukkit.World.class), anyInt(), anyInt(), any(Runnable.class));
+                callback.complete(null);
+                assertFalse(actual.isDone()); assertFalse(idle.isDone());
+                assertFalse(fixture.removed.get()); assertTrue(fixture.sequence.isEmpty());
+                child.complete(null);
+                assertTrue(actual.isCompletedExceptionally(), "Rejected owner dispatch must publish the actual failure");
+                assertSame(failure, assertThrows(CompletionException.class, actual::join).getCause());
+                assertTrue(idle.isDone()); assertFalse(ScarpetNativeRemovals.isPending(fixture.entity));
+                assertFalse(fixture.removed.get()); assertTrue(fixture.sequence.isEmpty());
+            } finally {
+                child.complete(null); callback.complete(null);
+                // A broken dispatcher must not leave the test's server shutdown thread waiting forever.
+                var field = ScarpetNativeRemovals.class.getDeclaredField("PENDING"); field.setAccessible(true);
+                Object plan = ((Map<?, ?>) field.get(null)).get(fixture.entity);
+                if (plan != null) {
+                    var body = plan.getClass().getDeclaredField("nativeBody"); body.setAccessible(true);
+                    ((CompletableFuture<?>) body.get(plan)).completeExceptionally(failure);
+                }
+            }
+        }
+    }
+
+    @Test void rejectedOwnerValueDispatchReturnsItsActualFailureInsteadOfThrowingAndStrandingTheReceipt() throws Exception {
+        try (Fixture fixture = new Fixture()) {
+            fixture.own(() -> ScarpetRetiredActors.capture(fixture.entity));
+            var failure = new RejectedExecutionException("Owner value scheduler closed");
+            var regions = fixture.server.server.getRegionScheduler();
+                doThrow(failure).when(regions).execute(any(), any(org.bukkit.World.class), anyInt(), anyInt(), any(Runnable.class));
+            var called = new AtomicBoolean();
+            var actual = assertDoesNotThrow(() -> ScarpetNativeRemovals.onOwnerFuture(fixture.entity, () -> {
+                called.set(true); return 17;
+            }));
+            assertTrue(actual.isCompletedExceptionally());
+            assertSame(failure, assertThrows(CompletionException.class, actual::join).getCause());
+            assertFalse(called.get()); assertTrue(ScarpetNativeRemovals.whenIdle(fixture.server).isDone());
         }
     }
 }

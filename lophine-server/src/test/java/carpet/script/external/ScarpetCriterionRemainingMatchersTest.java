@@ -253,7 +253,7 @@ public class ScarpetCriterionRemainingMatchersTest {
         }
     }
     @Test void ownedBlockNativeHeadReadsActualBlockDirectlyWithoutLeaseAndWaitsItsChildren() throws Exception {
-        try (var f = new Fixture(); var leases = mockStatic(fun.bm.lophine.carpet.CarpetRegionLease.class)) {
+        try (var f = new Fixture(); var leases = fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open()) {
             var position = new BlockPos(16, 70, 32); var stack = new ItemStack(Items.STONE); var child = new CompletableFuture<Void>();
             f.ticks.when(() -> TickThread.isTickThreadFor(f.world, position)).thenReturn(true);
             when(f.world.getBlockState(position)).thenAnswer(call -> { f.order.add("state"); ScarpetNativeWork.record(child); return Blocks.STONE.defaultBlockState(); });

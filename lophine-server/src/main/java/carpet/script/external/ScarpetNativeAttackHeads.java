@@ -81,7 +81,9 @@ public final class ScarpetNativeAttackHeads {
     }
 
     public static CompletableFuture<Boolean> creative(Player player, Entity target) {
-        return ScarpetNativeDeathActors.target(player, () -> {
+        if (!fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.creativeHitRemoveEntity)
+            return CompletableFuture.completedFuture(false);
+        return ScarpetNativeDeathActors.entity(player, () -> {
             boolean creative = player.isCreative();
             if (creative && player instanceof ServerPlayer && fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.creativeHitRemoveEntity)
                 return 1;
@@ -96,7 +98,9 @@ public final class ScarpetNativeAttackHeads {
      * The AMS injection is at the real attack HEAD and continues into the original attack body.
      */
     public static CompletableFuture<Void> creativeAMS(Player player, Entity target) {
-        return ScarpetNativeDeathActors.target(player, () -> fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.creativeOneHitKill
+        if (!fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.creativeOneHitKill)
+            return CompletableFuture.completedFuture(null);
+        return ScarpetNativeDeathActors.entity(player, () -> fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.creativeOneHitKill
                         && player.level() instanceof ServerLevel && player.getAbilities().instabuild)
                 .thenCompose(ScarpetRuntime.captureNativeFunction(enabled -> {
                     if (!enabled) return CompletableFuture.completedFuture(null);

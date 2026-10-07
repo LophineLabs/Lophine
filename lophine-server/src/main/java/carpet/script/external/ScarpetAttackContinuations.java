@@ -155,6 +155,11 @@ public final class ScarpetAttackContinuations {
      */
     public static <T> CompletableFuture<T> afterDamageAsync(ServerPlayer attacker, CompletableFuture<Boolean> outcome,
                                                             Function<Boolean, CompletableFuture<T>> nativeTail) {
+        return afterDamageAsync((Entity) attacker, outcome, nativeTail);
+    }
+
+    public static <T> CompletableFuture<T> afterDamageAsync(Entity attacker, CompletableFuture<Boolean> outcome,
+                                                            Function<Boolean, CompletableFuture<T>> nativeTail) {
         var actual = afterDamageNativeAsync(attacker, outcome, nativeTail);
         var caller = actual.copy();
         ScarpetNativeWork.aliasDependency(caller, actual);
@@ -163,7 +168,16 @@ public final class ScarpetAttackContinuations {
 
     public static <T> CompletableFuture<T> afterDamageNativeAsync(ServerPlayer attacker, CompletableFuture<Boolean> outcome,
                                                                   Function<Boolean, CompletableFuture<T>> nativeTail) {
+        return afterDamageNativeAsync((Entity) attacker, outcome, nativeTail);
+    }
+
+    /**
+     * The initiating actor observes the whole typed tail; its target endpoints choose their own current owners.
+     */
+    public static <T> CompletableFuture<T> afterDamageNativeAsync(Entity attacker, CompletableFuture<Boolean> outcome,
+                                                                  Function<Boolean, CompletableFuture<T>> nativeTail) {
         TickThread.ensureTickThread(attacker, "Deferred typed attack must be captured by its attacker");
+        var server = attacker instanceof ServerPlayer player ? player.carpetSpawnServer() : attacker.level().getServer();
         var actual = new CompletableFuture<T>() {
             @Override
             public boolean cancel(boolean interrupt) {
@@ -172,15 +186,15 @@ public final class ScarpetAttackContinuations {
         };
         ScarpetNativeWork.aliasDependency(actual, outcome);
         ScarpetNativeWork.record(actual);
-        ScarpetNativeWork.trackNative(attacker.carpetSpawnServer(), actual);
+        ScarpetNativeWork.trackNative(server, actual);
         var continuation = ScarpetRuntime.captureNativeFunction((Boolean hurt) -> ScarpetExplosionActors.entity(attacker, () -> {
             var observed = ScarpetNativeWork.observeNative(attacker, () -> {
-                try (var accepted = ScarpetPlayerInventoryGate.acceptedScope(attacker)) {
+                return withAcceptedPlayer(attacker, () -> {
                     ScarpetNativeWork.aliasDependency(actual, ScarpetNativeWork.completionOf(ScarpetNativeWork.capture()));
                     var result = nativeTail.apply(Boolean.TRUE.equals(hurt));
                     ScarpetNativeWork.record(result);
                     return result;
-                }
+                });
             });
             ScarpetNativeWork.aliasDependency(actual, observed);
             return ScarpetNativeWork.recoverGuestValue(observed).thenCompose(ScarpetRuntime.captureNativeFunction(value -> value));
@@ -190,13 +204,43 @@ public final class ScarpetAttackContinuations {
                 actual.completeExceptionally(failure);
                 return;
             }
-            continuation.apply(hurt).whenComplete((value, problem) -> {
+            continuation.apply(hurt).whenComplete(ScarpetRuntime.captureNativeConsumer((T value, Throwable problem) -> {
                 if (problem == null) actual.complete(value);
                 else actual.completeExceptionally(problem);
-            });
+            }));
         }));
-        ScarpetPlayerInventoryGate.trackAccepted(attacker, actual);
+        if (attacker instanceof ServerPlayer player) ScarpetPlayerInventoryGate.trackAccepted(player, actual);
         return actual;
+    }
+
+    /** The tail may read or mutate only its initiating actor. */
+    public static <T> CompletableFuture<T> afterDamageSource(Entity attacker, CompletableFuture<Boolean> outcome,
+                                                             Function<Boolean, T> nativeTail) {
+        return afterDamageNativeAsync(attacker, outcome, hurt -> CompletableFuture.completedFuture(nativeTail.apply(hurt)));
+    }
+
+    /** The tail may read or mutate only the victim, even after that victim changes worlds. */
+    public static <T> CompletableFuture<T> afterDamageTarget(Entity attacker, Entity target, CompletableFuture<Boolean> outcome,
+                                                             Function<Boolean, T> nativeTail) {
+        return afterDamageNativeAsync(attacker, outcome, hurt -> target instanceof net.minecraft.world.entity.LivingEntity living
+                ? ScarpetNativeDeathActors.target(living, () -> nativeTail.apply(hurt))
+                : ScarpetNativeDeathActors.entity(target, () -> nativeTail.apply(hurt)));
+    }
+
+    /** Capture the original native world and its random source before admitting an asynchronous attack tail. */
+    public static ScarpetAttackEnchantments.SourceAdmission postAttackAdmission(Entity caller, ServerLevel world) {
+        TickThread.ensureTickThread(caller, "Attack effect admission must be captured by its caller");
+        return new ScarpetAttackEnchantments.SourceAdmission(world, caller.blockPosition().immutable(), world.getRandom(), caller);
+    }
+
+    /** Victim equipment and the damage source's weapon effects execute on their own actual actors in native order. */
+    public static CompletableFuture<Void> postAttackEffects(ScarpetAttackEnchantments.SourceAdmission admission, Entity victim,
+                                                             net.minecraft.world.damagesource.DamageSource source) {
+        var weapon = source.getEntity() instanceof net.minecraft.world.entity.LivingEntity living
+                ? ScarpetNativeDeathActors.entity(living, living::getWeaponItem)
+                : CompletableFuture.<net.minecraft.world.item.ItemStack>completedFuture(null);
+        return weapon.thenCompose(ScarpetRuntime.captureNativeFunction(stack ->
+                net.minecraft.world.item.enchantment.EnchantmentHelper.carpetPostAttackEffectsWithItemSourceAsync(admission, victim, source, stack)));
     }
 
     private static <T> CompletableFuture<T> jointlyOwned(Entity attacker, Entity target,

@@ -58,7 +58,7 @@ class OrgInventoryPersistenceTest {
     }
 
     @Test void unknownTargetCreditKeepsBothSidesInputDetachedUntilHeldCustodyIsReadable() throws Exception {
-        try (Fixture fixture = new Fixture(directory)) {
+        try (Fixture fixture = new Fixture(directory, false, true)) {
             fixture.unreadable.addAll(List.of(3, 4));
             fixture.start(); fixture.process(fixture.target);
             assertTrue(fixture.target.inventory.getItem(0).isEmpty());
@@ -77,7 +77,7 @@ class OrgInventoryPersistenceTest {
     }
 
     @Test void unknownViewerCreditCannotRestorePaidInputOrOverwriteLaterBusinessItems() throws Exception {
-        try (Fixture fixture = new Fixture(directory)) {
+        try (Fixture fixture = new Fixture(directory, false, true)) {
             fixture.start(); fixture.process(fixture.target);
             // Viewer reservation=1, target reservation=2, credit=3, commit marker=4, viewer credit=5.
             fixture.unreadable.add(5); fixture.process(fixture.viewer);
@@ -95,7 +95,7 @@ class OrgInventoryPersistenceTest {
     }
 
     @Test void aMergedPreexistingStackIsHeldWholeAndNeverBecomesUnknownCompensation() throws Exception {
-        try (Fixture fixture = new Fixture(directory)) {
+        try (Fixture fixture = new Fixture(directory, false, true)) {
             fixture.start(); fixture.process(fixture.target);
             fixture.viewer.inventory.setItem(0, new ItemStack(Items.EMERALD, 20)); // A later legitimate pickup.
             fixture.unreadable.add(5); fixture.process(fixture.viewer);
@@ -124,10 +124,13 @@ class OrgInventoryPersistenceTest {
         final Actor viewer, target;
         final Object coordinator;
         final Method process;
+        final boolean serialCustody;
         int reads;
 
         Fixture(Path directory) throws Exception { this(directory, false); }
-        Fixture(Path directory, boolean fakeTarget) throws Exception {
+        Fixture(Path directory, boolean fakeTarget) throws Exception { this(directory, fakeTarget, false); }
+        Fixture(Path directory, boolean fakeTarget, boolean serialCustody) throws Exception {
+            this.serialCustody = serialCustody;
             PlayerList players = mock(PlayerList.class);
             var storageField = PlayerList.class.getField("playerIo"); storageField.setAccessible(true); storageField.set(players, storage);
             when(server.getPlayerList()).thenReturn(players); when(server.getWorldPath(LevelResource.ROOT)).thenReturn(directory);
@@ -177,7 +180,7 @@ class OrgInventoryPersistenceTest {
             doAnswer(call -> { data.remove(call.getArgument(0)); return null; }).when(pdc).remove(any(NamespacedKey.class));
             when(bukkit.getPersistentDataContainer()).thenReturn(pdc); when(player.getBukkitEntity()).thenReturn(bukkit);
             when(player.getUUID()).thenReturn(id); when(player.nameAndId()).thenReturn(new NameAndId(id, "inventory_test")); when(player.getDisplayName()).thenReturn(net.minecraft.network.chat.Component.literal("inventory_test")); when(player.getGameProfile()).thenReturn(new com.mojang.authlib.GameProfile(id,"inventory_test")); when(player.registryAccess()).thenReturn(lookup);
-            ServerLevel level = mock(ServerLevel.class); when(level.getServer()).thenReturn(server); when(player.level()).thenReturn(level);
+            ServerLevel level = mock(ServerLevel.class); when(level.getServer()).thenReturn(server); when(player.level()).thenReturn(level); when(player.carpetSpawnServer()).thenReturn(server);
             Inventory inventory = new Inventory(player, new EntityEquipment()); when(player.getInventory()).thenReturn(inventory);
             player.enderChestSlotCount = -1; PlayerEnderChestContainer ender = new PlayerEnderChestContainer(player); when(player.getEnderChestInventory()).thenReturn(ender);
             var menuField = Player.class.getField("inventoryMenu"); menuField.setAccessible(true); menuField.set(player, mock(InventoryMenu.class)); player.containerMenu = mock(AbstractContainerMenu.class);
@@ -204,6 +207,25 @@ class OrgInventoryPersistenceTest {
             try { process(viewer); } catch (Exception failure) { throw new AssertionError(failure); }
         }
         void process(Actor actor) throws Exception {
+            if (serialCustody) {
+                // Financial fault tests stop on each real owner/custody boundary. An
+                // inline snapshot must not let a broad two-tick drain consume the next
+                // credit/readback/retry before that test has installed its fault.
+                for (int turn=0;turn<32&&preparing();turn++) {
+                    drainOne(viewer);
+                    if (!preparing()) break;
+                    drainOne(target);
+                }
+                owner.set(actor.player);
+                try {
+                    boolean inventoryParticipant = OrgInventoryTransfers.participantBlocked(actor.player);
+                    process.invoke(coordinator,actor.player);
+                    // XP/file actor fixtures share these queues but have no inventory
+                    // participant; advance one actual callback, never its newly queued retry.
+                    if (!inventoryParticipant) drainOne(actor);
+                } finally { owner.set(null); }
+                return;
+            }
             // PREPARING only schedules both actors' quiescence acknowledgements. Drain
             // those real owner queues before advancing the single requested custody
             // phase, preserving the tests' exact debit/readback fault boundaries.
@@ -215,6 +237,25 @@ class OrgInventoryPersistenceTest {
                 drain(viewer);drain(target);
             }
             owner.set(actor.player);try{process.invoke(coordinator,actor.player);drain(actor);}finally{owner.set(null);}
+        }
+        private boolean preparing() throws Exception {
+            var field=coordinator.getClass().getDeclaredField("transactions");field.setAccessible(true);
+            for(Object transaction:((Map<?,?>)field.get(coordinator)).values()){
+                var phase=transaction.getClass().getDeclaredField("phase");phase.setAccessible(true);
+                if(phase.get(transaction).equals("preparing"))return true;
+            }
+            return false;
+        }
+        private void drainOne(Actor actor) {
+            owner.set(actor.player);
+            var queue=scheduled.get(actor.id);if(queue==null)return;
+            long now=clocks.computeIfAbsent(actor.id, ignored -> new java.util.concurrent.atomic.AtomicLong()).incrementAndGet();
+            int count=queue.size();
+            for(int index=0;index<count;index++){
+                Scheduled task=queue.poll();if(task==null)return;
+                if(task.due<=now){task.work.accept(actor.player);return;}
+                queue.add(task);
+            }
         }
         void drain(Actor actor) {
             owner.set(actor.player); var queue=scheduled.get(actor.id); if(queue==null)return;

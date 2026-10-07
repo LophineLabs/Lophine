@@ -141,7 +141,7 @@ public class TisCommandActualCompletionTest {
   when(target.getPassengers()).thenReturn(List.of(nested));when(nested.getVehicle()).thenReturn(target);
   var child=new CompletableFuture<Void>();doAnswer(call->{ScarpetNativeWork.record(child);return true;}).when(rider).startRiding(target,true,true);
   var rectangle=new AtomicReference<List<Integer>>();
-  try(var ticks=owner();var lease=mockStatic(CarpetRegionLease.class)){
+  try(var ticks=owner();var lease=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open()){
    lease.when(()->CarpetRegionLease.runLoadedValue(eq(world),anyInt(),anyInt(),anyInt(),anyInt(),any(java.util.function.Function.class)))
     .thenAnswer(call->{rectangle.set(List.of(call.getArgument(1),call.getArgument(2),call.getArgument(3),call.getArgument(4)));return CompletableFuture.completedFuture(((java.util.function.Function)call.getArgument(5)).apply(null));});
    @SuppressWarnings("unchecked") var actual=(CompletableFuture<Integer>)invoke(TisManipulateCommand.class,"mount",new Class[]{CommandSourceStack.class,Entity.class,Entity.class,int.class},source,rider,target,8);
@@ -178,7 +178,7 @@ public class TisCommandActualCompletionTest {
    return null;
   }).when(player.connection).send(any(net.minecraft.network.protocol.Packet.class),any(io.netty.channel.ChannelFutureListener.class));
   Class<?> selection=Class.forName("fun.bm.lophine.carpet.TisRefreshCommand$Selection");var ctor=selection.getDeclaredConstructor(boolean.class,ChunkPos.class,Integer.class);ctor.setAccessible(true);
-  try(var ticks=owner();var lease=mockStatic(CarpetRegionLease.class);var event=mockStatic(io.papermc.paper.event.packet.PlayerChunkLoadEvent.class);
+  try(var ticks=owner();var lease=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();var event=mockStatic(io.papermc.paper.event.packet.PlayerChunkLoadEvent.class);
       var packet=mockConstruction(net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket.class);var scope=CarpetAsyncCommandResults.open()){
    ticks.when(()->TickThread.isTickThreadFor(world,0,0)).thenReturn(true);
    event.when(io.papermc.paper.event.packet.PlayerChunkLoadEvent::getHandlerList).thenReturn(new org.bukkit.event.HandlerList());

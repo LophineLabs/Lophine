@@ -66,7 +66,7 @@ public final class CarpetHopperCounters {
         ScarpetNativeWork.record(actual);
         ScarpetNativeWork.trackNative(world.getServer(), actual);
         actual.whenComplete((value, failure) -> PENDING.remove(hopper, actual));
-        var flow = new Flow(world, origin, operations);
+        var flow = new Flow(world, origin, hopper, operations);
         try {
             var prepared = flow.phase(prepare::getAsBoolean);
             var finished = TisCommandContinuations.then(prepared, ready -> !ready ? CompletableFuture.completedFuture(false)
@@ -88,16 +88,27 @@ public final class CarpetHopperCounters {
     private static final class Flow {
         final ServerLevel world;
         final BlockPos position;
+        final HopperBlockEntity hopper;
         final Operations operations;
 
-        Flow(ServerLevel world, BlockPos position, Operations operations) {
+        Flow(ServerLevel world, BlockPos position, HopperBlockEntity hopper, Operations operations) {
             this.world = world;
             this.position = position;
+            this.hopper = hopper;
             this.operations = operations;
         }
 
         <T> CompletableFuture<T> phase(Supplier<T> operation) {
-            return TisCommandContinuations.owned(world, position, operation);
+            return TisCommandContinuations.owned(world, position, () -> {
+                ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(world, position, "Native hopper pass must run on its original owner");
+                // A deferred native child does not reserve this block. Piston carrying,
+                // unloads and replacements can retire or move the original instance.
+                // Consult the original actor's table before reading that instance.
+                if (world.getBlockEntity(position) != hopper || hopper.isRemoved()
+                        || hopper.getLevel() != world || !position.equals(hopper.getBlockPos()))
+                    throw new IllegalStateException("Hopper moved or retired before native pass");
+                return operation.get();
+            });
         }
 
         CompletableFuture<Void> effect(Runnable operation) {

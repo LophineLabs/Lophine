@@ -36,7 +36,7 @@ public class ScarpetExplosionRaysTest {
         var sourceTasks=new ArrayDeque<Consumer<Entity>>();var reference=new AtomicBoolean();var rngCalls=new AtomicInteger();var sourceCalls=new AtomicInteger();
         boolean oldOptimized=fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.optimizedTNT;
         boolean oldDisabled=fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.explosionNoBlockDamage;
-        try(var ticks=mockStatic(TickThread.class);var leases=mockStatic(fun.bm.lophine.carpet.CarpetRegionLease.class);
+        try(var ticks=mockStatic(TickThread.class);var leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
             var global=mockStatic(io.papermc.paper.configuration.GlobalConfiguration.class);var bukkit=mockStatic(org.bukkit.Bukkit.class)) {
             fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.optimizedTNT=optimized;
             fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.explosionNoBlockDamage=false;

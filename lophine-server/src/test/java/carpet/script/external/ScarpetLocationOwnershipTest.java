@@ -28,7 +28,7 @@ public class ScarpetLocationOwnershipTest {
     @BeforeAll static void bootstrap(){net.minecraft.SharedConstants.tryDetectVersion();net.minecraft.server.Bootstrap.bootStrap();}
     private static final class Fixture implements AutoCloseable {
         final MinecraftServer server=mock(MinecraftServer.class);final ServerLevel world=mock(ServerLevel.class);
-        final MockedStatic<CarpetRegionLease> leases=mockStatic(CarpetRegionLease.class);
+        final MockedStatic<CarpetRegionLease> leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
         final List<List<Integer>> footprints=new ArrayList<>();final Deque<List<Integer>> owned=new ArrayDeque<>();
         final MappedRegistry<Structure> structures=new MappedRegistry<>(Registries.STRUCTURE,Lifecycle.stable());
         final Structure structure=mock(Structure.class);final ChunkAccess center=mock(ChunkAccess.class),reference=mock(ChunkAccess.class);

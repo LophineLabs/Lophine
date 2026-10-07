@@ -123,8 +123,12 @@ class OrgSafeAfkRemovalCausalityTest {
         }
 
         void runCleanup() {
-            assertEquals(1, queued.size());
-            queued.remove().run();
+            if (cleanups.get() == 0) {
+                assertEquals(1, queued.size());
+                queued.remove().run();
+            } else {
+                assertTrue(queued.isEmpty());
+            }
             assertEquals(1, cleanups.get());
             assertFalse(ScarpetNativeWork.whenIdle(server).isDone());
             assertTrue(ScarpetPlayerInventoryGate.paused(bot));

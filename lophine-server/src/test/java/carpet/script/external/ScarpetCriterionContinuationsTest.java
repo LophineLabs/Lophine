@@ -24,6 +24,57 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class ScarpetCriterionContinuationsTest {
+    @Test void manyMatchingCriteriaAwaitRealMatcherAndAwardChildrenWithoutRecursiveTraversal() {
+        KilledTrigger trigger = new KilledTrigger();
+        var listeners = new LinkedHashMap<PlayerAdvancements.TriggerInstanceKey, KilledTrigger.TriggerInstance>();
+        for (int i = 0; i < 2000; i++) listeners.put(key("award" + i), entry());
+        when(advancements.getTriggerMapForType(trigger)).thenReturn(listeners);
+        var firstMatcher = new CompletableFuture<Boolean>();
+        var firstAwardChild = new CompletableFuture<Void>();
+        var matches = new java.util.concurrent.atomic.AtomicInteger();
+        var awards = new java.util.concurrent.atomic.AtomicInteger();
+        when(advancements.award(any(), anyString())).thenAnswer(call -> {
+            assertEquals(2000, matches.get(), "All matches must precede native awards");
+            if (awards.getAndIncrement() == 0) ScarpetNativeWork.record(firstAwardChild);
+            return true;
+        });
+        try (var ticks = owners()) {
+            var parent = ScarpetNativeWork.observeNative(player, () -> {
+                ScarpetNativeWork.record(trigger.carpetTriggerNativeAsync(player, value ->
+                        matches.getAndIncrement() == 0 ? firstMatcher : CompletableFuture.completedFuture(true)));
+                return null;
+            });
+            assertFalse(parent.isDone());
+            assertEquals(1, matches.get());
+            firstMatcher.complete(true);
+            assertFalse(parent.isDone());
+            assertEquals(2000, matches.get());
+            assertEquals(1, awards.get());
+            firstAwardChild.complete(null);
+            assertTrue(parent.isDone());
+            parent.join();
+            assertEquals(2000, awards.get());
+        }
+    }
+    @Test void manyImmediateLoginInventoryCriteriaCompleteTheirNativeParent() {
+        KilledTrigger trigger = new KilledTrigger();
+        var listeners = new LinkedHashMap<PlayerAdvancements.TriggerInstanceKey, KilledTrigger.TriggerInstance>();
+        for (int i = 0; i < 2000; i++) listeners.put(key("login" + i), entry());
+        when(advancements.getTriggerMapForType(trigger)).thenReturn(listeners);
+        var visits = new java.util.concurrent.atomic.AtomicInteger();
+        try (var ticks = owners()) {
+            var login = ScarpetNativeWork.observeNative(player, () -> {
+                ScarpetNativeWork.record(trigger.carpetTriggerNativeAsync(player, value -> {
+                    visits.incrementAndGet();
+                    return CompletableFuture.completedFuture(false);
+                }));
+                return null;
+            });
+            assertTrue(login.isDone(), "Immediate criterion traversal stranded login and freezes player ticks");
+            login.join();
+            assertEquals(2000, visits.get());
+        }
+    }
     @BeforeAll static void bootstrap() { net.minecraft.SharedConstants.tryDetectVersion(); Bootstrap.bootStrap(); }
     final MinecraftServer server = mock(MinecraftServer.class, RETURNS_DEEP_STUBS);
     final ServerLevel world = mock(ServerLevel.class);

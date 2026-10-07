@@ -50,8 +50,17 @@ class OrgBeaconNativeEffectsTest {
     @Test void theWholeAcceptedBeaconTailKeepsAnInventorySnapshotBehindSecondaryEffect()throws Exception{
         try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory)){
             prepare(fixture);
-            var player=fixture.target.player();var source=player.level();when(player.getBoundingBox()).thenReturn(new AABB(8,21,10,9,23,11));var primary=new CompletableFuture<Void>();var order=new ArrayList<String>();
-            var actual=OrgBeaconEffects.applyNative(source,ORIGIN,BOUNDS,true,(recipient,originalWorld,origin,isPrimary)->{order.add(isPrimary?"primary":"secondary");if(isPrimary)ScarpetNativeWork.record(primary);});fixture.drain(fixture.viewer);fixture.drain(fixture.target);var snapshot=ScarpetPlayerInventoryGate.whenIdle(player,()->List.copyOf(order));assertFalse(snapshot.isDone());assertTrue(ScarpetPlayerInventoryGate.paused(player));primary.complete(null);assertEquals(List.of("primary","secondary"),order);actual.join();assertFalse(snapshot.isDone());fixture.drain(fixture.target);assertEquals(List.of("primary","secondary"),snapshot.join());
+            var player=fixture.target.player();var source=player.level();when(player.getBoundingBox()).thenReturn(new AABB(8,21,10,9,23,11));
+            var primary=new CompletableFuture<Void>();var secondary=new CompletableFuture<Void>();var order=new ArrayList<String>();
+            var actual=OrgBeaconEffects.applyNative(source,ORIGIN,BOUNDS,true,(recipient,originalWorld,origin,isPrimary)->{
+                order.add(isPrimary?"primary":"secondary");ScarpetNativeWork.record(isPrimary?primary:secondary);
+            });
+            fixture.drain(fixture.viewer);fixture.drain(fixture.target);
+            var snapshot=ScarpetPlayerInventoryGate.whenIdle(player,()->List.copyOf(order));assertFalse(snapshot.isDone());assertTrue(ScarpetPlayerInventoryGate.paused(player));
+            primary.complete(null);assertEquals(List.of("primary","secondary"),order);
+            assertFalse(actual.isDone());assertFalse(snapshot.isDone());assertTrue(ScarpetPlayerInventoryGate.paused(player));
+            secondary.complete(null);actual.join();assertTrue(snapshot.isDone());assertFalse(ScarpetPlayerInventoryGate.paused(player));
+            assertEquals(List.of("primary","secondary"),snapshot.join());
         }
     }
     @Test void actualBeaconBoundsMatchNegativeRangeCollapseAndWholeWorldHeight()throws Exception{

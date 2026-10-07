@@ -155,7 +155,7 @@ public class ScarpetCriterionMatchersTest {
         var used = new ItemUsedOnLocationTrigger(); entry(used, new ItemUsedOnLocationTrigger.TriggerInstance(Optional.empty(), Optional.of(predicate)));
         var any = new AnyBlockInteractionTrigger(); entry(any, new AnyBlockInteractionTrigger.TriggerInstance(Optional.empty(), Optional.of(predicate)));
         var defaults = new DefaultBlockInteractionTrigger(); entry(defaults, new DefaultBlockInteractionTrigger.TriggerInstance(Optional.empty(), Optional.of(predicate)));
-        try (var owners = owners(); var leases = mockStatic(CarpetRegionLease.class)) {
+        try (var owners = owners(); var leases = fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open()) {
             leases.when(() -> CarpetRegionLease.runLoadedValue(eq(world), eq(3), eq(-6), eq(5), eq(-4), any(Function.class))).thenAnswer(call -> {
                 owned[0] = true; try { return CompletableFuture.completedFuture(((Function<?, ?>)call.getArgument(5)).apply(null)); } finally { owned[0] = false; }
             });

@@ -186,7 +186,8 @@ public final class ScarpetNativeRemovals {
             result.completeExceptionally(new IllegalStateException("Native removal lost its captured owner"));
             return;
         }
-        location.world().getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, location.world().getWorld(), location.position().getX() >> 4,
+        try {
+            location.world().getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, location.world().getWorld(), location.position().getX() >> 4,
                 location.position().getZ() >> 4, () -> {
                     if (!ScarpetRetiredActors.matchesLastOwner(entity, location)) {
                         dispatchCurrentOwner(entity, operation, result);
@@ -198,6 +199,9 @@ public final class ScarpetNativeRemovals {
                         result.completeExceptionally(failure);
                     }
                 });
+        } catch (Throwable failure) {
+            result.completeExceptionally(failure);
+        }
     }
 
     private static void queuePhysical(Plan plan, Throwable guestFailure) {
@@ -215,7 +219,8 @@ public final class ScarpetNativeRemovals {
             return;
         }
         // This is mandatory Native cleanup, so Runtime's guest-closing admission must not reject it.
-        location.world().getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, location.world().getWorld(),
+        try {
+            location.world().getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, location.world().getWorld(),
                 location.position().getX() >> 4, location.position().getZ() >> 4, () -> {
                     if (!ScarpetRetiredActors.matchesLastOwner(plan.entity, location)) {
                         dispatchLastOwner(plan);
@@ -245,6 +250,9 @@ public final class ScarpetNativeRemovals {
                         ScarpetRetiredActors.capture(plan.entity);
                     }
                 });
+        } catch (Throwable failure) {
+            finish(plan, failure);
+        }
     }
 
     private static void finish(Plan plan, Throwable failure) {

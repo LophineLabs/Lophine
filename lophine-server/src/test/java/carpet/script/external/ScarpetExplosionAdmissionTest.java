@@ -21,17 +21,20 @@ public class ScarpetExplosionAdmissionTest {
     @BeforeAll static void bootstrap(){net.minecraft.SharedConstants.tryDetectVersion();net.minecraft.server.Bootstrap.bootStrap();}
     private static final class Fixture implements AutoCloseable {
         final MinecraftServer server=mock(MinecraftServer.class);final ServerLevel world=mock(ServerLevel.class);final ServerPlayer target=mock(ServerPlayer.class);
+        final AtomicBoolean owned=new AtomicBoolean(true);
         final ArrayDeque<Consumer<Entity>> tasks=new ArrayDeque<>();
         final MockedStatic<TickThread> ticks=mockStatic(TickThread.class);final MockedStatic<MinecraftServer> servers=mockStatic(MinecraftServer.class);final MockedStatic<org.bukkit.Bukkit> bukkit=mockStatic(org.bukkit.Bukkit.class);
         Fixture()throws Exception {
-            servers.when(MinecraftServer::getServer).thenReturn(server);ticks.when(()->TickThread.isTickThreadFor(any(Entity.class))).thenReturn(true);
+            servers.when(MinecraftServer::getServer).thenReturn(server);ticks.when(()->TickThread.isTickThreadFor(any(Entity.class))).thenAnswer(call->owned.get());
             when(world.getServer()).thenReturn(server);when(target.level()).thenReturn(world);when(target.blockPosition()).thenReturn(BlockPos.ZERO);when(target.getUUID()).thenReturn(UUID.randomUUID());
+            when(target.carpetSpawnServer()).thenReturn(server);
             CraftServer craft=mock(CraftServer.class);when(craft.getLogger()).thenReturn(java.util.logging.Logger.getAnonymousLogger());bukkit.when(org.bukkit.Bukkit::getServer).thenReturn(craft);
             var f=MinecraftServer.class.getField("server");f.setAccessible(true);f.set(server,craft);
             CraftPlayer player=mock(CraftPlayer.class);when(target.getBukkitEntity()).thenReturn(player);var scheduler=mock(io.papermc.paper.threadedregions.EntityScheduler.class);
             var sf=CraftEntity.class.getField("taskScheduler");sf.setAccessible(true);sf.set(player,scheduler);
             when(scheduler.schedule(any(),any(),anyLong())).thenAnswer(call->{tasks.add(call.getArgument(0));return true;});
         }
+        void tick(){var task=tasks.removeFirst();boolean previous=owned.getAndSet(true);try{task.accept(target);}finally{owned.set(previous);}}
         @Override public void close(){ScarpetRuntime.beginShutdown(server,()->{});bukkit.close();servers.close();ticks.close();}
     }
     @Test void targetSnapshotWaitsForTheActualWholeNativePhaseAfterItsHurtSubphaseEnds()throws Exception {
@@ -45,23 +48,26 @@ public class ScarpetExplosionAdmissionTest {
                 });
             });
             assertFalse(whole.isDone());
-            var snapshot=ScarpetPlayerInventoryGate.whenIdle(f.target,()->{snapshots.incrementAndGet();return 42;});
+            var snapshot=ScarpetPlayerInventoryGate.whenIdle(f.target,()->{assertTrue(f.owned.get());snapshots.incrementAndGet();return 42;});
             assertFalse(snapshot.isDone());assertEquals(0,snapshots.get());
-            laterPhysicalTail.complete(null);assertEquals(1,f.tasks.size());f.tasks.removeFirst().accept(f.target);
+            laterPhysicalTail.complete(null);assertTrue(f.tasks.isEmpty(),"Owned snapshot must not add an artificial actor tick");
+            assertEquals(1,snapshots.get());
             assertEquals(42,snapshot.get(3,TimeUnit.SECONDS));assertTrue(whole.get(3,TimeUnit.SECONDS).get());assertEquals(1,snapshots.get());
         }
     }
     @Test void aPausedTargetDoesNotRegisterTheNewWholePhaseUntilItsRealAdmission()throws Exception {
         try(Fixture f=new Fixture()) {
-            CompletableFuture<Integer> saving=new CompletableFuture<>();var snapshot=ScarpetPlayerInventoryGate.<Object>whenIdle(f.target,()->saving);
-            assertTrue(ScarpetPlayerInventoryGate.paused(f.target));assertEquals(1,f.tasks.size());f.tasks.removeFirst().accept(f.target);
+            CompletableFuture<Integer> saving=new CompletableFuture<>();AtomicInteger snapshots=new AtomicInteger();
+            var snapshot=ScarpetPlayerInventoryGate.<Object>whenIdle(f.target,()->{assertTrue(f.owned.get());snapshots.incrementAndGet();return saving;});
+            assertTrue(ScarpetPlayerInventoryGate.paused(f.target));assertEquals(1,snapshots.get());assertTrue(f.tasks.isEmpty());assertFalse(snapshot.isDone());
             AtomicInteger entered=new AtomicInteger();CompletableFuture<Boolean> effects=new CompletableFuture<>();
             var whole=ScarpetNativeWork.observeNative(null,()->ScarpetExplosionActors.admitTarget(f.target,()->{
-                entered.incrementAndGet();assertFalse(ScarpetPlayerInventoryGate.paused(f.target));assertTrue(ScarpetPlayerInventoryGate.captureAccepted().contains(f.target));return effects;
+                assertTrue(f.owned.get());entered.incrementAndGet();assertFalse(ScarpetPlayerInventoryGate.paused(f.target));assertTrue(ScarpetPlayerInventoryGate.captureAccepted().contains(f.target));return effects;
             }));
+            if(whole.isCompletedExceptionally())whole.get(3,TimeUnit.SECONDS);
             assertFalse(whole.isDone());assertEquals(0,entered.get());
-            saving.complete(7);assertSame(saving,snapshot.get(3,TimeUnit.SECONDS));assertEquals(0,entered.get());
-            assertEquals(1,f.tasks.size());f.tasks.removeFirst().accept(f.target);
+            f.owned.set(false);saving.complete(7);assertSame(saving,snapshot.get(3,TimeUnit.SECONDS));assertEquals(0,entered.get());
+            assertEquals(1,f.tasks.size());f.tick();
             assertEquals(1,entered.get());assertFalse(whole.isDone());effects.complete(true);
             assertTrue(whole.get(3,TimeUnit.SECONDS).get(3,TimeUnit.SECONDS));
         }

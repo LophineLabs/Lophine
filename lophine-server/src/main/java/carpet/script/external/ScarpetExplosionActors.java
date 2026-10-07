@@ -62,14 +62,9 @@ public final class ScarpetExplosionActors {
         BlockPos center = BlockPos.containing(explosion.center());
         int radius = (int) Math.ceil(explosion.radius() * 2D) + 2;
         int minX = (center.getX() - radius) >> 4, maxX = (center.getX() + radius) >> 4, minZ = (center.getZ() - radius) >> 4, maxZ = (center.getZ() + radius) >> 4;
-        for (var data : attribution.values()) {
-            if (data.world() == explosion.level()) {
-                minX = Math.min(minX, data.position().getX() >> 4);
-                maxX = Math.max(maxX, data.position().getX() >> 4);
-                minZ = Math.min(minZ, data.position().getZ() >> 4);
-                maxZ = Math.max(maxZ, data.position().getZ() >> 4);
-            }
-        }
+        // Attribution is immutable metadata, not an extra block footprint. A distant
+        // shooter must not make an explosion load every chunk between both actors.
+        // Foreign source calculator calls already use their own source actor and block view.
         Supplier<T> captured = ScarpetRuntime.captureNativeContinuation(() -> ScarpetAttribution.with(attribution, operation));
         CompletableFuture<T> done = fun.bm.lophine.carpet.CarpetRegionLease.runValue((ServerLevel) explosion.level(), minX, minZ, maxX, maxZ, lease -> captured.get());
         ScarpetNativeWork.record(done);
@@ -109,6 +104,18 @@ public final class ScarpetExplosionActors {
     }
 
     public static <T> CompletableFuture<T> blocks(net.minecraft.world.level.ServerExplosion explosion, java.util.Collection<BlockPos> positions, Supplier<T> operation) {
+        return blocks(explosion, positions, operation, false);
+    }
+
+    /** A completed block phase retains no live chunk references across its following owner dispatch. */
+    public static <T> CompletableFuture<T> blockPhase(net.minecraft.world.level.ServerExplosion explosion, java.util.Collection<BlockPos> positions, Supplier<T> operation) {
+        var held = blocks(explosion, positions, () -> ScarpetNativeWork.recoverGuestValue(ScarpetNativeWork.observeNative(null, operation)), true);
+        var actual = held.thenCompose(ScarpetRuntime.captureNativeFunction(value -> value));
+        ScarpetNativeWork.record(actual);
+        return actual;
+    }
+
+    private static <T> CompletableFuture<T> blocks(net.minecraft.world.level.ServerExplosion explosion, java.util.Collection<BlockPos> positions, Supplier<T> operation, boolean ownedPhase) {
         BlockPos center = BlockPos.containing(explosion.center());
         int minX = center.getX() >> 4, maxX = minX, minZ = center.getZ() >> 4, maxZ = minZ;
         for (BlockPos position : positions) {
@@ -118,7 +125,9 @@ public final class ScarpetExplosionActors {
             maxZ = Math.max(maxZ, position.getZ() >> 4);
         }
         Supplier<T> captured = ScarpetRuntime.captureNativeContinuation(operation);
-        CompletableFuture<T> completed = fun.bm.lophine.carpet.CarpetRegionLease.runValue(explosion.level(), minX, minZ, maxX, maxZ, lease -> captured.get());
+        CompletableFuture<T> completed = ownedPhase
+            ? fun.bm.lophine.carpet.CarpetRegionLease.runOwnedPhaseValue(explosion.level(), minX, minZ, maxX, maxZ, lease -> captured.get())
+            : fun.bm.lophine.carpet.CarpetRegionLease.runValue(explosion.level(), minX, minZ, maxX, maxZ, lease -> captured.get());
         ScarpetNativeWork.record(completed);
         return completed;
     }

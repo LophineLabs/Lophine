@@ -69,7 +69,7 @@ public class OrgCreeperCommandCompletionTest {
                 var field=org.bukkit.craftbukkit.entity.CraftEntity.class.getField("taskScheduler");field.setAccessible(true);field.set(bukkit,scheduler);
                 when(scheduler.schedule(any(),any(),anyLong())).thenAnswer(call->{long now=actors.clocks.computeIfAbsent(creeperId,ignored->new java.util.concurrent.atomic.AtomicLong()).get();actors.scheduled.computeIfAbsent(creeperId,ignored->new java.util.concurrent.ConcurrentLinkedQueue<>()).add(new OrgInventoryPersistenceTest.Fixture.Scheduled(call.getArgument(0),call.getArgument(1),now+1));return true;});
             });
-            leases=mockStatic(CarpetRegionLease.class);
+            leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
             leases.when(()->CarpetRegionLease.runValue(eq(spawnWorld),anyInt(),anyInt(),anyInt(),anyInt(),any(Function.class))).thenAnswer(call->{
                 assertSame(actors.target.player(),actors.owner.get());assertEquals(0,call.<Integer>getArgument(1));assertEquals(0,call.<Integer>getArgument(2));assertEquals(1,call.<Integer>getArgument(3));assertEquals(1,call.<Integer>getArgument(4));leaseCalls.incrementAndGet();return CompletableFuture.completedFuture(call.<Function<?,?>>getArgument(5).apply(null));
             });

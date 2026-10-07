@@ -18,7 +18,7 @@ class OrgFinderActorLifecycleTest {
     @TempDir Path directory;
     @BeforeAll static void bootstrap(){OrgInventoryPersistenceTest.bootstrap();}
     @Test void aStopWaitsTheAlreadyRunningNativeSliceBeforePublishingCancellation()throws Exception{
-        try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory,true);var leases=mockStatic(CarpetRegionLease.class)){
+        try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory,true);var leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open()){
             var player=fixture.viewer.player();player.connection=mock(net.minecraft.server.network.ServerGamePacketListenerImpl.class);var world=player.level();fixture.owner.set(player);when(player.blockPosition()).thenReturn(BlockPos.ZERO);
             var source=mock(CommandSourceStack.class);when(source.getServer()).thenReturn(fixture.server);
             var child=new CompletableFuture<Void>();
@@ -36,7 +36,7 @@ class OrgFinderActorLifecycleTest {
         }
     }
     @Test void theRealOutputOwnerPhaseAndItsNativeChildrenRemainTrackedAfterCallerCancellation()throws Exception{
-        try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory,true);var leases=mockStatic(CarpetRegionLease.class)){
+        try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory,true);var leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open()){
             var player=fixture.viewer.player();player.connection=mock(net.minecraft.server.network.ServerGamePacketListenerImpl.class);var world=player.level();fixture.owner.set(player);when(player.blockPosition()).thenReturn(BlockPos.ZERO);
             var source=mock(CommandSourceStack.class);when(source.getServer()).thenReturn(fixture.server);
             var outputChild=new CompletableFuture<Void>();

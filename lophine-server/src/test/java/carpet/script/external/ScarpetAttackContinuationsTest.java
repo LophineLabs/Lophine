@@ -100,7 +100,9 @@ public class ScarpetAttackContinuationsTest {
             assertTrue(allowed.get(3, TimeUnit.SECONDS));
             assertTrue(ScarpetRuntime.of(f.server).submit(() -> ScarpetPlayerInventoryGate.paused(f.attacker)).get(3, TimeUnit.SECONDS));
             assertTrue(ScarpetPlayerInventoryGate.paused(f.attacker));
-            running.complete(null); f.tick();
+            f.owned.set(false); running.complete(null);
+            assertFalse(snapshot.isDone()); assertEquals(1,f.tasks.size());
+            f.tick();
             assertEquals(7, snapshot.get(3, TimeUnit.SECONDS));
             assertFalse(ScarpetPlayerInventoryGate.paused(f.attacker));
         }

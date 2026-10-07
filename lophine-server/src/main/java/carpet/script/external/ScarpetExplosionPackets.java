@@ -50,19 +50,9 @@ public final class ScarpetExplosionPackets {
             return new Packet(world, explosion.center(), explosion.radius(), count, range * range, audible, explosion.isSmall() ? small : large, sound, blocks, Map.copyOf(impulses));
         })).thenCompose(packet -> {
             if (packet == null) return CompletableFuture.completedFuture(null);
-            var audience = new CompletableFuture<List<ServerPlayer>>();
-            ScarpetNativeWork.record(audience);
-            var capture = ScarpetRuntime.captureNativeContinuation(() -> {
-                audience.complete(List.copyOf(world.getServer().getPlayerList().realPlayers));
-                return null;
-            });
-            io.papermc.paper.threadedregions.RegionizedServer.getInstance().addTask(() -> {
-                try {
-                    capture.get();
-                } catch (Throwable failure) {
-                    audience.completeExceptionally(failure);
-                }
-            });
+            // Native realPlayers is a CopyOnWriteArrayList. Snapshot references here;
+            // each recipient's live world, distance and connection are still read by its owner.
+            var audience = CompletableFuture.completedFuture(List.copyOf(world.getServer().getPlayerList().realPlayers));
             return ScarpetExplosionPacketBarrier.fanOut(audience, recipient -> send(packet, recipient));
         });
         ScarpetNativeWork.record(sent);

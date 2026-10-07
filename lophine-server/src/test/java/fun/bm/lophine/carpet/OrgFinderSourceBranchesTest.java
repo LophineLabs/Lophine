@@ -48,7 +48,7 @@ class OrgFinderSourceBranchesTest {
         final ServerPlayer player=actors.viewer.player();final ServerLevel world=player.level();
         final CommandSourceStack source=mock(CommandSourceStack.class);final List<Component> messages=new CopyOnWriteArrayList<>(),rows=new CopyOnWriteArrayList<>();
         final List<ClientboundSetActionBarTextPacket> overlays=new CopyOnWriteArrayList<>();
-        final org.mockito.MockedStatic<CarpetRegionLease> leases=mockStatic(CarpetRegionLease.class);
+        final org.mockito.MockedStatic<CarpetRegionLease> leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
         final org.mockito.MockedStatic<io.papermc.paper.configuration.GlobalConfiguration> configuration=mockStatic(io.papermc.paper.configuration.GlobalConfiguration.class);
         final net.minecraft.server.Services services=mock(net.minecraft.server.Services.class,RETURNS_DEEP_STUBS);
         final String oldPermission=GeneralCompatConfig.commandFinder;

@@ -135,8 +135,8 @@ public final class ScarpetNativeContinuations {
                 () -> player.level() == world && TickThread.isTickThreadFor(world, pos) && world.getBlockState(pos) == block && ItemStack.matches(stack, player.getItemInHand(packet.hand())) && player.isWithinBlockInteractionRange(pos, 1.0),
                 () -> connection.handleUseItemOn(packet), () -> {
                     resync(player);
-                    if (TickThread.isTickThreadFor(world, pos))
-                        player.connection.send(new ClientboundBlockUpdatePacket(world, pos));
+                    fun.bm.lophine.carpet.CarpetBlockPredictionFence.resyncBlocks(connection, world,
+                            pos, pos.relative(packet.hitResult().getDirection()));
                 });
     }
 
@@ -160,8 +160,8 @@ public final class ScarpetNativeContinuations {
                 () -> player.level() == world && state.valid(player) && (event != Event.PLAYER_CLICKS_BLOCK || TickThread.isTickThreadFor(world, pos) && player.isWithinBlockInteractionRange(pos, 1.0)),
                 () -> connection.handlePlayerAction(packet), () -> {
                     resync(player);
-                    if (event == Event.PLAYER_CLICKS_BLOCK && TickThread.isTickThreadFor(world, pos))
-                        player.connection.send(new ClientboundBlockUpdatePacket(world, pos));
+                    if (event == Event.PLAYER_CLICKS_BLOCK)
+                        fun.bm.lophine.carpet.CarpetBlockPredictionFence.resyncBlocks(connection, world, pos);
                 });
     }
 
@@ -208,13 +208,12 @@ public final class ScarpetNativeContinuations {
                     () -> player.level() == world && mode.carpetGetLevel() == world && TickThread.isTickThreadFor(world, pos) && world.getBlockState(pos) == state && ItemStack.matches(tool, player.getMainHandItem()),
                     () -> {
                         boolean destroyed = mode.destroyBlock(pos);
-                        player.connection.send(new ClientboundBlockUpdatePacket(world, pos));
+                        fun.bm.lophine.carpet.CarpetBlockPredictionFence.resyncBlocks(player.connection, world, pos);
                         outcome.complete(destroyed);
                     },
                     () -> {
                         resync(player);
-                        if (TickThread.isTickThreadFor(world, pos))
-                            player.connection.send(new ClientboundBlockUpdatePacket(world, pos));
+                        fun.bm.lophine.carpet.CarpetBlockPredictionFence.resyncBlocks(player.connection, world, pos);
                         outcome.complete(false);
                     });
         } catch (Throwable failure) {
@@ -248,6 +247,18 @@ public final class ScarpetNativeContinuations {
         var pending = BLOCK_RESULTS.get(mode);
         var future = replaying || pending == null ? null : pending.get(key);
         return future == null ? CompletableFuture.completedFuture(result) : future;
+    }
+
+    /** Observes the already submitted block operation without replaying or initiating a second break. */
+    public static CompletableFuture<?> pendingBlockResult(ServerPlayerGameMode mode, BlockPos position) {
+        Operation key = new Operation(Event.PLAYER_BREAK_BLOCK, position.immutable());
+        var queued = PAUSED_BLOCK_RESULTS.get(mode);
+        var paused = queued == null ? null : queued.get(key);
+        if (paused != null) return paused;
+        var actual = ScarpetRuntime.nativeDecisionFuture(mode.carpetGetPlayer(), key);
+        if (actual != null) return actual;
+        var pending = BLOCK_RESULTS.get(mode);
+        return pending == null ? null : pending.get(key);
     }
 
     public static boolean finishItem(ServerPlayer player) {

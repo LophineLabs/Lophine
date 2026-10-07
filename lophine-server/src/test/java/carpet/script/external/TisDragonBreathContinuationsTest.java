@@ -58,6 +58,8 @@ public class TisDragonBreathContinuationsTest {
             var serverField=MinecraftServer.class.getDeclaredField("server");serverField.setAccessible(true);serverField.set(server,craft);
             when(craft.getLogger()).thenReturn(java.util.logging.Logger.getAnonymousLogger());bukkit.when(org.bukkit.Bukkit::getServer).thenReturn(craft);
             when(world.getServer()).thenReturn(server);when(world.getCraftServer()).thenReturn(craft);
+            when(world.getBlockEntity(sourcePos)).thenReturn(inventory);when(world.getBlockState(sourcePos)).thenReturn(state);
+            when(inventory.getLevel()).thenReturn(world);when(inventory.getBlockPos()).thenReturn(sourcePos);when(inventory.getItem(0)).thenReturn(stack);
             var craftWorld=mock(CraftWorld.class);when(world.getWorld()).thenReturn(craftWorld);
             var scheduler=mock(io.papermc.paper.threadedregions.scheduler.RegionScheduler.class);when(craft.getRegionScheduler()).thenReturn(scheduler);
             doAnswer(call->{int x=call.getArgument(2),z=call.getArgument(3);BlockPos pos=x==(sourcePos.getX()>>4)&&z==(sourcePos.getZ()>>4)?sourcePos:targetPos;
@@ -105,6 +107,27 @@ public class TisDragonBreathContinuationsTest {
         try(var f=new Fixture()){
             f.spawnChild=new CompletableFuture<>();var parent=f.fire();f.drain();f.spawnChild.completeExceptionally(new IllegalStateException("native spawn callback"));f.drain();
             assertThrows(CompletionException.class,parent::join);assertEquals(2,f.stack.getCount());assertEquals("spawn",f.order.getLast());verify(f.inventory,never()).setItem(anyInt(),any());
+        }
+    }
+    @Test void replacingTheSourceDuringForeignSpawnCannotWriteOrConsumeItsOldInventory()throws Exception{
+        changedSource(false);
+    }
+    @Test void replacingTheSelectedSlotDuringForeignSpawnCannotOverwriteOrConsumeEitherStack()throws Exception{
+        changedSource(true);
+    }
+    private void changedSource(boolean selectedSlot)throws Exception{
+        try(var f=new Fixture()){
+            f.spawnChild=new CompletableFuture<>();var parent=f.fire();f.drain();
+            assertEquals(List.of("pre event","event","construct","particle","spawn"),f.order);assertFalse(parent.isDone());
+            var drain=ScarpetNativeWork.whenIdle(f.server);assertFalse(drain.isDone());
+            var replacement=new ItemStack(Items.DRAGON_BREATH,7);
+            if(selectedSlot)when(f.inventory.getItem(0)).thenReturn(replacement);
+            else when(f.world.getBlockEntity(f.sourcePos)).thenReturn(mock(DispenserBlockEntity.class));
+            f.spawnChild.complete(null);f.drain();
+            var failure=assertThrows(CompletionException.class,parent::join);assertInstanceOf(IllegalStateException.class,failure.getCause());
+            assertEquals(2,f.stack.getCount());assertEquals(7,replacement.getCount());assertEquals("spawn",f.order.getLast());
+            verify(f.stack,never()).shrink(anyInt());verify(f.inventory,never()).setItem(anyInt(),any());
+            drain.get(3,TimeUnit.SECONDS);
         }
     }
     @Test void guestOnlySpawnFailureRetainsRawParentAndRunsOriginalPhysicalCostTail() throws Exception {

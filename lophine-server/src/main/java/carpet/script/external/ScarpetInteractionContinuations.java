@@ -145,6 +145,7 @@ public final class ScarpetInteractionContinuations {
         private boolean admitted;
         private final AtomicBoolean started = new AtomicBoolean();
         private final List<Consumer<InteractionResult>> finish = new ArrayList<>();
+        private final List<Consumer<Throwable>> failed = new ArrayList<>();
         private final ScarpetNativeWork.Token nativeWork;
         private final Consumer<Runnable> nativeResume;
         private final boolean physicalContinuation;
@@ -209,6 +210,12 @@ public final class ScarpetInteractionContinuations {
             finish.add(action);
         }
 
+        /** Owner-local recovery for an exceptional native body, including client prediction repair. */
+        public void onFailure(Consumer<Throwable> action) {
+            building();
+            failed.add(action);
+        }
+
         private void start() {
             if (!started.compareAndSet(false, true)) return;
             decision.whenComplete((cancelled, failure) -> schedule(Boolean.TRUE.equals(cancelled), failure));
@@ -216,13 +223,33 @@ public final class ScarpetInteractionContinuations {
 
         private void schedule(boolean cancelled, Throwable failure) {
             if (future.isDone()) return;
-            boolean accepted = owner.getBukkitEntity().taskScheduler.schedule(owned -> resume(cancelled, failure),
-                    retired -> future.completeExceptionally(new IllegalStateException("Interaction owner retired")), 1);
-            if (!accepted) future.completeExceptionally(new IllegalStateException("Interaction scheduler retired"));
+            if (TickThread.isTickThreadFor(owner) && !owner.isRemoved()) {
+                resume(cancelled, failure);
+                return;
+            }
+            scheduleLater(cancelled, failure);
+        }
+
+        private void scheduleLater(boolean cancelled, Throwable failure) {
+            try {
+                boolean accepted = owner.getBukkitEntity().taskScheduler.schedule(owned -> {
+                    if (owned != owner || owner.isRemoved())
+                        future.completeExceptionally(new IllegalStateException("Interaction owner retired or changed"));
+                    else resume(cancelled, failure);
+                },
+                        retired -> future.completeExceptionally(new IllegalStateException("Interaction owner retired")), 1);
+                if (!accepted) future.completeExceptionally(new IllegalStateException("Interaction scheduler retired"));
+            } catch (Throwable rejected) {
+                future.completeExceptionally(rejected);
+            }
         }
 
         private void resume(boolean cancelled, Throwable failure) {
             if (future.isDone()) return;
+            if (owner.isRemoved()) {
+                future.completeExceptionally(new IllegalStateException("Interaction owner retired"));
+                return;
+            }
             if (!admitted) {
                 if (ScarpetPlayerInventoryGate.paused(owner)) {
                     ScarpetPlayerInventoryGate.whenOpen(owner).whenComplete((ignored, stopped) -> schedule(cancelled, stopped == null ? failure : stopped));
@@ -249,6 +276,7 @@ public final class ScarpetInteractionContinuations {
                     InteractionResult result = failure == null && valid.getAsBoolean() ? work.apply(cancelled) : InteractionResult.FAIL;
                     if (result instanceof InteractionResult.Deferred nested) {
                         for (var tail : finish) nested.plan().onComplete(tail);
+                        for (var recovery : failed) nested.plan().onFailure(recovery);
                         nested.plan().future().whenComplete((resolved, error) -> {
                             if (error == null) future.complete(resolved);
                             else future.completeExceptionally(error);
@@ -262,13 +290,21 @@ public final class ScarpetInteractionContinuations {
                     return result;
                 });
                 if (!attempt.completed()) {
-                    schedule(cancelled, failure);
+                    scheduleLater(cancelled, failure);
                     return;
                 }
                 if (!(attempt.value() instanceof InteractionResult.Deferred)) future.complete(attempt.value());
             } catch (Throwable problem) {
-                owner.containerMenu.sendAllDataToRemote();
-                future.completeExceptionally(problem);
+                try {
+                    for (var recovery : failed) {
+                        try { recovery.accept(problem); }
+                        catch (Throwable recoveryFailure) { if (recoveryFailure != problem) problem.addSuppressed(recoveryFailure); }
+                    }
+                    try { owner.containerMenu.sendAllDataToRemote(); }
+                    catch (Throwable recoveryFailure) { if (recoveryFailure != problem) problem.addSuppressed(recoveryFailure); }
+                } finally {
+                    future.completeExceptionally(problem);
+                }
                 MinecraftServer.LOGGER.error("Scarpet native interaction continuation failed", problem);
             }
         }

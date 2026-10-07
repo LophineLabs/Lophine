@@ -44,7 +44,7 @@ public class OrgPlayerStatusNativeReceiptTest {
             var players=actors.server.getPlayerList();doAnswer(call->{assertSame(player,actors.owner.get());flags();infoCalls.incrementAndGet();if(delayInfo)ScarpetNativeWork.record(infoChild);return null;}).when(players).sendAllPlayerInfo(player);
             when(world.getBlockState(any(BlockPos.class))).thenAnswer(call->{assertTrue(fullOwner.get());flags();reads.incrementAndGet();if(delayRead&&firstRead.getAndSet(false))ScarpetNativeWork.record(readChild);return Blocks.AIR.defaultBlockState();});
             doAnswer(call->{assertSame(player,actors.owner.get());flags();sent.incrementAndGet();if(delaySend)ScarpetNativeWork.record(sendChild);return null;}).when(listener).send(any(ClientboundBlockUpdatePacket.class));
-            leases=mockStatic(CarpetRegionLease.class);leases.when(()->CarpetRegionLease.runValue(eq(world),anyInt(),anyInt(),anyInt(),anyInt(),any(Function.class))).thenAnswer(call->{
+            leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();leases.when(()->CarpetRegionLease.runValue(eq(world),anyInt(),anyInt(),anyInt(),anyInt(),any(Function.class))).thenAnswer(call->{
                 int radius=(int)Math.min(interactionRange+1,8);assertEquals((15-radius)>>4,call.<Integer>getArgument(1));assertEquals((15-radius)>>4,call.<Integer>getArgument(2));assertEquals((15+radius)>>4,call.<Integer>getArgument(3));assertEquals((15+radius)>>4,call.<Integer>getArgument(4));var actual=new CompletableFuture<Object>();pending.add(lease->{try{actual.complete(call.<Function<Object,Object>>getArgument(5).apply(null));}catch(Throwable failure){actual.completeExceptionally(failure);}return null;});return actual;
             });actors.owner.set(player);
         }

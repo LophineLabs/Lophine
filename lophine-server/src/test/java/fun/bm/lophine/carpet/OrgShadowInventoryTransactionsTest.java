@@ -37,7 +37,7 @@ class OrgShadowInventoryTransactionsTest {
     }
 
     @Test void aSerialCrossOwnerSplitPreservesAllAliasesAndTheSplitCreditDetaches() throws Exception {
-        try (var fixture = new OrgInventoryPersistenceTest.Fixture(directory)) {
+        try (var fixture = new OrgInventoryPersistenceTest.Fixture(directory, false, true)) {
             Started started = start(fixture); fixture.process(fixture.target); fixture.process(fixture.viewer);
             assertEquals(17, started.original.getCount());
             assertEquals(started.group, fixture.target.inventory().getItem(0).carpetOrgShadowId);
@@ -52,7 +52,7 @@ class OrgShadowInventoryTransactionsTest {
     }
 
     @Test void unknownAliasCreditRemainsHeldAndLaterBusinessItemsSurviveItsRelocation() throws Exception {
-        try (var fixture = new OrgInventoryPersistenceTest.Fixture(directory)) {
+        try (var fixture = new OrgInventoryPersistenceTest.Fixture(directory, false, true)) {
             Started started = start(fixture); fixture.unreadable.addAll(List.of(3, 4)); fixture.process(fixture.target);
             assertTrue(fixture.target.inventory().getItem(0).isEmpty()); assertTrue(fixture.target.inventory().getItem(1).isEmpty());
             assertEquals(20, started.original.getCount()); assertTrue(started.original.split(1).isEmpty());
@@ -67,7 +67,7 @@ class OrgShadowInventoryTransactionsTest {
     }
 
     @Test void anAutosaveCannotRewriteAnAcknowledgedAfterReceiptWithTheFrozenBeforeCount() throws Exception {
-        try (var fixture = new OrgInventoryPersistenceTest.Fixture(directory)) {
+        try (var fixture = new OrgInventoryPersistenceTest.Fixture(directory, false, true)) {
             Started started = start(fixture); fixture.process(fixture.target);
             assertEquals(20, started.original.getCount()); // Global actors cannot spend this quantity until the transaction commits.
             fixture.owner.set(fixture.target.player()); CompoundTag tag = OrgInventoryTransfers.inventoryTag(fixture.target.player());
@@ -81,7 +81,7 @@ class OrgShadowInventoryTransactionsTest {
     }
 
     @Test void trustedDescriptorsRetainAZeroCountTransitionAndKeepEqualUnrelatedItemsSeparate() throws Exception {
-        try (var fixture = new OrgInventoryPersistenceTest.Fixture(directory)) {
+        try (var fixture = new OrgInventoryPersistenceTest.Fixture(directory, false, true)) {
             ItemStack first = new ItemStack(Items.EMERALD, 5), other = new ItemStack(Items.EMERALD, 5);
             OrgItemShadowGroups.share(first); OrgItemShadowGroups.share(other);
             var preview = new OrgItemShadowGroups.Preview(); var view = preview.copies(List.of(first, first, other));
@@ -112,7 +112,7 @@ class OrgShadowInventoryTransactionsTest {
     }
 
     @Test void retiringAnOwnerLeavesItsDeferredReturnInTheNativePlayerSave() throws Exception {
-        try (var fixture = new OrgInventoryPersistenceTest.Fixture(directory)) {
+        try (var fixture = new OrgInventoryPersistenceTest.Fixture(directory, false, true)) {
             Started started = start(fixture); AtomicBoolean returned = new AtomicBoolean();
             fixture.target.inventory().setItem(0, ItemStack.EMPTY); fixture.target.inventory().setItem(1, ItemStack.EMPTY);
             fixture.owner.set(fixture.target.player());

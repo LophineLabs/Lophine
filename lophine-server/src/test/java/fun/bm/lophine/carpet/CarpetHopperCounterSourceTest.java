@@ -38,6 +38,8 @@ class CarpetHopperCounterSourceTest {
         Fixture() throws Exception {
             WoolHopperCounterConfig.hopperCountersUnlimitedSpeed=true;GeneralCompatConfig.hopperXpCounters=false;me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled=false;
             when(world.getServer()).thenReturn(server);when(world.hasChunkAt(any(BlockPos.class))).thenReturn(true);when(world.getBlockEntity(BlockPos.ZERO)).thenReturn(hopper);when(world.getBlockState(any(BlockPos.class))).thenReturn(state);hopper.setLevel(world);
+            var lookup=net.minecraft.core.RegistryAccess.fromRegistryOfRegistries(net.minecraft.core.registries.BuiltInRegistries.REGISTRY);
+            when(world.registryAccess()).thenReturn(lookup);doReturn(lookup.lookupOrThrow(net.minecraft.core.registries.Registries.BLOCK)).when(world).holderLookup(net.minecraft.core.registries.Registries.BLOCK);
             var config=mock(org.spigotmc.SpigotWorldConfig.class);config.hopperTransfer=8;config.hopperCheck=1;var field=Level.class.getField("spigotConfig");field.setAccessible(true);field.set(world,config);
             ticks.when(()->TickThread.isTickThreadFor(eq(world),any(BlockPos.class))).thenReturn(true);
             counters.when(org.leavesmc.leaves.util.HopperCounter::isEnabled).thenReturn(true);counters.when(()->org.leavesmc.leaves.util.HopperCounter.getCounter(DyeColor.RED)).thenReturn(counter);
@@ -115,6 +117,39 @@ class CarpetHopperCounterSourceTest {
             WoolHopperCounterConfig.hopperCountersUnlimitedSpeed=false;var calls=new AtomicInteger();
             assertTrue(f.move(()->{calls.incrementAndGet();f.hopper.setItem(0,new ItemStack(Items.STONE,2));return true;}));
             assertEquals(1,calls.get());assertEquals(8,f.cooldown());assertEquals(2,f.hopper.getItem(0).getCount());verifyNoInteractions(f.counter);
+        }
+    }
+
+    @Test void aRealCarriedHopperCannotResumeItsPendingNativePassOnItsPreviousActor()throws Exception{
+        staleHopper(0);
+    }
+    @Test void aRemovedHopperCannotResumeItsPendingNativePass()throws Exception{
+        staleHopper(1);
+    }
+    @Test void aReplacementHopperCannotReceiveThePreviousInstancesPendingNativeTail()throws Exception{
+        staleHopper(2);
+    }
+    private void staleHopper(int change)throws Exception{
+        try(var f=new Fixture()){
+            var child=new CompletableFuture<Void>();var calls=new AtomicInteger();
+            var parent=ScarpetNativeWork.observeNative(null,()->f.move(()->{
+                calls.incrementAndGet();f.hopper.setItem(0,new ItemStack(Items.STONE));ScarpetNativeWork.record(child);return true;
+            }));
+            var drained=ScarpetNativeWork.whenIdle(f.server);assertFalse(parent.isDone());assertFalse(drained.isDone());assertTrue(CarpetHopperCounters.pending(f.hopper));
+            if(change==0){
+                var destination=new BlockPos(1024,0,0);
+                // The actual moving-piston hook carries this same object and changes
+                // its position; no clone remains owned by the original hopper site.
+                var carrier=new net.minecraft.world.level.block.piston.PistonMovingBlockEntity(destination,Blocks.MOVING_PISTON.defaultBlockState(),f.state,net.minecraft.core.Direction.EAST,true,false);
+                carrier.setLevel(f.world);when(f.world.getBlockEntity(BlockPos.ZERO)).thenReturn(null);carrier.carpetSetCarriedBlockEntity(f.hopper);
+                assertSame(f.hopper,carrier.carpetGetCarriedBlockEntity());assertEquals(destination,f.hopper.getBlockPos());
+                f.ticks.when(()->TickThread.isTickThreadFor(f.world,destination)).thenReturn(false);
+            }else if(change==1){f.hopper.setRemoved();when(f.world.getBlockEntity(BlockPos.ZERO)).thenReturn(null);}
+            else when(f.world.getBlockEntity(BlockPos.ZERO)).thenReturn(new HopperBlockEntity(BlockPos.ZERO,f.state));
+            child.complete(null);
+            var failure=assertThrows(ExecutionException.class,()->parent.get(3,TimeUnit.SECONDS));assertEquals("Hopper moved or retired before native pass",failure.getCause().getMessage());
+            assertEquals(1,calls.get());assertEquals(-1,f.cooldown());assertEquals(1,f.hopper.getItem(0).getCount());verifyNoInteractions(f.counter);
+            drained.get(3,TimeUnit.SECONDS);assertFalse(CarpetHopperCounters.pending(f.hopper));
         }
     }
 

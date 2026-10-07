@@ -34,7 +34,7 @@ class OrgOfflineExperienceTransfersTest {
     @TempDir Path directory;
     @BeforeAll static void bootstrap(){OrgInventoryPersistenceTest.bootstrap();}
     private final class Fixture implements AutoCloseable {
-        final OrgInventoryPersistenceTest.Fixture actors=new OrgInventoryPersistenceTest.Fixture(directory);
+        final OrgInventoryPersistenceTest.Fixture actors=new OrgInventoryPersistenceTest.Fixture(directory, false, true);
         final UUID source=UUID.randomUUID();final Path file=directory.resolve("playerdata").resolve(source+".dat");
         final Object coordinator;final org.mockito.MockedStatic<OrgHiddenPlayerActions> hidden;
         final String finder=GeneralCompatConfig.commandFinder, xpPermission=GeneralCompatConfig.commandXpTransfer;
@@ -53,7 +53,7 @@ class OrgOfflineExperienceTransfersTest {
             }catch(Exception|Error failure){if(created!=null)created.close();actors.close();GeneralCompatConfig.commandFinder=finder;GeneralCompatConfig.commandXpTransfer=xpPermission;throw failure;}
         }
         CompletableFuture<Boolean> take(){actors.owner.set(actors.viewer.player());return OrgExperienceTransfers.takeOffline(actors.viewer.player(),source);}
-        void until(BooleanSupplier done)throws Exception{long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(8);while(!done.getAsBoolean()&&System.nanoTime()<deadline){actors.owner.set(actors.viewer.player());OrgExperienceTransfers.tick(actors.viewer.player());actors.process(actors.viewer);Thread.sleep(5);}assertTrue(done.getAsBoolean(),"Real file/player XP actor did not terminate");}
+        void until(BooleanSupplier done)throws Exception{long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(8);while(!done.getAsBoolean()&&System.nanoTime()<deadline){actors.owner.set(actors.viewer.player());OrgExperienceTransfers.tick(actors.viewer.player());if(!done.getAsBoolean())actors.process(actors.viewer);Thread.sleep(5);}assertTrue(done.getAsBoolean(),"Real file/player XP actor did not terminate");}
         void untilFile(BooleanSupplier done)throws Exception{long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(8);while(!done.getAsBoolean()&&System.nanoTime()<deadline){actors.process(actors.viewer);Thread.sleep(5);}assertTrue(done.getAsBoolean(),"Real source file actor did not terminate");}
         CompoundTag data()throws Exception{return NbtIo.readCompressed(file,NbtAccounter.unlimitedHeap());}
         void reader(OrgExperienceTransfers.OfflineReader reader)throws Exception{var field=coordinator.getClass().getDeclaredField("offlineReader");field.setAccessible(true);field.set(coordinator,reader);}

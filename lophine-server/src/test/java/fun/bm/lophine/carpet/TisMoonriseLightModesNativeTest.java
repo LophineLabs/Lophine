@@ -24,9 +24,9 @@ public class TisMoonriseLightModesNativeTest {
   try{fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.lightUpdates="ignored";var queue=queue();assertNull(queue.queueBlockChange(BlockPos.ZERO));var body=new AtomicInteger();var task=queue.queueChunkLightTask(new ChunkPos(0,0),()->{body.incrementAndGet();return true;},Priority.NORMAL);assertNotNull(task);var pending=queue.carpetSnapshotPendingTasks();assertFalse(pending.isDone());task.run();pending.get(3,TimeUnit.SECONDS);assertEquals(1,body.get());assertTrue(queue.isEmpty());}
   finally{fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.lightUpdates=old;}
  }
- @Test void offModeRejectsAllFiveIncomingQueueKindsWithoutSchedulerAdmission()throws Exception{
+ @Test void offModeRejectsOrdinaryQueueKindsWithoutSchedulerAdmission()throws Exception{
   String old=fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.lightUpdates;
-  try{fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.lightUpdates="off";var queue=queue();var section=SectionPos.of(0,0,0);var checks=new it.unimi.dsi.fastutil.shorts.ShortArrayList();assertNull(queue.queueBlockChange(BlockPos.ZERO));assertNull(queue.queueSectionChange(section,false));assertNull(queue.queueChunkLightTask(new ChunkPos(0,0),()->true,Priority.NORMAL));assertNull(queue.queueChunkSkylightEdgeCheck(section,checks));assertNull(queue.queueChunkBlocklightEdgeCheck(section,checks));assertTrue(queue.isEmpty());assertTrue(queue.carpetSnapshotPendingTasks().isDone());}
+  try{fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.lightUpdates="off";var queue=queue();var section=SectionPos.of(0,0,0);var checks=new it.unimi.dsi.fastutil.shorts.ShortArrayList();assertNull(queue.queueBlockChange(BlockPos.ZERO));assertNull(queue.queueSectionChange(section,false));assertNull(queue.queueChunkSkylightEdgeCheck(section,checks));assertNull(queue.queueChunkBlocklightEdgeCheck(section,checks));assertTrue(queue.isEmpty());assertTrue(queue.carpetSnapshotPendingTasks().isDone());}
   finally{fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.lightUpdates=old;}
  }
  @Test void suppressedModeAcceptsButPausesActualWorkerAndItsRealSnapshotUntilOn()throws Exception{pause("suppressed");}

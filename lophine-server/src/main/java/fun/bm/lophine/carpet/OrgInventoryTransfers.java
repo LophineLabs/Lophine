@@ -65,14 +65,14 @@ public final class OrgInventoryTransfers {
      * Immediate admission metadata, established before either actor asks to drain old native work.
      */
     public static boolean participantBlocked(ServerPlayer player) {
-        Coordinator coordinator = COORDINATORS.get(player.level().getServer());
+        Coordinator coordinator = COORDINATORS.get(player.carpetSpawnServer());
         if (coordinator == null) return false;
         UUID id = coordinator.leases.get(player.getUUID());
         return id != null && coordinator.transactions.containsKey(id);
     }
 
     public static CompletableFuture<Void> participantCompletion(ServerPlayer player) {
-        Coordinator coordinator = COORDINATORS.get(player.level().getServer());
+        Coordinator coordinator = COORDINATORS.get(player.carpetSpawnServer());
         if (coordinator == null) return CompletableFuture.completedFuture(null);
         UUID id = coordinator.leases.get(player.getUUID());
         Transaction transaction = id == null ? null : coordinator.transactions.get(id);

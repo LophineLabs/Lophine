@@ -23,7 +23,7 @@ class OrgExpandedItemPickupTest {
     @BeforeAll static void bootstrap(){OrgInventoryPersistenceTest.bootstrap();}
     @SuppressWarnings("unchecked")
     @Test void crossRegionPickupWaitsForTrueSharedOwnershipAndTheActualNativeItemTail()throws Exception{
-        try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory);var preferences=mockStatic(OrgRulePlayerPreferences.class);var leases=mockStatic(CarpetRegionLease.class)){
+        try(var fixture=new OrgInventoryPersistenceTest.Fixture(directory);var preferences=mockStatic(OrgRulePlayerPreferences.class);var leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open()){
             var player=fixture.viewer.player();ServerLevel world=player.level();AABB box=new AABB(15,60,15,16,62,16);when(player.getBoundingBox()).thenReturn(box);preferences.when(()->OrgRulePlayerPreferences.itemPickupRange(player)).thenReturn(3);
             var owns=new AtomicBoolean();fixture.ticks.when(()->ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(eq(world),anyInt(),anyInt(),anyInt(),anyInt())).thenAnswer(call->owns.get());
             ItemEntity item=mock(ItemEntity.class);fixture.ticks.when(()->ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(eq(item))).thenAnswer(call->owns.get());when(world.getEntities(eq(player),any(AABB.class),any())).thenReturn(List.of(item));
@@ -45,7 +45,7 @@ class OrgExpandedItemPickupTest {
     }
 
     @Test void lateFailureCleanupCannotEraseTheNextPickupAdmission() throws Exception {
-        try (var fixture = new OrgInventoryPersistenceTest.Fixture(directory); var preferences = mockStatic(OrgRulePlayerPreferences.class); var leases = mockStatic(CarpetRegionLease.class)) {
+        try (var fixture = new OrgInventoryPersistenceTest.Fixture(directory); var preferences = mockStatic(OrgRulePlayerPreferences.class); var leases = fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open()) {
             var player = fixture.viewer.player(); ServerLevel world = player.level();
             var box = new AABB(15, 60, 15, 16, 62, 16); when(player.getBoundingBox()).thenReturn(box);
             preferences.when(() -> OrgRulePlayerPreferences.itemPickupRange(player)).thenReturn(3);

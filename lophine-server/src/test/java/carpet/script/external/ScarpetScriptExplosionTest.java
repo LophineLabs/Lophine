@@ -41,7 +41,7 @@ public class ScarpetScriptExplosionTest {
         var tasks=new LinkedBlockingQueue<Runnable>();var owner=new AtomicReference<ServerLevel>();var activeLeases=new AtomicInteger();
         var packetReceipts=new CompletableFuture<Void>();var atPackets=new AtomicBoolean();var host=new Host();
         boolean oldNoBlocks=fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.explosionNoBlockDamage;
-        try(var ticks=mockStatic(TickThread.class);var bukkit=mockStatic(org.bukkit.Bukkit.class);var leases=mockStatic(fun.bm.lophine.carpet.CarpetRegionLease.class);var packets=mockStatic(ScarpetExplosionPackets.class)) {
+        try(var ticks=mockStatic(TickThread.class);var bukkit=mockStatic(org.bukkit.Bukkit.class);var leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();var packets=mockStatic(ScarpetExplosionPackets.class)) {
             fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.explosionNoBlockDamage=true;
             CraftServer craft=mock(CraftServer.class);when(craft.getLogger()).thenReturn(java.util.logging.Logger.getAnonymousLogger());bukkit.when(org.bukkit.Bukkit::getServer).thenReturn(craft);
             var sf=MinecraftServer.class.getField("server");sf.setAccessible(true);sf.set(server,craft);
@@ -74,7 +74,7 @@ public class ScarpetScriptExplosionTest {
             ScarpetRuntime runtime=ScarpetRuntime.of(server);var result=runtime.submit(()->{
                 // A completed actor future can attach its next phase on the VM thread. Static Mockito mocks
                 // belong to their creating thread, so this lease admission must also model that real path.
-                try(var vmLeases=mockStatic(fun.bm.lophine.carpet.CarpetRegionLease.class)) {
+                try(var vmLeases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open()) {
                     vmLeases.when(()->fun.bm.lophine.carpet.CarpetRegionLease.runValue(eq(world),anyInt(),anyInt(),anyInt(),anyInt(),any())).thenAnswer(call->{
                         Function<fun.bm.lophine.carpet.CarpetRegionLease.Lease<?>,Object> action=call.getArgument(5);
                         var admitted=new CompletableFuture<Object>();
