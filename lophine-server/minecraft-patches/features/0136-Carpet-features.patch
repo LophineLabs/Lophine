@@ -18065,19 +18065,33 @@ index 3615b39abf551adcd798ed123cb565ce8481e862..2d119eb841f22e41d9df353a10e81fa1
      private void hurtEntities() {
          if (!(this.radius < 1.0E-5F)) {
              float doubleRadius = this.radius * 2.0F;
-@@ -479,9 +567,10 @@ public class ServerExplosion implements Explosion {
+@@ -479,9 +567,11 @@ public class ServerExplosion implements Explosion {
              int z0 = Mth.floor(this.center.z - doubleRadius - 1.0);
              int z1 = Mth.floor(this.center.z + doubleRadius + 1.0);
              List<Entity> list = this.level.getEntities(this.excludeSourceFromDamage ? this.source : null, new AABB(x0, y0, z0, x1, y1, z1), entity -> entity.isAlive() && !entity.isSpectator()); // Paper - Fix lag from explosions processing dead entities, Allow explosions to damage source
 +            if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.explosionNoEntityInfluence) list = java.util.Collections.emptyList();
  
              for (Entity entity : list) { // Paper - used in loop
++                if (carpet.script.external.ScarpetExplosionActors.retiredFakePlayer(entity)) continue;
 -                if (!entity.ignoreExplosion(this)) {
 +                if (!this.carpetIgnoreExplosion(entity)) {
                      double dist = Math.sqrt(entity.distanceToSqr(this.center)) / doubleRadius;
                      if (!(dist > 1.0)) {
                          Vec3 entityOrigin = entity instanceof PrimedTnt ? entity.position() : entity.getEyePosition();
-@@ -534,13 +623,20 @@ public class ServerExplosion implements Explosion {
+@@ -521,6 +611,12 @@ public class ServerExplosion implements Explosion {
+                             // CraftBukkit end
+                         }
+ 
++                        // Fake-player death can remove and retire the player inside hurtServer.
++                        // The damage still belongs to this explosion, but the offline body has no hit tail.
++                        if (entity.isRemoved() || carpet.script.external.ScarpetExplosionActors.retiredFakePlayer(entity)) {
++                            this.carpetAffectedEntities.add(entity);
++                            continue;
++                        }
+                         double knockbackResistance = entity instanceof LivingEntity livingEntity
+                             ? livingEntity.getAttributeValue(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE)
+                             : 0.0;
+@@ -534,13 +630,20 @@ public class ServerExplosion implements Explosion {
                              // Paper end - knockback events
                          }
                          // CraftBukkit end
@@ -18099,7 +18113,7 @@ index 3615b39abf551adcd798ed123cb565ce8481e862..2d119eb841f22e41d9df353a10e81fa1
                          entity.onExplosionHit(this.source);
                      }
                  }
-@@ -549,7 +645,13 @@ public class ServerExplosion implements Explosion {
+@@ -549,7 +652,13 @@ public class ServerExplosion implements Explosion {
      }
  
      private void interactWithBlocks(final List<BlockPos> targetBlocks) {
@@ -18114,7 +18128,7 @@ index 3615b39abf551adcd798ed123cb565ce8481e862..2d119eb841f22e41d9df353a10e81fa1
          Util.shuffle(targetBlocks, this.level.random);
  
          // CraftBukkit start
-@@ -588,6 +690,11 @@ public class ServerExplosion implements Explosion {
+@@ -588,6 +697,11 @@ public class ServerExplosion implements Explosion {
          }
          // CraftBukkit end
  
@@ -18126,7 +18140,7 @@ index 3615b39abf551adcd798ed123cb565ce8481e862..2d119eb841f22e41d9df353a10e81fa1
          for (BlockPos pos : targetBlocks) {
              // CraftBukkit start - TNTPrimeEvent
              BlockState state = this.level.getBlockState(pos);
-@@ -622,7 +729,324 @@ public class ServerExplosion implements Explosion {
+@@ -622,7 +736,328 @@ public class ServerExplosion implements Explosion {
          }
      }
  
@@ -18351,7 +18365,7 @@ index 3615b39abf551adcd798ed123cb565ce8481e862..2d119eb841f22e41d9df353a10e81fa1
 +        });
 +    }
 +    private java.util.concurrent.CompletableFuture<Void> carpetImpactAsync(Entity entity,List<Entity> entities) {
-+        return carpet.script.external.ScarpetExplosionActors.admitTarget(entity, () -> this.carpetAcceptedImpactAsync(entity,entities));
++        return carpet.script.external.ScarpetExplosionActors.admitExplosionTarget(entity, () -> this.carpetAcceptedImpactAsync(entity,entities));
 +    }
 +    private java.util.concurrent.CompletableFuture<Void> carpetAcceptedImpactAsync(Entity entity,List<Entity> entities) {
 +        return carpet.script.external.ScarpetExplosionActors.currentAttribution(this).thenCompose(attribution ->
@@ -18399,6 +18413,10 @@ index 3615b39abf551adcd798ed123cb565ce8481e862..2d119eb841f22e41d9df353a10e81fa1
 +    }
 +    private void carpetPostImpact(CarpetImpact impact) {
 +        Entity entity=impact.entity(); double dist=impact.distance(); Vec3 direction=impact.direction(); float exposure=impact.exposure(); float knockbackMultiplier=impact.knockbackMultiplier();
++        if (entity.isRemoved() || carpet.script.external.ScarpetExplosionActors.retiredFakePlayer(entity)) {
++            this.carpetAffectedEntities.add(entity);
++            return;
++        }
 +                        double knockbackResistance = entity instanceof LivingEntity livingEntity
 +                            ? livingEntity.getAttributeValue(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE)
 +                            : 0.0;
@@ -18451,7 +18469,7 @@ index 3615b39abf551adcd798ed123cb565ce8481e862..2d119eb841f22e41d9df353a10e81fa1
          // Paper start - collision optimisations
          this.blockCache = new it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap<>();
          this.chunkPosCache = new long[CHUNK_CACHE_WIDTH * CHUNK_CACHE_WIDTH];
-@@ -634,6 +1058,7 @@ public class ServerExplosion implements Explosion {
+@@ -634,6 +1069,7 @@ public class ServerExplosion implements Explosion {
          this.level.gameEvent(this.source, GameEvent.EXPLODE, this.center);
          List<BlockPos> toBlow = this.calculateExplodedPositions();
          this.hurtEntities();
@@ -18459,7 +18477,7 @@ index 3615b39abf551adcd798ed123cb565ce8481e862..2d119eb841f22e41d9df353a10e81fa1
          if (this.interactsWithBlocks()) {
              ProfilerFiller profiler = Profiler.get();
              profiler.push("explosion_blocks");
-@@ -652,6 +1077,7 @@ public class ServerExplosion implements Explosion {
+@@ -652,6 +1088,7 @@ public class ServerExplosion implements Explosion {
          this.directMappedBlockCache = null;
          this.mutablePos = null;
          // Paper end - collision optimisations
@@ -18467,7 +18485,7 @@ index 3615b39abf551adcd798ed123cb565ce8481e862..2d119eb841f22e41d9df353a10e81fa1
          return toBlow.size();
      }
  
-@@ -670,6 +1096,8 @@ public class ServerExplosion implements Explosion {
+@@ -670,6 +1107,8 @@ public class ServerExplosion implements Explosion {
          return this.blockInteraction != Explosion.BlockInteraction.KEEP;
      }
  
@@ -18476,7 +18494,7 @@ index 3615b39abf551adcd798ed123cb565ce8481e862..2d119eb841f22e41d9df353a10e81fa1
      public Map<Player, Vec3> getHitPlayers() {
          return this.hitPlayers;
      }
-@@ -681,7 +1109,7 @@ public class ServerExplosion implements Explosion {
+@@ -681,7 +1120,7 @@ public class ServerExplosion implements Explosion {
  
      @Override
      public @Nullable LivingEntity getIndirectSourceEntity() {
@@ -18485,7 +18503,7 @@ index 3615b39abf551adcd798ed123cb565ce8481e862..2d119eb841f22e41d9df353a10e81fa1
      }
  
      @Override
-@@ -700,6 +1128,11 @@ public class ServerExplosion implements Explosion {
+@@ -700,6 +1139,11 @@ public class ServerExplosion implements Explosion {
  
      @Override
      public boolean canTriggerBlocks() {
@@ -18497,7 +18515,7 @@ index 3615b39abf551adcd798ed123cb565ce8481e862..2d119eb841f22e41d9df353a10e81fa1
          return this.blockInteraction == Explosion.BlockInteraction.TRIGGER_BLOCK
              && (this.source == null || !this.source.is(EntityTypes.BREEZE_WIND_CHARGE) || this.level.getGameRules().get(GameRules.MOB_GRIEFING));
      }
-@@ -748,6 +1181,23 @@ public class ServerExplosion implements Explosion {
+@@ -748,6 +1192,23 @@ public class ServerExplosion implements Explosion {
          return blockDensity;
      }
  

@@ -222,7 +222,8 @@ public final class ScarpetNativeDeaths {
             int minX = (position.getX() - 32) >> 4, maxX = (position.getX() + 32) >> 4, minZ = (position.getZ() - 32) >> 4, maxZ = (position.getZ() + 32) >> 4;
             Supplier<CompletableFuture<Void>> perform = ScarpetRuntime.captureNativeContinuation(() -> ScarpetExplosionActors.entity(target, () -> {
                 BlockPos now = target.blockPosition();
-                if (target.level() != world || (now.getX() >> 4) < minX || (now.getX() >> 4) > maxX || (now.getZ() >> 4) < minZ || (now.getZ() >> 4) > maxZ)
+                if (target.level() != world || ((now.getX() - 32) >> 4) < minX || ((now.getX() + 32) >> 4) > maxX
+                        || ((now.getZ() - 32) >> 4) < minZ || ((now.getZ() + 32) >> 4) > maxZ)
                     return physicalBody(target, body);
                 return ScarpetNativeWork.recoverGuestValue(ScarpetNativeWork.observeNative(target, () -> {
                     Set<LivingEntity> replaying = REPLAYING.get();
@@ -235,7 +236,7 @@ public final class ScarpetNativeDeaths {
                     }
                 }));
             }).thenCompose(value -> value));
-            return fun.bm.lophine.carpet.CarpetRegionLease.<CompletableFuture<Void>>runValue(world, minX, minZ, maxX, maxZ, lease -> perform.get()).thenCompose(value -> value);
+            return fun.bm.lophine.carpet.CarpetRegionLease.<CompletableFuture<Void>>runOwnedPhaseValue(world, minX, minZ, maxX, maxZ, lease -> perform.get()).thenCompose(value -> value);
         }).thenCompose(value -> value);
     }
 }

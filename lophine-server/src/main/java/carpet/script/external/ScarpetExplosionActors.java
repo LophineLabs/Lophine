@@ -41,17 +41,36 @@ public final class ScarpetExplosionActors {
     }
 
     public static <T> CompletableFuture<T> entity(Entity entity, Supplier<T> operation) {
+        return entity(entity, operation, null);
+    }
+
+    /** A leftover bot whose actor has retired cannot accept a new explosion hit. */
+    public static boolean retiredFakePlayer(Entity entity) {
+        return entity instanceof org.leavesmc.leaves.bot.ServerBot
+                && entity.getBukkitEntity().taskScheduler.isRetiredOffThread();
+    }
+
+    private static <T> CompletableFuture<T> entity(Entity entity, Supplier<T> operation, Supplier<T> unadmittedRetirement) {
         Supplier<T> captured = ScarpetRuntime.captureNativeContinuation(operation);
         CompletableFuture<T> result = new CompletableFuture<>();
         ScarpetNativeWork.record(result);
+        if (unadmittedRetirement != null && retiredFakePlayer(entity)) {
+            result.complete(unadmittedRetirement.get());
+            return result;
+        }
         if (TickThread.isTickThreadFor(entity) || TickThread.isShutdownThread()) {
             runEntity(entity, captured, result);
             return result;
         }
         try {
+            Runnable rejected = () -> {
+                if (unadmittedRetirement != null && entity instanceof org.leavesmc.leaves.bot.ServerBot)
+                    result.complete(unadmittedRetirement.get());
+                else retired(entity, captured, result, 0);
+            };
             boolean scheduled = entity.getBukkitEntity().taskScheduler.schedule(ignored -> runEntity(entity, captured, result),
-                    ignored -> retired(entity, captured, result, 0), 1L);
-            if (!scheduled) retired(entity, captured, result, 0);
+                    ignored -> rejected.run(), 1L);
+            if (!scheduled) rejected.run();
         } catch (Throwable failure) {
             result.completeExceptionally(failure);
         }
@@ -74,11 +93,13 @@ public final class ScarpetExplosionActors {
     private static <T> void runEntity(Entity entity, Supplier<T> operation, CompletableFuture<T> result) {
         if (result.isDone()) return;
         try {
-            result.complete(operation.get());
+            ScarpetRetiredActors.capture(entity);
+            T value = operation.get();
+            // Publish the final owner before completion callbacks can dispatch a death tail.
+            ScarpetRetiredActors.capture(entity);
+            result.complete(value);
         } catch (Throwable failure) {
             result.completeExceptionally(failure);
-        } finally {
-            ScarpetRetiredActors.capture(entity);
         }
     }
 
@@ -90,6 +111,11 @@ public final class ScarpetExplosionActors {
             return;
         }
         try {
+            if (TickThread.isTickThreadFor(location.world(), location.position())
+                    && ScarpetRetiredActors.matchesLastOwner(entity, location)) {
+                runEntity(entity, operation, result);
+                return;
+            }
             location.world().getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, location.world().getWorld(),
                     location.position().getX() >> 4, location.position().getZ() >> 4, () -> {
                         if (!ScarpetRetiredActors.matchesLastOwner(entity, location)) {
@@ -138,14 +164,26 @@ public final class ScarpetExplosionActors {
      * Admits one actual target phase, including all its post-hit effects, before a snapshot can pause that target.
      */
     public static <T> CompletableFuture<T> admitTarget(Entity target, Supplier<CompletableFuture<T>> acceptedNativePhase) {
+        return admitTarget(target, acceptedNativePhase, null);
+    }
+
+    /** Retirement may skip an unadmitted bot, never an already accepted hit or its children. */
+    public static CompletableFuture<Void> admitExplosionTarget(Entity target, Supplier<CompletableFuture<Void>> acceptedNativePhase) {
+        return admitTarget(target, acceptedNativePhase, () -> CompletableFuture.completedFuture(null));
+    }
+
+    private static <T> CompletableFuture<T> admitTarget(Entity target, Supplier<CompletableFuture<T>> acceptedNativePhase,
+                                                       Supplier<CompletableFuture<T>> unadmittedRetirement) {
         var wholePhase = ScarpetNativeWork.capture();
         // Create the observer INSIDE the captured supplier: restoring the initiating flags must not replace its new token or target privilege.
         Supplier<CompletableFuture<T>> admitted = ScarpetRuntime.captureNativeContinuation(() -> targetPhase(target, wholePhase, acceptedNativePhase));
-        CompletableFuture<T> completed = entity(target, () -> {
+        Supplier<CompletableFuture<T>> admission = () -> {
             if (target instanceof net.minecraft.server.level.ServerPlayer player && !player.isRemoved() && ScarpetPlayerInventoryGate.paused(player))
                 return ScarpetPlayerInventoryGate.enqueuePaused(player, admitted);
             return admitted.get();
-        }).thenCompose(result -> result);
+        };
+        CompletableFuture<T> completed = (unadmittedRetirement == null ? entity(target, admission)
+                : entity(target, admission, unadmittedRetirement)).thenCompose(result -> result);
         ScarpetNativeWork.record(completed);
         return completed;
     }

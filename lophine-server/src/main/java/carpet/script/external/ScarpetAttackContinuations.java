@@ -176,7 +176,14 @@ public final class ScarpetAttackContinuations {
      */
     public static <T> CompletableFuture<T> afterDamageNativeAsync(Entity attacker, CompletableFuture<Boolean> outcome,
                                                                   Function<Boolean, CompletableFuture<T>> nativeTail) {
-        TickThread.ensureTickThread(attacker, "Deferred typed attack must be captured by its attacker");
+        // A fatal hit may finish fake-player logout inside hurtServer, before its
+        // enclosing Player damage tail is registered. That tail still belongs to
+        // the captured final region; require the same proof used by retired dispatch.
+        var lastOwner = ScarpetRetiredActors.lastOwner(attacker);
+        boolean ownsRetired = ScarpetRetiredActors.knownRetired(attacker) && lastOwner != null
+                && TickThread.isTickThreadFor(lastOwner.world(), lastOwner.position())
+                && ScarpetRetiredActors.matchesLastOwner(attacker, lastOwner);
+        if (!ownsRetired) TickThread.ensureTickThread(attacker, "Deferred typed attack must be captured by its attacker");
         var server = attacker instanceof ServerPlayer player ? player.carpetSpawnServer() : attacker.level().getServer();
         var actual = new CompletableFuture<T>() {
             @Override
@@ -209,7 +216,7 @@ public final class ScarpetAttackContinuations {
                 else actual.completeExceptionally(problem);
             }));
         }));
-        if (attacker instanceof ServerPlayer player) ScarpetPlayerInventoryGate.trackAccepted(player, actual);
+        if (attacker instanceof ServerPlayer player && !player.isRemoved()) ScarpetPlayerInventoryGate.trackAccepted(player, actual);
         return actual;
     }
 

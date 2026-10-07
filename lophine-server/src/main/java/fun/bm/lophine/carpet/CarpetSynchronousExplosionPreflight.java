@@ -62,18 +62,19 @@ public final class CarpetSynchronousExplosionPreflight {
         double physical = Math.ceil(power * 2D) + 2D, extent = packetAudience ? Math.max(physical, packetRange()) : physical;
         requireRectangle(world, center, extent, physical);
         if (source != null) {
-            requireEntity(world, source);
+            requireEntity(world, source, source);
             LivingEntity indirect = Explosion.getIndirectSourceEntity(source);
-            if (indirect != null) requireEntity(world, indirect);
+            if (indirect != null) requireEntity(world, indirect, source);
         }
         if (damage != null) {
             Entity direct = damage.getDirectEntity(), causing = damage.getEntity();
-            if (direct != null) requireEntity(world, direct);
-            if (causing != null) requireEntity(world, causing);
+            if (direct != null) requireEntity(world, direct, source);
+            if (causing != null) requireEntity(world, causing, source);
         }
         AABB affected = new AABB(center.x - physical, center.y - physical, center.z - physical, center.x + physical, center.y + physical, center.z + physical);
         for (Entity target : world.getEntities((Entity) null, affected, entity -> true)) {
-            requireEntity(world, target);
+            if (ScarpetExplosionActors.retiredFakePlayer(target)) continue;
+            requireEntity(world, target, source);
             if (!packetAudience && target instanceof LivingEntity)
                 // Native death/loot phases query a 32-block neighborhood. Admission
                 // must also prove these helpers cannot introduce a foreign/loading phase.
@@ -84,11 +85,11 @@ public final class CarpetSynchronousExplosionPreflight {
         for (ServerPlayer player : List.copyOf(world.getLocalPlayers())) {
             if (!TickThread.isTickThreadFor(player)) reject("A local packet recipient is changing native owner");
             if (player.level() == world && player.distanceToSqr(center) < packetRange() * packetRange())
-                requireEntity(world, player);
+                requireEntity(world, player, source);
         }
     }
 
-    private static void requireEntity(ServerLevel world, Entity entity) {
+    private static void requireEntity(ServerLevel world, Entity entity, Entity explosionSource) {
         if (!TickThread.isTickThreadFor(entity))
             reject("An explosion source, indirect cause or target is on another native owner");
         if (entity.level() != world) reject("An explosion source, indirect cause or target changed world");
@@ -106,7 +107,11 @@ public final class CarpetSynchronousExplosionPreflight {
                     reject("A player inventory has a shared item scope");
         }
         if (entity instanceof LivingEntity living) {
-            if (living.isDeadOrDying()) reject("A target is already in a native death phase");
+            // Vanilla marks a primed creeper dead before calling explode. This is
+            // the accepted explosion source, not a target waiting for damage/death.
+            boolean primedCreeper = entity == explosionSource && living instanceof net.minecraft.world.entity.monster.Creeper
+                    && living.getHealth() > 0F && !living.isRemoved() && ScarpetExplosionContinuations.pending(entity);
+            if (living.isDeadOrDying() && !primedCreeper) reject("A target is already in a native death phase");
             for (EquipmentSlot slot : EquipmentSlot.VALUES_ARRAY)
                 if (OrgItemShadowGroups.managed(living.getItemBySlot(slot)))
                     reject("Target equipment has a shared item scope");

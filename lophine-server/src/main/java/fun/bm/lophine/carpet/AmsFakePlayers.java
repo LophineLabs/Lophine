@@ -16,7 +16,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public final class AmsFakePlayers {
-    private static String previousTeam = "false";
+    private static volatile String previousTeam = "false";
 
     private AmsFakePlayers() {
     }
@@ -77,6 +77,10 @@ public final class AmsFakePlayers {
 
     public static void removed(final ServerBot bot) {
         if (bot.carpetShadow) return;
+        // With fancy names disabled and the previous team already cleared, there
+        // is no scoreboard cleanup. An empty global task would delay the enclosing
+        // fatal hit and its explosion packets by a tick after the bot has left.
+        if ("false".equals(GeneralCompatConfig.fancyFakePlayerName) && "false".equals(previousTeam)) return;
         final String name = bot.getGameProfile().name();
         final MinecraftServer server = bot.level().getServer();
         AmsNativeCommandEffects.global(server, () -> {

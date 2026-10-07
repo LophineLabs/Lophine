@@ -12,6 +12,23 @@ import static org.mockito.Mockito.*;
 public class CarpetSynchronousExplosionPreflightTest{
  @BeforeAll static void bootstrap(){net.minecraft.SharedConstants.tryDetectVersion();net.minecraft.server.Bootstrap.bootStrap();}
  private ServerLevel world(){var world=mock(ServerLevel.class);when(world.getServer()).thenReturn(mock(MinecraftServer.class));when(world.getEntities(nullable(net.minecraft.world.entity.Entity.class),any(),any(java.util.function.Predicate.class))).thenReturn(List.of());when(world.getLocalPlayers()).thenReturn(List.of());return world;}
+ @Test void aPrimedCreeperSourceKeepsTheOwnedCoreWithoutAdmittingAnActualDyingVictim(){
+  var world=world();var creeper=mock(net.minecraft.world.entity.monster.Creeper.class);
+  when(creeper.level()).thenReturn(world);when(creeper.position()).thenReturn(Vec3.ZERO);
+  when(creeper.getHealth()).thenReturn(20F);when(creeper.isDeadOrDying()).thenReturn(true);
+  when(creeper.getItemBySlot(any())).thenReturn(net.minecraft.world.item.ItemStack.EMPTY);
+  when(world.getEntities(nullable(net.minecraft.world.entity.Entity.class),any(),any(java.util.function.Predicate.class))).thenReturn(List.of(creeper));
+  when(world.getChunkIfLoaded(anyInt(),anyInt())).thenReturn(mock(LevelChunk.class));
+  try(var ticks=mockStatic(ca.spottedleaf.moonrise.common.util.TickThread.class);var tails=mockStatic(carpet.script.external.ScarpetExplosionContinuations.class)){
+   ticks.when(()->ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(eq(world),anyInt(),anyInt())).thenReturn(true);
+   ticks.when(()->ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(creeper)).thenReturn(true);
+   tails.when(()->carpet.script.external.ScarpetExplosionContinuations.pending(creeper)).thenReturn(true);
+   assertTrue(CarpetSynchronousExplosionPreflight.canRunCore(world,creeper,null,null,Vec3.ZERO,3));
+   assertFalse(CarpetSynchronousExplosionPreflight.canRunCore(world,null,null,null,Vec3.ZERO,3));
+   when(creeper.getHealth()).thenReturn(0F);
+   assertFalse(CarpetSynchronousExplosionPreflight.canRunCore(world,creeper,null,null,Vec3.ZERO,3));
+  }
+ }
  @Test void actualUnownedFootprintRejectsBeforeChunkReadsOrEffects(){var world=world();try(var ticks=mockStatic(ca.spottedleaf.moonrise.common.util.TickThread.class)){assertThrows(IllegalStateException.class,()->CarpetSynchronousExplosionPreflight.require(world,null,null,null,Vec3.ZERO,4));verify(world,never()).getChunkIfLoaded(anyInt(),anyInt());verify(world,never()).getEntities(nullable(net.minecraft.world.entity.Entity.class),any(),any(java.util.function.Predicate.class));}}
  @Test void actualUnloadedFootprintRejectsBeforeEntityQueryOrEffects(){var world=world();try(var ticks=mockStatic(ca.spottedleaf.moonrise.common.util.TickThread.class)){ticks.when(()->ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(eq(world),anyInt(),anyInt())).thenReturn(true);assertThrows(IllegalStateException.class,()->CarpetSynchronousExplosionPreflight.require(world,null,null,null,Vec3.ZERO,4));verify(world,never()).getEntities(nullable(net.minecraft.world.entity.Entity.class),any(),any(java.util.function.Predicate.class));}}
  @Test void actualScarpetExplosionCallbackRejectsBeforeAnyNativeFootprintWork()throws Exception{
