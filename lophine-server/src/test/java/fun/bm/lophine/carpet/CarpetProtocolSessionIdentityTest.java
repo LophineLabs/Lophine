@@ -14,7 +14,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class CarpetProtocolSessionIdentityTest {
-    @BeforeAll static void metadata() throws Exception {
+    @BeforeAll
+    static void metadata() throws Exception {
         var info = mock(ServerBuildInfo.class);
         when(info.asString(ServerBuildInfo.StringRepresentation.VERSION_SIMPLE)).thenReturn("test");
         try (var metadata = mockStatic(ServerBuildInfo.class)) {
@@ -24,7 +25,8 @@ class CarpetProtocolSessionIdentityTest {
     }
 
     @SuppressWarnings("unchecked")
-    @Test void retiredConnectionCannotRemoveOrUseTheNewConnectionsHandshake() throws Exception {
+    @Test
+    void retiredConnectionCannotRemoveOrUseTheNewConnectionsHandshake() throws Exception {
         UUID id = UUID.randomUUID();
         ServerPlayer old = mock(ServerPlayer.class), replacement = mock(ServerPlayer.class);
         when(old.getUUID()).thenReturn(id);

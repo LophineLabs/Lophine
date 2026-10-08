@@ -2,20 +2,23 @@ package fun.bm.lophine.carpet;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TisStackTraceCycleTest {
     private static final class Cause extends RuntimeException {
         Throwable next;
         int reads;
 
-        @Override public synchronized Throwable getCause() {
+        @Override
+        public synchronized Throwable getCause() {
             if (++reads > 1) throw new AssertionError("Cyclic cause was visited again");
             return next;
         }
     }
 
-    @Test void cyclicNativeErrorsAreRewrittenOnceInsteadOfLoopingOnTheReportingThread() {
+    @Test
+    void cyclicNativeErrorsAreRewrittenOnceInsteadOfLoopingOnTheReportingThread() {
         var first = new Cause();
         var second = new Cause();
         first.next = second;

@@ -1,14 +1,17 @@
 package fun.bm.lophine.protocol;
 
 import io.netty.buffer.Unpooled;
-import java.util.Set;
-import java.util.UUID;
 import net.minecraft.network.FriendlyByteBuf;
 import org.junit.jupiter.api.Test;
+
+import java.util.Set;
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AmsProtocolWireTest {
-    @Test void readsOriginalHandshakeWireLayout() {
+    @Test
+    void readsOriginalHandshakeWireLayout() {
         UUID player = UUID.randomUUID();
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         try {
@@ -21,14 +24,17 @@ public class AmsProtocolWireTest {
             assertEquals("26.3", handshake.version());
             assertEquals(Set.of("sync_custom_block_hardness", "handshake_s2c"), handshake.packets());
             assertFalse(buffer.isReadable());
-        } finally { buffer.release(); }
+        } finally {
+            buffer.release();
+        }
     }
 
-    @Test void bindsHandshakeToConnectionAndBoundsPacketCount() {
+    @Test
+    void bindsHandshakeToConnectionAndBoundsPacketCount() {
         UUID actual = UUID.randomUUID();
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         try {
-            for (int count : new int[] {-1, 129}) {
+            for (int count : new int[]{-1, 129}) {
                 buffer.clear();
                 buffer.writeUtf("26.3");
                 buffer.writeUUID(actual);
@@ -40,6 +46,8 @@ public class AmsProtocolWireTest {
             buffer.writeUUID(UUID.randomUUID());
             buffer.writeVarInt(0);
             assertNull(AmsNetworkProtocol.readClientHandshake(buffer, actual));
-        } finally { buffer.release(); }
+        } finally {
+            buffer.release();
+        }
     }
 }

@@ -3,16 +3,12 @@ package fun.bm.lophine.carpet;
 import ca.spottedleaf.moonrise.common.util.TickThread;
 import carpet.script.external.ScarpetExplosionActors;
 import com.mojang.brigadier.CommandDispatcher;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.permissions.PermissionSet;
+import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.craftbukkit.entity.CraftEntity;
@@ -21,11 +17,22 @@ import org.junit.jupiter.api.Test;
 import org.leavesmc.leaves.bot.BotList;
 import org.leavesmc.leaves.bot.ServerBot;
 import org.leavesmc.leaves.entity.bot.CraftBot;
-import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.*;
 
 class CarpetPlayerKillReceiptTest {
-    @BeforeAll static void bootstrap() { net.minecraft.SharedConstants.tryDetectVersion(); net.minecraft.server.Bootstrap.bootStrap(); }
+    @BeforeAll
+    static void bootstrap() {
+        net.minecraft.SharedConstants.tryDetectVersion();
+        net.minecraft.server.Bootstrap.bootStrap();
+    }
 
     private static final class Fixture implements AutoCloseable {
         final MinecraftServer server = mock(MinecraftServer.class);
@@ -64,7 +71,9 @@ class CarpetPlayerKillReceiptTest {
             field.setAccessible(true);
             field.set(bukkit, scheduler);
             when(scheduler.schedule(any(), any(), anyLong())).thenAnswer(call -> {
-                owner.set(call.getArgument(0)); retired.set(call.getArgument(1)); return accepted;
+                owner.set(call.getArgument(0));
+                retired.set(call.getArgument(1));
+                return accepted;
             });
             actors.when(() -> ScarpetExplosionActors.world(eq(world), eq(BlockPos.ZERO), any(Supplier.class)))
                     .thenAnswer(call -> CompletableFuture.completedFuture(((Supplier<?>) call.getArgument(2)).get()));
@@ -76,10 +85,15 @@ class CarpetPlayerKillReceiptTest {
             return scope.resultFuture(source);
         }
 
-        public void close() throws Exception { permission.set(null, oldPermission); actors.close(); ticks.close(); }
+        public void close() throws Exception {
+            permission.set(null, oldPermission);
+            actors.close();
+            ticks.close();
+        }
     }
 
-    @Test void rejectedOwnerSchedulingTerminatesTheDeferredCommandInsteadOfHanging() throws Exception {
+    @Test
+    void rejectedOwnerSchedulingTerminatesTheDeferredCommandInsteadOfHanging() throws Exception {
         try (var f = new Fixture(false); var scope = CarpetAsyncCommandResults.open()) {
             var result = f.execute(scope);
             assertEquals(0, result.join());
@@ -88,7 +102,8 @@ class CarpetPlayerKillReceiptTest {
         }
     }
 
-    @Test void retirementBetweenSchedulingAndExecutionFinishesTheDeferredFailure() throws Exception {
+    @Test
+    void retirementBetweenSchedulingAndExecutionFinishesTheDeferredFailure() throws Exception {
         try (var f = new Fixture(true); var scope = CarpetAsyncCommandResults.open()) {
             var result = f.execute(scope);
             assertFalse(result.isDone());
@@ -98,7 +113,8 @@ class CarpetPlayerKillReceiptTest {
         }
     }
 
-    @Test void synchronousActionStopFailureStillCompletesTheCommandCallback() throws Exception {
+    @Test
+    void synchronousActionStopFailureStillCompletesTheCommandCallback() throws Exception {
         try (var f = new Fixture(true); var scope = CarpetAsyncCommandResults.open()) {
             doThrow(new IllegalStateException("native stop failed")).when(f.bot.carpetActionPack).stopAll();
             var result = f.execute(scope);

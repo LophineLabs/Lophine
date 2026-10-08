@@ -1,13 +1,7 @@
 package fun.bm.lophine.carpet;
 
-import fun.bm.lophine.protocol.CarpetLoggerProtocol;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.AtomicLong;
 import carpet.script.external.ScarpetNativeWork;
+import fun.bm.lophine.protocol.CarpetLoggerProtocol;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -17,11 +11,19 @@ import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class TisProjectileVisualizerLifecycleTest {
-    @BeforeAll static void bootstrap() {
+    @BeforeAll
+    static void bootstrap() {
         net.minecraft.SharedConstants.tryDetectVersion();
         net.minecraft.server.Bootstrap.bootStrap();
     }
@@ -62,19 +64,26 @@ class TisProjectileVisualizerLifecycleTest {
         return (Map<?, ?>) field.get(null);
     }
 
-    @Test void clearDuringTheOwnerTickCannotReinsertAnExpiredMarker() throws Exception {
+    @Test
+    void clearDuringTheOwnerTickCannotReinsertAnExpiredMarker() throws Exception {
         TisProjectileVisualizer.reset();
         try (var loggers = mockStatic(CarpetLoggerProtocol.class)) {
             loggers.when(() -> CarpetLoggerProtocol.hasSubscribers("projectiles")).thenReturn(true);
             var marker = marker();
-            doAnswer(call -> { TisProjectileVisualizer.clear(); return null; }).when(marker).setDeltaMovement(Vec3.ZERO);
+            doAnswer(call -> {
+                TisProjectileVisualizer.clear();
+                return null;
+            }).when(marker).setDeltaMovement(Vec3.ZERO);
             assertTrue(TisProjectileVisualizer.tick(marker));
             assertTrue(registry().isEmpty());
             verify(marker).discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD);
-        } finally { TisProjectileVisualizer.reset(); }
+        } finally {
+            TisProjectileVisualizer.reset();
+        }
     }
 
-    @Test void aClearedMarkerCannotRejoinOnItsNextTickAndUnsubscribedMarkersReleaseRegistryReferences() throws Exception {
+    @Test
+    void aClearedMarkerCannotRejoinOnItsNextTickAndUnsubscribedMarkersReleaseRegistryReferences() throws Exception {
         TisProjectileVisualizer.reset();
         try (var loggers = mockStatic(CarpetLoggerProtocol.class)) {
             loggers.when(() -> CarpetLoggerProtocol.hasSubscribers("projectiles")).thenReturn(true);
@@ -92,10 +101,13 @@ class TisProjectileVisualizerLifecycleTest {
             TisProjectileVisualizer.tick(active);
             assertTrue(registry().isEmpty());
             verify(active).discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD);
-        } finally { TisProjectileVisualizer.reset(); }
+        } finally {
+            TisProjectileVisualizer.reset();
+        }
     }
 
-    @Test void removalMetadataReleasesOnlyTheActualMarkerObject() throws Exception {
+    @Test
+    void removalMetadataReleasesOnlyTheActualMarkerObject() throws Exception {
         TisProjectileVisualizer.reset();
         try (var loggers = mockStatic(CarpetLoggerProtocol.class)) {
             loggers.when(() -> CarpetLoggerProtocol.hasSubscribers("projectiles")).thenReturn(true);
@@ -109,10 +121,13 @@ class TisProjectileVisualizerLifecycleTest {
             assertEquals(1, registry().size());
             TisProjectileVisualizer.removed(replacement);
             assertTrue(registry().isEmpty());
-        } finally { TisProjectileVisualizer.reset(); }
+        } finally {
+            TisProjectileVisualizer.reset();
+        }
     }
 
-    @Test void reloadedTaggedMarkersHaveNoGenerationAdmissionAndCannotResurrectAfterClear() throws Exception {
+    @Test
+    void reloadedTaggedMarkersHaveNoGenerationAdmissionAndCannotResurrectAfterClear() throws Exception {
         TisProjectileVisualizer.reset();
         try (var loggers = mockStatic(CarpetLoggerProtocol.class)) {
             loggers.when(() -> CarpetLoggerProtocol.hasSubscribers("projectiles")).thenReturn(true);
@@ -128,10 +143,13 @@ class TisProjectileVisualizerLifecycleTest {
             assertFalse(reloaded.persist);
             assertTrue(registry().isEmpty());
             verify(reloaded).discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD);
-        } finally { TisProjectileVisualizer.reset(); }
+        } finally {
+            TisProjectileVisualizer.reset();
+        }
     }
 
-    @Test void shutdownDrainsAcceptedMarkerDiscardChildrenBeforeItsOwnerSchedulersCanHalt() throws Exception {
+    @Test
+    void shutdownDrainsAcceptedMarkerDiscardChildrenBeforeItsOwnerSchedulersCanHalt() throws Exception {
         TisProjectileVisualizer.reset();
         try (var loggers = mockStatic(CarpetLoggerProtocol.class)) {
             loggers.when(() -> CarpetLoggerProtocol.hasSubscribers("projectiles")).thenReturn(true);
@@ -143,7 +161,10 @@ class TisProjectileVisualizerLifecycleTest {
                 return true;
             });
             var child = new CompletableFuture<Void>();
-            doAnswer(call -> { ScarpetNativeWork.record(child); return null; }).when(marker).discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD);
+            doAnswer(call -> {
+                ScarpetNativeWork.record(child);
+                return null;
+            }).when(marker).discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD);
             TisProjectileVisualizer.tick(marker);
             TisProjectileVisualizer.clearAtShutdown(server);
             var drain = ScarpetNativeWork.whenIdle(server);
@@ -156,6 +177,8 @@ class TisProjectileVisualizerLifecycleTest {
             assertTrue(registry().isEmpty());
             TisProjectileVisualizer.tick(marker);
             assertTrue(registry().isEmpty());
-        } finally { TisProjectileVisualizer.reset(); }
+        } finally {
+            TisProjectileVisualizer.reset();
+        }
     }
 }

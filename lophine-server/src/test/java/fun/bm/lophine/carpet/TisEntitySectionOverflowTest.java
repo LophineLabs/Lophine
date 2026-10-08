@@ -24,6 +24,8 @@ class TisEntitySectionOverflowTest {
             assertArrayEquals(new long[]{Long.MAX_VALUE}, storage.getExistingSectionPositionsInChunk(ChunkPos.pack(x, z)).toArray());
             GeneralCompatConfig.entityChunkSectionIndexXOverflowFix = false;
             assertThrows(IllegalArgumentException.class, () -> storage.getExistingSectionPositionsInChunk(ChunkPos.pack(x, z)).toArray());
-        } finally { GeneralCompatConfig.entityChunkSectionIndexXOverflowFix = previous; }
+        } finally {
+            GeneralCompatConfig.entityChunkSectionIndexXOverflowFix = previous;
+        }
     }
 }

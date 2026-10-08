@@ -1,22 +1,10 @@
 package fun.bm.lophine.carpet;
 
-import carpet.script.external.ScarpetDamageContinuations;
-import carpet.script.external.ScarpetAttackContinuations;
-import carpet.script.external.ScarpetNativeDeaths;
-import carpet.script.external.ScarpetNativeWork;
-import carpet.script.external.ScarpetPlayerInventoryGate;
 import ca.spottedleaf.moonrise.common.util.TickThread;
+import carpet.script.external.*;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import io.papermc.paper.threadedregions.EntityScheduler;
 import io.papermc.paper.threadedregions.RegionizedServer;
-import java.util.ArrayDeque;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
@@ -28,21 +16,31 @@ import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.leavesmc.leaves.bot.BotList;
 import org.leavesmc.leaves.bot.ServerBot;
 import org.leavesmc.leaves.entity.bot.CraftBot;
 
+import java.util.ArrayDeque;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class OrgSafeAfkRemovalCausalityTest {
-    @BeforeAll static void bootstrap() {
+    @BeforeAll
+    static void bootstrap() {
         net.minecraft.SharedConstants.tryDetectVersion();
         net.minecraft.server.Bootstrap.bootStrap();
     }
@@ -107,7 +105,10 @@ class OrgSafeAfkRemovalCausalityTest {
                 var removal = ScarpetPlayerInventoryGate.whenIdleForRemoval(bot, () -> {
                     cleanups.incrementAndGet();
                     ScarpetNativeWork.record(cleanupChild);
-                    return cleanupChild.thenApply(ignored -> { removed.set(true); return true; });
+                    return cleanupChild.thenApply(ignored -> {
+                        removed.set(true);
+                        return true;
+                    });
                 }).thenCompose(value -> value);
                 ScarpetNativeWork.record(removal);
                 ScarpetNativeWork.trackNative(server, removal);
@@ -135,39 +136,48 @@ class OrgSafeAfkRemovalCausalityTest {
         }
     }
 
-    @Test void realBotDeathSkipsItsSafeAfkDamageWaiterButDrainsIndependentAcceptedWork() throws Exception {
+    @Test
+    void realBotDeathSkipsItsSafeAfkDamageWaiterButDrainsIndependentAcceptedWork() throws Exception {
         lethalDamage(false, false);
     }
 
-    @Test void persistentParrotDamageKeepsItsWholeReceiptCausalThroughRealBotDeath() throws Exception {
+    @Test
+    void persistentParrotDamageKeepsItsWholeReceiptCausalThroughRealBotDeath() throws Exception {
         lethalDamage(true, false);
     }
 
-    @Test void betterTotemDamageKeepsItsNativeBodyCausalThroughRealBotDeath() throws Exception {
+    @Test
+    void betterTotemDamageKeepsItsNativeBodyCausalThroughRealBotDeath() throws Exception {
         lethalDamage(false, true);
     }
 
-    @Test void combinedPersistentParrotsAndBetterTotemDrainTheSameRealBotDeath() throws Exception {
+    @Test
+    void combinedPersistentParrotsAndBetterTotemDrainTheSameRealBotDeath() throws Exception {
         lethalDamage(true, true);
     }
 
-    @Test void realNativeKillCommandPublishesOnlyAfterItsActualBotDeathAndIndependentCleanup() throws Exception {
+    @Test
+    void realNativeKillCommandPublishesOnlyAfterItsActualBotDeathAndIndependentCleanup() throws Exception {
         lethalDamage(false, false, true);
     }
 
-    @Test void inlinePersistentParrotDeathPublishesItsCausalAdmissionBeforeTheRemovalGateSnapshot() throws Exception {
+    @Test
+    void inlinePersistentParrotDeathPublishesItsCausalAdmissionBeforeTheRemovalGateSnapshot() throws Exception {
         lethalDamage(true, false, false, true);
     }
 
-    @Test void inlineBetterTotemDeathPublishesItsCausalAdmissionBeforeTheRemovalGateSnapshot() throws Exception {
+    @Test
+    void inlineBetterTotemDeathPublishesItsCausalAdmissionBeforeTheRemovalGateSnapshot() throws Exception {
         lethalDamage(false, true, false, true);
     }
 
-    @Test void inlineCombinedParrotsAndBetterTotemDoNotRetainTheirOwnRemovalGateWaiters() throws Exception {
+    @Test
+    void inlineCombinedParrotsAndBetterTotemDoNotRetainTheirOwnRemovalGateWaiters() throws Exception {
         lethalDamage(true, true, false, true);
     }
 
-    @Test void typedPostDamageTailRecognizesItsSelfVictimDeathAndWaitsItsActualSuffixChild() throws Exception {
+    @Test
+    void typedPostDamageTailRecognizesItsSelfVictimDeathAndWaitsItsActualSuffixChild() throws Exception {
         lethalDamage(false, false, false, false, true);
     }
 
@@ -184,7 +194,7 @@ class OrgSafeAfkRemovalCausalityTest {
     }
 
     private static void lethalDamage(boolean parrots, boolean betterTotem, boolean nativeCommand, boolean inlineDeath,
-                                      boolean typedTail) throws Exception {
+                                     boolean typedTail) throws Exception {
         var fixture = new Fixture();
         var physicalDeath = inlineDeath ? CompletableFuture.<Void>completedFuture(null) : new CompletableFuture<Void>();
         var independent = new CompletableFuture<Void>();
@@ -200,7 +210,10 @@ class OrgSafeAfkRemovalCausalityTest {
             manager.when(() -> OrgPlayerManager.safeThreshold(fixture.bot)).thenReturn(-1F);
             deaths.when(() -> ScarpetNativeDeaths.shakeOff(fixture.bot)).thenReturn(CompletableFuture.completedFuture(null));
             deaths.when(() -> ScarpetNativeDeaths.defer(eq(fixture.bot), eq(fixture.source), any(Runnable.class)))
-                    .thenAnswer(call -> { ScarpetNativeWork.record(physicalDeath); return true; });
+                    .thenAnswer(call -> {
+                        ScarpetNativeWork.record(physicalDeath);
+                        return true;
+                    });
             deaths.when(() -> ScarpetNativeDeaths.afterDeath(eq(fixture.bot), any(Runnable.class), any(java.util.function.BooleanSupplier.class)))
                     .thenCallRealMethod();
             ScarpetPlayerInventoryGate.trackAccepted(fixture.bot, independent);
@@ -232,7 +245,10 @@ class OrgSafeAfkRemovalCausalityTest {
             Supplier<Boolean> damageEntry = () -> OrgSafeAfk.withDamageOuter(fixture.bot, fixture.source, 12F, () -> betterTotem
                     ? OrgShadowDamageContinuations.hurt(fixture.bot, withParrots) : withParrots.get());
             if (nativeCommand) {
-                doAnswer(call -> { assertFalse(damageEntry.get()); return null; }).when(fixture.bot).kill(fixture.world);
+                doAnswer(call -> {
+                    assertFalse(damageEntry.get());
+                    return null;
+                }).when(fixture.bot).kill(fixture.world);
                 assertEquals(1, CarpetKillCommand.execute(fixture.command, List.of(fixture.bot)));
                 assertFalse(commandScope.resultFuture(fixture.command).isDone());
             } else assertFalse(damageEntry.get());
@@ -271,7 +287,8 @@ class OrgSafeAfkRemovalCausalityTest {
         }
     }
 
-    @Test void typedPostDamageRemovalRecognizesItsOwnSuffixObserverBeforeTakingTheInventorySnapshot() throws Exception {
+    @Test
+    void typedPostDamageRemovalRecognizesItsOwnSuffixObserverBeforeTakingTheInventorySnapshot() throws Exception {
         var fixture = new Fixture();
         var physicalDamage = new CompletableFuture<Void>();
         var independent = new CompletableFuture<Void>();
@@ -298,7 +315,8 @@ class OrgSafeAfkRemovalCausalityTest {
         }
     }
 
-    @Test void realNonlethalSafeAfkRemovalRecognizesItsPostDamageWaiterAndRetainsTheCleanupTail() throws Exception {
+    @Test
+    void realNonlethalSafeAfkRemovalRecognizesItsPostDamageWaiterAndRetainsTheCleanupTail() throws Exception {
         var fixture = new Fixture();
         when(fixture.bot.getHealth()).thenReturn(4F);
         var physicalDamage = new CompletableFuture<Void>();

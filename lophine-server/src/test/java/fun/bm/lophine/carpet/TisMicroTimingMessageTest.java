@@ -1,22 +1,25 @@
 package fun.bm.lophine.carpet;
 
-import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.DyeColor;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TisMicroTimingMessageTest {
     private static TisMicroTiming.Event event(String name) {
         return new TisMicroTiming.Event("minecraft:overworld", BlockPos.ZERO, "minecraft:stone", name, "data", DyeColor.RED,
-            new TisMicroTiming.Phase("tile_tick", "block #1"), null, "");
+                new TisMicroTiming.Phase("tile_tick", "block #1"), null, "");
     }
 
     @Test
     void emitsOnlyUsefulProceduresAndPreservesNestedOrderAndClosingResults() {
         var root = new TisMicroTiming.Node(null, event("emit_block_update"), false, true);
-        root.closed = true; root.result = "true";
+        root.closed = true;
+        root.result = "true";
         var child = new TisMicroTiming.Node(root, event("block_state_change"), true, false);
         root.children.add(child);
         var dead = new TisMicroTiming.Node(null, event("unused_emission"), false, true);
@@ -49,7 +52,8 @@ class TisMicroTimingMessageTest {
         var cursor = root;
         for (int i = 0; i < 20000; ++i) {
             var child = new TisMicroTiming.Node(cursor, event("child"), true, true);
-            cursor.children.add(child); cursor = child;
+            cursor.children.add(child);
+            cursor = child;
         }
         var lines = TisMicroTiming.flatten(List.of(root));
         assertEquals(20001, lines.size());

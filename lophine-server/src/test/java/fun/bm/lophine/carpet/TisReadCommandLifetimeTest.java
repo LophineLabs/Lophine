@@ -1,17 +1,10 @@
 package fun.bm.lophine.carpet;
 
-import carpet.script.external.ScarpetNativeWork;
 import ca.spottedleaf.moonrise.common.util.TickThread;
+import carpet.script.external.ScarpetNativeWork;
 import com.mojang.brigadier.context.CommandContext;
 import io.papermc.paper.threadedregions.RegionizedServer;
 import io.papermc.paper.threadedregions.RegionizedTaskQueue;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
@@ -30,11 +23,20 @@ import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class TisReadCommandLifetimeTest {
-    @BeforeAll static void bootstrap() {
+    @BeforeAll
+    static void bootstrap() {
         net.minecraft.SharedConstants.tryDetectVersion();
         net.minecraft.server.Bootstrap.bootStrap();
     }
@@ -82,8 +84,11 @@ class TisReadCommandLifetimeTest {
                         var actual = new CompletableFuture<Object>();
                         Function<?, ?> body = call.getArgument(5);
                         queued.add(() -> {
-                            try { actual.complete(body.apply(null)); }
-                            catch (Throwable failure) { actual.completeExceptionally(failure); }
+                            try {
+                                actual.complete(body.apply(null));
+                            } catch (Throwable failure) {
+                                actual.completeExceptionally(failure);
+                            }
                         });
                         return actual;
                     });
@@ -97,7 +102,10 @@ class TisReadCommandLifetimeTest {
             field.setAccessible(true);
             field.set(regionized, queue);
             when(queue.queueTickTaskQueue(eq(world), anyInt(), anyInt(), any(Runnable.class)))
-                    .thenAnswer(call -> { queued.add(call.getArgument(3)); return null; });
+                    .thenAnswer(call -> {
+                        queued.add(call.getArgument(3));
+                        return null;
+                    });
             var regions = mockStatic(RegionizedServer.class);
             regions.when(RegionizedServer::getInstance).thenReturn(regionized);
             return regions;
@@ -126,8 +134,11 @@ class TisReadCommandLifetimeTest {
     private static Object invoke(Class<?> type, String name, Class<?>[] signature, Object... arguments) throws Exception {
         var method = type.getDeclaredMethod(name, signature);
         method.setAccessible(true);
-        try { return method.invoke(null, arguments); }
-        catch (InvocationTargetException failure) { throw (Exception) failure.getCause(); }
+        try {
+            return method.invoke(null, arguments);
+        } catch (InvocationTargetException failure) {
+            throw (Exception) failure.getCause();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -146,7 +157,8 @@ class TisReadCommandLifetimeTest {
         return positions;
     }
 
-    @Test void raycastResultWaitsForDelayedOwnerReadItsNativeChildrenAndReplyChildren() throws Exception {
+    @Test
+    void raycastResultWaitsForDelayedOwnerReadItsNativeChildrenAndReplyChildren() throws Exception {
         var fixture = new Fixture();
         var readChild = new CompletableFuture<Void>();
         fixture.feedbackChild = new CompletableFuture<>();
@@ -175,7 +187,8 @@ class TisReadCommandLifetimeTest {
         }
     }
 
-    @Test void raidListCancellationDoesNotSkipDelayedReadsOrReplyChildren() throws Exception {
+    @Test
+    void raidListCancellationDoesNotSkipDelayedReadsOrReplyChildren() throws Exception {
         var fixture = new Fixture();
         var readChild = new CompletableFuture<Void>();
         fixture.feedbackChild = new CompletableFuture<>();
@@ -198,7 +211,8 @@ class TisReadCommandLifetimeTest {
         }
     }
 
-    @Test void shutdownRejectsAQueuedRaycastBeforeReadingTheWorldAndCompletesFailure() throws Exception {
+    @Test
+    void shutdownRejectsAQueuedRaycastBeforeReadingTheWorldAndCompletesFailure() throws Exception {
         var fixture = new Fixture();
         var context = context(fixture);
         try (var ticks = fixture.ticks(); var leases = fixture.delayedLease(); var positions = positions(context);
@@ -214,7 +228,8 @@ class TisReadCommandLifetimeTest {
         }
     }
 
-    @Test void shutdownRejectsAQueuedRaidSnapshotAndCompletesFailure() throws Exception {
+    @Test
+    void shutdownRejectsAQueuedRaidSnapshotAndCompletesFailure() throws Exception {
         var fixture = new Fixture();
         var raid = fixture.raid(null);
         try (var ticks = fixture.ticks(); var regions = fixture.delayedRaidQueue(); var scope = CarpetAsyncCommandResults.open()) {
@@ -228,7 +243,8 @@ class TisReadCommandLifetimeTest {
         }
     }
 
-    @Test void continuouslyMovingRaidTerminatesItsOwnerRetriesAndReportsFailure() throws Exception {
+    @Test
+    void continuouslyMovingRaidTerminatesItsOwnerRetriesAndReportsFailure() throws Exception {
         var fixture = new Fixture();
         var raid = fixture.raid(null);
         try (var ticks = fixture.ticks(); var regions = fixture.delayedRaidQueue(); var scope = CarpetAsyncCommandResults.open()) {

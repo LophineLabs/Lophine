@@ -5,9 +5,6 @@ import carpet.script.external.ScarpetRuntime;
 import carpet.script.utils.WorldTools;
 import carpet.script.value.BlockValue;
 import carpet.script.value.Value;
-import java.nio.file.Path;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
@@ -16,26 +13,49 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class ScarpetWorldOwnerFunctionsTest {
-    @BeforeAll static void bootstrap() {
+    @BeforeAll
+    static void bootstrap() {
         net.minecraft.SharedConstants.tryDetectVersion();
         net.minecraft.server.Bootstrap.bootStrap();
     }
 
     private static final class Host extends ScriptHost {
-        Host() { super(null, new ScriptServer() {
-            @Override public Path resolveResource(String name) { return Path.of(name); }
-        }, false, null, Expression.LoadOverride.DEFAULT); }
-        @Override protected Module getModuleOrLibraryByName(String name) { return null; }
-        @Override protected void runModuleCode(Context context, Module module) { }
-        @Override protected ScriptHost duplicate() { return new Host(); }
+        Host() {
+            super(null, new ScriptServer() {
+                @Override
+                public Path resolveResource(String name) {
+                    return Path.of(name);
+                }
+            }, false, null, Expression.LoadOverride.DEFAULT);
+        }
+
+        @Override
+        protected Module getModuleOrLibraryByName(String name) {
+            return null;
+        }
+
+        @Override
+        protected void runModuleCode(Context context, Module module) {
+        }
+
+        @Override
+        protected ScriptHost duplicate() {
+            return new Host();
+        }
     }
 
-    @Test void realSetFunctionMutatesOnlyInsideItsBlockActorWithoutCallingTheRemovedMainThreadApi() {
-        for (boolean succeeds : new boolean[] {false, true}) {
+    @Test
+    void realSetFunctionMutatesOnlyInsideItsBlockActorWithoutCallingTheRemovedMainThreadApi() {
+        for (boolean succeeds : new boolean[]{false, true}) {
             var server = mock(MinecraftServer.class);
             var world = mock(ServerLevel.class);
             var source = mock(CommandSourceStack.class);
@@ -61,8 +81,11 @@ public class ScarpetWorldOwnerFunctionsTest {
                 actors.when(() -> ScarpetRuntime.atBlock(eq(world), eq(position), any(Supplier.class)))
                         .thenAnswer(call -> {
                             owning.set(true);
-                            try { return ((Supplier<?>) call.getArgument(2)).get(); }
-                            finally { owning.set(false); }
+                            try {
+                                return ((Supplier<?>) call.getArgument(2)).get();
+                            } finally {
+                                owning.set(false);
+                            }
                         });
                 Value result = expression.executeAndEvaluate(context, true, Expression.LoadOverride.DEFAULT, null).getLeft();
                 assertEquals(succeeds, result.getBoolean());
@@ -76,7 +99,8 @@ public class ScarpetWorldOwnerFunctionsTest {
         }
     }
 
-    @Test void realReloadChunkFunctionRefreshesOnItsDestinationActorWithoutTheMainThreadApi() {
+    @Test
+    void realReloadChunkFunctionRefreshesOnItsDestinationActorWithoutTheMainThreadApi() {
         var server = mock(MinecraftServer.class);
         var world = mock(ServerLevel.class);
         var source = mock(CommandSourceStack.class);
@@ -95,11 +119,17 @@ public class ScarpetWorldOwnerFunctionsTest {
             actors.when(() -> ScarpetRuntime.atBlock(eq(world), eq(position), any(Supplier.class)))
                     .thenAnswer(call -> {
                         owning.set(true);
-                        try { return ((Supplier<?>) call.getArgument(2)).get(); }
-                        finally { owning.set(false); }
+                        try {
+                            return ((Supplier<?>) call.getArgument(2)).get();
+                        } finally {
+                            owning.set(false);
+                        }
                     });
             chunks.when(() -> WorldTools.forceChunkUpdate(position, world))
-                    .thenAnswer(call -> { assertTrue(owning.get()); return null; });
+                    .thenAnswer(call -> {
+                        assertTrue(owning.get());
+                        return null;
+                    });
             assertTrue(expression.executeAndEvaluate(context, true, Expression.LoadOverride.DEFAULT, null).getLeft().getBoolean());
             chunks.verify(() -> WorldTools.forceChunkUpdate(position, world));
             verify(server, never()).executeBlocking(any(Runnable.class));

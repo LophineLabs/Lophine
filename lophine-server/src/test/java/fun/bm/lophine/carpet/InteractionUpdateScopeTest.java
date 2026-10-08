@@ -1,11 +1,10 @@
 package fun.bm.lophine.carpet;
 
-import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.concurrent.CompletableFuture;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class InteractionUpdateScopeTest {
     @Test

@@ -93,7 +93,8 @@ public final class OrgSafeAfk {
                     carpet.script.external.ScarpetNativeWork.trackNative(player.level().getServer(), checked);
                     // A fatal body may already have completed physical logout. Its
                     // checked receipt stays in NativeWork, without reopening the live inventory gate.
-                    if (!player.isRemoved()) carpet.script.external.ScarpetPlayerInventoryGate.trackAccepted(player, checked);
+                    if (!player.isRemoved())
+                        carpet.script.external.ScarpetPlayerInventoryGate.trackAccepted(player, checked);
                     var delivered = new java.util.concurrent.atomic.AtomicBoolean();
                     java.util.function.Consumer<Boolean> deliver = retired -> {
                         if (!delivered.compareAndSet(false, true)) return;

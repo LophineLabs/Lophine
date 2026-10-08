@@ -1,12 +1,14 @@
 package fun.bm.lophine.carpet;
 
-import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class TisLifetimeAggregationTest {
     @Test
@@ -23,7 +25,11 @@ class TisLifetimeAggregationTest {
                 int owner = region;
                 jobs.add(pool.submit(() -> {
                     ready.countDown();
-                    try { begin.await(); } catch (InterruptedException failure) { throw new AssertionError(failure); }
+                    try {
+                        begin.await();
+                    } catch (InterruptedException failure) {
+                        throw new AssertionError(failure);
+                    }
                     for (int i = 0; i < perRegion; ++i) {
                         stats.spawn(reason, 7);
                         stats.remove(reason, 5, new TisLifetimeTracker.Point(owner + 1, "minecraft:overworld", Vec3.ZERO, new Vec3(owner, 0, 0)));

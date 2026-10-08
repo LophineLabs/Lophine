@@ -1,7 +1,12 @@
 package fun.bm.lophine.carpet;
 
-import java.util.ArrayList;
+import io.papermc.paper.threadedregions.RegionizedServer;
+import net.minecraft.server.MinecraftServer;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -10,10 +15,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import io.papermc.paper.threadedregions.RegionizedServer;
-import net.minecraft.server.MinecraftServer;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -32,7 +33,10 @@ class CarpetResourceReloadGateTest {
             var server = mock(MinecraftServer.class);
             var tasks = new ArrayDeque<Runnable>();
             globals.when(RegionizedServer::getInstance).thenReturn(scheduler);
-            doAnswer(call -> { tasks.addLast(call.getArgument(0)); return null; }).when(scheduler).addTask(any());
+            doAnswer(call -> {
+                tasks.addLast(call.getArgument(0));
+                return null;
+            }).when(scheduler).addTask(any());
             when(server.getAllLevels()).thenReturn(List.of());
             var applied = new AtomicInteger();
             assertTrue(CarpetResourceReloadCoordinator.tryEnterRegion());
@@ -46,7 +50,9 @@ class CarpetResourceReloadGateTest {
                 assertEquals(0, applied.get());
                 assertTrue(CarpetResourceReloadCoordinator.tryEnterRegion());
                 CarpetResourceReloadCoordinator.exitRegion();
-            } finally { CarpetResourceReloadCoordinator.exitRegion(); }
+            } finally {
+                CarpetResourceReloadCoordinator.exitRegion();
+            }
             var next = CarpetResourceReloadCoordinator.exclusive(server, applied::incrementAndGet);
             while (!tasks.isEmpty()) tasks.removeFirst().run();
             assertEquals(1, next.join());
@@ -61,7 +67,10 @@ class CarpetResourceReloadGateTest {
             var server = mock(MinecraftServer.class);
             var tasks = new ArrayDeque<Runnable>();
             globals.when(RegionizedServer::getInstance).thenReturn(scheduler);
-            doAnswer(call -> { tasks.addLast(call.getArgument(0)); return null; }).when(scheduler).addTask(any());
+            doAnswer(call -> {
+                tasks.addLast(call.getArgument(0));
+                return null;
+            }).when(scheduler).addTask(any());
             when(server.getAllLevels()).thenReturn(List.of());
             var applied = new AtomicInteger();
             var result = CarpetResourceReloadCoordinator.exclusive(server, applied::incrementAndGet);
@@ -81,7 +90,10 @@ class CarpetResourceReloadGateTest {
             var server = mock(MinecraftServer.class);
             var tasks = new ArrayDeque<Runnable>();
             globals.when(RegionizedServer::getInstance).thenReturn(scheduler);
-            doAnswer(call -> { tasks.addLast(call.getArgument(0)); return null; }).when(scheduler).addTask(any());
+            doAnswer(call -> {
+                tasks.addLast(call.getArgument(0));
+                return null;
+            }).when(scheduler).addTask(any());
             when(server.getAllLevels()).thenReturn(List.of());
             var view = new AtomicReference<CompletableFuture<Integer>>();
             view.set(CarpetResourceReloadCoordinator.exclusive(server, () -> {
@@ -120,24 +132,25 @@ class CarpetResourceReloadGateTest {
         var ready = new CountDownLatch(8);
         try (var pool = Executors.newFixedThreadPool(8)) {
             var jobs = new ArrayList<java.util.concurrent.Future<?>>();
-            for (int i = 0; i < 8; i++) jobs.add(pool.submit(() -> {
-                ready.countDown();
-                while (!stop.get()) {
-                    if (!gate.enter()) {
-                        Thread.onSpinWait();
-                        continue;
+            for (int i = 0; i < 8; i++)
+                jobs.add(pool.submit(() -> {
+                    ready.countDown();
+                    while (!stop.get()) {
+                        if (!gate.enter()) {
+                            Thread.onSpinWait();
+                            continue;
+                        }
+                        executing.incrementAndGet();
+                        try {
+                            assertFalse(applying.get(), "Resource apply overlaps an accepted region owner");
+                            Thread.yield();
+                            assertFalse(applying.get(), "Resource apply begins before owner exit");
+                        } finally {
+                            executing.decrementAndGet();
+                            gate.exit();
+                        }
                     }
-                    executing.incrementAndGet();
-                    try {
-                        assertFalse(applying.get(), "Resource apply overlaps an accepted region owner");
-                        Thread.yield();
-                        assertFalse(applying.get(), "Resource apply begins before owner exit");
-                    } finally {
-                        executing.decrementAndGet();
-                        gate.exit();
-                    }
-                }
-            }));
+                }));
             assertTrue(ready.await(5, TimeUnit.SECONDS));
             try {
                 for (int i = 0; i < 1000; i++) {
@@ -186,13 +199,18 @@ class CarpetResourceReloadGateTest {
         var leave = new CountDownLatch(1);
         try (var pool = Executors.newFixedThreadPool(8)) {
             var jobs = new ArrayList<java.util.concurrent.Future<?>>();
-            for (int i = 0; i < 8; ++i) jobs.add(pool.submit(() -> {
-                assertTrue(gate.enter());
-                entered.countDown();
-                try { assertTrue(leave.await(5, TimeUnit.SECONDS)); }
-                catch (InterruptedException interrupted) { throw new AssertionError(interrupted); }
-                finally { gate.exit(); }
-            }));
+            for (int i = 0; i < 8; ++i)
+                jobs.add(pool.submit(() -> {
+                    assertTrue(gate.enter());
+                    entered.countDown();
+                    try {
+                        assertTrue(leave.await(5, TimeUnit.SECONDS));
+                    } catch (InterruptedException interrupted) {
+                        throw new AssertionError(interrupted);
+                    } finally {
+                        gate.exit();
+                    }
+                }));
             assertTrue(entered.await(5, TimeUnit.SECONDS));
             var acknowledgement = gate.pause();
             for (int i = 0; i < 10000; ++i) assertFalse(gate.enter());
@@ -203,7 +221,10 @@ class CarpetResourceReloadGateTest {
             gate.resume();
             assertTrue(gate.enter());
             gate.exit();
-        } finally { leave.countDown(); gate.resume(); }
+        } finally {
+            leave.countDown();
+            gate.resume();
+        }
     }
 
     @Test

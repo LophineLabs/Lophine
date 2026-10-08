@@ -1,13 +1,17 @@
 package fun.bm.lophine.carpet;
 
-import java.util.function.Function;
 import net.minecraft.server.level.ServerLevel;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-/** Retains existing scheduler answers when a native actor switches to the owned-phase lease entry. */
+import java.util.function.Function;
+
+/**
+ * Retains existing scheduler answers when a native actor switches to the owned-phase lease entry.
+ */
 public final class CarpetOwnedPhaseFixture {
-    private CarpetOwnedPhaseFixture() {}
+    private CarpetOwnedPhaseFixture() {
+    }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static MockedStatic<CarpetRegionLease> open() {

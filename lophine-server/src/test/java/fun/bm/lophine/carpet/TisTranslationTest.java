@@ -2,7 +2,6 @@ package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +19,10 @@ class TisTranslationTest {
             assertEquals("zh_cn", TisTranslations.targetLanguage("en_us"));
             GeneralCompatConfig.language = "none";
             assertEquals("en_us", TisTranslations.targetLanguage("zh_cn"));
-        } finally { GeneralCompatConfig.ultraSecretSetting = ultra; GeneralCompatConfig.language = language; }
+        } finally {
+            GeneralCompatConfig.ultraSecretSetting = ultra;
+            GeneralCompatConfig.language = language;
+        }
     }
 
     @Test
@@ -28,8 +30,8 @@ class TisTranslationTest {
         var hover = TisTranslations.text("command.refresh.inventory.done");
         var argument = TisTranslations.text("tracker.raid.name").withStyle(ChatFormatting.RED);
         var root = TisTranslations.text("tracker.tracker_name_full", argument)
-            .withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(hover)))
-            .append(TisTranslations.text("command.raid.status"));
+                .withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(hover)))
+                .append(TisTranslations.text("command.raid.status"));
         var translated = TisTranslations.translateText(root, "zh_cn");
         assertFalse(translated.getString().contains("carpettisaddition"));
         assertNotEquals(TisTranslations.translateText(root, "en_us").getString(), translated.getString());

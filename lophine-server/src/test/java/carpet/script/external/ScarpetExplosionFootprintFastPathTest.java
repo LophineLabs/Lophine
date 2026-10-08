@@ -2,10 +2,6 @@ package carpet.script.external;
 
 import ca.spottedleaf.moonrise.common.util.TickThread;
 import fun.bm.lophine.carpet.CarpetRegionLease;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -22,16 +18,23 @@ import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class ScarpetExplosionFootprintFastPathTest {
-    @BeforeAll static void bootstrap() {
+    @BeforeAll
+    static void bootstrap() {
         net.minecraft.SharedConstants.tryDetectVersion();
         net.minecraft.server.Bootstrap.bootStrap();
     }
 
-    @Test void distantAttributionRemainsMetadataAndDoesNotLoadTheRectangleBetweenTheShooterAndBlast() {
+    @Test
+    void distantAttributionRemainsMetadataAndDoesNotLoadTheRectangleBetweenTheShooterAndBlast() {
         var world = mock(ServerLevel.class);
         var remote = mock(Entity.class);
         var explosion = mock(ServerExplosion.class);
@@ -62,7 +65,8 @@ public class ScarpetExplosionFootprintFastPathTest {
         }
     }
 
-    @Test void currentOwnerPacketDeliveryDoesNotWaitForTheGlobalSchedulerAndStillKeepsItsNativeChild() throws Exception {
+    @Test
+    void currentOwnerPacketDeliveryDoesNotWaitForTheGlobalSchedulerAndStillKeepsItsNativeChild() throws Exception {
         var server = mock(MinecraftServer.class);
         var world = mock(ServerLevel.class);
         var players = mock(PlayerList.class);
@@ -76,7 +80,10 @@ public class ScarpetExplosionFootprintFastPathTest {
         when(recipient.distanceToSqr(Vec3.ZERO)).thenReturn(1D);
         recipient.connection = mock(ServerGamePacketListenerImpl.class);
         var child = new CompletableFuture<Void>();
-        doAnswer(call -> { ScarpetNativeWork.record(child); return null; }).when(recipient.connection).send(any(net.minecraft.network.protocol.Packet.class));
+        doAnswer(call -> {
+            ScarpetNativeWork.record(child);
+            return null;
+        }).when(recipient.connection).send(any(net.minecraft.network.protocol.Packet.class));
         var explosion = mock(ServerExplosion.class);
         when(explosion.level()).thenReturn(world);
         when(explosion.center()).thenReturn(Vec3.ZERO);
@@ -106,7 +113,8 @@ public class ScarpetExplosionFootprintFastPathTest {
         }
     }
 
-    @Test void ordinaryLoadedOwnedNativeFactoryAndCoreSendTheActualPacketInTheSameCallWithoutTicketsOrGlobalTasks() throws Exception {
+    @Test
+    void ordinaryLoadedOwnedNativeFactoryAndCoreSendTheActualPacketInTheSameCallWithoutTicketsOrGlobalTasks() throws Exception {
         var fixture = new CoreFixture();
         var recipient = mock(ServerPlayer.class);
         when(recipient.level()).thenReturn(fixture.world);
@@ -133,7 +141,8 @@ public class ScarpetExplosionFootprintFastPathTest {
         }
     }
 
-    @Test void anUnloadedOrdinaryCoreKeepsTheTicketBackedFallbackAndDoesNotStartEffectsBeforeAdmission() throws Exception {
+    @Test
+    void anUnloadedOrdinaryCoreKeepsTheTicketBackedFallbackAndDoesNotStartEffectsBeforeAdmission() throws Exception {
         var fixture = new CoreFixture();
         doReturn(null).when(fixture.world).getChunkIfLoaded(anyInt(), anyInt());
         var pending = new CompletableFuture<CompletableFuture<Integer>>();
@@ -154,7 +163,8 @@ public class ScarpetExplosionFootprintFastPathTest {
         }
     }
 
-    @Test void nativeCoreAdmissionDoesNotLoadOrOwnTheSeparateSixtyFourBlockPacketFootprint() throws Exception {
+    @Test
+    void nativeCoreAdmissionDoesNotLoadOrOwnTheSeparateSixtyFourBlockPacketFootprint() throws Exception {
         var fixture = new CoreFixture();
         try (var ticks = mockStatic(TickThread.class)) {
             ticks.when(() -> TickThread.isTickThreadFor(eq(fixture.world), anyInt(), anyInt())).thenAnswer(call -> {
@@ -170,7 +180,8 @@ public class ScarpetExplosionFootprintFastPathTest {
         }
     }
 
-    @Test void aForeignNativeSourceRejectsInlineAdmissionBeforeItsMutableFieldsAreRead() throws Exception {
+    @Test
+    void aForeignNativeSourceRejectsInlineAdmissionBeforeItsMutableFieldsAreRead() throws Exception {
         var fixture = new CoreFixture();
         var source = mock(Entity.class);
         try (var ticks = mockStatic(TickThread.class)) {
@@ -183,7 +194,8 @@ public class ScarpetExplosionFootprintFastPathTest {
         }
     }
 
-    @Test void anUnexpectedCommittedChildWaitsBeforeActualPacketsAndKeepsTheInitiatingNativeFlags() throws Exception {
+    @Test
+    void anUnexpectedCommittedChildWaitsBeforeActualPacketsAndKeepsTheInitiatingNativeFlags() throws Exception {
         var fixture = new CoreFixture();
         var recipient = mock(ServerPlayer.class);
         when(recipient.level()).thenReturn(fixture.world);
@@ -193,9 +205,15 @@ public class ScarpetExplosionFootprintFastPathTest {
         field.setAccessible(true);
         field.set(fixture.players, new java.util.concurrent.CopyOnWriteArrayList<>(List.of(recipient)));
         var child = new CompletableFuture<Void>();
-        doAnswer(call -> { ScarpetNativeWork.record(child); return null; }).when(fixture.world)
+        doAnswer(call -> {
+            ScarpetNativeWork.record(child);
+            return null;
+        }).when(fixture.world)
                 .gameEvent(isNull(), eq(net.minecraft.world.level.gameevent.GameEvent.EXPLODE), any(Vec3.class));
-        doAnswer(call -> { assertTrue(ScarpetRuntime.FILL_SKIP_UPDATES.get()); return null; }).when(recipient.connection)
+        doAnswer(call -> {
+            assertTrue(ScarpetRuntime.FILL_SKIP_UPDATES.get());
+            return null;
+        }).when(recipient.connection)
                 .send(any(net.minecraft.network.protocol.Packet.class));
         boolean previous = ScarpetRuntime.FILL_SKIP_UPDATES.get();
         try (var ticks = mockStatic(TickThread.class);
@@ -227,7 +245,8 @@ public class ScarpetExplosionFootprintFastPathTest {
         }
     }
 
-    @Test void aGenuineFastCoreFailureClearsLiveCachesAndDoesNotRetryOrSendAPacket() throws Exception {
+    @Test
+    void aGenuineFastCoreFailureClearsLiveCachesAndDoesNotRetryOrSendAPacket() throws Exception {
         var fixture = new CoreFixture();
         var failed = new IllegalStateException("actual native game event failed");
         doThrow(failed).when(fixture.world).gameEvent(isNull(), eq(net.minecraft.world.level.gameevent.GameEvent.EXPLODE), any(Vec3.class));
@@ -254,7 +273,8 @@ public class ScarpetExplosionFootprintFastPathTest {
         }
     }
 
-    @Test void anAcceptedBlockPhaseKeepsItsActualNativeChildAndLeaseUntilTheMutationReallyFinishes() {
+    @Test
+    void anAcceptedBlockPhaseKeepsItsActualNativeChildAndLeaseUntilTheMutationReallyFinishes() {
         var server = mock(MinecraftServer.class);
         var world = mock(ServerLevel.class);
         var explosion = mock(ServerExplosion.class);
@@ -300,6 +320,7 @@ public class ScarpetExplosionFootprintFastPathTest {
         final ServerLevel world = mock(ServerLevel.class, CALLS_REAL_METHODS);
         final PlayerList players = mock(PlayerList.class);
         final DamageSource damage = mock(DamageSource.class);
+
         CoreFixture() throws Exception {
             var serverField = ServerLevel.class.getDeclaredField("server");
             serverField.setAccessible(true);
@@ -316,6 +337,7 @@ public class ScarpetExplosionFootprintFastPathTest {
             list.setAccessible(true);
             list.set(players, new java.util.concurrent.CopyOnWriteArrayList<ServerPlayer>());
         }
+
         void owned(org.mockito.MockedStatic<TickThread> ticks) {
             ticks.when(() -> TickThread.isTickThreadFor(eq(world), anyInt(), anyInt())).thenReturn(true);
             ticks.when(() -> TickThread.isTickThreadFor(eq(world), any(BlockPos.class))).thenReturn(true);

@@ -1,9 +1,5 @@
 package fun.bm.lophine.carpet;
 
-import static org.junit.jupiter.api.Assertions.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -11,25 +7,39 @@ import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 class OrgInventoryEscrowTest {
-    @BeforeAll static void bootstrap() {
+    @BeforeAll
+    static void bootstrap() {
         net.minecraft.SharedConstants.tryDetectVersion();
         net.minecraft.server.Bootstrap.bootStrap();
         // These unit fixtures run without production data-pack component loading.
         for (var item : List.of(Items.COBBLESTONE, Items.DIAMOND, Items.GOLD_INGOT, Items.EMERALD, Items.STONE, Items.DIAMOND_SWORD)) {
-            try { item.builtInRegistryHolder().components(); }
-            catch (NullPointerException unbound) { item.builtInRegistryHolder().bindComponents(net.minecraft.core.component.DataComponentMap.builder().set(DataComponents.MAX_STACK_SIZE, item == Items.DIAMOND_SWORD ? 1 : 64).build()); }
+            try {
+                item.builtInRegistryHolder().components();
+            } catch (NullPointerException unbound) {
+                item.builtInRegistryHolder().bindComponents(net.minecraft.core.component.DataComponentMap.builder().set(DataComponents.MAX_STACK_SIZE, item == Items.DIAMOND_SWORD ? 1 : 64).build());
+            }
         }
     }
 
-    private static List<ItemStack> empty() { return new ArrayList<>(Collections.nCopies(44, ItemStack.EMPTY)); }
+    private static List<ItemStack> empty() {
+        return new ArrayList<>(Collections.nCopies(44, ItemStack.EMPTY));
+    }
+
     private static List<ItemStack> full() {
         List<ItemStack> result = empty();
         for (int slot = 0; slot < 36; slot++) result.set(slot, new ItemStack(Items.COBBLESTONE, 64));
         return result;
     }
 
-    @Test void refundPreservesSubsequentEquipmentAndCursorWritesWhenInventoryIsFull() {
+    @Test
+    void refundPreservesSubsequentEquipmentAndCursorWritesWhenInventoryIsFull() {
         List<ItemStack> before = empty(), wanted = empty(), current = full();
         before.set(39, new ItemStack(Items.DIAMOND, 7));
         current.set(39, new ItemStack(Items.GOLD_INGOT, 3));
@@ -41,7 +51,8 @@ class OrgInventoryEscrowTest {
         assertEquals(7, before.get(39).getCount());
     }
 
-    @Test void creditFindsCurrentCapacityWithoutOverwritingAChangedCursor() {
+    @Test
+    void creditFindsCurrentCapacityWithoutOverwritingAChangedCursor() {
         List<ItemStack> before = empty(), wanted = empty(), current = empty();
         before.set(0, new ItemStack(Items.DIAMOND, 7));
         wanted.set(43, new ItemStack(Items.EMERALD, 4));
@@ -56,7 +67,8 @@ class OrgInventoryEscrowTest {
         assertTrue(current.get(1).isEmpty());
     }
 
-    @Test void partialDeliveryRetainsExactRemainderAndRespectsLaterConsumption() {
+    @Test
+    void partialDeliveryRetainsExactRemainderAndRespectsLaterConsumption() {
         List<ItemStack> current = full();
         current.set(5, new ItemStack(Items.EMERALD, 62));
         List<ItemStack> pending = new ArrayList<>(List.of(new ItemStack(Items.EMERALD, 9)));
@@ -69,7 +81,8 @@ class OrgInventoryEscrowTest {
         assertTrue(pending.isEmpty());
     }
 
-    @Test void aDifferentComponentSetCannotBeMergedOrReplaced() {
+    @Test
+    void aDifferentComponentSetCannotBeMergedOrReplaced() {
         List<ItemStack> current = full();
         ItemStack occupied = new ItemStack(Items.DIAMOND, 63), incoming = new ItemStack(Items.DIAMOND, 1);
         occupied.set(DataComponents.CUSTOM_NAME, Component.literal("new legitimate stack"));
@@ -82,7 +95,8 @@ class OrgInventoryEscrowTest {
         assertNotEquals(current.getFirst().get(DataComponents.CUSTOM_NAME), pending.getFirst().get(DataComponents.CUSTOM_NAME));
     }
 
-    @Test void closedMenuCreditGoesToInventoryInsteadOfAnUnrelatedCursor() {
+    @Test
+    void closedMenuCreditGoesToInventoryInsteadOfAnUnrelatedCursor() {
         List<ItemStack> before = empty(), wanted = empty();
         wanted.set(43, new ItemStack(Items.DIAMOND, 7));
         var plan = OrgInventoryTransfers.credit(empty(), before, wanted, false, false);
@@ -91,7 +105,8 @@ class OrgInventoryEscrowTest {
         assertTrue(plan.remaining().isEmpty());
     }
 
-    @Test void enderCreditCanUseItsFinalSlot() {
+    @Test
+    void enderCreditCanUseItsFinalSlot() {
         List<ItemStack> current = new ArrayList<>();
         for (int slot = 0; slot < 26; slot++) current.add(new ItemStack(Items.COBBLESTONE, 64));
         current.add(ItemStack.EMPTY);
@@ -102,15 +117,19 @@ class OrgInventoryEscrowTest {
         assertTrue(credit.isEmpty());
     }
 
-    @Test void arbitraryBusinessWritesAndCapacityKeepEveryCreditedItemExactlyOnce() {
+    @Test
+    void arbitraryBusinessWritesAndCapacityKeepEveryCreditedItemExactlyOnce() {
         java.util.Random random = new java.util.Random(137L);
         List<ItemStack> kinds = List.of(new ItemStack(Items.DIAMOND), new ItemStack(Items.EMERALD), new ItemStack(Items.STONE), new ItemStack(Items.DIAMOND_SWORD));
         for (int iteration = 0; iteration < 256; iteration++) {
             List<ItemStack> current = empty(), before = empty(), desired = empty();
             for (int slot = 0; slot < 44; slot++) {
-                if (random.nextInt(4) != 0) current.set(slot, kinds.get(random.nextInt(kinds.size())).copyWithCount(1 + random.nextInt(64)));
-                if (random.nextBoolean()) before.set(slot, kinds.get(random.nextInt(kinds.size())).copyWithCount(1 + random.nextInt(64)));
-                if (random.nextBoolean()) desired.set(slot, kinds.get(random.nextInt(kinds.size())).copyWithCount(1 + random.nextInt(64)));
+                if (random.nextInt(4) != 0)
+                    current.set(slot, kinds.get(random.nextInt(kinds.size())).copyWithCount(1 + random.nextInt(64)));
+                if (random.nextBoolean())
+                    before.set(slot, kinds.get(random.nextInt(kinds.size())).copyWithCount(1 + random.nextInt(64)));
+                if (random.nextBoolean())
+                    desired.set(slot, kinds.get(random.nextInt(kinds.size())).copyWithCount(1 + random.nextInt(64)));
             }
             var plan = OrgInventoryTransfers.credit(current, before, desired, false, random.nextBoolean());
             for (ItemStack kind : kinds) {
@@ -129,14 +148,17 @@ class OrgInventoryEscrowTest {
         return stacks.stream().filter(stack -> !stack.isEmpty() && ItemStack.isSameItemSameComponents(stack, kind)).mapToLong(ItemStack::getCount).sum();
     }
 
-    @Test void previewDropCustodyIsCopiedAndScopeAlwaysEnds() {
+    @Test
+    void previewDropCustodyIsCopiedAndScopeAlwaysEnds() {
         ItemStack original = new ItemStack(Items.DIAMOND, 3);
         List<ItemStack> drops = OrgInventoryTransfers.preview(() -> assertTrue(OrgInventoryTransfers.captureDrop(original)));
         original.shrink(1);
         assertEquals(3, drops.getFirst().getCount());
         assertFalse(OrgInventoryTransfers.isPreview());
         assertFalse(OrgInventoryTransfers.captureDrop(original));
-        assertThrows(IllegalStateException.class, () -> OrgInventoryTransfers.preview(() -> { throw new IllegalStateException("preview failed"); }));
+        assertThrows(IllegalStateException.class, () -> OrgInventoryTransfers.preview(() -> {
+            throw new IllegalStateException("preview failed");
+        }));
         assertFalse(OrgInventoryTransfers.isPreview());
     }
 }

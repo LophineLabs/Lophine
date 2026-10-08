@@ -2,9 +2,6 @@ package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import io.papermc.paper.ServerBuildInfo;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 import net.minecraft.nbt.CompoundTag;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -12,10 +9,12 @@ import org.junit.jupiter.api.Test;
 import org.leavesmc.leaves.protocol.CarpetServerProtocol;
 import org.mockito.MockedStatic;
 
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class CarpetRuleProtocolTest {
     @BeforeAll

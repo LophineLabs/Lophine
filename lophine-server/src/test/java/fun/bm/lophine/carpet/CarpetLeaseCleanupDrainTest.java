@@ -1,16 +1,10 @@
 package fun.bm.lophine.carpet;
 
-import carpet.script.external.ScarpetNativeWork;
 import ca.spottedleaf.moonrise.common.util.TickThread;
 import ca.spottedleaf.moonrise.patches.chunk_system.scheduling.ChunkHolderManager;
 import ca.spottedleaf.moonrise.patches.chunk_system.scheduling.ChunkTaskScheduler;
+import carpet.script.external.ScarpetNativeWork;
 import io.papermc.paper.threadedregions.scheduler.RegionScheduler;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.TicketType;
@@ -20,11 +14,19 @@ import org.bukkit.craftbukkit.CraftWorld;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class CarpetLeaseCleanupDrainTest {
-    @BeforeAll static void bootstrap() {
+    @BeforeAll
+    static void bootstrap() {
         net.minecraft.SharedConstants.tryDetectVersion();
         net.minecraft.server.Bootstrap.bootStrap();
         // The acquisition worker must not perform this JVM-wide class initialization:
@@ -37,7 +39,8 @@ class CarpetLeaseCleanupDrainTest {
         }
     }
 
-    @Test void nativeShutdownWaitsTheRealLeaseTicketReleaseAfterItsActorAndReturnedStageFinish() throws Exception {
+    @Test
+    void nativeShutdownWaitsTheRealLeaseTicketReleaseAfterItsActorAndReturnedStageFinish() throws Exception {
         var server = mock(MinecraftServer.class);
         var world = mock(ServerLevel.class);
         var scheduler = mock(ChunkTaskScheduler.class);
@@ -55,7 +58,10 @@ class CarpetLeaseCleanupDrainTest {
         var regions = mock(RegionScheduler.class);
         when(server.server.getRegionScheduler()).thenReturn(regions);
         var queued = new LinkedBlockingQueue<Runnable>();
-        doAnswer(call -> { queued.add(call.getArgument(4)); return null; }).when(regions)
+        doAnswer(call -> {
+            queued.add(call.getArgument(4));
+            return null;
+        }).when(regions)
                 .execute(any(), eq(bukkitWorld), eq(0), eq(0), any(Runnable.class));
         var releaseEntered = new CountDownLatch(1);
         var releaseAllowed = new CountDownLatch(1);
@@ -95,7 +101,8 @@ class CarpetLeaseCleanupDrainTest {
         }
     }
 
-    @Test void shutdownCancelsIndependentWaitingAdmissionsBeforeDrainAndWaitsTheirActualCleanup() throws Exception {
+    @Test
+    void shutdownCancelsIndependentWaitingAdmissionsBeforeDrainAndWaitsTheirActualCleanup() throws Exception {
         var fixture = new Fixture();
         var calls = new AtomicInteger();
         var releaseEntered = new CountDownLatch(1);
@@ -134,7 +141,8 @@ class CarpetLeaseCleanupDrainTest {
         }
     }
 
-    @Test void shutdownPreservesWaitingNativeActorsAndTheirLaterAcceptedLeaseContinuation() throws Exception {
+    @Test
+    void shutdownPreservesWaitingNativeActorsAndTheirLaterAcceptedLeaseContinuation() throws Exception {
         var fixture = new Fixture();
         var nativeToken = new AtomicReference<ScarpetNativeWork.Token>();
         var first = new AtomicReference<CompletableFuture<Integer>>();
@@ -174,7 +182,8 @@ class CarpetLeaseCleanupDrainTest {
         assertEquals(2, calls.get());
     }
 
-    @Test void schedulerRejectionKeepsDrainPendingUntilTheAcquiredTicketIsReleased() throws Exception {
+    @Test
+    void schedulerRejectionKeepsDrainPendingUntilTheAcquiredTicketIsReleased() throws Exception {
         var fixture = new Fixture();
         var rejection = new java.util.concurrent.RejectedExecutionException("owner scheduler stopped");
         doThrow(rejection).when(fixture.regions).execute(any(), eq(fixture.bukkitWorld), eq(0), eq(0), any(Runnable.class));
@@ -199,7 +208,8 @@ class CarpetLeaseCleanupDrainTest {
         }
     }
 
-    @Test void cancellingTheCallerViewDoesNotCompleteTheActualTicketCleanupReceipt() throws Exception {
+    @Test
+    void cancellingTheCallerViewDoesNotCompleteTheActualTicketCleanupReceipt() throws Exception {
         var fixture = new Fixture();
         var calls = new AtomicInteger();
         var releaseEntered = new CountDownLatch(1);
@@ -224,7 +234,8 @@ class CarpetLeaseCleanupDrainTest {
         }
     }
 
-    @Test void partialAcquisitionFailureStillDrainsAllAttemptedTicketReleases() throws Exception {
+    @Test
+    void partialAcquisitionFailureStillDrainsAllAttemptedTicketReleases() throws Exception {
         var fixture = new Fixture();
         var failed = new IllegalStateException("second ticket acquisition failed");
         when(fixture.manager.addTicketAtLevel(any(), eq(1), eq(0), eq(33), any())).thenThrow(failed);
@@ -251,7 +262,8 @@ class CarpetLeaseCleanupDrainTest {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    @Test void nativeShutdownAlsoWaitsTheActualLoadedAreaTopologyUnpin() throws Exception {
+    @Test
+    void nativeShutdownAlsoWaitsTheActualLoadedAreaTopologyUnpin() throws Exception {
         var fixture = new Fixture();
         Fixture.field(fixture.manager, "ticketLockArea", new ca.spottedleaf.concurrentutil.lock.ReentrantAreaLock(4));
         Fixture.field(fixture.scheduler, "schedulingLockArea", new ca.spottedleaf.concurrentutil.lock.ReentrantAreaLock(4));
@@ -304,7 +316,10 @@ class CarpetLeaseCleanupDrainTest {
             when(world.getWorld()).thenReturn(bukkitWorld);
             server.server = mock(CraftServer.class);
             when(server.server.getRegionScheduler()).thenReturn(regions);
-            doAnswer(call -> { queued.add(call.getArgument(4)); return null; }).when(regions)
+            doAnswer(call -> {
+                queued.add(call.getArgument(4));
+                return null;
+            }).when(regions)
                     .execute(any(), eq(bukkitWorld), eq(0), eq(0), any(Runnable.class));
         }
 

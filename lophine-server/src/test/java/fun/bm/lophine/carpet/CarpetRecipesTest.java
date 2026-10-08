@@ -1,14 +1,18 @@
 package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
-import java.util.List;
-import java.util.stream.Stream;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.crafting.*;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -68,28 +72,32 @@ class CarpetRecipesTest {
     void carvedPumpkinReturnsDamagedShearsWithoutChangingTheInput() {
         GeneralCompatConfig.craftableCarvedPumpkin = true;
         var shearsComponents = net.minecraft.core.component.DataComponentMap.builder()
-            .set(net.minecraft.core.component.DataComponents.MAX_STACK_SIZE, 1)
-            .set(net.minecraft.core.component.DataComponents.MAX_DAMAGE, 238).build();
+                .set(net.minecraft.core.component.DataComponents.MAX_STACK_SIZE, 1)
+                .set(net.minecraft.core.component.DataComponents.MAX_DAMAGE, 238).build();
         net.minecraft.world.item.Items.SHEARS.builtInRegistryHolder().bindComponents(shearsComponents);
         net.minecraft.world.item.Items.PUMPKIN.builtInRegistryHolder().bindComponents(net.minecraft.core.component.DataComponentMap.builder()
-            .set(net.minecraft.core.component.DataComponents.MAX_STACK_SIZE, 64).build());
+                .set(net.minecraft.core.component.DataComponents.MAX_STACK_SIZE, 64).build());
         net.minecraft.world.item.Items.CARVED_PUMPKIN.builtInRegistryHolder().bindComponents(net.minecraft.core.component.DataComponentMap.builder()
-            .set(net.minecraft.core.component.DataComponents.MAX_STACK_SIZE,64).build());
-        var server=mock(net.minecraft.server.MinecraftServer.class);var access=mock(net.minecraft.core.RegistryAccess.Frozen.class);
-        @SuppressWarnings("unchecked") var enchantments=(net.minecraft.core.Registry<net.minecraft.world.item.enchantment.Enchantment>)mock(net.minecraft.core.Registry.class);
-        @SuppressWarnings("unchecked") var unbreaking=(net.minecraft.core.Holder.Reference<net.minecraft.world.item.enchantment.Enchantment>)mock(net.minecraft.core.Holder.Reference.class);
-        when(server.registryAccess()).thenReturn(access);when(access.lookupOrThrow(Registries.ENCHANTMENT)).thenReturn(enchantments);when(enchantments.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.UNBREAKING)).thenReturn(unbreaking);
-        try(var servers=mockStatic(net.minecraft.server.MinecraftServer.class)) {servers.when(net.minecraft.server.MinecraftServer::getServer).thenReturn(server);
-        var shears = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.SHEARS);
-        var pumpkin = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.PUMPKIN);
-        CraftingInput input = CraftingInput.of(2, 1, List.of(shears, pumpkin));
-        ShapelessRecipe recipe = (ShapelessRecipe) emptyManager().recipes.byKey(key("carved_pumpkin")).value();
-        var remainders = recipe.getRemainingItems(input);
-        assertEquals(1, remainders.get(0).getDamageValue());
-        assertEquals(0, shears.getDamageValue());
-        assertFalse(remainders.get(0).isEmpty());
-        shears.setDamageValue(237);
-        assertTrue(recipe.getRemainingItems(input).get(0).isEmpty());
+                .set(net.minecraft.core.component.DataComponents.MAX_STACK_SIZE, 64).build());
+        var server = mock(net.minecraft.server.MinecraftServer.class);
+        var access = mock(net.minecraft.core.RegistryAccess.Frozen.class);
+        @SuppressWarnings("unchecked") var enchantments = (net.minecraft.core.Registry<net.minecraft.world.item.enchantment.Enchantment>) mock(net.minecraft.core.Registry.class);
+        @SuppressWarnings("unchecked") var unbreaking = (net.minecraft.core.Holder.Reference<net.minecraft.world.item.enchantment.Enchantment>) mock(net.minecraft.core.Holder.Reference.class);
+        when(server.registryAccess()).thenReturn(access);
+        when(access.lookupOrThrow(Registries.ENCHANTMENT)).thenReturn(enchantments);
+        when(enchantments.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.UNBREAKING)).thenReturn(unbreaking);
+        try (var servers = mockStatic(net.minecraft.server.MinecraftServer.class)) {
+            servers.when(net.minecraft.server.MinecraftServer::getServer).thenReturn(server);
+            var shears = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.SHEARS);
+            var pumpkin = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.PUMPKIN);
+            CraftingInput input = CraftingInput.of(2, 1, List.of(shears, pumpkin));
+            ShapelessRecipe recipe = (ShapelessRecipe) emptyManager().recipes.byKey(key("carved_pumpkin")).value();
+            var remainders = recipe.getRemainingItems(input);
+            assertEquals(1, remainders.get(0).getDamageValue());
+            assertEquals(0, shears.getDamageValue());
+            assertFalse(remainders.get(0).isEmpty());
+            shears.setDamageValue(237);
+            assertTrue(recipe.getRemainingItems(input).get(0).isEmpty());
         }
     }
 

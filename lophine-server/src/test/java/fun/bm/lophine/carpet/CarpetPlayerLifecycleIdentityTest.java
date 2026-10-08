@@ -2,20 +2,28 @@ package fun.bm.lophine.carpet;
 
 import ca.spottedleaf.moonrise.common.util.TickThread;
 import carpet.script.external.WeakIdentityMap;
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import net.minecraft.server.level.ServerPlayer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.leavesmc.leaves.bot.ServerBot;
+
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class CarpetPlayerLifecycleIdentityTest {
-    @BeforeAll static void bootstrap() { net.minecraft.SharedConstants.tryDetectVersion(); net.minecraft.server.Bootstrap.bootStrap(); }
+    @BeforeAll
+    static void bootstrap() {
+        net.minecraft.SharedConstants.tryDetectVersion();
+        net.minecraft.server.Bootstrap.bootStrap();
+    }
 
-    /** Only metadata is exercised; bypass construction to retain the real Entity equality methods. */
+    /**
+     * Only metadata is exercised; bypass construction to retain the real Entity equality methods.
+     */
     private static ServerBot player(int id) throws Exception {
         Field field = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
         field.setAccessible(true);
@@ -27,7 +35,8 @@ class CarpetPlayerLifecycleIdentityTest {
         return player;
     }
 
-    @Test void birthsRemainSeparatedAcrossReusedAndChangedNativeEntityIds() throws Exception {
+    @Test
+    void birthsRemainSeparatedAcrossReusedAndChangedNativeEntityIds() throws Exception {
         ServerBot old = player(7), fresh = player(7);
         assertEquals(old, fresh);
         var oldBirth = new CompletableFuture<Void>();
@@ -44,11 +53,15 @@ class CarpetPlayerLifecycleIdentityTest {
             assertFalse(freshDone.isDone());
             assertFalse(CarpetPlayerBirths.playerPending(old));
             assertTrue(CarpetPlayerBirths.playerPending(fresh));
-        } finally { oldBirth.complete(null); freshBirth.complete(null); }
+        } finally {
+            oldBirth.complete(null);
+            freshBirth.complete(null);
+        }
         assertFalse(CarpetPlayerBirths.playerPending(fresh));
     }
 
-    @Test void actionSelectionAndPendingNativeWorkFollowTheObjectAfterNetworkIdReuse() throws Exception {
+    @Test
+    void actionSelectionAndPendingNativeWorkFollowTheObjectAfterNetworkIdReuse() throws Exception {
         ServerBot old = player(17), fresh = player(17);
         var oldAction = OrgFakePlayerActions.Action.simple("fishing", List.of());
         var freshAction = OrgFakePlayerActions.Action.simple("empty", List.of());

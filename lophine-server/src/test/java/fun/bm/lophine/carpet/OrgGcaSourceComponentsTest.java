@@ -1,31 +1,141 @@
 package fun.bm.lophine.carpet;
+
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.ObjectContents;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.network.chat.contents.objects.PlayerSprite;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerInput;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.nio.file.Path;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import java.nio.file.Path;
-import java.util.UUID;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.*;
-import net.minecraft.network.chat.contents.*;
-import net.minecraft.network.chat.contents.objects.PlayerSprite;
-import net.minecraft.world.inventory.*;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.io.TempDir;
+
 class OrgGcaSourceComponentsTest {
-    @TempDir Path directory;
-    @BeforeAll static void bootstrap(){OrgPlayerInventoryNativeControlsTest.bootstrap();}
-    static void prepare(OrgInventoryPersistenceTest.Fixture f)throws Exception{var method=OrgPlayerInventoryNativeControlsTest.class.getDeclaredMethod("prepare",OrgInventoryPersistenceTest.Fixture.class);method.setAccessible(true);method.invoke(null,f);var areaField=CarpetPlayerActionPack.class.getDeclaredField("targetArea");areaField.setAccessible(true);var modeField=net.minecraft.server.level.ServerPlayer.class.getField("gameMode");modeField.setAccessible(true);for(var actor:f.actors.values()){var player=actor.player();modeField.set(player,mock(net.minecraft.server.level.ServerPlayerGameMode.class));when(player.getBoundingBox()).thenReturn(new net.minecraft.world.phys.AABB(0,0,0,1,2,1));when(player.getViewVector(anyFloat())).thenReturn(net.minecraft.world.phys.Vec3.ZERO);var loaded=mock(CarpetPlayerTargetArea.class);when(loaded.ready(eq(player),any())).thenReturn(true);areaField.set(player.carpetActionPack,loaded);}}
-    @Test void actualNativeGcaButtonsCarryOriginalTranslatedOnOffStyleLoreModelsAndFlags()throws Exception{
-        try(var f=new OrgInventoryPersistenceTest.Fixture(directory)){prepare(f);var player=f.target.player();f.owner.set(player);var method=OrgPlayerInventoryMenus.class.getDeclaredMethod("actionButton",net.minecraft.server.level.ServerPlayer.class,int.class);method.setAccessible(true);
-            for(int slot:new int[]{0,5,6,8,9,10,11,17}){var icon=(net.minecraft.world.item.ItemStack)method.invoke(null,player,slot);var name=icon.get(DataComponents.CUSTOM_NAME);assertInstanceOf(TranslatableContents.class,name.getContents());assertTrue(name.getStyle().isBold());assertFalse(name.getStyle().isItalic());assertEquals(0xFFFFFF,name.getStyle().getColor().getValue());assertEquals(slot>=9?slot-8:1,icon.getCount());assertTrue(icon.get(DataComponents.CUSTOM_DATA).copyTag().getBooleanOr("GcaClear",false));assertTrue(icon.get(DataComponents.CUSTOM_DATA).copyTag().getBooleanOr("carpet-org-addition:button_item",false));if(java.util.List.of(0,6,8,9,10).contains(slot)){var lore=icon.get(DataComponents.LORE).lines().getFirst();assertInstanceOf(TranslatableContents.class,lore.getContents());assertTrue(lore.getStyle().isItalic());assertEquals(0xAAAAAA,lore.getStyle().getColor().getValue());}else assertNull(icon.get(DataComponents.LORE));}
-            var inactive=(net.minecraft.world.item.ItemStack)method.invoke(null,player,5);var translated=(TranslatableContents)inactive.get(DataComponents.CUSTOM_NAME).getContents();assertEquals(12,translated.getArgs()[0]);var state=(Component)translated.getArgs()[1];assertEquals("carpet-org-addition.button.off",((TranslatableContents)state.getContents()).getKey());assertEquals(0xFF5555,state.getStyle().getColor().getValue());player.carpetActionPack.start(CarpetPlayerActionPack.ActionType.ATTACK,CarpetPlayerActionPack.Action.interval(12));var on=(net.minecraft.world.item.ItemStack)method.invoke(null,player,5);assertEquals("minecraft:barrier",on.get(DataComponents.ITEM_MODEL).toString());var onState=(Component)((TranslatableContents)on.get(DataComponents.CUSTOM_NAME).getContents()).getArgs()[1];assertEquals("carpet-org-addition.button.on",((TranslatableContents)onState.getContents()).getKey());
+    @TempDir
+    Path directory;
+
+    @BeforeAll
+    static void bootstrap() {
+        OrgPlayerInventoryNativeControlsTest.bootstrap();
+    }
+
+    static void prepare(OrgInventoryPersistenceTest.Fixture f) throws Exception {
+        var method = OrgPlayerInventoryNativeControlsTest.class.getDeclaredMethod("prepare", OrgInventoryPersistenceTest.Fixture.class);
+        method.setAccessible(true);
+        method.invoke(null, f);
+        var areaField = CarpetPlayerActionPack.class.getDeclaredField("targetArea");
+        areaField.setAccessible(true);
+        var modeField = net.minecraft.server.level.ServerPlayer.class.getField("gameMode");
+        modeField.setAccessible(true);
+        for (var actor : f.actors.values()) {
+            var player = actor.player();
+            modeField.set(player, mock(net.minecraft.server.level.ServerPlayerGameMode.class));
+            when(player.getBoundingBox()).thenReturn(new net.minecraft.world.phys.AABB(0, 0, 0, 1, 2, 1));
+            when(player.getViewVector(anyFloat())).thenReturn(net.minecraft.world.phys.Vec3.ZERO);
+            var loaded = mock(CarpetPlayerTargetArea.class);
+            when(loaded.ready(eq(player), any())).thenReturn(true);
+            areaField.set(player.carpetActionPack, loaded);
         }
     }
-    @Test void sourcePlayerAndOfflineTitlesRetainNativeAvatarObjectAndOfflineTranslation()throws Exception{
-        try(var f=new OrgInventoryPersistenceTest.Fixture(directory)){prepare(f);var profile=new com.mojang.authlib.GameProfile(f.target.id(),"Bob");when(f.target.player().getGameProfile()).thenReturn(profile);var online=OrgPlayerInventoryMenus.playerTitle(f.target.player());var head=(PlayerSprite)((ObjectContents)online.getContents()).contents();assertTrue(head.hat());assertEquals(profile,head.player().partialProfile());assertEquals(" Bob",online.getSiblings().stream().map(Component::getString).reduce("",String::concat));var offline=OrgPlayerInventoryMenus.offlineTitle(f.target.id(),"Bob");assertInstanceOf(ObjectContents.class,offline.getContents());var text=(TranslatableContents)offline.getSiblings().get(1).getContents();assertEquals("carpet-org-addition.operation.offline_player_name",text.getKey());assertEquals("Bob",text.getArgs()[0]);}
+
+    @Test
+    void actualNativeGcaButtonsCarryOriginalTranslatedOnOffStyleLoreModelsAndFlags() throws Exception {
+        try (var f = new OrgInventoryPersistenceTest.Fixture(directory)) {
+            prepare(f);
+            var player = f.target.player();
+            f.owner.set(player);
+            var method = OrgPlayerInventoryMenus.class.getDeclaredMethod("actionButton", net.minecraft.server.level.ServerPlayer.class, int.class);
+            method.setAccessible(true);
+            for (int slot : new int[]{0, 5, 6, 8, 9, 10, 11, 17}) {
+                var icon = (net.minecraft.world.item.ItemStack) method.invoke(null, player, slot);
+                var name = icon.get(DataComponents.CUSTOM_NAME);
+                assertInstanceOf(TranslatableContents.class, name.getContents());
+                assertTrue(name.getStyle().isBold());
+                assertFalse(name.getStyle().isItalic());
+                assertEquals(0xFFFFFF, name.getStyle().getColor().getValue());
+                assertEquals(slot >= 9 ? slot - 8 : 1, icon.getCount());
+                assertTrue(icon.get(DataComponents.CUSTOM_DATA).copyTag().getBooleanOr("GcaClear", false));
+                assertTrue(icon.get(DataComponents.CUSTOM_DATA).copyTag().getBooleanOr("carpet-org-addition:button_item", false));
+                if (java.util.List.of(0, 6, 8, 9, 10).contains(slot)) {
+                    var lore = icon.get(DataComponents.LORE).lines().getFirst();
+                    assertInstanceOf(TranslatableContents.class, lore.getContents());
+                    assertTrue(lore.getStyle().isItalic());
+                    assertEquals(0xAAAAAA, lore.getStyle().getColor().getValue());
+                } else assertNull(icon.get(DataComponents.LORE));
+            }
+            var inactive = (net.minecraft.world.item.ItemStack) method.invoke(null, player, 5);
+            var translated = (TranslatableContents) inactive.get(DataComponents.CUSTOM_NAME).getContents();
+            assertEquals(12, translated.getArgs()[0]);
+            var state = (Component) translated.getArgs()[1];
+            assertEquals("carpet-org-addition.button.off", ((TranslatableContents) state.getContents()).getKey());
+            assertEquals(0xFF5555, state.getStyle().getColor().getValue());
+            player.carpetActionPack.start(CarpetPlayerActionPack.ActionType.ATTACK, CarpetPlayerActionPack.Action.interval(12));
+            var on = (net.minecraft.world.item.ItemStack) method.invoke(null, player, 5);
+            assertEquals("minecraft:barrier", on.get(DataComponents.ITEM_MODEL).toString());
+            var onState = (Component) ((TranslatableContents) on.get(DataComponents.CUSTOM_NAME).getContents()).getArgs()[1];
+            assertEquals("carpet-org-addition.button.on", ((TranslatableContents) onState.getContents()).getKey());
+        }
     }
-    @Test void actualMenuDoubleClickUsesPublishedOverworldClockWhenPlayerRegionClockChanges()throws Exception{
-        long old=CarpetServerClock.gameTime();try(var f=new OrgInventoryPersistenceTest.Fixture(directory)){prepare(f);var player=f.viewer.player();var overworld=mock(net.minecraft.server.level.ServerLevel.class);when(f.server.overworld()).thenReturn(overworld);when(overworld.getGameTime()).thenReturn(700L);CarpetServerClock.refresh(f.server);when(player.level().getGameTime()).thenReturn(50L);f.owner.set(player);var type=Class.forName("fun.bm.lophine.carpet.OrgPlayerInventoryMenus$PlayerMenu");var ctor=type.getDeclaredConstructor(int.class,net.minecraft.world.entity.player.Inventory.class,net.minecraft.server.level.ServerPlayer.class,boolean.class);ctor.setAccessible(true);var menu=(AbstractContainerMenu)ctor.newInstance(6,f.viewer.inventory(),player,true);player.containerMenu=menu;
-            menu.clicked(5,0,ContainerInput.PICKUP,player);assertNotNull(player.carpetActionPack.getAction(CarpetPlayerActionPack.ActionType.ATTACK));when(player.level().getGameTime()).thenReturn(51L);menu.clicked(6,0,ContainerInput.PICKUP,player);assertNull(player.carpetActionPack.getAction(CarpetPlayerActionPack.ActionType.ATTACK));menu.clicked(6,0,ContainerInput.PICKUP,player);assertNull(player.carpetActionPack.getAction(CarpetPlayerActionPack.ActionType.ATTACK));when(overworld.getGameTime()).thenReturn(701L);CarpetServerClock.refresh(f.server);menu.clicked(6,0,ContainerInput.PICKUP,player);assertTrue(player.carpetActionPack.getAction(CarpetPlayerActionPack.ActionType.ATTACK).isContinuous());
-        }finally{var server=mock(net.minecraft.server.MinecraftServer.class);var level=mock(net.minecraft.server.level.ServerLevel.class);when(server.overworld()).thenReturn(level);when(level.getGameTime()).thenReturn(old);CarpetServerClock.refresh(server);}
+
+    @Test
+    void sourcePlayerAndOfflineTitlesRetainNativeAvatarObjectAndOfflineTranslation() throws Exception {
+        try (var f = new OrgInventoryPersistenceTest.Fixture(directory)) {
+            prepare(f);
+            var profile = new com.mojang.authlib.GameProfile(f.target.id(), "Bob");
+            when(f.target.player().getGameProfile()).thenReturn(profile);
+            var online = OrgPlayerInventoryMenus.playerTitle(f.target.player());
+            var head = (PlayerSprite) ((ObjectContents) online.getContents()).contents();
+            assertTrue(head.hat());
+            assertEquals(profile, head.player().partialProfile());
+            assertEquals(" Bob", online.getSiblings().stream().map(Component::getString).reduce("", String::concat));
+            var offline = OrgPlayerInventoryMenus.offlineTitle(f.target.id(), "Bob");
+            assertInstanceOf(ObjectContents.class, offline.getContents());
+            var text = (TranslatableContents) offline.getSiblings().get(1).getContents();
+            assertEquals("carpet-org-addition.operation.offline_player_name", text.getKey());
+            assertEquals("Bob", text.getArgs()[0]);
+        }
+    }
+
+    @Test
+    void actualMenuDoubleClickUsesPublishedOverworldClockWhenPlayerRegionClockChanges() throws Exception {
+        long old = CarpetServerClock.gameTime();
+        try (var f = new OrgInventoryPersistenceTest.Fixture(directory)) {
+            prepare(f);
+            var player = f.viewer.player();
+            var overworld = mock(net.minecraft.server.level.ServerLevel.class);
+            when(f.server.overworld()).thenReturn(overworld);
+            when(overworld.getGameTime()).thenReturn(700L);
+            CarpetServerClock.refresh(f.server);
+            when(player.level().getGameTime()).thenReturn(50L);
+            f.owner.set(player);
+            var type = Class.forName("fun.bm.lophine.carpet.OrgPlayerInventoryMenus$PlayerMenu");
+            var ctor = type.getDeclaredConstructor(int.class, net.minecraft.world.entity.player.Inventory.class, net.minecraft.server.level.ServerPlayer.class, boolean.class);
+            ctor.setAccessible(true);
+            var menu = (AbstractContainerMenu) ctor.newInstance(6, f.viewer.inventory(), player, true);
+            player.containerMenu = menu;
+            menu.clicked(5, 0, ContainerInput.PICKUP, player);
+            assertNotNull(player.carpetActionPack.getAction(CarpetPlayerActionPack.ActionType.ATTACK));
+            when(player.level().getGameTime()).thenReturn(51L);
+            menu.clicked(6, 0, ContainerInput.PICKUP, player);
+            assertNull(player.carpetActionPack.getAction(CarpetPlayerActionPack.ActionType.ATTACK));
+            menu.clicked(6, 0, ContainerInput.PICKUP, player);
+            assertNull(player.carpetActionPack.getAction(CarpetPlayerActionPack.ActionType.ATTACK));
+            when(overworld.getGameTime()).thenReturn(701L);
+            CarpetServerClock.refresh(f.server);
+            menu.clicked(6, 0, ContainerInput.PICKUP, player);
+            assertTrue(player.carpetActionPack.getAction(CarpetPlayerActionPack.ActionType.ATTACK).isContinuous());
+        } finally {
+            var server = mock(net.minecraft.server.MinecraftServer.class);
+            var level = mock(net.minecraft.server.level.ServerLevel.class);
+            when(server.overworld()).thenReturn(level);
+            when(level.getGameTime()).thenReturn(old);
+            CarpetServerClock.refresh(server);
+        }
     }
 }

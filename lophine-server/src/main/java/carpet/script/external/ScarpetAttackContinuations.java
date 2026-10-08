@@ -183,7 +183,8 @@ public final class ScarpetAttackContinuations {
         boolean ownsRetired = ScarpetRetiredActors.knownRetired(attacker) && lastOwner != null
                 && TickThread.isTickThreadFor(lastOwner.world(), lastOwner.position())
                 && ScarpetRetiredActors.matchesLastOwner(attacker, lastOwner);
-        if (!ownsRetired) TickThread.ensureTickThread(attacker, "Deferred typed attack must be captured by its attacker");
+        if (!ownsRetired)
+            TickThread.ensureTickThread(attacker, "Deferred typed attack must be captured by its attacker");
         var server = attacker instanceof ServerPlayer player ? player.carpetSpawnServer() : attacker.level().getServer();
         var actual = new CompletableFuture<T>() {
             @Override
@@ -216,7 +217,8 @@ public final class ScarpetAttackContinuations {
                 else actual.completeExceptionally(problem);
             }));
         }));
-        if (attacker instanceof ServerPlayer player && !player.isRemoved()) ScarpetPlayerInventoryGate.trackAccepted(player, actual);
+        if (attacker instanceof ServerPlayer player && !player.isRemoved())
+            ScarpetPlayerInventoryGate.trackAccepted(player, actual);
         return actual;
     }
 

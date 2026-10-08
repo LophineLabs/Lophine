@@ -1,12 +1,14 @@
 package fun.bm.lophine.carpet;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.concurrent.Executors;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.concurrent.Executors;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CarpetExplosionLoggerTest {
     @Test
@@ -18,7 +20,8 @@ class CarpetExplosionLoggerTest {
             var values = new HashSet<Integer>();
             int headers = 0;
             for (var job : jobs) {
-                var number = job.get(); values.add(number.number());
+                var number = job.get();
+                values.add(number.number());
                 if (number.first()) ++headers;
             }
             assertEquals(1000, values.size());
@@ -26,7 +29,9 @@ class CarpetExplosionLoggerTest {
             var nextTick = CarpetExplosionLogger.next(101);
             assertEquals(1, nextTick.number());
             assertTrue(nextTick.first());
-        } finally { CarpetExplosionLogger.reset(); }
+        } finally {
+            CarpetExplosionLogger.reset();
+        }
     }
 
     @Test

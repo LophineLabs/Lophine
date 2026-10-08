@@ -5,24 +5,28 @@ import carpet.script.CarpetEventServer.CallbackList;
 import carpet.script.CarpetEventServer.CallbackResult;
 import carpet.script.value.FunctionValue;
 import carpet.script.value.Value;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicIntegerArray;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerTickRateManager;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicIntegerArray;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class ScarpetCallbackDispatchTest {
-    @BeforeAll static void bootstrap() {
+    @BeforeAll
+    static void bootstrap() {
         net.minecraft.SharedConstants.tryDetectVersion();
         net.minecraft.server.Bootstrap.bootStrap();
     }
+
     @SuppressWarnings("unchecked")
     private static List<Callback> handlers(CallbackList callbacks) throws Exception {
         var field = CallbackList.class.getDeclaredField("callList");
@@ -36,7 +40,8 @@ public class ScarpetCallbackDispatchTest {
         return spy(new Callback("app", null, function, List.of(), null));
     }
 
-    @Test void removesHandlersDeferredBySignalWhenItsLastDispatchReturns() throws Exception {
+    @Test
+    void removesHandlersDeferredBySignalWhenItsLastDispatchReturns() throws Exception {
         CallbackList callbacks = new CallbackList(0, false, false);
         Callback first = callback("first"), removed = callback("removed");
         handlers(callbacks).addAll(List.of(first, removed));
@@ -52,7 +57,8 @@ public class ScarpetCallbackDispatchTest {
         verify(removed, times(1)).signal(null, null, List.of());
     }
 
-    @Test void registrationsDuringSignalStartAtTheNextDispatch() throws Exception {
+    @Test
+    void registrationsDuringSignalStartAtTheNextDispatch() throws Exception {
         CallbackList callbacks = new CallbackList(0, false, false);
         Callback first = callback("first"), added = callback("added");
         handlers(callbacks).add(first);
@@ -67,7 +73,8 @@ public class ScarpetCallbackDispatchTest {
         assertEquals(2, callbacks.signal(null, null, List.of()));
     }
 
-    @Test void reloadStopsTheSuspendedDispatchBeforeAnyReplacementHandlerRuns() throws Exception {
+    @Test
+    void reloadStopsTheSuspendedDispatchBeforeAnyReplacementHandlerRuns() throws Exception {
         CallbackList callbacks = new CallbackList(0, false, false);
         Callback first = callback("first"), stale = callback("stale"), replacement = callback("replacement");
         handlers(callbacks).addAll(List.of(first, stale));
@@ -85,7 +92,8 @@ public class ScarpetCallbackDispatchTest {
         verify(replacement).signal(null, null, List.of());
     }
 
-    @Test void throwingSignalStillFlushesItsDeferredRemovals() throws Exception {
+    @Test
+    void throwingSignalStillFlushesItsDeferredRemovals() throws Exception {
         CallbackList callbacks = new CallbackList(0, false, false);
         Callback first = callback("first"), removed = callback("removed");
         handlers(callbacks).addAll(List.of(first, removed));
@@ -98,7 +106,8 @@ public class ScarpetCallbackDispatchTest {
         assertEquals(List.of(first), callbacks.inspectCurrentCalls());
     }
 
-    @Test void actualTasksRegisterOneSharedCustomEventAndScheduleEachCallbackExactlyOnce() throws Exception {
+    @Test
+    void actualTasksRegisterOneSharedCustomEventAndScheduleEachCallbackExactlyOnce() throws Exception {
         var server = mock(MinecraftServer.class);
         var scripts = mock(CarpetScriptServer.class);
         var serverField = CarpetScriptServer.class.getField("server");
@@ -128,7 +137,8 @@ public class ScarpetCallbackDispatchTest {
                 expression.addContextFunction("compat_register_start", 0, (guest, type, args) -> {
                     entered.countDown();
                     try {
-                        if (!start.await(5, TimeUnit.SECONDS)) throw new AssertionError("Registration tasks did not resume");
+                        if (!start.await(5, TimeUnit.SECONDS))
+                            throw new AssertionError("Registration tasks did not resume");
                     } catch (InterruptedException failure) {
                         Thread.currentThread().interrupt();
                         throw new AssertionError(failure);
@@ -157,13 +167,18 @@ public class ScarpetCallbackDispatchTest {
             assertEquals(1_024, events.customEvents.get("compat_parallel_event").handler.inspectCurrentCalls().size());
             assertEquals(1_024, events.scheduledCalls.size());
             events.scheduledCalls.forEach(call -> call.dueTime = 1);
-            runtime.submit(() -> { events.tick(); events.tick(); return null; }).get(10, TimeUnit.SECONDS);
+            runtime.submit(() -> {
+                events.tick();
+                events.tick();
+                return null;
+            }).get(10, TimeUnit.SECONDS);
             assertTrue(events.scheduledCalls.isEmpty());
             for (int index = 0; index < observed.length(); index++) assertEquals(1, observed.get(index));
         } finally {
             start.countDown();
             host.getExecutor(Value.NULL).shutdownNow();
-            carpet.script.external.ScarpetRuntime.beginShutdown(server, () -> {});
+            carpet.script.external.ScarpetRuntime.beginShutdown(server, () -> {
+            });
         }
     }
 }

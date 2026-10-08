@@ -1,77 +1,523 @@
 package carpet.script.external;
-import ca.spottedleaf.moonrise.common.util.TickThread;import fun.bm.lophine.carpet.*;import java.util.*;import java.util.concurrent.*;import java.util.function.*;
-import net.minecraft.core.*;import net.minecraft.core.component.*;import net.minecraft.core.particles.*;import net.minecraft.server.*;import net.minecraft.server.level.*;import net.minecraft.util.*;import net.minecraft.util.random.*;import net.minecraft.util.valueproviders.*;import net.minecraft.world.damagesource.*;import net.minecraft.world.effect.*;import net.minecraft.world.entity.*;import net.minecraft.world.item.*;import net.minecraft.world.item.component.*;import net.minecraft.world.item.enchantment.*;import net.minecraft.world.item.enchantment.effects.*;import net.minecraft.world.level.*;import net.minecraft.world.level.block.*;import net.minecraft.world.level.levelgen.blockpredicates.*;import net.minecraft.world.level.levelgen.feature.stateproviders.*;import net.minecraft.world.level.gameevent.*;import net.minecraft.world.phys.*;import net.minecraft.sounds.*;
-import org.junit.jupiter.api.*;import static org.junit.jupiter.api.Assertions.*;import static org.mockito.Mockito.*;
-public class ScarpetEnchantmentEffectsTest {
- @BeforeAll static void bootstrap(){ScarpetLootTablesTest.bootstrap();}
- final MinecraftServer server=mock(MinecraftServer.class,RETURNS_DEEP_STUBS);final ServerLevel original=mock(ServerLevel.class),foreign=mock(ServerLevel.class);final LivingEntity caller=mock(LivingEntity.class),victim=mock(LivingEntity.class);final Vec3 position=new Vec3(12.2,65.3,-9.6);final BlockPos block=BlockPos.containing(position);final ItemStack weapon=new ItemStack(Items.STONE);final EnchantedItemInUse item=new EnchantedItemInUse(weapon,EquipmentSlot.MAINHAND,caller);
- @BeforeEach void setup(){when(original.getServer()).thenReturn(server);when(foreign.getServer()).thenReturn(server);when(caller.level()).thenReturn(original);when(victim.level()).thenReturn(foreign);when(caller.blockPosition()).thenReturn(new BlockPos(3,70,4));when(victim.blockPosition()).thenReturn(block);when(caller.position()).thenReturn(new Vec3(3,70,4));when(victim.position()).thenReturn(position);when(victim.getRandom()).thenReturn(RandomSource.create(314));when(original.getRandom()).thenReturn(RandomSource.create(112));}
- private ScarpetAttackEnchantments.SourceAdmission admission(){return new ScarpetAttackEnchantments.SourceAdmission(original,new BlockPos(3,70,4),original.getRandom(),caller);}
- private org.mockito.MockedStatic<TickThread> owners(){var t=mockStatic(TickThread.class);t.when(()->TickThread.isTickThreadFor(any(Entity.class))).thenReturn(true);t.when(()->TickThread.isTickThreadFor(any(ServerLevel.class),any(BlockPos.class))).thenReturn(true);return t;}
- private org.mockito.MockedStatic<CarpetRegionLease> leases(){var leases=fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();leases.when(()->CarpetRegionLease.runValue(any(ServerLevel.class),anyInt(),anyInt(),anyInt(),anyInt(),any(Function.class))).thenAnswer(c->{Function<Object,Object> body=c.getArgument(5);try{return CompletableFuture.completedFuture(body.apply(null));}catch(Throwable e){return CompletableFuture.failedFuture(e);}});return leases;}
- @Test void nativeMobEffectKeepsActualTargetRandomDurationAmplifierAndPhysicalChild(){
-  var effect=new ApplyMobEffect(HolderSet.direct(MobEffects.SPEED),LevelBasedValue.constant(1.2F),LevelBasedValue.constant(4.8F),LevelBasedValue.constant(-1),LevelBasedValue.constant(3));var expected=new ArrayList<MobEffectInstance>();doAnswer(c->{expected.add(c.getArgument(0));return true;}).when(victim).addEffect(any(MobEffectInstance.class),eq(org.bukkit.event.entity.EntityPotionEffectEvent.Cause.ATTACK));effect.apply(original,2,item,victim,position);var oracle=expected.getFirst();expected.clear();when(victim.getRandom()).thenReturn(RandomSource.create(314));var child=new CompletableFuture<Void>();doAnswer(c->{assertSame(victim,ScarpetNativeWork.capture().owner());expected.add(c.getArgument(0));ScarpetNativeWork.record(child);return true;}).when(victim).addEffect(any(MobEffectInstance.class),eq(org.bukkit.event.entity.EntityPotionEffectEvent.Cause.ATTACK));
-  try(var ticks=owners()){var actual=ScarpetEnchantmentEntityEffects.apply(effect,admission(),2,item,victim,position);assertFalse(actual.isDone());child.complete(null);actual.join();assertEquals(oracle.getEffect(),expected.getFirst().getEffect());assertEquals(oracle.getDuration(),expected.getFirst().getDuration());assertEquals(oracle.getAmplifier(),expected.getFirst().getAmplifier());}
- }
- @Test void nativeDamageUsesOriginalWorldOwnerAttributionAndActualTargetRandomAndTrueChild(){
-  var type=Holder.direct(new DamageType("enchantment",0F));var effect=new DamageEntity(LevelBasedValue.constant(2F),LevelBasedValue.constant(8F),type);var child=new CompletableFuture<Void>();var damage=new ArrayList<Float>();doAnswer(c->{assertSame(victim,ScarpetNativeWork.capture().owner());assertSame(original,c.getArgument(0));assertSame(caller,((DamageSource)c.getArgument(1)).getEntity());damage.add(c.getArgument(2));ScarpetNativeWork.record(child);return true;}).when(victim).hurtServer(any(),any(),anyFloat());
-  float expected=net.minecraft.util.Mth.randomBetween(RandomSource.create(314),2F,8F);
-  try(var ticks=owners()){var actual=ScarpetEnchantmentEntityEffects.apply(effect,admission(),1,item,victim,position);assertFalse(actual.isDone());child.complete(null);actual.join();assertEquals(List.of(expected),damage);}
- }
- @Test void nativeImpulseRotatesScalesAndUpdatesActualLivingGraceTime(){
-  when(victim.getLookQuaternion()).thenReturn(new org.joml.Quaternionf());var effect=new ApplyEntityImpulse(new Vec3(1,2,3),new Vec3(2,3,4),LevelBasedValue.constant(0.5F));
-  doAnswer(c->{assertSame(victim,ScarpetNativeWork.capture().owner());return null;}).when(victim).addDeltaMovement(any());
-  try(var ticks=owners()){ScarpetEnchantmentEntityEffects.apply(effect,admission(),1,item,victim,position).join();verify(victim).addDeltaMovement(new Vec3(1,3,6));verify(victim).applyPostImpulseGraceTime(10);assertTrue(victim.syncVelocity);}
- }
- @Test void nativeExhaustionUsesActualPlayerAndNativeReason(){
-  var player=mock(ServerPlayer.class);when(player.level()).thenReturn(foreign);when(player.blockPosition()).thenReturn(block);when(player.position()).thenReturn(position);doAnswer(c->{assertSame(player,ScarpetNativeWork.capture().owner());return null;}).when(player).causeFoodExhaustion(anyFloat(),any());
-  try(var ticks=owners()){ScarpetEnchantmentEntityEffects.apply(new ApplyExhaustion(LevelBasedValue.constant(2.5F)),admission(),1,item,player,position).join();verify(player).causeFoodExhaustion(2.5F,org.bukkit.event.entity.EntityExhaustionEvent.ExhaustionReason.ENCHANTMENT_EFFECT);}
- }
- @Test void igniteReadsForeignItemOwnerWrapperOnOwnerBeforeActualTargetEventAndCancellation(){
-  var ownerWrapper=mock(org.bukkit.craftbukkit.entity.CraftLivingEntity.class);var targetWrapper=mock(org.bukkit.craftbukkit.entity.CraftLivingEntity.class);when(caller.getBukkitEntity()).thenAnswer(c->{assertSame(caller,ScarpetNativeWork.capture().owner());return ownerWrapper;});when(victim.getBukkitEntity()).thenReturn(targetWrapper);var plugins=mock(org.bukkit.plugin.PluginManager.class);var child=new CompletableFuture<Void>();
-  doAnswer(c->{var event=(org.bukkit.event.entity.EntityCombustByEntityEvent)c.getArgument(0);assertSame(ownerWrapper,event.getCombuster());assertSame(targetWrapper,event.getEntity());event.setDuration(7F);ScarpetNativeWork.record(child);return null;}).when(plugins).callEvent(any());
-  try(var ticks=owners();var bukkit=mockStatic(org.bukkit.Bukkit.class)){bukkit.when(org.bukkit.Bukkit::getPluginManager).thenReturn(plugins);var actual=ScarpetEnchantmentEntityEffects.apply(new Ignite(LevelBasedValue.constant(3F)),admission(),1,item,victim,position);assertFalse(actual.isDone());verify(victim,never()).igniteForSeconds(anyFloat(),anyBoolean());child.complete(null);actual.join();verify(victim).igniteForSeconds(7F,false);clearInvocations(victim);doAnswer(c->{((org.bukkit.event.entity.EntityCombustEvent)c.getArgument(0)).setCancelled(true);return null;}).when(plugins).callEvent(any());ScarpetEnchantmentEntityEffects.apply(new Ignite(LevelBasedValue.constant(3F)),admission(),1,item,victim,position).join();verify(victim,never()).igniteForSeconds(anyFloat(),anyBoolean());}
- }
- @Test void nativeItemDamageKeepsActualOriginalItemAndItemOwnerRatherThanAffectedTarget(){
-  weapon.set(DataComponents.MAX_DAMAGE,10);weapon.set(DataComponents.DAMAGE,0);var actualItem=spy(weapon);var actualUse=new EnchantedItemInUse(actualItem,EquipmentSlot.MAINHAND,caller);var child=new CompletableFuture<Void>();doAnswer(c->{assertSame(caller,ScarpetNativeWork.capture().owner());assertSame(original,c.getArgument(1));assertSame(caller,c.getArgument(2));ScarpetNativeWork.record(child);return null;}).when(actualItem).hurtAndBreak(anyInt(),any(ServerLevel.class),any(LivingEntity.class),any(Consumer.class));
-  try(var ticks=owners()){var actual=ScarpetEnchantmentEntityEffects.apply(new ChangeItemDamage(LevelBasedValue.constant(3.7F)),admission(),2,actualUse,victim,position);assertFalse(actual.isDone());child.complete(null);actual.join();verify(actualItem).hurtAndBreak(eq(3),eq(original),eq(caller),same(actualUse.onBreak()));verify(victim,never()).getRandom();}
- }
- @Test void soundAndParticlesKeepNativeSeededTargetArgumentsAndOriginalWorld(){
-  var sound=new PlaySoundEffect(List.of(Holder.direct(SoundEvents.ANVIL_BREAK),Holder.direct(SoundEvents.ANVIL_HIT)),UniformFloat.of(0.2F,0.7F),UniformFloat.of(0.5F,1.5F));when(victim.getSoundSource()).thenReturn(SoundSource.HOSTILE);when(victim.getKnownMovement()).thenReturn(new Vec3(0.2,-0.3,0.4));when(victim.getBbWidth()).thenReturn(0.7F);when(victim.getBbHeight()).thenReturn(1.8F);
-  var particles=new SpawnParticlesEffect(ParticleTypes.FLAME,SpawnParticlesEffect.inBoundingBox(),SpawnParticlesEffect.inBoundingBox(),SpawnParticlesEffect.fixedVelocity(UniformFloat.of(-0.2F,0.2F)),SpawnParticlesEffect.movementScaled(0.5F),UniformFloat.of(0.1F,0.4F));var oracle=new ArrayList<List<Object>>();doAnswer(c->{oracle.add(Arrays.asList(c.getArguments()));return null;}).when(original).playSound(isNull(),anyDouble(),anyDouble(),anyDouble(),any(Holder.class),any(SoundSource.class),anyFloat(),anyFloat());doAnswer(c->{oracle.add(Arrays.asList(c.getArguments()));return 1;}).when(original).sendParticlesSource(any(),any(),anyBoolean(),anyBoolean(),anyDouble(),anyDouble(),anyDouble(),anyInt(),anyDouble(),anyDouble(),anyDouble(),anyDouble());sound.apply(original,6,item,victim,position);particles.apply(original,1,item,victim,position);var expected=List.copyOf(oracle);oracle.clear();when(victim.getRandom()).thenReturn(RandomSource.create(314));
-  try(var ticks=owners();var lease=leases()){ScarpetEnchantmentEntityEffects.apply(sound,admission(),6,item,victim,position).join();ScarpetEnchantmentEntityEffects.apply(particles,admission(),1,item,victim,position).join();assertEquals(expected,oracle);when(victim.isSilent()).thenReturn(true);oracle.clear();ScarpetEnchantmentEntityEffects.apply(sound,admission(),1,item,victim,position).join();assertTrue(oracle.isEmpty());verify(foreign,never()).playSound(any(),anyDouble(),anyDouble(),anyDouble(),any(Holder.class),any(),anyFloat(),anyFloat());}
- }
- @Test void replaceBlockPreservesPredicateAndProviderWorldAndWaitsFormChildBeforeGameEvent(){
-  var predicate=mock(BlockPredicate.class);when(predicate.test(original,block)).thenReturn(true);var provider=BlockStateProvider.of(Blocks.STONE);var effect=new ReplaceBlock(Vec3i.ZERO,Optional.of(predicate),Holder.direct(provider),Optional.of(GameEvent.BLOCK_CHANGE));var child=new CompletableFuture<Void>();var order=new ArrayList<String>();
-  try(var ticks=owners();var lease=leases();var form=mockStatic(org.bukkit.craftbukkit.event.CraftEventFactory.class)){form.when(()->org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(original,block,Blocks.STONE.defaultBlockState(),Block.UPDATE_ALL,victim,true)).thenAnswer(c->{order.add("form");ScarpetNativeWork.record(child);return true;});doAnswer(c->{order.add("event");return null;}).when(original).gameEvent(eq(victim),eq(GameEvent.BLOCK_CHANGE),eq(block));var actual=ScarpetEnchantmentEntityEffects.apply(effect,admission(),1,item,victim,position);assertEquals(List.of("form"),order);assertFalse(actual.isDone());child.complete(null);actual.join();assertEquals(List.of("form","event"),order);verify(predicate).test(original,block);when(predicate.test(original,block)).thenReturn(false);order.clear();ScarpetEnchantmentEntityEffects.apply(effect,admission(),1,item,victim,position).join();assertTrue(order.isEmpty());}
- }
- @Test void replaceDiskMatchesNativeExactTraversalAndStateRandomIncludingNegativeHeight(){
-  var effect=new ReplaceDisk(LevelBasedValue.constant(2F),LevelBasedValue.constant(-1F),Vec3i.ZERO,Optional.empty(),Holder.direct(new WeightedStateProvider(WeightedList.of(Blocks.STONE.defaultBlockState()))),Optional.of(GameEvent.BLOCK_CHANGE));var trace=new ArrayList<List<Object>>();
-  try(var ticks=owners();var lease=leases();var form=mockStatic(org.bukkit.craftbukkit.event.CraftEventFactory.class)){form.when(()->org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(eq(original),any(BlockPos.class),any(),eq(Block.UPDATE_ALL),eq(victim),eq(true))).thenAnswer(c->{trace.add(List.of(((BlockPos)c.getArgument(1)).immutable(),c.getArgument(2)));return true;});effect.apply(original,1,item,victim,position);var expected=List.copyOf(trace);trace.clear();when(victim.getRandom()).thenReturn(RandomSource.create(314));ScarpetEnchantmentEntityEffects.apply(effect,admission(),1,item,victim,position).join();assertFalse(expected.isEmpty());assertEquals(expected,trace);}
- }
- @Test void setPropertiesUsesActualTargetWorldButOriginalWorldGameEventAfterChild(){
-  var before=Blocks.OAK_LOG.defaultBlockState();var properties=BlockItemStateProperties.EMPTY.with(net.minecraft.world.level.block.state.properties.BlockStateProperties.AXIS,net.minecraft.core.Direction.Axis.X);var after=properties.apply(before);when(foreign.getBlockState(block)).thenReturn(before);var child=new CompletableFuture<Void>();doAnswer(c->{ScarpetNativeWork.record(child);return true;}).when(foreign).setBlockAndUpdate(block,after);
-  try(var ticks=owners();var lease=leases()){var actual=ScarpetEnchantmentEntityEffects.apply(new SetBlockProperties(properties),admission(),1,item,victim,position);assertFalse(actual.isDone());verify(original,never()).gameEvent(any(Entity.class),any(Holder.class),any(BlockPos.class));child.complete(null);actual.join();verify(original).gameEvent(victim,GameEvent.BLOCK_CHANGE,block);verify(original,never()).getBlockState(any());verify(foreign,never()).gameEvent(any(Entity.class),any(Holder.class),any(BlockPos.class));}
- }
- @Test void nestedProviderNullRulesReadOriginalWorldFallbackAndTargetRandomInSourceOrder(){
-  var predicate=mock(BlockPredicate.class);var empty=mock(BlockStateProvider.class);var chosen=mock(BlockStateProvider.class);var order=new ArrayList<String>();when(predicate.test(original,block)).thenAnswer(c->{order.add("predicate");return true;});when(empty.getOptionalState(eq(original),any(),eq(block))).thenAnswer(c->{assertSame(victim,ScarpetNativeWork.capture().owner());order.add("empty");return null;});when(chosen.getOptionalState(eq(original),any(),eq(block))).thenAnswer(c->{order.add("state");return Blocks.STONE.defaultBlockState();});var provider=RuleBasedStateProvider.builder(chosen).ifTrueThenProvide(predicate,empty).build();
-  try(var ticks=owners();var lease=leases()){assertEquals(Blocks.STONE.defaultBlockState(),ScarpetEnchantmentBlockStates.state(provider,original,victim,block,false).join());assertEquals(List.of("predicate","empty","state"),order);when(original.getBlockState(block)).thenReturn(Blocks.DIRT.defaultBlockState());assertEquals(Blocks.DIRT.defaultBlockState(),ScarpetEnchantmentBlockStates.state(new RuleBasedStateProvider((Holder<BlockStateProvider>)null,List.of()),original,victim,block,false).join());}
- }
 
- @Test void nativeExplosionKeepsOriginalWorldOffsetSourceRadiusAndRealContinuation(){
-  var effect=new ExplodeEffect(true,Optional.of(Holder.direct(new DamageType("enchantment",0F))),Optional.of(LevelBasedValue.constant(0.7F)),Optional.empty(),new Vec3(2,3,4),LevelBasedValue.constant(2.5F),false,Level.ExplosionInteraction.NONE,ParticleTypes.EXPLOSION,ParticleTypes.EXPLOSION_EMITTER,WeightedList.of(),Holder.direct(SoundEvents.GENERIC_EXPLODE.value()));var child=new CompletableFuture<Void>();var observed=new ArrayList<Object>();
-  doAnswer(c->{observed.addAll(Arrays.asList(c.getArguments()));ScarpetNativeWork.record(child);return null;}).when(original).explode(any(),any(),any(),anyDouble(),anyDouble(),anyDouble(),anyFloat(),anyBoolean(),any(),any(),any(),any(),any());
-  try(var ticks=owners();var lease=leases()){var actual=ScarpetEnchantmentEntityEffects.apply(effect,admission(),1,item,victim,position);assertFalse(actual.isDone());assertSame(victim,observed.get(0));assertSame(victim,((DamageSource)observed.get(1)).getEntity());assertEquals(position.x+2,observed.get(3));assertEquals(position.y+3,observed.get(4));assertEquals(position.z+4,observed.get(5));assertEquals(2.5F,observed.get(6));assertEquals(Level.ExplosionInteraction.NONE,observed.get(8));child.complete(null);actual.join();verify(foreign,never()).explode(any(),any(),any(),anyDouble(),anyDouble(),anyDouble(),anyFloat(),anyBoolean(),any(),any(),any(),any(),any());}
- }
- @Test void runFunctionBuildsOriginalWorldSourceWithActualTargetRotationAndWaitsNativeCommandChild(){
-  var id=net.minecraft.resources.Identifier.parse("carpet:test");var effect=new RunFunction(id);var manager=mock(ServerFunctionManager.class);when(server.getFunctions()).thenReturn(manager);var function=mock(net.minecraft.commands.functions.CommandFunction.class);when(manager.get(id)).thenReturn(Optional.of(function));var rotation=new Vec2(15,40);when(victim.getRotationVector()).thenAnswer(c->{assertSame(victim,ScarpetNativeWork.capture().owner());return rotation;});
-  var base=new net.minecraft.commands.CommandSourceStack(net.minecraft.commands.CommandSource.NULL,Vec3.ZERO,Vec2.ZERO,original,net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER,net.minecraft.network.chat.Component.literal("native"),server);when(server.createCommandSourceStack()).thenReturn(base);var child=new CompletableFuture<Void>();doAnswer(c->{var source=(net.minecraft.commands.CommandSourceStack)c.getArgument(1);assertSame(victim,source.getEntity());assertSame(original,source.getLevel());assertEquals(position,source.getPosition());assertEquals(rotation,source.getRotation());ScarpetNativeWork.record(child);return null;}).when(manager).execute(eq(function),any());
-  try(var ticks=owners();var lease=leases()){var actual=ScarpetEnchantmentEntityEffects.apply(effect,admission(),1,item,victim,position);assertFalse(actual.isDone());child.complete(null);actual.join();clearInvocations(victim);when(manager.get(id)).thenReturn(Optional.empty());ScarpetEnchantmentEntityEffects.apply(effect,admission(),1,item,victim,position).join();verify(victim,never()).getRotationVector();}
- }
- @Test void summonWaitsCreateSpawnAndWholePostAttackChildrenBeforePhysicsWithSourceTeamThenActualSnap(){
-  var type=mock(EntityType.class);var spawned=mock(LivingEntity.class);when(spawned.level()).thenReturn(original);when(spawned.blockPosition()).thenReturn(block);when(spawned.position()).thenReturn(position);when(spawned.getYRot()).thenReturn(27F);when(spawned.getXRot()).thenReturn(9F);when(spawned.getScoreboardName()).thenReturn("spawned");var team=mock(net.minecraft.world.scores.PlayerTeam.class);var board=mock(net.minecraft.server.ServerScoreboard.class);when(original.getScoreboard()).thenReturn(board);var createChild=new CompletableFuture<Void>();var addChild=new CompletableFuture<Void>();var wholeChild=new CompletableFuture<Void>();var order=new ArrayList<String>();
-  when(type.create(eq(original),isNull(),eq(block),eq(EntitySpawnReason.TRIGGERED),eq(false),eq(false))).thenAnswer(c->{order.add("create");ScarpetNativeWork.record(createChild);return spawned;});doAnswer(c->{assertTrue(CarpetPlayerSpawnContinuations.pending(spawned));order.add("add");ScarpetNativeWork.record(addChild);return null;}).when(original).addFreshEntityWithPassengers(eq(spawned),eq(org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.ENCHANTMENT));when(victim.getTeam()).thenAnswer(c->{order.add("team");return team;});when(board.addPlayerToTeam("spawned",team)).thenAnswer(c->{order.add("join");return true;});doAnswer(c->{assertSame(spawned,ScarpetNativeWork.capture().owner());assertTrue(CarpetPlayerSpawnContinuations.pending(spawned));order.add("snap");return null;}).when(spawned).snapTo(position.x,position.y,position.z,27F,9F);
-  var effect=new SummonEntityEffect(HolderSet.direct(Holder.direct(type)),true);var sourceRandom=mock(RandomSource.class);when(sourceRandom.nextInt(anyInt())).thenAnswer(c->{assertSame(caller,ScarpetNativeWork.capture().owner());return 0;});when(original.getRandom()).thenReturn(sourceRandom);
-  try(var ticks=owners();var lease=leases()){var whole=ScarpetNativeWork.observeNative(caller,()->{ScarpetNativeWork.record(wholeChild);return ScarpetEnchantmentEntityEffects.apply(effect,admission(),1,item,victim,position);});assertEquals(List.of("create"),order);assertTrue(CarpetPlayerSpawnContinuations.pending(spawned));createChild.complete(null);assertEquals(List.of("create","add"),order);verify(victim,never()).getTeam();addChild.complete(null);assertEquals(List.of("create","add","team","join","snap"),order);assertTrue(CarpetPlayerSpawnContinuations.pending(spawned));assertFalse(whole.isDone());wholeChild.complete(null);whole.join().join();assertFalse(CarpetPlayerSpawnContinuations.pending(spawned));}
- }
+import ca.spottedleaf.moonrise.common.util.TickThread;
+import fun.bm.lophine.carpet.CarpetPlayerSpawnContinuations;
+import fun.bm.lophine.carpet.CarpetRegionLease;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.Vec3i;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.ServerFunctionManager;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+import net.minecraft.util.random.WeightedList;
+import net.minecraft.util.valueproviders.UniformFloat;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.enchantment.EnchantedItemInUse;
+import net.minecraft.world.item.enchantment.LevelBasedValue;
+import net.minecraft.world.item.enchantment.effects.*;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
+import net.minecraft.world.level.levelgen.feature.stateproviders.RuleBasedStateProvider;
+import net.minecraft.world.level.levelgen.feature.stateproviders.WeightedStateProvider;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+public class ScarpetEnchantmentEffectsTest {
+    @BeforeAll
+    static void bootstrap() {
+        ScarpetLootTablesTest.bootstrap();
+    }
+
+    final MinecraftServer server = mock(MinecraftServer.class, RETURNS_DEEP_STUBS);
+    final ServerLevel original = mock(ServerLevel.class), foreign = mock(ServerLevel.class);
+    final LivingEntity caller = mock(LivingEntity.class), victim = mock(LivingEntity.class);
+    final Vec3 position = new Vec3(12.2, 65.3, -9.6);
+    final BlockPos block = BlockPos.containing(position);
+    final ItemStack weapon = new ItemStack(Items.STONE);
+    final EnchantedItemInUse item = new EnchantedItemInUse(weapon, EquipmentSlot.MAINHAND, caller);
+
+    @BeforeEach
+    void setup() {
+        when(original.getServer()).thenReturn(server);
+        when(foreign.getServer()).thenReturn(server);
+        when(caller.level()).thenReturn(original);
+        when(victim.level()).thenReturn(foreign);
+        when(caller.blockPosition()).thenReturn(new BlockPos(3, 70, 4));
+        when(victim.blockPosition()).thenReturn(block);
+        when(caller.position()).thenReturn(new Vec3(3, 70, 4));
+        when(victim.position()).thenReturn(position);
+        when(victim.getRandom()).thenReturn(RandomSource.create(314));
+        when(original.getRandom()).thenReturn(RandomSource.create(112));
+    }
+
+    private ScarpetAttackEnchantments.SourceAdmission admission() {
+        return new ScarpetAttackEnchantments.SourceAdmission(original, new BlockPos(3, 70, 4), original.getRandom(), caller);
+    }
+
+    private org.mockito.MockedStatic<TickThread> owners() {
+        var t = mockStatic(TickThread.class);
+        t.when(() -> TickThread.isTickThreadFor(any(Entity.class))).thenReturn(true);
+        t.when(() -> TickThread.isTickThreadFor(any(ServerLevel.class), any(BlockPos.class))).thenReturn(true);
+        return t;
+    }
+
+    private org.mockito.MockedStatic<CarpetRegionLease> leases() {
+        var leases = fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open();
+        leases.when(() -> CarpetRegionLease.runValue(any(ServerLevel.class), anyInt(), anyInt(), anyInt(), anyInt(), any(Function.class))).thenAnswer(c -> {
+            Function<Object, Object> body = c.getArgument(5);
+            try {
+                return CompletableFuture.completedFuture(body.apply(null));
+            } catch (Throwable e) {
+                return CompletableFuture.failedFuture(e);
+            }
+        });
+        return leases;
+    }
+
+    @Test
+    void nativeMobEffectKeepsActualTargetRandomDurationAmplifierAndPhysicalChild() {
+        var effect = new ApplyMobEffect(HolderSet.direct(MobEffects.SPEED), LevelBasedValue.constant(1.2F), LevelBasedValue.constant(4.8F), LevelBasedValue.constant(-1), LevelBasedValue.constant(3));
+        var expected = new ArrayList<MobEffectInstance>();
+        doAnswer(c -> {
+            expected.add(c.getArgument(0));
+            return true;
+        }).when(victim).addEffect(any(MobEffectInstance.class), eq(org.bukkit.event.entity.EntityPotionEffectEvent.Cause.ATTACK));
+        effect.apply(original, 2, item, victim, position);
+        var oracle = expected.getFirst();
+        expected.clear();
+        when(victim.getRandom()).thenReturn(RandomSource.create(314));
+        var child = new CompletableFuture<Void>();
+        doAnswer(c -> {
+            assertSame(victim, ScarpetNativeWork.capture().owner());
+            expected.add(c.getArgument(0));
+            ScarpetNativeWork.record(child);
+            return true;
+        }).when(victim).addEffect(any(MobEffectInstance.class), eq(org.bukkit.event.entity.EntityPotionEffectEvent.Cause.ATTACK));
+        try (var ticks = owners()) {
+            var actual = ScarpetEnchantmentEntityEffects.apply(effect, admission(), 2, item, victim, position);
+            assertFalse(actual.isDone());
+            child.complete(null);
+            actual.join();
+            assertEquals(oracle.getEffect(), expected.getFirst().getEffect());
+            assertEquals(oracle.getDuration(), expected.getFirst().getDuration());
+            assertEquals(oracle.getAmplifier(), expected.getFirst().getAmplifier());
+        }
+    }
+
+    @Test
+    void nativeDamageUsesOriginalWorldOwnerAttributionAndActualTargetRandomAndTrueChild() {
+        var type = Holder.direct(new DamageType("enchantment", 0F));
+        var effect = new DamageEntity(LevelBasedValue.constant(2F), LevelBasedValue.constant(8F), type);
+        var child = new CompletableFuture<Void>();
+        var damage = new ArrayList<Float>();
+        doAnswer(c -> {
+            assertSame(victim, ScarpetNativeWork.capture().owner());
+            assertSame(original, c.getArgument(0));
+            assertSame(caller, ((DamageSource) c.getArgument(1)).getEntity());
+            damage.add(c.getArgument(2));
+            ScarpetNativeWork.record(child);
+            return true;
+        }).when(victim).hurtServer(any(), any(), anyFloat());
+        float expected = net.minecraft.util.Mth.randomBetween(RandomSource.create(314), 2F, 8F);
+        try (var ticks = owners()) {
+            var actual = ScarpetEnchantmentEntityEffects.apply(effect, admission(), 1, item, victim, position);
+            assertFalse(actual.isDone());
+            child.complete(null);
+            actual.join();
+            assertEquals(List.of(expected), damage);
+        }
+    }
+
+    @Test
+    void nativeImpulseRotatesScalesAndUpdatesActualLivingGraceTime() {
+        when(victim.getLookQuaternion()).thenReturn(new org.joml.Quaternionf());
+        var effect = new ApplyEntityImpulse(new Vec3(1, 2, 3), new Vec3(2, 3, 4), LevelBasedValue.constant(0.5F));
+        doAnswer(c -> {
+            assertSame(victim, ScarpetNativeWork.capture().owner());
+            return null;
+        }).when(victim).addDeltaMovement(any());
+        try (var ticks = owners()) {
+            ScarpetEnchantmentEntityEffects.apply(effect, admission(), 1, item, victim, position).join();
+            verify(victim).addDeltaMovement(new Vec3(1, 3, 6));
+            verify(victim).applyPostImpulseGraceTime(10);
+            assertTrue(victim.syncVelocity);
+        }
+    }
+
+    @Test
+    void nativeExhaustionUsesActualPlayerAndNativeReason() {
+        var player = mock(ServerPlayer.class);
+        when(player.level()).thenReturn(foreign);
+        when(player.blockPosition()).thenReturn(block);
+        when(player.position()).thenReturn(position);
+        doAnswer(c -> {
+            assertSame(player, ScarpetNativeWork.capture().owner());
+            return null;
+        }).when(player).causeFoodExhaustion(anyFloat(), any());
+        try (var ticks = owners()) {
+            ScarpetEnchantmentEntityEffects.apply(new ApplyExhaustion(LevelBasedValue.constant(2.5F)), admission(), 1, item, player, position).join();
+            verify(player).causeFoodExhaustion(2.5F, org.bukkit.event.entity.EntityExhaustionEvent.ExhaustionReason.ENCHANTMENT_EFFECT);
+        }
+    }
+
+    @Test
+    void igniteReadsForeignItemOwnerWrapperOnOwnerBeforeActualTargetEventAndCancellation() {
+        var ownerWrapper = mock(org.bukkit.craftbukkit.entity.CraftLivingEntity.class);
+        var targetWrapper = mock(org.bukkit.craftbukkit.entity.CraftLivingEntity.class);
+        when(caller.getBukkitEntity()).thenAnswer(c -> {
+            assertSame(caller, ScarpetNativeWork.capture().owner());
+            return ownerWrapper;
+        });
+        when(victim.getBukkitEntity()).thenReturn(targetWrapper);
+        var plugins = mock(org.bukkit.plugin.PluginManager.class);
+        var child = new CompletableFuture<Void>();
+        doAnswer(c -> {
+            var event = (org.bukkit.event.entity.EntityCombustByEntityEvent) c.getArgument(0);
+            assertSame(ownerWrapper, event.getCombuster());
+            assertSame(targetWrapper, event.getEntity());
+            event.setDuration(7F);
+            ScarpetNativeWork.record(child);
+            return null;
+        }).when(plugins).callEvent(any());
+        try (var ticks = owners(); var bukkit = mockStatic(org.bukkit.Bukkit.class)) {
+            bukkit.when(org.bukkit.Bukkit::getPluginManager).thenReturn(plugins);
+            var actual = ScarpetEnchantmentEntityEffects.apply(new Ignite(LevelBasedValue.constant(3F)), admission(), 1, item, victim, position);
+            assertFalse(actual.isDone());
+            verify(victim, never()).igniteForSeconds(anyFloat(), anyBoolean());
+            child.complete(null);
+            actual.join();
+            verify(victim).igniteForSeconds(7F, false);
+            clearInvocations(victim);
+            doAnswer(c -> {
+                ((org.bukkit.event.entity.EntityCombustEvent) c.getArgument(0)).setCancelled(true);
+                return null;
+            }).when(plugins).callEvent(any());
+            ScarpetEnchantmentEntityEffects.apply(new Ignite(LevelBasedValue.constant(3F)), admission(), 1, item, victim, position).join();
+            verify(victim, never()).igniteForSeconds(anyFloat(), anyBoolean());
+        }
+    }
+
+    @Test
+    void nativeItemDamageKeepsActualOriginalItemAndItemOwnerRatherThanAffectedTarget() {
+        weapon.set(DataComponents.MAX_DAMAGE, 10);
+        weapon.set(DataComponents.DAMAGE, 0);
+        var actualItem = spy(weapon);
+        var actualUse = new EnchantedItemInUse(actualItem, EquipmentSlot.MAINHAND, caller);
+        var child = new CompletableFuture<Void>();
+        doAnswer(c -> {
+            assertSame(caller, ScarpetNativeWork.capture().owner());
+            assertSame(original, c.getArgument(1));
+            assertSame(caller, c.getArgument(2));
+            ScarpetNativeWork.record(child);
+            return null;
+        }).when(actualItem).hurtAndBreak(anyInt(), any(ServerLevel.class), any(LivingEntity.class), any(Consumer.class));
+        try (var ticks = owners()) {
+            var actual = ScarpetEnchantmentEntityEffects.apply(new ChangeItemDamage(LevelBasedValue.constant(3.7F)), admission(), 2, actualUse, victim, position);
+            assertFalse(actual.isDone());
+            child.complete(null);
+            actual.join();
+            verify(actualItem).hurtAndBreak(eq(3), eq(original), eq(caller), same(actualUse.onBreak()));
+            verify(victim, never()).getRandom();
+        }
+    }
+
+    @Test
+    void soundAndParticlesKeepNativeSeededTargetArgumentsAndOriginalWorld() {
+        var sound = new PlaySoundEffect(List.of(Holder.direct(SoundEvents.ANVIL_BREAK), Holder.direct(SoundEvents.ANVIL_HIT)), UniformFloat.of(0.2F, 0.7F), UniformFloat.of(0.5F, 1.5F));
+        when(victim.getSoundSource()).thenReturn(SoundSource.HOSTILE);
+        when(victim.getKnownMovement()).thenReturn(new Vec3(0.2, -0.3, 0.4));
+        when(victim.getBbWidth()).thenReturn(0.7F);
+        when(victim.getBbHeight()).thenReturn(1.8F);
+        var particles = new SpawnParticlesEffect(ParticleTypes.FLAME, SpawnParticlesEffect.inBoundingBox(), SpawnParticlesEffect.inBoundingBox(), SpawnParticlesEffect.fixedVelocity(UniformFloat.of(-0.2F, 0.2F)), SpawnParticlesEffect.movementScaled(0.5F), UniformFloat.of(0.1F, 0.4F));
+        var oracle = new ArrayList<List<Object>>();
+        doAnswer(c -> {
+            oracle.add(Arrays.asList(c.getArguments()));
+            return null;
+        }).when(original).playSound(isNull(), anyDouble(), anyDouble(), anyDouble(), any(Holder.class), any(SoundSource.class), anyFloat(), anyFloat());
+        doAnswer(c -> {
+            oracle.add(Arrays.asList(c.getArguments()));
+            return 1;
+        }).when(original).sendParticlesSource(any(), any(), anyBoolean(), anyBoolean(), anyDouble(), anyDouble(), anyDouble(), anyInt(), anyDouble(), anyDouble(), anyDouble(), anyDouble());
+        sound.apply(original, 6, item, victim, position);
+        particles.apply(original, 1, item, victim, position);
+        var expected = List.copyOf(oracle);
+        oracle.clear();
+        when(victim.getRandom()).thenReturn(RandomSource.create(314));
+        try (var ticks = owners(); var lease = leases()) {
+            ScarpetEnchantmentEntityEffects.apply(sound, admission(), 6, item, victim, position).join();
+            ScarpetEnchantmentEntityEffects.apply(particles, admission(), 1, item, victim, position).join();
+            assertEquals(expected, oracle);
+            when(victim.isSilent()).thenReturn(true);
+            oracle.clear();
+            ScarpetEnchantmentEntityEffects.apply(sound, admission(), 1, item, victim, position).join();
+            assertTrue(oracle.isEmpty());
+            verify(foreign, never()).playSound(any(), anyDouble(), anyDouble(), anyDouble(), any(Holder.class), any(), anyFloat(), anyFloat());
+        }
+    }
+
+    @Test
+    void replaceBlockPreservesPredicateAndProviderWorldAndWaitsFormChildBeforeGameEvent() {
+        var predicate = mock(BlockPredicate.class);
+        when(predicate.test(original, block)).thenReturn(true);
+        var provider = BlockStateProvider.of(Blocks.STONE);
+        var effect = new ReplaceBlock(Vec3i.ZERO, Optional.of(predicate), Holder.direct(provider), Optional.of(GameEvent.BLOCK_CHANGE));
+        var child = new CompletableFuture<Void>();
+        var order = new ArrayList<String>();
+        try (var ticks = owners(); var lease = leases(); var form = mockStatic(org.bukkit.craftbukkit.event.CraftEventFactory.class)) {
+            form.when(() -> org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(original, block, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL, victim, true)).thenAnswer(c -> {
+                order.add("form");
+                ScarpetNativeWork.record(child);
+                return true;
+            });
+            doAnswer(c -> {
+                order.add("event");
+                return null;
+            }).when(original).gameEvent(eq(victim), eq(GameEvent.BLOCK_CHANGE), eq(block));
+            var actual = ScarpetEnchantmentEntityEffects.apply(effect, admission(), 1, item, victim, position);
+            assertEquals(List.of("form"), order);
+            assertFalse(actual.isDone());
+            child.complete(null);
+            actual.join();
+            assertEquals(List.of("form", "event"), order);
+            verify(predicate).test(original, block);
+            when(predicate.test(original, block)).thenReturn(false);
+            order.clear();
+            ScarpetEnchantmentEntityEffects.apply(effect, admission(), 1, item, victim, position).join();
+            assertTrue(order.isEmpty());
+        }
+    }
+
+    @Test
+    void replaceDiskMatchesNativeExactTraversalAndStateRandomIncludingNegativeHeight() {
+        var effect = new ReplaceDisk(LevelBasedValue.constant(2F), LevelBasedValue.constant(-1F), Vec3i.ZERO, Optional.empty(), Holder.direct(new WeightedStateProvider(WeightedList.of(Blocks.STONE.defaultBlockState()))), Optional.of(GameEvent.BLOCK_CHANGE));
+        var trace = new ArrayList<List<Object>>();
+        try (var ticks = owners(); var lease = leases(); var form = mockStatic(org.bukkit.craftbukkit.event.CraftEventFactory.class)) {
+            form.when(() -> org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(eq(original), any(BlockPos.class), any(), eq(Block.UPDATE_ALL), eq(victim), eq(true))).thenAnswer(c -> {
+                trace.add(List.of(((BlockPos) c.getArgument(1)).immutable(), c.getArgument(2)));
+                return true;
+            });
+            effect.apply(original, 1, item, victim, position);
+            var expected = List.copyOf(trace);
+            trace.clear();
+            when(victim.getRandom()).thenReturn(RandomSource.create(314));
+            ScarpetEnchantmentEntityEffects.apply(effect, admission(), 1, item, victim, position).join();
+            assertFalse(expected.isEmpty());
+            assertEquals(expected, trace);
+        }
+    }
+
+    @Test
+    void setPropertiesUsesActualTargetWorldButOriginalWorldGameEventAfterChild() {
+        var before = Blocks.OAK_LOG.defaultBlockState();
+        var properties = BlockItemStateProperties.EMPTY.with(net.minecraft.world.level.block.state.properties.BlockStateProperties.AXIS, net.minecraft.core.Direction.Axis.X);
+        var after = properties.apply(before);
+        when(foreign.getBlockState(block)).thenReturn(before);
+        var child = new CompletableFuture<Void>();
+        doAnswer(c -> {
+            ScarpetNativeWork.record(child);
+            return true;
+        }).when(foreign).setBlockAndUpdate(block, after);
+        try (var ticks = owners(); var lease = leases()) {
+            var actual = ScarpetEnchantmentEntityEffects.apply(new SetBlockProperties(properties), admission(), 1, item, victim, position);
+            assertFalse(actual.isDone());
+            verify(original, never()).gameEvent(any(Entity.class), any(Holder.class), any(BlockPos.class));
+            child.complete(null);
+            actual.join();
+            verify(original).gameEvent(victim, GameEvent.BLOCK_CHANGE, block);
+            verify(original, never()).getBlockState(any());
+            verify(foreign, never()).gameEvent(any(Entity.class), any(Holder.class), any(BlockPos.class));
+        }
+    }
+
+    @Test
+    void nestedProviderNullRulesReadOriginalWorldFallbackAndTargetRandomInSourceOrder() {
+        var predicate = mock(BlockPredicate.class);
+        var empty = mock(BlockStateProvider.class);
+        var chosen = mock(BlockStateProvider.class);
+        var order = new ArrayList<String>();
+        when(predicate.test(original, block)).thenAnswer(c -> {
+            order.add("predicate");
+            return true;
+        });
+        when(empty.getOptionalState(eq(original), any(), eq(block))).thenAnswer(c -> {
+            assertSame(victim, ScarpetNativeWork.capture().owner());
+            order.add("empty");
+            return null;
+        });
+        when(chosen.getOptionalState(eq(original), any(), eq(block))).thenAnswer(c -> {
+            order.add("state");
+            return Blocks.STONE.defaultBlockState();
+        });
+        var provider = RuleBasedStateProvider.builder(chosen).ifTrueThenProvide(predicate, empty).build();
+        try (var ticks = owners(); var lease = leases()) {
+            assertEquals(Blocks.STONE.defaultBlockState(), ScarpetEnchantmentBlockStates.state(provider, original, victim, block, false).join());
+            assertEquals(List.of("predicate", "empty", "state"), order);
+            when(original.getBlockState(block)).thenReturn(Blocks.DIRT.defaultBlockState());
+            assertEquals(Blocks.DIRT.defaultBlockState(), ScarpetEnchantmentBlockStates.state(new RuleBasedStateProvider((Holder<BlockStateProvider>) null, List.of()), original, victim, block, false).join());
+        }
+    }
+
+    @Test
+    void nativeExplosionKeepsOriginalWorldOffsetSourceRadiusAndRealContinuation() {
+        var effect = new ExplodeEffect(true, Optional.of(Holder.direct(new DamageType("enchantment", 0F))), Optional.of(LevelBasedValue.constant(0.7F)), Optional.empty(), new Vec3(2, 3, 4), LevelBasedValue.constant(2.5F), false, Level.ExplosionInteraction.NONE, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, WeightedList.of(), Holder.direct(SoundEvents.GENERIC_EXPLODE.value()));
+        var child = new CompletableFuture<Void>();
+        var observed = new ArrayList<Object>();
+        doAnswer(c -> {
+            observed.addAll(Arrays.asList(c.getArguments()));
+            ScarpetNativeWork.record(child);
+            return null;
+        }).when(original).explode(any(), any(), any(), anyDouble(), anyDouble(), anyDouble(), anyFloat(), anyBoolean(), any(), any(), any(), any(), any());
+        try (var ticks = owners(); var lease = leases()) {
+            var actual = ScarpetEnchantmentEntityEffects.apply(effect, admission(), 1, item, victim, position);
+            assertFalse(actual.isDone());
+            assertSame(victim, observed.get(0));
+            assertSame(victim, ((DamageSource) observed.get(1)).getEntity());
+            assertEquals(position.x + 2, observed.get(3));
+            assertEquals(position.y + 3, observed.get(4));
+            assertEquals(position.z + 4, observed.get(5));
+            assertEquals(2.5F, observed.get(6));
+            assertEquals(Level.ExplosionInteraction.NONE, observed.get(8));
+            child.complete(null);
+            actual.join();
+            verify(foreign, never()).explode(any(), any(), any(), anyDouble(), anyDouble(), anyDouble(), anyFloat(), anyBoolean(), any(), any(), any(), any(), any());
+        }
+    }
+
+    @Test
+    void runFunctionBuildsOriginalWorldSourceWithActualTargetRotationAndWaitsNativeCommandChild() {
+        var id = net.minecraft.resources.Identifier.parse("carpet:test");
+        var effect = new RunFunction(id);
+        var manager = mock(ServerFunctionManager.class);
+        when(server.getFunctions()).thenReturn(manager);
+        var function = mock(net.minecraft.commands.functions.CommandFunction.class);
+        when(manager.get(id)).thenReturn(Optional.of(function));
+        var rotation = new Vec2(15, 40);
+        when(victim.getRotationVector()).thenAnswer(c -> {
+            assertSame(victim, ScarpetNativeWork.capture().owner());
+            return rotation;
+        });
+        var base = new net.minecraft.commands.CommandSourceStack(net.minecraft.commands.CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, original, net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER, net.minecraft.network.chat.Component.literal("native"), server);
+        when(server.createCommandSourceStack()).thenReturn(base);
+        var child = new CompletableFuture<Void>();
+        doAnswer(c -> {
+            var source = (net.minecraft.commands.CommandSourceStack) c.getArgument(1);
+            assertSame(victim, source.getEntity());
+            assertSame(original, source.getLevel());
+            assertEquals(position, source.getPosition());
+            assertEquals(rotation, source.getRotation());
+            ScarpetNativeWork.record(child);
+            return null;
+        }).when(manager).execute(eq(function), any());
+        try (var ticks = owners(); var lease = leases()) {
+            var actual = ScarpetEnchantmentEntityEffects.apply(effect, admission(), 1, item, victim, position);
+            assertFalse(actual.isDone());
+            child.complete(null);
+            actual.join();
+            clearInvocations(victim);
+            when(manager.get(id)).thenReturn(Optional.empty());
+            ScarpetEnchantmentEntityEffects.apply(effect, admission(), 1, item, victim, position).join();
+            verify(victim, never()).getRotationVector();
+        }
+    }
+
+    @Test
+    void summonWaitsCreateSpawnAndWholePostAttackChildrenBeforePhysicsWithSourceTeamThenActualSnap() {
+        var type = mock(EntityType.class);
+        var spawned = mock(LivingEntity.class);
+        when(spawned.level()).thenReturn(original);
+        when(spawned.blockPosition()).thenReturn(block);
+        when(spawned.position()).thenReturn(position);
+        when(spawned.getYRot()).thenReturn(27F);
+        when(spawned.getXRot()).thenReturn(9F);
+        when(spawned.getScoreboardName()).thenReturn("spawned");
+        var team = mock(net.minecraft.world.scores.PlayerTeam.class);
+        var board = mock(net.minecraft.server.ServerScoreboard.class);
+        when(original.getScoreboard()).thenReturn(board);
+        var createChild = new CompletableFuture<Void>();
+        var addChild = new CompletableFuture<Void>();
+        var wholeChild = new CompletableFuture<Void>();
+        var order = new ArrayList<String>();
+        when(type.create(eq(original), isNull(), eq(block), eq(EntitySpawnReason.TRIGGERED), eq(false), eq(false))).thenAnswer(c -> {
+            order.add("create");
+            ScarpetNativeWork.record(createChild);
+            return spawned;
+        });
+        doAnswer(c -> {
+            assertTrue(CarpetPlayerSpawnContinuations.pending(spawned));
+            order.add("add");
+            ScarpetNativeWork.record(addChild);
+            return null;
+        }).when(original).addFreshEntityWithPassengers(eq(spawned), eq(org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.ENCHANTMENT));
+        when(victim.getTeam()).thenAnswer(c -> {
+            order.add("team");
+            return team;
+        });
+        when(board.addPlayerToTeam("spawned", team)).thenAnswer(c -> {
+            order.add("join");
+            return true;
+        });
+        doAnswer(c -> {
+            assertSame(spawned, ScarpetNativeWork.capture().owner());
+            assertTrue(CarpetPlayerSpawnContinuations.pending(spawned));
+            order.add("snap");
+            return null;
+        }).when(spawned).snapTo(position.x, position.y, position.z, 27F, 9F);
+        var effect = new SummonEntityEffect(HolderSet.direct(Holder.direct(type)), true);
+        var sourceRandom = mock(RandomSource.class);
+        when(sourceRandom.nextInt(anyInt())).thenAnswer(c -> {
+            assertSame(caller, ScarpetNativeWork.capture().owner());
+            return 0;
+        });
+        when(original.getRandom()).thenReturn(sourceRandom);
+        try (var ticks = owners(); var lease = leases()) {
+            var whole = ScarpetNativeWork.observeNative(caller, () -> {
+                ScarpetNativeWork.record(wholeChild);
+                return ScarpetEnchantmentEntityEffects.apply(effect, admission(), 1, item, victim, position);
+            });
+            assertEquals(List.of("create"), order);
+            assertTrue(CarpetPlayerSpawnContinuations.pending(spawned));
+            createChild.complete(null);
+            assertEquals(List.of("create", "add"), order);
+            verify(victim, never()).getTeam();
+            addChild.complete(null);
+            assertEquals(List.of("create", "add", "team", "join", "snap"), order);
+            assertTrue(CarpetPlayerSpawnContinuations.pending(spawned));
+            assertFalse(whole.isDone());
+            wholeChild.complete(null);
+            whole.join().join();
+            assertFalse(CarpetPlayerSpawnContinuations.pending(spawned));
+        }
+    }
 }

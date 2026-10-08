@@ -1,20 +1,13 @@
 package fun.bm.lophine.carpet;
 
-import carpet.script.external.ScarpetNativeWork;
 import ca.spottedleaf.concurrentutil.executor.PrioritisedExecutor;
 import ca.spottedleaf.concurrentutil.executor.queue.AreaDependentQueue;
 import ca.spottedleaf.concurrentutil.util.Priority;
 import ca.spottedleaf.moonrise.patches.chunk_system.scheduling.ChunkTaskScheduler;
 import ca.spottedleaf.moonrise.patches.chunk_system.scheduling.task.ChunkLightTask;
 import ca.spottedleaf.moonrise.patches.starlight.light.StarLightInterface;
+import carpet.script.external.ScarpetNativeWork;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
@@ -25,11 +18,20 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class CarpetLightGenerationLifecycleTest {
-    @BeforeAll static void bootstrap() {
+    @BeforeAll
+    static void bootstrap() {
         net.minecraft.SharedConstants.tryDetectVersion();
         net.minecraft.server.Bootstrap.bootStrap();
     }
@@ -64,7 +66,10 @@ class CarpetLightGenerationLifecycleTest {
             when(world.getChunkSource()).thenReturn(source);
             when(source.getLightEngine()).thenReturn(light);
             when(light.starlight$getLightEngine()).thenReturn(engine);
-            doAnswer(call -> { lights.incrementAndGet(); return null; }).when(engine).lightChunk(any(), any());
+            doAnswer(call -> {
+                lights.incrementAndGet();
+                return null;
+            }).when(engine).lightChunk(any(), any());
         }
 
         ChunkLightTask generation(CompletableFuture<ChunkAccess> complete) {
@@ -82,14 +87,19 @@ class CarpetLightGenerationLifecycleTest {
             var done = new CompletableFuture<Void>();
             Thread.ofPlatform().daemon(true).name("Carpet light lifecycle test").start(() -> {
                 started.countDown();
-                try { workers.getFirst().run(); done.complete(null); }
-                catch (Throwable failure) { done.completeExceptionally(failure); }
+                try {
+                    workers.getFirst().run();
+                    done.complete(null);
+                } catch (Throwable failure) {
+                    done.completeExceptionally(failure);
+                }
             });
             return done;
         }
     }
 
-    @Test void offModeRetainsAnActualGenerationTaskThatResumesAndCompletesWhenLightUpdatesReturn() throws Exception {
+    @Test
+    void offModeRetainsAnActualGenerationTaskThatResumesAndCompletesWhenLightUpdatesReturn() throws Exception {
         String previous = GeneralCompatConfig.lightUpdates;
         CompletableFuture<Void> worker = null;
         try {
@@ -121,7 +131,8 @@ class CarpetLightGenerationLifecycleTest {
         }
     }
 
-    @Test void nativeDrainFinishesAnAlreadyAcceptedSuppressedLightTaskAndItsRegisteredReceipt() throws Exception {
+    @Test
+    void nativeDrainFinishesAnAlreadyAcceptedSuppressedLightTaskAndItsRegisteredReceipt() throws Exception {
         String previous = GeneralCompatConfig.lightUpdates;
         CompletableFuture<Void> worker = null;
         try {
@@ -129,7 +140,10 @@ class CarpetLightGenerationLifecycleTest {
             var fixture = new Fixture();
             var nativeReceipt = new CompletableFuture<Void>();
             var lights = new AtomicInteger();
-            var task = fixture.queue.queueChunkLightTask(new ChunkPos(0, 0), () -> { lights.incrementAndGet(); return true; }, Priority.NORMAL);
+            var task = fixture.queue.queueChunkLightTask(new ChunkPos(0, 0), () -> {
+                lights.incrementAndGet();
+                return true;
+            }, Priority.NORMAL);
             task.queueOrRunTask(() -> nativeReceipt.complete(null));
             ScarpetNativeWork.trackNative(fixture.server, nativeReceipt);
             var idle = ScarpetNativeWork.whenIdle(fixture.server);

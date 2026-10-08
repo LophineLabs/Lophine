@@ -4,8 +4,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -63,18 +63,18 @@ class CarriedBlockEntityPlacementTest {
         var chest = new net.minecraft.world.level.block.entity.ChestBlockEntity(source, chestState);
         // Unit fixture: production binds item components during data pack loading.
         net.minecraft.world.item.Items.DIAMOND.builtInRegistryHolder().bindComponents(net.minecraft.core.component.DataComponentMap.builder()
-            .set(net.minecraft.core.component.DataComponents.MAX_STACK_SIZE, 64).build());
+                .set(net.minecraft.core.component.DataComponents.MAX_STACK_SIZE, 64).build());
         var diamonds = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND, 37);
         diamonds.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("carried diamonds"));
         chest.setItem(4, diamonds);
         var moving = new net.minecraft.world.level.block.piston.PistonMovingBlockEntity(destination, pistonState,
-            chestState, net.minecraft.core.Direction.EAST, true, false);
+                chestState, net.minecraft.core.Direction.EAST, true, false);
         moving.carpetSetCarriedBlockEntity(chest);
         assertSame(chest, moving.carpetGetCarriedBlockEntity());
         assertEquals(destination, chest.getBlockPos());
 
         var lookup = net.minecraft.core.HolderLookup.Provider.create(net.minecraft.core.registries.BuiltInRegistries.REGISTRY.stream()
-            .map(registry -> (net.minecraft.core.HolderLookup.RegistryLookup<?>) registry));
+                .map(registry -> (net.minecraft.core.HolderLookup.RegistryLookup<?>) registry));
         var tag = moving.saveWithoutMetadata(lookup);
         assertTrue(tag.contains("carriedTileEntityCM"));
         var reloaded = new net.minecraft.world.level.block.piston.PistonMovingBlockEntity(destination, pistonState);

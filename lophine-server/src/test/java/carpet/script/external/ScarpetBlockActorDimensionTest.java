@@ -1,10 +1,7 @@
 package carpet.script.external;
 
-import carpet.script.CarpetContext;
-import carpet.script.Context;
-import carpet.script.Expression;
+import carpet.script.*;
 import carpet.script.Module;
-import carpet.script.ScriptHost;
 import carpet.script.argument.Vector3Argument;
 import carpet.script.value.BlockValue;
 import carpet.script.value.EntityValue;
@@ -27,21 +24,39 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class ScarpetBlockActorDimensionTest {
-    @BeforeAll static void bootstrap() {
+    @BeforeAll
+    static void bootstrap() {
         net.minecraft.SharedConstants.tryDetectVersion();
         net.minecraft.server.Bootstrap.bootStrap();
     }
 
     private static final class Host extends ScriptHost {
-        Host() { super(null, new carpet.script.ScriptServer() {
-            @Override public java.nio.file.Path resolveResource(String name) { return java.nio.file.Path.of(name); }
-        }, false, null, Expression.LoadOverride.DEFAULT); }
-        @Override protected Module getModuleOrLibraryByName(String name) { return null; }
-        @Override protected void runModuleCode(Context context, Module module) { }
-        @Override protected ScriptHost duplicate() { return new Host(); }
+        Host() {
+            super(null, new carpet.script.ScriptServer() {
+                @Override
+                public java.nio.file.Path resolveResource(String name) {
+                    return java.nio.file.Path.of(name);
+                }
+            }, false, null, Expression.LoadOverride.DEFAULT);
+        }
+
+        @Override
+        protected Module getModuleOrLibraryByName(String name) {
+            return null;
+        }
+
+        @Override
+        protected void runModuleCode(Context context, Module module) {
+        }
+
+        @Override
+        protected ScriptHost duplicate() {
+            return new Host();
+        }
     }
 
-    @Test void foreignBlockReadAndInventoryRunOnTheLocatorsDimensionWithoutChangingOuterSource() {
+    @Test
+    void foreignBlockReadAndInventoryRunOnTheLocatorsDimensionWithoutChangingOuterSource() {
         ServerLevel outer = mock(ServerLevel.class), foreign = mock(ServerLevel.class);
         CommandSourceStack source = mock(CommandSourceStack.class), located = mock(CommandSourceStack.class);
         when(source.getLevel()).thenReturn(outer);
@@ -77,7 +92,8 @@ public class ScarpetBlockActorDimensionTest {
         verify(outer, never()).getBlockState(any());
     }
 
-    @Test void foreignSetTargetUsesItsOwnActorWhileSourceStateIsCapturedBeforeDispatch() {
+    @Test
+    void foreignSetTargetUsesItsOwnActorWhileSourceStateIsCapturedBeforeDispatch() {
         ServerLevel outer = mock(ServerLevel.class), destination = mock(ServerLevel.class);
         CommandSourceStack source = mock(CommandSourceStack.class), located = mock(CommandSourceStack.class);
         when(source.getLevel()).thenReturn(outer);
@@ -103,7 +119,8 @@ public class ScarpetBlockActorDimensionTest {
         assertSame(outer, context.level());
     }
 
-    @Test void nestedEntityLocatorsDoNotMixPositionsAfterNativeIdReuseOrChange() throws Exception {
+    @Test
+    void nestedEntityLocatorsDoNotMixPositionsAfterNativeIdReuseOrChange() throws Exception {
         var field = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
         field.setAccessible(true);
         var allocator = (sun.misc.Unsafe) field.get(null);

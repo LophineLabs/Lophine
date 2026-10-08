@@ -3,9 +3,6 @@ package fun.bm.lophine.carpet;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.EncoderException;
-import java.time.Instant;
-import java.util.BitSet;
-import java.util.Optional;
 import me.earthme.luminol.config.modules.fixes.LongCommandSupportConfig;
 import net.minecraft.commands.arguments.ArgumentSignatures;
 import net.minecraft.network.FriendlyByteBuf;
@@ -14,9 +11,16 @@ import net.minecraft.network.chat.SignedMessageBody;
 import net.minecraft.network.protocol.game.ServerboundChatCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundChatCommandSignedPacket;
 import net.minecraft.network.protocol.game.ServerboundChatPacket;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.time.Instant;
+import java.util.BitSet;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CarpetChatPacketTest {
     private boolean previousRule;

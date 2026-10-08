@@ -1,18 +1,26 @@
 package fun.bm.lophine.carpet;
 
 import carpet.script.external.ScarpetNativeWork;
+import net.minecraft.server.MinecraftServer;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import net.minecraft.server.MinecraftServer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeAll;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 class CarpetPlayerShadowJobTest {
-    @BeforeAll static void bootstrap() { net.minecraft.SharedConstants.tryDetectVersion(); net.minecraft.server.Bootstrap.bootStrap(); }
-    @Test void shutdownUnblocksAPollWithoutCompletingItsAlreadyAcceptedSnapshot() {
+    @BeforeAll
+    static void bootstrap() {
+        net.minecraft.SharedConstants.tryDetectVersion();
+        net.minecraft.server.Bootstrap.bootStrap();
+    }
+
+    @Test
+    void shutdownUnblocksAPollWithoutCompletingItsAlreadyAcceptedSnapshot() {
         var server = mock(MinecraftServer.class);
         var job = new CarpetPlayerShadowJob(server);
         var snapshot = new CompletableFuture<Void>();
@@ -30,7 +38,8 @@ class CarpetPlayerShadowJobTest {
         assertTrue(birthIdle.isDone());
     }
 
-    @Test void shutdownDrainsAnAdmittedPlacementAndKeepsTheUuidFileLeaseUntilItsRealTailEnds() {
+    @Test
+    void shutdownDrainsAnAdmittedPlacementAndKeepsTheUuidFileLeaseUntilItsRealTailEnds() {
         var server = mock(MinecraftServer.class);
         UUID id = UUID.randomUUID();
         var job = new CarpetPlayerShadowJob(server);
@@ -55,7 +64,8 @@ class CarpetPlayerShadowJobTest {
         assertTrue(birthIdle.isDone());
     }
 
-    @Test void placementFailureReleasesFileAdmissionAndFinishesTheBirthWithItsNativeFailure() {
+    @Test
+    void placementFailureReleasesFileAdmissionAndFinishesTheBirthWithItsNativeFailure() {
         var server = mock(MinecraftServer.class);
         UUID id = UUID.randomUUID();
         var job = new CarpetPlayerShadowJob(server);

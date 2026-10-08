@@ -1,15 +1,16 @@
 package fun.bm.lophine.carpet;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.phys.Vec3;
+import org.junit.jupiter.api.Test;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.phys.Vec3;
-import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -24,7 +25,7 @@ class TisRaycastTraversalTest {
         Random random = new Random(0xCA4FE7L);
         for (int i = 0; i < 200; ++i) {
             verify(new Vec3(random.nextDouble() * 128 - 64, random.nextDouble() * 32 - 16, random.nextDouble() * 128 - 64),
-                new Vec3(random.nextDouble() * 128 - 64, random.nextDouble() * 32 - 16, random.nextDouble() * 128 - 64));
+                    new Vec3(random.nextDouble() * 128 - 64, random.nextDouble() * 32 - 16, random.nextDouble() * 128 - 64));
         }
     }
 
@@ -46,7 +47,8 @@ class TisRaycastTraversalTest {
         while (position.get(walker) != null) {
             actual.add((BlockPos) position.get(walker));
             advance.invoke(walker);
-            if (actual.size() > expected.size() + 1) throw new AssertionError("Walker did not stop at vanilla endpoint");
+            if (actual.size() > expected.size() + 1)
+                throw new AssertionError("Walker did not stop at vanilla endpoint");
         }
         assertEquals(expected, actual, () -> from + " -> " + to);
     }

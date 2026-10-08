@@ -1,25 +1,28 @@
 package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.protocol.tiscm.TISCMProtocol;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class TisSpeedTestSessionIdentityTest {
-    @BeforeAll static void bootstrap() {
+    @BeforeAll
+    static void bootstrap() {
         net.minecraft.SharedConstants.tryDetectVersion();
         net.minecraft.server.Bootstrap.bootStrap();
     }
 
-    @Test void oldConnectionsCannotAdvanceOrAbortAReplacementSessionWithTheSameUuid() throws Exception {
+    @Test
+    void oldConnectionsCannotAdvanceOrAbortAReplacementSessionWithTheSameUuid() throws Exception {
         try (var protocol = mockStatic(TISCMProtocol.class)) {
             UUID id = UUID.randomUUID();
             var original = mock(ServerPlayer.class);
@@ -55,7 +58,9 @@ class TisSpeedTestSessionIdentityTest {
                 assertEquals(1, count.get());
                 TisSpeedTestCommand.disconnected(replacement);
                 assertTrue(done.get());
-            } finally { TisSpeedTestCommand.reset(); }
+            } finally {
+                TisSpeedTestCommand.reset();
+            }
         }
     }
 }

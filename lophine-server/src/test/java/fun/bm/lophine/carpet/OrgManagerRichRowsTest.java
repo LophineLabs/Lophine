@@ -1,43 +1,227 @@
 package fun.bm.lophine.carpet;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import carpet.script.external.*;
-import com.google.gson.*;
+
+import carpet.script.external.ScarpetNativeWork;
+import carpet.script.external.ScarpetRuntime;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
-import net.minecraft.commands.*;
-import net.minecraft.network.chat.*;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.io.TempDir;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 class OrgManagerRichRowsTest {
-    @TempDir Path directory;
-    @BeforeAll static void bootstrap(){OrgInventoryPersistenceTest.bootstrap();}
-    static JsonObject profile(String group,String comment){var p=JsonParser.parseString("{\"data_version\":5,\"pos\":{\"x\":12.345,\"y\":64,\"z\":-6},\"direction\":{\"yaw\":1,\"pitch\":2},\"dimension\":\"minecraft:the_nether\",\"gamemode\":\"creative\",\"flying\":true,\"sneaking\":false,\"autologin\":true,\"group\":[],\"simple_action\":{\"use\":{\"interval\":1,\"continuous\":true}},\"script_action\":{\"fishing\":{}},\"startup_action\":[{\"delay\":8,\"function\":{\"type\":\"command\",\"value\":\"say hello\"}},{\"delay\":1,\"function\":{\"type\":\"simple\",\"value\":\"attack\"}}]}").getAsJsonObject();if(group!=null)p.getAsJsonArray("group").add(group);p.addProperty("annotation",comment);return p;}
+    @TempDir
+    Path directory;
+
+    @BeforeAll
+    static void bootstrap() {
+        OrgInventoryPersistenceTest.bootstrap();
+    }
+
+    static JsonObject profile(String group, String comment) {
+        var p = JsonParser.parseString("{\"data_version\":5,\"pos\":{\"x\":12.345,\"y\":64,\"z\":-6},\"direction\":{\"yaw\":1,\"pitch\":2},\"dimension\":\"minecraft:the_nether\",\"gamemode\":\"creative\",\"flying\":true,\"sneaking\":false,\"autologin\":true,\"group\":[],\"simple_action\":{\"use\":{\"interval\":1,\"continuous\":true}},\"script_action\":{\"fishing\":{}},\"startup_action\":[{\"delay\":8,\"function\":{\"type\":\"command\",\"value\":\"say hello\"}},{\"delay\":1,\"function\":{\"type\":\"simple\",\"value\":\"attack\"}}]}").getAsJsonObject();
+        if (group != null) p.getAsJsonArray("group").add(group);
+        p.addProperty("annotation", comment);
+        return p;
+    }
+
     final class Fixture implements AutoCloseable {
-        final OrgInventoryPersistenceTest.Fixture actors=new OrgInventoryPersistenceTest.Fixture(directory);
-        final CommandSourceStack source=mock(CommandSourceStack.class);final OrgPlayerManager manager;
-        final Map<net.minecraft.server.MinecraftServer,OrgPlayerManager> managers;
-        final List<Component> rows=new ArrayList<>();final AtomicReference<String> callback=new AtomicReference<>();
-        final String permission=fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandPlayerManager;final int pageSize=fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.maxLinesPerPage;
-        final com.mojang.brigadier.CommandDispatcher<CommandSourceStack> dispatcher=new com.mojang.brigadier.CommandDispatcher<>();
-        @SuppressWarnings("unchecked") Fixture()throws Exception{for(var actor:actors.actors.values())when(actor.player().blockPosition()).thenReturn(net.minecraft.core.BlockPos.ZERO);when(source.getServer()).thenReturn(actors.server);when(source.getEntity()).thenReturn(actors.viewer.player());when(source.getPlayer()).thenReturn(actors.viewer.player());when(source.permissions()).thenReturn(net.minecraft.server.permissions.PermissionSet.ALL_PERMISSIONS);when(source.callback()).thenReturn((success,result)->callback.set(success+":"+result));var constructor=OrgPlayerManager.class.getDeclaredConstructor(net.minecraft.server.MinecraftServer.class,CommandBuildContext.class);constructor.setAccessible(true);manager=constructor.newInstance(actors.server,null);var index=OrgPlayerManager.class.getDeclaredField("MANAGERS");index.setAccessible(true);managers=(Map<net.minecraft.server.MinecraftServer,OrgPlayerManager>)index.get(null);managers.put(actors.server,manager);fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandPlayerManager="true";fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.maxLinesPerPage=100;OrgPlayerManagerCommands.register(dispatcher,null);doAnswer(call->{assertSame(actors.viewer.player(),actors.owner.get());rows.add(call.<java.util.function.Supplier<Component>>getArgument(0).get());return null;}).when(source).sendSuccess(any(),eq(false));}
-        CompletableFuture<Integer> run(String command)throws Exception{try(var scope=CarpetAsyncCommandResults.open()){dispatcher.execute(command,source);return scope.resultFuture(source);}}
-        void until(java.util.function.BooleanSupplier ready)throws Exception{long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(5);while(!ready.getAsBoolean()&&System.nanoTime()<deadline){actors.drain(actors.viewer);actors.drain(actors.target);actors.owner.set(null);Thread.sleep(1);}assertTrue(ready.getAsBoolean());}
-        public void close(){managers.remove(actors.server,manager);actors.close();fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandPlayerManager=permission;fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.maxLinesPerPage=pageSize;}
+        final OrgInventoryPersistenceTest.Fixture actors = new OrgInventoryPersistenceTest.Fixture(directory);
+        final CommandSourceStack source = mock(CommandSourceStack.class);
+        final OrgPlayerManager manager;
+        final Map<net.minecraft.server.MinecraftServer, OrgPlayerManager> managers;
+        final List<Component> rows = new ArrayList<>();
+        final AtomicReference<String> callback = new AtomicReference<>();
+        final String permission = fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandPlayerManager;
+        final int pageSize = fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.maxLinesPerPage;
+        final com.mojang.brigadier.CommandDispatcher<CommandSourceStack> dispatcher = new com.mojang.brigadier.CommandDispatcher<>();
+
+        @SuppressWarnings("unchecked")
+        Fixture() throws Exception {
+            for (var actor : actors.actors.values())
+                when(actor.player().blockPosition()).thenReturn(net.minecraft.core.BlockPos.ZERO);
+            when(source.getServer()).thenReturn(actors.server);
+            when(source.getEntity()).thenReturn(actors.viewer.player());
+            when(source.getPlayer()).thenReturn(actors.viewer.player());
+            when(source.permissions()).thenReturn(net.minecraft.server.permissions.PermissionSet.ALL_PERMISSIONS);
+            when(source.callback()).thenReturn((success, result) -> callback.set(success + ":" + result));
+            var constructor = OrgPlayerManager.class.getDeclaredConstructor(net.minecraft.server.MinecraftServer.class, CommandBuildContext.class);
+            constructor.setAccessible(true);
+            manager = constructor.newInstance(actors.server, null);
+            var index = OrgPlayerManager.class.getDeclaredField("MANAGERS");
+            index.setAccessible(true);
+            managers = (Map<net.minecraft.server.MinecraftServer, OrgPlayerManager>) index.get(null);
+            managers.put(actors.server, manager);
+            fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandPlayerManager = "true";
+            fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.maxLinesPerPage = 100;
+            OrgPlayerManagerCommands.register(dispatcher, null);
+            doAnswer(call -> {
+                assertSame(actors.viewer.player(), actors.owner.get());
+                rows.add(call.<java.util.function.Supplier<Component>>getArgument(0).get());
+                return null;
+            }).when(source).sendSuccess(any(), eq(false));
+        }
+
+        CompletableFuture<Integer> run(String command) throws Exception {
+            try (var scope = CarpetAsyncCommandResults.open()) {
+                dispatcher.execute(command, source);
+                return scope.resultFuture(source);
+            }
+        }
+
+        void until(java.util.function.BooleanSupplier ready) throws Exception {
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+            while (!ready.getAsBoolean() && System.nanoTime() < deadline) {
+                actors.drain(actors.viewer);
+                actors.drain(actors.target);
+                actors.owner.set(null);
+                Thread.sleep(1);
+            }
+            assertTrue(ready.getAsBoolean());
+        }
+
+        public void close() {
+            managers.remove(actors.server, manager);
+            actors.close();
+            fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandPlayerManager = permission;
+            fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.maxLinesPerPage = pageSize;
+        }
     }
-    static Component find(Component root,String exact){if(root.getString().equals(exact))return root;for(var child:root.getSiblings()){var value=find(child,exact);if(value!=null)return value;}return null;}
-    static Set<String> keys(Component root){var result=new HashSet<String>();walk(root,result);return result;}
-    static void walk(Component root,Set<String> keys){if(root.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents translation){keys.add(translation.getKey());for(var value:translation.getArgs())if(value instanceof Component text)walk(text,keys);}for(var child:root.getSiblings())walk(child,keys);}
-    @Test void actualDefaultGroupedListShowsSourceExpansionClicksAndReturnsGroupCountAfterLateFeedback()throws Exception{
-        try(var f=new Fixture()){f.manager.store.save("Ada",profile("Group Name","A"),false);f.manager.store.save("bob",profile("Builders","B"),false);f.manager.store.save("Clara",profile(null,"C"),false);var first=new CompletableFuture<Void>();var late=new CompletableFuture<Void>();doAnswer(call->{assertSame(f.actors.viewer.player(),f.actors.owner.get());f.rows.add(call.<java.util.function.Supplier<Component>>getArgument(0).get());ScarpetNativeWork.record(first);var continuation=ScarpetRuntime.captureNativeContinuation(()->{ScarpetNativeWork.record(late);return null;});first.thenRun(continuation::get);return null;}).when(f.source).sendSuccess(any(),eq(false));var result=f.run("playerManager list");f.until(()->f.rows.size()==2);assertFalse(result.isDone());assertNull(f.callback.get());assertTrue(keys(f.rows.getFirst()).contains("carpet-org-addition.command.playerManager.list.expand"));var group=find(f.rows.get(1),"[Group Name]");assertEquals("/playerManager group list group \"Group Name\"",((ClickEvent.RunCommand)group.getStyle().getClickEvent()).command());assertInstanceOf(HoverEvent.ShowText.class,group.getStyle().getHoverEvent());assertTrue(f.rows.get(1).getString().endsWith("[All]"));first.complete(null);assertFalse(result.isDone());late.complete(null);f.until(result::isDone);assertEquals(4,result.join());assertEquals("true:4",f.callback.get());}
+
+    static Component find(Component root, String exact) {
+        if (root.getString().equals(exact)) return root;
+        for (var child : root.getSiblings()) {
+            var value = find(child, exact);
+            if (value != null) return value;
+        }
+        return null;
     }
-    @Test void actualAllListContainsOriginalUpDownInfoButtonsAndTranslatedSavedDetails()throws Exception{
-        try(var f=new Fixture()){f.manager.store.save("Ada",profile("Group Name","comment"),false);var result=f.run("playerManager group list all");f.until(result::isDone);assertEquals(1,result.join());assertTrue(keys(f.rows.get(1)).contains("carpet-org-addition.command.playerManager.group.list.all"));var line=f.rows.get(2);assertEquals("/playerManager spawn Ada",((ClickEvent.RunCommand)find(line,"[↑]").getStyle().getClickEvent()).command());assertEquals("/player Ada kill",((ClickEvent.RunCommand)find(line,"[↓]").getStyle().getClickEvent()).command());var info=find(line,"[?]");assertNull(info.getStyle().getClickEvent());var hover=((HoverEvent.ShowText)info.getStyle().getHoverEvent()).value();assertTrue(keys(hover).containsAll(Set.of("carpet-org-addition.command.playerManager.info.pos","carpet-org-addition.command.playerManager.info.dimension","carpet-org-addition.command.playerManager.info.action","carpet-org-addition.command.playerAction.fishing","carpet-org-addition.command.playerManager.info.startup.run","carpet-org-addition.command.playerManager.info.startup.attack")));assertTrue(hover.getString().contains("12.35"));assertTrue(hover.getString().indexOf("Left-click")<hover.getString().indexOf("Execute command"));assertFalse(hover.getString().contains("script_action"));var comment=find(line,"    // comment");assertTrue(comment.getStyle().isItalic());}
+
+    static Set<String> keys(Component root) {
+        var result = new HashSet<String>();
+        walk(root, result);
+        return result;
     }
-    @Test void actualGroupHeaderUsesOriginalButtonsAndFilteredUngroupedAndMissingBranchesReturnSourceCount()throws Exception{
-        try(var f=new Fixture()){f.manager.store.save("Ada",profile("Group Name","needle comment"),false);f.manager.store.save("Bob",profile(null,"other"),false);var result=f.run("playerManager group list group \"Group Name\"");f.until(result::isDone);assertEquals(1,result.join());var header=(net.minecraft.network.chat.contents.TranslatableContents)f.rows.get(1).getContents();assertEquals("Group Name",header.getArgs()[0]);assertEquals("/playerManager group spawn \"Group Name\"",((ClickEvent.RunCommand)((Component)header.getArgs()[1]).getStyle().getClickEvent()).command());assertEquals("/playerManager group kill \"Group Name\"",((ClickEvent.RunCommand)((Component)header.getArgs()[2]).getStyle().getClickEvent()).command());f.rows.clear();result=f.run("playerManager list NeEdLe");var filtered=result;f.until(filtered::isDone);assertEquals(1,result.join());assertTrue(f.rows.getLast().getString().contains("Ada"));f.rows.clear();result=f.run("playerManager group list ungrouped");var ungrouped=result;f.until(ungrouped::isDone);assertEquals(1,result.join());assertTrue(f.rows.getLast().getString().contains("Bob"));result=f.run("playerManager group list group absent");var absent=result;f.until(absent::isDone);assertEquals(0,result.join());assertEquals("false:0",f.callback.get());}
+
+    static void walk(Component root, Set<String> keys) {
+        if (root.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents translation) {
+            keys.add(translation.getKey());
+            for (var value : translation.getArgs()) if (value instanceof Component text) walk(text, keys);
+        }
+        for (var child : root.getSiblings()) walk(child, keys);
     }
-    @Test void sourceStopSerializationDoesNotDisplayAnActionForInvalidGotoProfile(){var p=profile(null,"");p.add("simple_action",new JsonObject());p.add("script_action",JsonParser.parseString("{\"goto\":{}}").getAsJsonObject());var info=OrgPlayerProfileMessages.info("Ada",p);assertFalse(keys(info).contains("carpet-org-addition.command.playerManager.info.action"));}
+
+    @Test
+    void actualDefaultGroupedListShowsSourceExpansionClicksAndReturnsGroupCountAfterLateFeedback() throws Exception {
+        try (var f = new Fixture()) {
+            f.manager.store.save("Ada", profile("Group Name", "A"), false);
+            f.manager.store.save("bob", profile("Builders", "B"), false);
+            f.manager.store.save("Clara", profile(null, "C"), false);
+            var first = new CompletableFuture<Void>();
+            var late = new CompletableFuture<Void>();
+            doAnswer(call -> {
+                assertSame(f.actors.viewer.player(), f.actors.owner.get());
+                f.rows.add(call.<java.util.function.Supplier<Component>>getArgument(0).get());
+                ScarpetNativeWork.record(first);
+                var continuation = ScarpetRuntime.captureNativeContinuation(() -> {
+                    ScarpetNativeWork.record(late);
+                    return null;
+                });
+                first.thenRun(continuation::get);
+                return null;
+            }).when(f.source).sendSuccess(any(), eq(false));
+            var result = f.run("playerManager list");
+            f.until(() -> f.rows.size() == 2);
+            assertFalse(result.isDone());
+            assertNull(f.callback.get());
+            assertTrue(keys(f.rows.getFirst()).contains("carpet-org-addition.command.playerManager.list.expand"));
+            var group = find(f.rows.get(1), "[Group Name]");
+            assertEquals("/playerManager group list group \"Group Name\"", ((ClickEvent.RunCommand) group.getStyle().getClickEvent()).command());
+            assertInstanceOf(HoverEvent.ShowText.class, group.getStyle().getHoverEvent());
+            assertTrue(f.rows.get(1).getString().endsWith("[All]"));
+            first.complete(null);
+            assertFalse(result.isDone());
+            late.complete(null);
+            f.until(result::isDone);
+            assertEquals(4, result.join());
+            assertEquals("true:4", f.callback.get());
+        }
+    }
+
+    @Test
+    void actualAllListContainsOriginalUpDownInfoButtonsAndTranslatedSavedDetails() throws Exception {
+        try (var f = new Fixture()) {
+            f.manager.store.save("Ada", profile("Group Name", "comment"), false);
+            var result = f.run("playerManager group list all");
+            f.until(result::isDone);
+            assertEquals(1, result.join());
+            assertTrue(keys(f.rows.get(1)).contains("carpet-org-addition.command.playerManager.group.list.all"));
+            var line = f.rows.get(2);
+            assertEquals("/playerManager spawn Ada", ((ClickEvent.RunCommand) find(line, "[↑]").getStyle().getClickEvent()).command());
+            assertEquals("/player Ada kill", ((ClickEvent.RunCommand) find(line, "[↓]").getStyle().getClickEvent()).command());
+            var info = find(line, "[?]");
+            assertNull(info.getStyle().getClickEvent());
+            var hover = ((HoverEvent.ShowText) info.getStyle().getHoverEvent()).value();
+            assertTrue(keys(hover).containsAll(Set.of("carpet-org-addition.command.playerManager.info.pos", "carpet-org-addition.command.playerManager.info.dimension", "carpet-org-addition.command.playerManager.info.action", "carpet-org-addition.command.playerAction.fishing", "carpet-org-addition.command.playerManager.info.startup.run", "carpet-org-addition.command.playerManager.info.startup.attack")));
+            assertTrue(hover.getString().contains("12.35"));
+            assertTrue(hover.getString().indexOf("Left-click") < hover.getString().indexOf("Execute command"));
+            assertFalse(hover.getString().contains("script_action"));
+            var comment = find(line, "    // comment");
+            assertTrue(comment.getStyle().isItalic());
+        }
+    }
+
+    @Test
+    void actualGroupHeaderUsesOriginalButtonsAndFilteredUngroupedAndMissingBranchesReturnSourceCount() throws Exception {
+        try (var f = new Fixture()) {
+            f.manager.store.save("Ada", profile("Group Name", "needle comment"), false);
+            f.manager.store.save("Bob", profile(null, "other"), false);
+            var result = f.run("playerManager group list group \"Group Name\"");
+            f.until(result::isDone);
+            assertEquals(1, result.join());
+            var header = (net.minecraft.network.chat.contents.TranslatableContents) f.rows.get(1).getContents();
+            assertEquals("Group Name", header.getArgs()[0]);
+            assertEquals("/playerManager group spawn \"Group Name\"", ((ClickEvent.RunCommand) ((Component) header.getArgs()[1]).getStyle().getClickEvent()).command());
+            assertEquals("/playerManager group kill \"Group Name\"", ((ClickEvent.RunCommand) ((Component) header.getArgs()[2]).getStyle().getClickEvent()).command());
+            f.rows.clear();
+            result = f.run("playerManager list NeEdLe");
+            var filtered = result;
+            f.until(filtered::isDone);
+            assertEquals(1, result.join());
+            assertTrue(f.rows.getLast().getString().contains("Ada"));
+            f.rows.clear();
+            result = f.run("playerManager group list ungrouped");
+            var ungrouped = result;
+            f.until(ungrouped::isDone);
+            assertEquals(1, result.join());
+            assertTrue(f.rows.getLast().getString().contains("Bob"));
+            result = f.run("playerManager group list group absent");
+            var absent = result;
+            f.until(absent::isDone);
+            assertEquals(0, result.join());
+            assertEquals("false:0", f.callback.get());
+        }
+    }
+
+    @Test
+    void sourceStopSerializationDoesNotDisplayAnActionForInvalidGotoProfile() {
+        var p = profile(null, "");
+        p.add("simple_action", new JsonObject());
+        p.add("script_action", JsonParser.parseString("{\"goto\":{}}").getAsJsonObject());
+        var info = OrgPlayerProfileMessages.info("Ada", p);
+        assertFalse(keys(info).contains("carpet-org-addition.command.playerManager.info.action"));
+    }
 }

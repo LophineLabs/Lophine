@@ -2,17 +2,20 @@ package carpet.script.external;
 
 import carpet.script.CarpetScriptServer;
 import carpet.script.exception.InternalExpressionException;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.ServerTickRateManager;
+import org.junit.jupiter.api.Test;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.ServerTickRateManager;
-import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ScarpetTickWaitersTest {
     @SuppressWarnings("unchecked")
@@ -50,7 +53,8 @@ public class ScarpetTickWaitersTest {
         });
     }
 
-    @Test void interruptingOneWaiterLeavesOtherScriptsWaitingForTheirTick() throws Exception {
+    @Test
+    void interruptingOneWaiterLeavesOtherScriptsWaitingForTheirTick() throws Exception {
         var server = mock(MinecraftServer.class);
         var runtime = ready(server);
         var firstResult = new CompletableFuture<Void>();
@@ -70,11 +74,13 @@ public class ScarpetTickWaitersTest {
             second.interrupt();
             first.join(3_000);
             second.join(3_000);
-            ScarpetRuntime.beginShutdown(server, () -> {});
+            ScarpetRuntime.beginShutdown(server, () -> {
+            });
         }
     }
 
-    @Test void shutdownRefusesANewWaiterAndDrainsExistingWaiters() throws Exception {
+    @Test
+    void shutdownRefusesANewWaiterAndDrainsExistingWaiters() throws Exception {
         var server = mock(MinecraftServer.class);
         var runtime = ready(server);
         var result = new CompletableFuture<Void>();
@@ -90,11 +96,13 @@ public class ScarpetTickWaitersTest {
         } finally {
             existing.interrupt();
             existing.join(3_000);
-            ScarpetRuntime.beginShutdown(server, () -> {});
+            ScarpetRuntime.beginShutdown(server, () -> {
+            });
         }
     }
 
-    @Test void shutdownAlsoRejectsAnActorAdmittedAfterItsDrainSnapshot() throws Exception {
+    @Test
+    void shutdownAlsoRejectsAnActorAdmittedAfterItsDrainSnapshot() throws Exception {
         var server = mock(MinecraftServer.class);
         var runtime = ready(server);
         var entered = new CountDownLatch(1);
@@ -103,9 +111,18 @@ public class ScarpetTickWaitersTest {
         var pending = ScarpetRuntime.class.getDeclaredField("pendingActors");
         pending.setAccessible(true);
         pending.set(runtime, new java.util.AbstractSet<CompletableFuture<?>>() {
-            @Override public java.util.Iterator<CompletableFuture<?>> iterator() { return delegate.iterator(); }
-            @Override public int size() { return delegate.size(); }
-            @Override public boolean add(CompletableFuture<?> future) {
+            @Override
+            public java.util.Iterator<CompletableFuture<?>> iterator() {
+                return delegate.iterator();
+            }
+
+            @Override
+            public int size() {
+                return delegate.size();
+            }
+
+            @Override
+            public boolean add(CompletableFuture<?> future) {
                 entered.countDown();
                 try {
                     if (!resume.await(3, TimeUnit.SECONDS)) throw new AssertionError("Actor admission did not resume");
@@ -128,7 +145,8 @@ public class ScarpetTickWaitersTest {
         });
         try {
             assertTrue(entered.await(3, TimeUnit.SECONDS));
-            assertTrue(ScarpetRuntime.beginShutdown(server, () -> {}));
+            assertTrue(ScarpetRuntime.beginShutdown(server, () -> {
+            }));
             resume.countDown();
             assertTrue(admitted.get(3, TimeUnit.SECONDS).isCompletedExceptionally());
             assertTrue(delegate.isEmpty());
@@ -136,7 +154,8 @@ public class ScarpetTickWaitersTest {
             resume.countDown();
             admission.interrupt();
             admission.join(3_000);
-            ScarpetRuntime.beginShutdown(server, () -> {});
+            ScarpetRuntime.beginShutdown(server, () -> {
+            });
         }
     }
 }

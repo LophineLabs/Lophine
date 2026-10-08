@@ -44,7 +44,9 @@ public final class ScarpetExplosionActors {
         return entity(entity, operation, null);
     }
 
-    /** A leftover bot whose actor has retired cannot accept a new explosion hit. */
+    /**
+     * A leftover bot whose actor has retired cannot accept a new explosion hit.
+     */
     public static boolean retiredFakePlayer(Entity entity) {
         return entity instanceof org.leavesmc.leaves.bot.ServerBot
                 && entity.getBukkitEntity().taskScheduler.isRetiredOffThread();
@@ -167,13 +169,15 @@ public final class ScarpetExplosionActors {
         return admitTarget(target, acceptedNativePhase, null);
     }
 
-    /** Retirement may skip an unadmitted bot, never an already accepted hit or its children. */
+    /**
+     * Retirement may skip an unadmitted bot, never an already accepted hit or its children.
+     */
     public static CompletableFuture<Void> admitExplosionTarget(Entity target, Supplier<CompletableFuture<Void>> acceptedNativePhase) {
         return admitTarget(target, acceptedNativePhase, () -> CompletableFuture.completedFuture(null));
     }
 
     private static <T> CompletableFuture<T> admitTarget(Entity target, Supplier<CompletableFuture<T>> acceptedNativePhase,
-                                                       Supplier<CompletableFuture<T>> unadmittedRetirement) {
+                                                        Supplier<CompletableFuture<T>> unadmittedRetirement) {
         var wholePhase = ScarpetNativeWork.capture();
         // Create the observer INSIDE the captured supplier: restoring the initiating flags must not replace its new token or target privilege.
         Supplier<CompletableFuture<T>> admitted = ScarpetRuntime.captureNativeContinuation(() -> targetPhase(target, wholePhase, acceptedNativePhase));

@@ -1,18 +1,19 @@
 package fun.bm.lophine.carpet;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.mojang.brigadier.CommandDispatcher;
 import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
-import java.lang.reflect.Field;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.permissions.PermissionSet;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Field;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class CarpetPlayerCommandGrammarTest {
     private CommandDispatcher<CommandSourceStack> dispatcher;
@@ -77,7 +78,9 @@ class CarpetPlayerCommandGrammarTest {
             assertFalse(parses("player Alex kill"));
             assertFalse(parses("player Alex attack continuous"));
             assertFalse(parses("player Alex spawn"));
-        } finally { fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.playerCommandCloseScreen = old; }
+        } finally {
+            fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.playerCommandCloseScreen = old;
+        }
     }
 
     private boolean parses(String command) {

@@ -1,12 +1,13 @@
 package fun.bm.lophine.carpet;
 
 import ca.spottedleaf.moonrise.patches.collisions.CollisionUtil;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,10 +23,10 @@ class TisFastMovementCollisionTest {
                 obstacles.add(new AABB(x, y, z, x + 1.0, y + (i % 7 == 0 ? 1.5 : 1.0), z + 1.0));
             }
             Vec3 move = sample % 5 == 0 ? new Vec3(15.0, -15.0, 15.0)
-                : new Vec3(random.nextDouble(-20, 20), random.nextDouble(-20, 20), random.nextDouble(-20, 20));
+                    : new Vec3(random.nextDouble(-20, 20), random.nextDouble(-20, 20), random.nextDouble(-20, 20));
             Vec3 expected = CollisionUtil.performCollisions(move, entity, List.of(), obstacles);
             Vec3 actual = TisFastEntityMovement.collide(move, entity, List.of(), (search, voxels, boxes) ->
-                obstacles.stream().filter(search::intersects).forEach(boxes::add));
+                    obstacles.stream().filter(search::intersects).forEach(boxes::add));
             assertEquals(expected.x, actual.x, 1.0E-12, "X sample " + sample);
             assertEquals(expected.y, actual.y, 1.0E-12, "Y sample " + sample);
             assertEquals(expected.z, actual.z, 1.0E-12, "Z sample " + sample);

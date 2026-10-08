@@ -1,11 +1,12 @@
 package fun.bm.lophine.carpet;
 
+import org.junit.jupiter.api.Test;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,20 +18,28 @@ public class CarpetRegionLeaseLifecycleTest {
         var nativeAddExited = new AtomicBoolean();
         var releases = new AtomicInteger();
         var lifecycle = new CarpetRegionLeaseLifecycle(() -> {
-            assertTrue(nativeAddExited.get()); releases.incrementAndGet();
+            assertTrue(nativeAddExited.get());
+            releases.incrementAndGet();
         });
         Thread loading = Thread.ofVirtual().start(() -> {
-            assertTrue(lifecycle.appendTicket(() -> {}));
+            assertTrue(lifecycle.appendTicket(() -> {
+            }));
             nativeAddEntered.countDown();
-            try { await(allowNativeAddExit); }
-            finally { nativeAddExited.set(true); lifecycle.acquired(); }
+            try {
+                await(allowNativeAddExit);
+            } finally {
+                nativeAddExited.set(true);
+                lifecycle.acquired();
+            }
         });
         try {
             assertTrue(nativeAddEntered.await(5, TimeUnit.SECONDS));
             assertTrue(lifecycle.cancelWaiting());
             assertEquals(0, releases.get());
             assertFalse(lifecycle.beginActor());
-        } finally { allowNativeAddExit.countDown(); }
+        } finally {
+            allowNativeAddExit.countDown();
+        }
         loading.join(5_000L);
         assertEquals(1, releases.get());
     }
@@ -42,9 +51,13 @@ public class CarpetRegionLeaseLifecycleTest {
         var nativeTail = new CompletableFuture<Boolean>();
         var outer = new CompletableFuture<CompletableFuture<Boolean>>();
         outer.whenComplete((value, failure) -> lifecycle.close());
-        lifecycle.acquired(); assertTrue(lifecycle.beginActor());
-        lifecycle.follow(nativeTail); outer.complete(nativeTail); lifecycle.actorFinished();
-        assertTrue(outer.isDone()); assertSame(nativeTail, outer.getNow(null));
+        lifecycle.acquired();
+        assertTrue(lifecycle.beginActor());
+        lifecycle.follow(nativeTail);
+        outer.complete(nativeTail);
+        lifecycle.actorFinished();
+        assertTrue(outer.isDone());
+        assertSame(nativeTail, outer.getNow(null));
         assertEquals(0, releases.get());
         nativeTail.complete(true);
         assertEquals(1, releases.get());
@@ -55,10 +68,14 @@ public class CarpetRegionLeaseLifecycleTest {
         var releases = new AtomicInteger();
         var lifecycle = new CarpetRegionLeaseLifecycle(releases::incrementAndGet);
         var tail = new CompletableFuture<Void>();
-        lifecycle.acquired(); assertTrue(lifecycle.beginActor());
-        lifecycle.follow(tail); lifecycle.close(); tail.complete(null);
+        lifecycle.acquired();
+        assertTrue(lifecycle.beginActor());
+        lifecycle.follow(tail);
+        lifecycle.close();
+        tail.complete(null);
         assertEquals(0, releases.get());
-        lifecycle.actorFinished(); assertEquals(1, releases.get());
+        lifecycle.actorFinished();
+        assertEquals(1, releases.get());
     }
 
     @Test
@@ -67,13 +84,20 @@ public class CarpetRegionLeaseLifecycleTest {
         var lifecycle = new CarpetRegionLeaseLifecycle(releases::incrementAndGet);
         var parent = new CompletableFuture<CompletableFuture<Boolean>>();
         var child = new CompletableFuture<Boolean>();
-        lifecycle.acquired(); assertTrue(lifecycle.beginActor()); lifecycle.follow(parent); lifecycle.actorFinished();
+        lifecycle.acquired();
+        assertTrue(lifecycle.beginActor());
+        lifecycle.follow(parent);
+        lifecycle.actorFinished();
         assertFalse(lifecycle.cancelWaiting());
-        parent.complete(child); assertEquals(0, releases.get());
-        lifecycle.close(); assertEquals(0, releases.get());
+        parent.complete(child);
+        assertEquals(0, releases.get());
+        lifecycle.close();
+        assertEquals(0, releases.get());
         child.completeExceptionally(new IllegalStateException("Actual native owner tail retired during shutdown"));
         assertEquals(1, releases.get());
-        lifecycle.close(); lifecycle.acquired(); lifecycle.actorFinished();
+        lifecycle.close();
+        lifecycle.acquired();
+        lifecycle.actorFinished();
         assertEquals(1, releases.get());
     }
 
@@ -88,14 +112,20 @@ public class CarpetRegionLeaseLifecycleTest {
             });
             reference.set(lifecycle);
             var tail = new CompletableFuture<Void>();
-            assertTrue(lifecycle.beginActor()); lifecycle.follow(tail); lifecycle.close();
+            assertTrue(lifecycle.beginActor());
+            lifecycle.follow(tail);
+            lifecycle.close();
             var start = new CountDownLatch(1);
             var failure = new java.util.concurrent.atomic.AtomicReference<Throwable>();
             Thread acquired = Thread.ofVirtual().start(() -> run(start, lifecycle::acquired, failure));
             Thread actor = Thread.ofVirtual().start(() -> run(start, lifecycle::actorFinished, failure));
             Thread nativeTail = Thread.ofVirtual().start(() -> run(start, () -> tail.complete(null), failure));
-            start.countDown(); acquired.join(5_000L); actor.join(5_000L); nativeTail.join(5_000L);
-            assertNull(failure.get()); assertEquals(1, releases.get());
+            start.countDown();
+            acquired.join(5_000L);
+            actor.join(5_000L);
+            nativeTail.join(5_000L);
+            assertNull(failure.get());
+            assertEquals(1, releases.get());
         }
     }
 
@@ -104,19 +134,30 @@ public class CarpetRegionLeaseLifecycleTest {
         var releases = new AtomicInteger();
         var lifecycle = new CarpetRegionLeaseLifecycle(releases::incrementAndGet);
         var tail = new CompletableFuture<Object>();
-        lifecycle.acquired(); assertTrue(lifecycle.beginActor());
-        lifecycle.follow(tail); lifecycle.follow(tail); lifecycle.actorFinished();
+        lifecycle.acquired();
+        assertTrue(lifecycle.beginActor());
+        lifecycle.follow(tail);
+        lifecycle.follow(tail);
+        lifecycle.actorFinished();
         tail.complete(tail);
         assertEquals(1, releases.get());
     }
 
     private static void run(CountDownLatch start, Runnable action, java.util.concurrent.atomic.AtomicReference<Throwable> failure) {
-        try { await(start); action.run(); }
-        catch (Throwable problem) { failure.compareAndSet(null, problem); }
+        try {
+            await(start);
+            action.run();
+        } catch (Throwable problem) {
+            failure.compareAndSet(null, problem);
+        }
     }
 
     private static void await(CountDownLatch latch) {
-        try { if (!latch.await(5, TimeUnit.SECONDS)) throw new AssertionError("Lease lifecycle proof timed out"); }
-        catch (InterruptedException failure) { Thread.currentThread().interrupt(); throw new AssertionError(failure); }
+        try {
+            if (!latch.await(5, TimeUnit.SECONDS)) throw new AssertionError("Lease lifecycle proof timed out");
+        } catch (InterruptedException failure) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError(failure);
+        }
     }
 }

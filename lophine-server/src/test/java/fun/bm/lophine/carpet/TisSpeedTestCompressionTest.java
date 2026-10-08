@@ -23,7 +23,9 @@ class TisSpeedTestCompressionTest {
             try {
                 assertEquals(0, VarInt.read(frame));
                 assertEquals(1024, frame.readableBytes());
-            } finally { frame.release(); }
+            } finally {
+                frame.release();
+            }
             assertCompressed(marked);
         } finally {
             marked.finishAndReleaseAll();
@@ -37,6 +39,8 @@ class TisSpeedTestCompressionTest {
         try {
             assertEquals(1024, VarInt.read(frame));
             assertTrue(frame.readableBytes() < 1024);
-        } finally { frame.release(); }
+        } finally {
+            frame.release();
+        }
     }
 }

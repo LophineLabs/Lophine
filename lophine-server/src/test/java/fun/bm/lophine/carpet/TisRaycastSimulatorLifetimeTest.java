@@ -1,11 +1,7 @@
 package fun.bm.lophine.carpet;
 
-import carpet.script.external.ScarpetNativeWork;
 import ca.spottedleaf.moonrise.common.util.TickThread;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
+import carpet.script.external.ScarpetNativeWork;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
@@ -15,11 +11,17 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class TisRaycastSimulatorLifetimeTest {
-    @BeforeAll static void bootstrap() {
+    @BeforeAll
+    static void bootstrap() {
         net.minecraft.SharedConstants.tryDetectVersion();
         net.minecraft.server.Bootstrap.bootStrap();
     }
@@ -35,11 +37,15 @@ class TisRaycastSimulatorLifetimeTest {
     private static CompletableFuture<Void> dispatch(CommandSourceStack source, Map<ChunkPos, List<?>> plan) throws Exception {
         var method = TisRaycastSimulator.class.getDeclaredMethod("dispatch", CommandSourceStack.class, Map.class);
         method.setAccessible(true);
-        try { return (CompletableFuture<Void>) method.invoke(null, source, plan); }
-        catch (java.lang.reflect.InvocationTargetException failure) { throw (Exception) failure.getCause(); }
+        try {
+            return (CompletableFuture<Void>) method.invoke(null, source, plan);
+        } catch (java.lang.reflect.InvocationTargetException failure) {
+            throw (Exception) failure.getCause();
+        }
     }
 
-    @Test void aSimulatorBatchUsesTheChunkLeaseAndRetainsNativeDrainThroughActualBlockChildren() throws Exception {
+    @Test
+    void aSimulatorBatchUsesTheChunkLeaseAndRetainsNativeDrainThroughActualBlockChildren() throws Exception {
         var server = mock(MinecraftServer.class);
         var world = mock(ServerLevel.class);
         var source = mock(CommandSourceStack.class);
@@ -48,7 +54,10 @@ class TisRaycastSimulatorLifetimeTest {
         when(source.getLevel()).thenReturn(world);
         when(world.getServer()).thenReturn(server);
         var child = new CompletableFuture<Void>();
-        when(world.setBlockAndUpdate(BlockPos.ZERO, state)).thenAnswer(call -> { ScarpetNativeWork.record(child); return true; });
+        when(world.setBlockAndUpdate(BlockPos.ZERO, state)).thenAnswer(call -> {
+            ScarpetNativeWork.record(child);
+            return true;
+        });
         try (var ticks = mockStatic(TickThread.class); var leases = fun.bm.lophine.carpet.CarpetOwnedPhaseFixture.open()) {
             ticks.when(() -> TickThread.isTickThreadFor(eq(world), any(BlockPos.class))).thenReturn(true);
             leases.when(() -> CarpetRegionLease.runValue(eq(world), anyInt(), anyInt(), anyInt(), anyInt(), any(Function.class)))
@@ -65,7 +74,8 @@ class TisRaycastSimulatorLifetimeTest {
         }
     }
 
-    @Test void shutdownRejectsNewSimulatorBatchesBeforeAnyChunkOrBlockMutation() throws Exception {
+    @Test
+    void shutdownRejectsNewSimulatorBatchesBeforeAnyChunkOrBlockMutation() throws Exception {
         var server = mock(MinecraftServer.class);
         var world = mock(ServerLevel.class);
         var source = mock(CommandSourceStack.class);

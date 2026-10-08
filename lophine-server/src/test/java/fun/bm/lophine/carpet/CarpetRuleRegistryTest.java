@@ -22,6 +22,7 @@ class CarpetRuleRegistryTest {
         assertThrows(IllegalArgumentException.class, () -> CarpetRuleRegistry.get("blockChunkLoaderRangeController").parse("301"));
         assertThrows(IllegalArgumentException.class, () -> CarpetRuleRegistry.get("easyGetPitcherPod").parse("1"));
     }
+
     @Test
     void booleanTyposAreRejected() {
         CarpetRuleRegistry.Binding rule = CarpetRuleRegistry.get("optimizedTNT");
@@ -84,7 +85,7 @@ class CarpetRuleRegistryTest {
             fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.lightUpdates = "off";
             fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.optimizedTNT = false;
             var requested = java.util.Map.of(CarpetRuleRegistry.get("synchronizedLightThread").path(), false,
-                CarpetRuleRegistry.get("lightUpdates").path(), "off", CarpetRuleRegistry.get("optimizedTNT").path(), true);
+                    CarpetRuleRegistry.get("lightUpdates").path(), "off", CarpetRuleRegistry.get("optimizedTNT").path(), true);
             try (var ignored = CarpetRuleRegistry.configurationView(requested::get)) {
                 assertEquals("off", CarpetRuleRegistry.get("lightUpdates").parse("off"));
                 assertEquals(false, CarpetRuleRegistry.get("synchronizedLightThread").parse("false"));

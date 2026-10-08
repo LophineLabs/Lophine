@@ -1,13 +1,16 @@
 package fun.bm.lophine.carpet;
 
+import org.junit.jupiter.api.Test;
+
 import java.util.UUID;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executors;
-import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class CarpetBotRegistrationsTest {
-    @Test void concurrentLoginsCannotPublishOneUuidUnderDifferentNamesOrOneNameUnderDifferentUuids() throws Exception {
+    @Test
+    void concurrentLoginsCannotPublishOneUuidUnderDifferentNamesOrOneNameUnderDifferentUuids() throws Exception {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             for (int epoch = 0; epoch < 200; epoch++) {
                 var registrations = new CarpetBotRegistrations<Object>();
@@ -28,22 +31,33 @@ class CarpetBotRegistrationsTest {
     private static Object publish(CarpetBotRegistrations<Object> registrations, UUID uuid, String name, CyclicBarrier ready) throws Exception {
         ready.await();
         try (var reservation = registrations.reserve(uuid, name)) {
-            Object actor = new Object(); reservation.publish(actor); return actor;
-        } catch (IllegalStateException occupied) { return null; }
+            Object actor = new Object();
+            reservation.publish(actor);
+            return actor;
+        } catch (IllegalStateException occupied) {
+            return null;
+        }
     }
 
-    @Test void failedCreationReleasesBothKeysAndLateRemovalCannotDeleteAReplacementWithEqualNetworkId() {
+    @Test
+    void failedCreationReleasesBothKeysAndLateRemovalCannotDeleteAReplacementWithEqualNetworkId() {
         var registrations = new CarpetBotRegistrations<Actor>();
         UUID uuid = UUID.randomUUID();
-        try (var cancelled = registrations.reserve(uuid, "Bot")) { }
+        try (var cancelled = registrations.reserve(uuid, "Bot")) {
+        }
         Actor old = new Actor(7), replacement = new Actor(7);
-        try (var first = registrations.reserve(uuid, "Bot")) { first.publish(old); }
+        try (var first = registrations.reserve(uuid, "Bot")) {
+            first.publish(old);
+        }
         registrations.remove(uuid, "Bot", old);
-        try (var second = registrations.reserve(uuid, "BOT")) { second.publish(replacement); }
+        try (var second = registrations.reserve(uuid, "BOT")) {
+            second.publish(replacement);
+        }
         registrations.remove(uuid, "Bot", old);
         assertSame(replacement, registrations.byUuid().get(uuid));
         assertSame(replacement, registrations.byName().get("bot"));
     }
 
-    private record Actor(int networkId) { }
+    private record Actor(int networkId) {
+    }
 }

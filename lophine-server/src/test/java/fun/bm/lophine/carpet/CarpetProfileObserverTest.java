@@ -1,9 +1,10 @@
 package fun.bm.lophine.carpet;
 
+import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -36,7 +37,9 @@ class CarpetProfileObserverTest {
                     CarpetProfileObserver.stopWork(123, 90);
                 }).get(5, TimeUnit.SECONDS);
             }
-        } finally { CarpetProfileObserver.reset(); }
+        } finally {
+            CarpetProfileObserver.reset();
+        }
     }
 
     @Test
@@ -51,9 +54,13 @@ class CarpetProfileObserverTest {
                 jobs.add(pool.submit(() -> {
                     CarpetProfileObserver.startWork(new CarpetProfileObserver.Key("test:dimension", id), 123, "Full Tick", 20);
                     entered.countDown();
-                    try { assertTrue(leave.await(5, TimeUnit.SECONDS)); }
-                    catch (InterruptedException interrupted) { throw new AssertionError(interrupted); }
-                    finally { CarpetProfileObserver.stopWork(123, 250); }
+                    try {
+                        assertTrue(leave.await(5, TimeUnit.SECONDS));
+                    } catch (InterruptedException interrupted) {
+                        throw new AssertionError(interrupted);
+                    } finally {
+                        CarpetProfileObserver.stopWork(123, 250);
+                    }
                 }));
             }
             try {
@@ -70,8 +77,13 @@ class CarpetProfileObserverTest {
                 assertEquals(8, secondReport.regions().size());
                 for (var region : secondReport.regions())
                     assertEquals(new CarpetProfileObserver.Timing(50, 50, 1), region.timers().get("Full Tick"));
-            } finally { leave.countDown(); }
-        } finally { leave.countDown(); CarpetProfileObserver.reset(); }
+            } finally {
+                leave.countDown();
+            }
+        } finally {
+            leave.countDown();
+            CarpetProfileObserver.reset();
+        }
     }
 
     @Test
@@ -95,7 +107,9 @@ class CarpetProfileObserverTest {
             assertEquals(9L, report.counters().get("Entity Schedulers Ticked"));
             assertNull(handle.profiler);
             CarpetProfileObserver.stopWork(123, System.nanoTime());
-        } finally { CarpetProfileObserver.reset(); }
+        } finally {
+            CarpetProfileObserver.reset();
+        }
     }
 
     @Test
@@ -109,7 +123,9 @@ class CarpetProfileObserverTest {
             CarpetProfileObserver.stopWork(123, 230);
             // Later native stop must never append to the immutable report.
             assertEquals(70, result.regions().getFirst().timers().get("Full Tick").nanos());
-        } finally { CarpetProfileObserver.reset(); }
+        } finally {
+            CarpetProfileObserver.reset();
+        }
     }
 
     @Test
@@ -137,7 +153,9 @@ class CarpetProfileObserverTest {
             var second = CarpetProfileObserver.begin(200);
             CarpetProfileObserver.stopWork(123, 250);
             assertEquals(50, CarpetProfileObserver.finish(second, 270).regions().getFirst().timers().get("In Between Tick").nanos());
-        } finally { CarpetProfileObserver.reset(); }
+        } finally {
+            CarpetProfileObserver.reset();
+        }
     }
 
     @Test

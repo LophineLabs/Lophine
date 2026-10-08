@@ -80,9 +80,9 @@ class StructureBlockPacketTest {
     private static FriendlyByteBuf encodedVanillaPacket() {
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         ServerboundSetStructureBlockPacket packet = new ServerboundSetStructureBlockPacket(
-            new BlockPos(1, 64, 2), StructureBlockEntity.UpdateType.UPDATE_DATA, StructureMode.SAVE, "carpet:fixture",
-            new BlockPos(-12, 24, 47), new Vec3i(48, 32, 16), Mirror.NONE, Rotation.NONE, "fixture",
-            true, false, false, true, 1.0F, 123456789L
+                new BlockPos(1, 64, 2), StructureBlockEntity.UpdateType.UPDATE_DATA, StructureMode.SAVE, "carpet:fixture",
+                new BlockPos(-12, 24, 47), new Vec3i(48, 32, 16), Mirror.NONE, Rotation.NONE, "fixture",
+                true, false, false, true, 1.0F, 123456789L
         );
         ServerboundSetStructureBlockPacket.STREAM_CODEC.encode(buffer, packet);
         return buffer;
