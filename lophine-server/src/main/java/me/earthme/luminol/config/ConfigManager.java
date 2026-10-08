@@ -16,7 +16,7 @@ public class ConfigManager {
     private static final ConfigsInstanceBuilder builder = new ConfigsInstanceBuilder();
     private static final Map<String, ConfigsInstance> configfiles = new HashMap<>();
     private static final Collection<Runnable> runnableBeforeFinalLoad = new ConcurrentLinkedQueue<>();
-    private static final Map<TransformedConfig, String[]> needTransformedConfigs = new ConcurrentHashMap<>();
+    private static final Set<TransformingConfig> needTransformedConfigs = ConcurrentHashMap.newKeySet();
     // String[]:
     // 0 -> origin key
     // 1 -> target key
@@ -74,7 +74,7 @@ public class ConfigManager {
 
     public static void registerTransformedConfig(@NotNull String origin, @NotNull String target, @NotNull String originKey, @NotNull String targetKey, TransformedConfig transformedConfig) {
         if (initialized) return;
-        needTransformedConfigs.put(transformedConfig, new String[]{origin, target, originKey, targetKey});
+        needTransformedConfigs.add(new TransformingConfig(transformedConfig, origin, target, originKey, targetKey));
     }
 
     public static ConfigsInstance getConfigs(String name) {
@@ -114,17 +114,16 @@ public class ConfigManager {
 
     public static void acceptTransformedConfigs() {
         Set<ConfigsInstance> toReload = new HashSet<>();
-        for (Map.Entry<TransformedConfig, String[]> entry : needTransformedConfigs.entrySet()) {
-            String[] config = entry.getValue();
-            TransformedConfig transformedConfig = entry.getKey();
-            ConfigsInstance origin = getConfigs(config[0]);
-            ConfigsInstance target = getConfigs(config[1]);
+        for (TransformingConfig entry : needTransformedConfigs) {
+            TransformedConfig transformedConfig = entry.info();
+            ConfigsInstance origin = getConfigs(entry.origKey());
+            ConfigsInstance target = getConfigs(entry.tarKey());
             if (origin == null || target == null) continue;
             CommentedFileConfig originConfig = origin.getFileInstance();
             CommentedFileConfig targetConfig = target.getFileInstance();
 
-            final String oldConfigKeyName = config[2];
-            final String newConfigKeyName = config[3];
+            final String oldConfigKeyName = entry.origPath();
+            final String newConfigKeyName = entry.tarPath();
             Object oldValue = originConfig.get(oldConfigKeyName);
             if (oldValue != null) {
                 boolean success = true;
