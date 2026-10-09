@@ -184,10 +184,10 @@ index cbdef9d6325a3f9ace1e739d85b747b55f728ee4..76ad6035d02982568adf049bb053d2a6
      }
  
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index 22f693573d70cf4f60d10ea17e6f04110868a265..161cbdf64043289d560d368b9d43d8d46b27a21e 100644
+index 2b6a976fc506ef54a669a4219e312ea51a3bec25..eb87788ec77c9e386bd0905762c14ed789e8f79c 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
-@@ -400,6 +400,8 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -405,6 +405,8 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
          }
  
          Block newBlock = state.getBlock();
@@ -196,7 +196,7 @@ index 22f693573d70cf4f60d10ea17e6f04110868a265..161cbdf64043289d560d368b9d43d8d4
          this.heightmaps.get(Heightmap.Types.MOTION_BLOCKING).update(localX, y, localZ, state);
          this.heightmaps.get(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES).update(localX, y, localZ, state);
          this.heightmaps.get(Heightmap.Types.OCEAN_FLOOR).update(localX, y, localZ, state);
-@@ -468,6 +470,11 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -473,6 +475,11 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
  
          this.markUnsaved();
          return oldState;

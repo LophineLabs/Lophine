@@ -315,7 +315,7 @@ index a0e2e0f2f4258cf8c714b33df5b1d3dd758215a5..937d06dbb1826ac053bfb92b58d18e3e
 +    // KioCG end
  }
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index 6d3b441de2417e7f2d8b32af285057eea7f1ff79..61351be6d55034feeee556343ff671126ea8d14c 100644
+index b5508c0488ba395ad9eb03baeee01922e2ec3364..f17c2c90bf47f573edb00e817a70c8ccc05dc1d3 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -111,6 +111,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
@@ -326,7 +326,7 @@ index 6d3b441de2417e7f2d8b32af285057eea7f1ff79..61351be6d55034feeee556343ff67112
  
      @Override
      public final boolean moonrise$isPostProcessingDone() {
-@@ -957,6 +958,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -962,6 +963,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
                          ProfilerFiller profiler = Profiler.get();
                          profiler.push(this::getType);
                          foliaProfiler.startTimer(timerId); try { // Folia - profiler
@@ -334,7 +334,7 @@ index 6d3b441de2417e7f2d8b32af285057eea7f1ff79..61351be6d55034feeee556343ff67112
                          BlockState blockState = LevelChunk.this.getBlockState(pos);
                          if (this.blockEntity.getType().isValid(blockState)) {
                              this.ticker.tick(LevelChunk.this.level, this.blockEntity.getBlockPos(), blockState, this.blockEntity);
-@@ -976,7 +978,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -981,7 +983,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
                                  );
                              } // Paper - Remove the Block Entity if it's invalid
                          }

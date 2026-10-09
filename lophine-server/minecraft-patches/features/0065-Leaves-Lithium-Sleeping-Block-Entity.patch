@@ -2613,7 +2613,7 @@ index c8facee29ee08e0975528083f89b64f0b593957f..52f88fec8c5268ed33d825a4fb354113
 +    // Anonymous end
  }
 diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
-index bebfe5b72c1dd812c480de3311ad36ca8d96466b..987f0977eb438ca360183adf1ee626b21f9500d6 100644
+index 44fcc919a2de54c3ceb0fd0875aadaea083fabad..0282d2e88698e1c9db194b5bfe4846a120ee9160 100644
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
 @@ -82,7 +82,7 @@ import net.minecraft.world.phys.shapes.Shapes;
@@ -2647,10 +2647,10 @@ index ed5a5fb38bfe8fb9216c7eab00b833485c4bbade..fc45703525901d700c98b5ad0c6eb10b
      ) {
          for (int x = 0; x < this.width; x++) {
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index 61351be6d55034feeee556343ff671126ea8d14c..12f97de27336d5fe0bc7b44da93b1a0266aebaea 100644
+index f17c2c90bf47f573edb00e817a70c8ccc05dc1d3..64490a4e89787fbd1a43de7eef1a258dd105de40 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
-@@ -621,6 +621,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -626,6 +626,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
          LevelChunk.RebindableTickingBlockEntityWrapper ticker = this.tickersInLevel.remove(pos);
          if (ticker != null) {
              ticker.rebind(NULL_TICKER);
@@ -2658,7 +2658,7 @@ index 61351be6d55034feeee556343ff671126ea8d14c..12f97de27336d5fe0bc7b44da93b1a02
          }
      }
  
-@@ -880,6 +881,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -885,6 +886,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
          this.blockEntities.values().forEach(BlockEntity::setRemoved);
          this.blockEntities.clear();
          this.tickersInLevel.values().forEach(ticker -> ticker.rebind(NULL_TICKER));
@@ -2666,7 +2666,7 @@ index 61351be6d55034feeee556343ff671126ea8d14c..12f97de27336d5fe0bc7b44da93b1a02
          this.tickersInLevel.clear();
      }
  
-@@ -913,10 +915,14 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -918,10 +920,14 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
              this.tickersInLevel.compute(blockEntity.getBlockPos(), (blockPos, existingTicker) -> {
                  TickingBlockEntity actualTicker = this.createTicker(blockEntity, ticker);
                  if (existingTicker != null) {
@@ -2681,7 +2681,7 @@ index 61351be6d55034feeee556343ff671126ea8d14c..12f97de27336d5fe0bc7b44da93b1a02
                      this.level.addBlockEntityTicker(result);
                      return result;
                  } else {
-@@ -1025,20 +1031,36 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -1030,20 +1036,36 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
          void run(LevelChunk levelChunk);
      }
  
@@ -2721,7 +2721,7 @@ index 61351be6d55034feeee556343ff671126ea8d14c..12f97de27336d5fe0bc7b44da93b1a02
              return this.ticker == null ? null : this.ticker.getTileEntity();
          }
          // Folia end - region threading
-@@ -1067,6 +1089,16 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -1072,6 +1094,16 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
          public String toString() {
              return this.ticker + " <wrapped>";
          }

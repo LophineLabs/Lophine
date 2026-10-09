@@ -189,7 +189,7 @@ index c7510c99c68c66a64d391b67d93f31cfcd3dccf0..5785ecf52bbd68e6df0f25b917722999
  
      @Override
 diff --git a/net/minecraft/util/ZeroBitStorage.java b/net/minecraft/util/ZeroBitStorage.java
-index a6b5e56465a867a830a920cb4745ee85190b2f0a..f3f6ab209da3ef306514cfb1c13dcc0f0332de4b 100644
+index 6111ecdfaac7c003859040d49d91cc7413ad9482..50bf80cb232f35cf91c0948a6a21731a95533857 100644
 --- a/net/minecraft/util/ZeroBitStorage.java
 +++ b/net/minecraft/util/ZeroBitStorage.java
 @@ -5,7 +5,7 @@ import java.util.function.IntConsumer;

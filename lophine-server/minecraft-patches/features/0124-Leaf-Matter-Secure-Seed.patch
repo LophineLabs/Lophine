@@ -72,7 +72,7 @@ index 984ec15bdebcb541cd6ee9014a654ea58988f6f1..98d0429b3ae5a47c92fcd48a5c5e05fa
              final double maxHeightSlimeChunk = level.getMinecraftWorld().paperConfig().entities.spawning.slimeSpawnHeight.slimeChunk.maximum;
              if (random.nextInt(10) == 0 && slimeChunk && pos.getY() < maxHeightSlimeChunk) {
 diff --git a/net/minecraft/world/level/chunk/ChunkAccess.java b/net/minecraft/world/level/chunk/ChunkAccess.java
-index d0d435f53683bae1a4c333aed18cc36c9797a188..fb191cd4208b9acdfb42b5b699d2cf45d23d9275 100644
+index 39ea7198f3bbe4525e686504887e0074de80854d..fbfe30f48dbe1340ce6110d0fdb7e8b6f9aef2e1 100644
 --- a/net/minecraft/world/level/chunk/ChunkAccess.java
 +++ b/net/minecraft/world/level/chunk/ChunkAccess.java
 @@ -81,6 +81,10 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
@@ -86,7 +86,7 @@ index d0d435f53683bae1a4c333aed18cc36c9797a188..fb191cd4208b9acdfb42b5b699d2cf45
  
      // Paper start - rewrite chunk system
      private volatile ca.spottedleaf.moonrise.patches.starlight.light.SWMRNibbleArray[] blockNibbles;
-@@ -184,6 +188,17 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
+@@ -200,6 +204,17 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
          return GameEventListenerRegistry.NOOP;
      }
  
@@ -105,10 +105,10 @@ index d0d435f53683bae1a4c333aed18cc36c9797a188..fb191cd4208b9acdfb42b5b699d2cf45
  
      public @Nullable BlockState setBlockState(final BlockPos pos, final BlockState state) {
 diff --git a/net/minecraft/world/level/chunk/ChunkGenerator.java b/net/minecraft/world/level/chunk/ChunkGenerator.java
-index 01eb4b7ac6ff1964c7a9a41c8fd4d33d7d0b9a26..e089a597da6952f5067ed977a1e1f59857cfcee7 100644
+index a27c82876e6e343f1ffc795520f50dcc2d381a94..9682bedbd3cc5380804bb06990867f05bcd697fc 100644
 --- a/net/minecraft/world/level/chunk/ChunkGenerator.java
 +++ b/net/minecraft/world/level/chunk/ChunkGenerator.java
-@@ -380,7 +380,11 @@ public abstract class ChunkGenerator {
+@@ -389,7 +389,11 @@ public abstract class ChunkGenerator {
              Map<Integer, List<Structure>> structuresByStep = structuresRegistry.stream()
                  .collect(Collectors.groupingBy(structure -> structure.step().ordinal()));
              List<FeatureSorter.StepFeatureData> featureList = this.featuresPerStep.get();
@@ -121,7 +121,7 @@ index 01eb4b7ac6ff1964c7a9a41c8fd4d33d7d0b9a26..e089a597da6952f5067ed977a1e1f598
              long decorationSeed = random.setDecorationSeed(level.getSeed(), origin.getX(), origin.getZ());
              Set<Holder<Biome>> possibleBiomes = new ObjectArraySet<>();
              ChunkPos.rangeClosed(sectionPos.chunk(), 1).forEach(chunkPos -> {
-@@ -601,8 +605,15 @@ public abstract class ChunkGenerator {
+@@ -620,8 +624,15 @@ public abstract class ChunkGenerator {
                              } else {
                                  ArrayList<StructureSet.StructureSelectionEntry> options = new ArrayList<>(structures.size());
                                  options.addAll(structures);

@@ -8,10 +8,10 @@ As a part of : Leaves (https://github.com/LeavesMC/Leaves/blob/3e7f4a313ff0d2469
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index bff22d6cb4f6eaf3e6968c76ed58bf3edb59bd05..b71a6cbb9114fbbfd8874b20d18701372b9d90f6 100644
+index 9918f98261fcce0d999c2e41122676414c304d75..916b348cf036db35d00675cefa83ef91716d17de 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-@@ -482,6 +482,7 @@ public final class CraftServer implements Server {
+@@ -460,6 +460,7 @@ public final class CraftServer implements Server {
          this.potionBrewer = new io.papermc.paper.potion.PaperPotionBrewer(console); // Paper - custom potion mixes
          datapackManager = new io.papermc.paper.datapack.PaperDatapackManager(console.getPackRepository()); // Paper
          if (false) this.spark = new io.papermc.paper.SparksFly(this); // Paper - spark // Luminol - Force disable builtin spark
@@ -19,7 +19,7 @@ index bff22d6cb4f6eaf3e6968c76ed58bf3edb59bd05..b71a6cbb9114fbbfd8874b20d1870137
      }
  
      public boolean getCommandBlockOverride(String command) {
-@@ -1055,6 +1056,7 @@ public final class CraftServer implements Server {
+@@ -1033,6 +1034,7 @@ public final class CraftServer implements Server {
          if (false) this.spark.registerCommandBeforePlugins(this); // Paper - spark // Luminol - Force disable builtin spark
          this.overrideAllCommandBlockCommands = this.commandsConfiguration.getStringList("command-block-overrides").contains("*");
          this.ignoreVanillaPermissions = this.commandsConfiguration.getBoolean("ignore-vanilla-permissions");

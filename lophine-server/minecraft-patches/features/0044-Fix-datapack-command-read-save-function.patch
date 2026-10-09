@@ -5,7 +5,7 @@ Subject: [PATCH] Fix datapack command read & save function
 
 
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index ada674535798ec15806bbc1b73a1015a96ff25fc..5b436f567a03435b6009cae0e647b03ad06b3f68 100644
+index db49c75b75a72bac3e02ec20f2ed5319217bbff3..e6d90fff2b74b954da818796c7663b25340c9596 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -208,7 +208,7 @@ public class Commands {
