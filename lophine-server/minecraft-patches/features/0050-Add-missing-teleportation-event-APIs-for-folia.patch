@@ -5,7 +5,7 @@ Subject: [PATCH] Add missing teleportation event APIs for folia
 
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 4c0ada0198d79d871a9453f3d14872bd03bdc906..79f135c873e097c6ffd365c2119281029b20b512 100644
+index 8038a3e3bb1f51d227b2f44c05bf72cd40467115..733a09eb8605ca63bdf82a029d7055e08d4a351d 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -1863,6 +1863,9 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -19,7 +19,7 @@ index 4c0ada0198d79d871a9453f3d14872bd03bdc906..79f135c873e097c6ffd365c211928102
              );
          });
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index fdeff02058c230d038bcd086988fdbf4dcc31ba7..27cc31e8b1a891ccb0cdce1e77229725bcad3279 100644
+index f95c2478be0c1d30a564853b361efca4a2b63ad6..8e2eb589de2505df8533ba05de79c54052bc6076 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -4672,6 +4672,31 @@ public abstract class Entity

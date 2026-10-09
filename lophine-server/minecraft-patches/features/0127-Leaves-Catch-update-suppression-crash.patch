@@ -74,7 +74,7 @@ index f9f7ae3cfe960be2ac305958b288036499ec207c..cd56cae73a21800b8a8663836b050784
  
              profiler.pop();
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index eea53cec46db9ebc3f17102992c66afcdecad317..6286d38af0111ff813e8c8c13d1af2dffad68c7e 100644
+index d46c97084afd5e2d8ae195e16ba66ba90574c8ac..3e421ea05a2882220309c5396664472f6c997ada 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -959,7 +959,18 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -98,7 +98,7 @@ index eea53cec46db9ebc3f17102992c66afcdecad317..6286d38af0111ff813e8c8c13d1af2df
                                  }
                              }
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index d648b66dace7188b54d93e4a18b5eb5e30176719..733b47fd1befdb85f58af0a841163ff740a62179 100644
+index 1401fa771911bc9b68f7e629b0620ead61fbf7bb..5101542bfc15fa28b7012a1f967cafaa6366e7f3 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -1121,6 +1121,12 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -115,7 +115,7 @@ index d648b66dace7188b54d93e4a18b5eb5e30176719..733b47fd1befdb85f58af0a841163ff7
              CrashReport report = CrashReport.forThrowable(t, "Ticking player");
              CrashReportCategory category = report.addCategory("Player being ticked");
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 694597d3c5df89e994c855ac89019953f42a5994..f7aa06905ec1e2b80e5b56bb8dd860bde5b116d6 100644
+index 29a88b638bedd0d25fd6af971b7fa6af1ad8802f..8f2a858d4996391e39408f4017d6465a168f339d 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1562,8 +1562,18 @@ public abstract class Entity
@@ -184,10 +184,10 @@ index cbdef9d6325a3f9ace1e739d85b747b55f728ee4..76ad6035d02982568adf049bb053d2a6
      }
  
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index 22f693573d70cf4f60d10ea17e6f04110868a265..161cbdf64043289d560d368b9d43d8d46b27a21e 100644
+index 2b6a976fc506ef54a669a4219e312ea51a3bec25..eb87788ec77c9e386bd0905762c14ed789e8f79c 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
-@@ -400,6 +400,8 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -405,6 +405,8 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
          }
  
          Block newBlock = state.getBlock();
@@ -196,7 +196,7 @@ index 22f693573d70cf4f60d10ea17e6f04110868a265..161cbdf64043289d560d368b9d43d8d4
          this.heightmaps.get(Heightmap.Types.MOTION_BLOCKING).update(localX, y, localZ, state);
          this.heightmaps.get(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES).update(localX, y, localZ, state);
          this.heightmaps.get(Heightmap.Types.OCEAN_FLOOR).update(localX, y, localZ, state);
-@@ -468,6 +470,11 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -473,6 +475,11 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
  
          this.markUnsaved();
          return oldState;

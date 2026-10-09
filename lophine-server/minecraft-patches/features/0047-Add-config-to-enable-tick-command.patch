@@ -6,7 +6,7 @@ Subject: [PATCH] Add config to enable tick command
 only freeze/unfreeze/step/query/rate can run when enabled
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedServer.java b/io/papermc/paper/threadedregions/RegionizedServer.java
-index ff90abb47203c03636d3175f2b3efcf43517b3b0..a96da8ab0d8ca8241df79fbfca33f3e6072db367 100644
+index 1e4edb1f53afa51fe85e3fd3dac9668a92597247..11c3c670103a575b6cc3d5c737e8edc6824d4f6d 100644
 --- a/io/papermc/paper/threadedregions/RegionizedServer.java
 +++ b/io/papermc/paper/threadedregions/RegionizedServer.java
 @@ -239,6 +239,11 @@ public final class RegionizedServer {
@@ -36,7 +36,7 @@ index ff90abb47203c03636d3175f2b3efcf43517b3b0..a96da8ab0d8ca8241df79fbfca33f3e6
          // tick connections
          this.tickConnections();
  
-@@ -415,7 +428,7 @@ public final class RegionizedServer {
+@@ -418,7 +431,7 @@ public final class RegionizedServer {
      }
  
      private void tickTime(final ServerLevel world, final long tickCount) {
@@ -100,7 +100,7 @@ index 58e557923dfe6cee39ec45e7f5aa43a5ded9f107..ae424c8931a2f82c6c8d4ddd8422a2c1
                  this.scheduler.regionFailed(this, false, thr);
                  // regionFailed will schedule a shutdown, so we should avoid letting this region tick further
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index 5b436f567a03435b6009cae0e647b03ad06b3f68..cb8003615ffb94560414b885490a261e0c9dcf35 100644
+index e6d90fff2b74b954da818796c7663b25340c9596..8de1facc976e3ecd4b1f08415c5466ccb0804585 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -263,7 +263,11 @@ public class Commands {

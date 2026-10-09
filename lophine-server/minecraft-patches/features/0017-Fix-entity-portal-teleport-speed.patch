@@ -5,7 +5,7 @@ Subject: [PATCH] Fix entity portal-teleport speed
 
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 61d29f8dc1bd4bed07f6bd1fab4921385e0849c4..1d6f0f8f0da0d619bf199038d6bbb9bb0dcf9596 100644
+index 6f0d42eb5da9811e317e4b27c5fa800a7a03b639..d10ac9574c481088466585adf1cec4eff6e20423 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -1499,7 +1499,42 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -61,7 +61,7 @@ index 61d29f8dc1bd4bed07f6bd1fab4921385e0849c4..1d6f0f8f0da0d619bf199038d6bbb9bb
          } else {entity.inactiveTick();} // Paper - EAR 2
          profiler.pop();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 7d1283aad0d7b73910c562143c83a1d6d555b261..7ec67edcb5c70aed48444bdda0742aa47f4dc651 100644
+index 7b3093c8a606ff45809b07d36b08b69fc0cfab71..af780631666ad3903964842ed9cc91ec731dfee3 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -393,6 +393,8 @@ public abstract class Entity

@@ -6,7 +6,7 @@ Subject: [PATCH] Fix a command async problem if a plugin modify command node
 
 
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index 19987b1d0d77c7f819db99eba481f492558fab8e..f30b2e998fd01d588d6581ac539ca867dae19791 100644
+index 2e58cd204edc1c628076e8b07194b7a22ab337df..d88badd7ced2c203a20f598a9df963e8b24af1ad 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -535,7 +535,22 @@ public class Commands {

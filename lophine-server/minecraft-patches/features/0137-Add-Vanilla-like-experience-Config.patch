@@ -21,7 +21,7 @@ index 03085e7ff54e70302ced15a62ea1586c9ac90348..c528c7414f8de6fed012da54c5831b2f
      }
  
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 0a09aa81ebaba7b81bc17f40cc265fcd9c54dcb8..b22eba00598b3e63e1f602b980130276ec78aef2 100644
+index f5c5e0800998b099b9eef33f3a5b7a6d8a008f8f..f494ab99b5131d487c69677847baf38f71801c22 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -2408,7 +2408,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc

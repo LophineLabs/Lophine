@@ -33,7 +33,7 @@ index efd1cd1e78aea777adec650cdeafd251a1c7e2ec..818cec2fea266eae713812f5eed1f010
  
      public static class IntBounds {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index b701d311d1c42de014c6308826b1633e193c5c9c..a4b030d12064d45e676d2ad306878fe3cf66c677 100644
+index 54a8cc77316701eba6f90a731cc472c924e5dccd..2689ee3a856ab9c997f60307c1bc5bedeeaee711 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -4962,7 +4962,7 @@ public abstract class Entity

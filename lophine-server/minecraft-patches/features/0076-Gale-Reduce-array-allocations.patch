@@ -137,7 +137,7 @@ index e46f95b19da1c14f240ec6697f22b5e220e0a835..70769a9c177bd846b1c8306af32e14e9
                  if (!itemStack.isEmpty()) {
                      slots.add(Pair.of(slot, itemStack.copy()));
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 79f135c873e097c6ffd365c2119281029b20b512..315e7df8ac0fcfeef235146107c278770ece47d0 100644
+index 733a09eb8605ca63bdf82a029d7055e08d4a351d..4068149ccf4dc065f4ec654d12fca65881e9056c 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -1435,7 +1435,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -150,7 +150,7 @@ index 79f135c873e097c6ffd365c2119281029b20b512..315e7df8ac0fcfeef235146107c27877
                      this.getInventory().equipment.set(value, net.minecraft.world.item.ItemStack.EMPTY);
                  }
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index bb2da959242275f866480dcb90855a4dd929c21c..d94fea7b3c4a4884c47da07bcc5173b7a919591a 100644
+index e573c47396473d5153eaf2595410403150e5fb75..bf0e70771ceb9906be7ff52f2813775cf040f3d9 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -3086,7 +3086,7 @@ public class ServerGamePacketListenerImpl
@@ -189,7 +189,7 @@ index c7510c99c68c66a64d391b67d93f31cfcd3dccf0..5785ecf52bbd68e6df0f25b917722999
  
      @Override
 diff --git a/net/minecraft/util/ZeroBitStorage.java b/net/minecraft/util/ZeroBitStorage.java
-index a6b5e56465a867a830a920cb4745ee85190b2f0a..f3f6ab209da3ef306514cfb1c13dcc0f0332de4b 100644
+index 6111ecdfaac7c003859040d49d91cc7413ad9482..50bf80cb232f35cf91c0948a6a21731a95533857 100644
 --- a/net/minecraft/util/ZeroBitStorage.java
 +++ b/net/minecraft/util/ZeroBitStorage.java
 @@ -5,7 +5,7 @@ import java.util.function.IntConsumer;

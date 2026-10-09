@@ -5,7 +5,7 @@ Subject: [PATCH] Carpet features
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedServer.java b/io/papermc/paper/threadedregions/RegionizedServer.java
-index f881d10d63a665a73aefe03ba1305ca9ae956513..7577533f82688304f06c445fd5a1c3fa3c4575fc 100644
+index fcf429da008384049bbc4f1106ecb603337446cb..d9a46a8cee65b37fe4fc1af806976ef9d0c87206 100644
 --- a/io/papermc/paper/threadedregions/RegionizedServer.java
 +++ b/io/papermc/paper/threadedregions/RegionizedServer.java
 @@ -238,6 +238,7 @@ public final class RegionizedServer {
@@ -132,7 +132,7 @@ index 8cc4fe9feb57902a4b9a6a26e6175ac00a2cef65..9ab1a812e43145120859734075e2ac99
          // Paper start - fix converting txt to json file; moved from constructor
      }
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 733b47fd1befdb85f58af0a841163ff740a62179..0a09aa81ebaba7b81bc17f40cc265fcd9c54dcb8 100644
+index 5101542bfc15fa28b7012a1f967cafaa6366e7f3..f5c5e0800998b099b9eef33f3a5b7a6d8a008f8f 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -264,6 +264,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -177,7 +177,7 @@ index 733b47fd1befdb85f58af0a841163ff740a62179..0a09aa81ebaba7b81bc17f40cc265fcd
  
      public ClientInformation clientInformation() {
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index d5a7d32543e8a244375c614e797a869d3ba7fc96..e344e9748034515da6c888403ca7882d9bd1ba89 100644
+index b27d6ef2245dcd23a4b8f1abdfbe19b88e4f953c..1a3351b4a309d8e9b22563adb12711add1a35530 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -2150,7 +2150,15 @@ public class ServerGamePacketListenerImpl
@@ -628,7 +628,7 @@ index ca548c006dfde82bef3f8855e275df63a42b8e09..c447a5ccce7c859ed61ab42e25d68326
          final io.papermc.paper.event.player.PlayerItemCooldownEvent event = new io.papermc.paper.event.player.PlayerItemCooldownEvent(
              this.player.getBukkitEntity(),
 diff --git a/net/minecraft/world/item/crafting/RecipeManager.java b/net/minecraft/world/item/crafting/RecipeManager.java
-index 1cb69160c792dc59621d87061831d73876662606..691c0b88bbfa3ef9bb77ca307862307bec563366 100644
+index f30349dacbc58bf88c594c84a1cc63ffce29325c..809e928c9c0e4889d71dbfae4c440bb816a754cc 100644
 --- a/net/minecraft/world/item/crafting/RecipeManager.java
 +++ b/net/minecraft/world/item/crafting/RecipeManager.java
 @@ -26,6 +26,11 @@ import org.slf4j.Logger;
@@ -1154,10 +1154,10 @@ index a71916d41a6e02106fd73725dfb180170bed00d6..c2d2e1963c6516583e5479e8f3bfd814
              BlockPos pos = oldPos;
              BlockState blockState = allowDesync ? level.getBlockState(oldPos) : null;
 diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
-index 2786f2a9522c097794ffd06d54d24502df856ae9..199c5203f99ba39f726380401901d3175702599d 100644
+index 4711709f0bbbc37b487c753ceb9a5bca8d02ec14..8b295de18930d45497385dcfc06325304148ef1f 100644
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
-@@ -858,6 +858,12 @@ public abstract class BlockBehaviour implements FeatureElement, org.leavesmc.lea
+@@ -911,6 +911,12 @@ public abstract class BlockBehaviour implements FeatureElement, org.leavesmc.lea
          }
  
          public Vec3 getOffset(final BlockPos pos) {
@@ -1171,10 +1171,10 @@ index 2786f2a9522c097794ffd06d54d24502df856ae9..199c5203f99ba39f726380401901d317
              return function != null ? function.evaluate(this.asState(), pos) : Vec3.ZERO;
          }
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index 5d3f589abb9b3d4801b552a06551481eeea36997..da3ec224edc6b5b1e24dbc6610fca733ce6d54b7 100644
+index 0a4c99969f4ed14c8852802df80f98eabf07cc38..0dd67655e16001512fd21577d354995114288595 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
-@@ -424,10 +424,10 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -429,10 +429,10 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
          boolean blockChanged = !oldState.is(newBlock);
          boolean movedByPiston = (flags & Block.UPDATE_MOVE_BY_PISTON) != 0;
          boolean sideEffects = (flags & Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS) == 0;
@@ -1187,7 +1187,7 @@ index 5d3f589abb9b3d4801b552a06551481eeea36997..da3ec224edc6b5b1e24dbc6610fca733
                  BlockEntity blockEntity = this.level.getBlockEntity(pos);
                  if (blockEntity != null) {
                      blockEntity.preRemoveSideEffects(pos, oldState);
-@@ -439,7 +439,8 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -444,7 +444,8 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
  
          if ((blockChanged || newBlock instanceof BaseRailBlock)
              && this.level instanceof ServerLevel serverLevel
@@ -1197,7 +1197,7 @@ index 5d3f589abb9b3d4801b552a06551481eeea36997..da3ec224edc6b5b1e24dbc6610fca733
              oldState.affectNeighborsAfterRemoval(serverLevel, pos, movedByPiston);
          }
          } else {
-@@ -451,7 +452,10 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+@@ -456,7 +457,10 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
              return null;
          }
  

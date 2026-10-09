@@ -99,7 +99,7 @@ index e8a0c93646117173122bfe464755d13fd5d5f299..262287e7b044a911a5cf6619f5849b1b
                  NaturalSpawner.spawnForChunk(this.level, chunk, spawnCookie, spawningCategories);
              }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 0eb0e526591de678885464a248cd051281fe957e..3844cb5b1b09888a64a14509e8be40448afeffd0 100644
+index e043211c2ef0076fa2bbbb5498bcc3a070ebcf95..e62b4f7d8bf33afa680d317241d849a7dcb96110 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -830,6 +830,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -151,7 +151,7 @@ index 0eb0e526591de678885464a248cd051281fe957e..3844cb5b1b09888a64a14509e8be4044
              // Spigot start // TODO I don't think this is needed anymore
              if (entity instanceof Player player) {
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
-index 2da2f759190187ae747f83f73a5d98833e4e34d6..e4d8ddfff26cf891053912526ebc778d1f3d9b86 100644
+index dda66c70d23496d6ea6a7bddd8b6e5a8c8343504..4b8580878ac3096b7daeadb9fa9789420c0c8ad3 100644
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
 @@ -832,6 +832,41 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs

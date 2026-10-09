@@ -8,7 +8,7 @@ As part of: Kaiiju (https://github.com/KaiijuMC/Kaiiju/blob/c2b7aec8f7b418a39a2e
 Licensed under: GPL-3.0 (https://github.com/KaiijuMC/Kaiiju/blob/c2b7aec8f7b418a39a2ec408e6411e6f752379da/LICENSE)
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 61c26127fd1f38b84fca9de2fb61936ed6306eb1..e93c7a27675f9eae72cbe459ae8cb90741f04a2c 100644
+index 497b03e018f3b3bfee2c1f13e781f773c77c2631..c7b102570683fc2f57a5e73954910ac3191480b2 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -4796,15 +4796,19 @@ public abstract class Entity

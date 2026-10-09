@@ -86,7 +86,7 @@ index 68751f44518a9451e1bf87a441926ce61d8c04dd..591002c9fdb58b5ee9d54d092c913a9e
          LOGGER.info("Awaiting scheduler termination for 60s...");
          if (TickRegions.getScheduler().halt(true, TimeUnit.SECONDS.toNanos(60L))) {
 diff --git a/io/papermc/paper/threadedregions/RegionizedServer.java b/io/papermc/paper/threadedregions/RegionizedServer.java
-index aa575f3b76ef70ffb9f0410e7e5cfe7af384bfbd..ff90abb47203c03636d3175f2b3efcf43517b3b0 100644
+index cefe62d3c55e8399c712b8b0fc19ec7ffc14ba49..1e4edb1f53afa51fe85e3fd3dac9668a92597247 100644
 --- a/io/papermc/paper/threadedregions/RegionizedServer.java
 +++ b/io/papermc/paper/threadedregions/RegionizedServer.java
 @@ -63,6 +63,12 @@ public final class RegionizedServer {
@@ -258,7 +258,7 @@ index 9ea7df037564f7a15386ceee5ed9980bcf7fddfa..3a7e8fa181c4de40f701d879599578d1
          Map<ResourceKey<Level>, ServerLevel> newLevels = Maps.newLinkedHashMap(oldLevels);
          newLevels.remove(level.dimension());
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 1d6f0f8f0da0d619bf199038d6bbb9bb0dcf9596..39aa0f7fd959385237fdb7593f76449398cbe605 100644
+index d10ac9574c481088466585adf1cec4eff6e20423..b39c4add6b22feb79b8590e0b1573c9712a0d72f 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -223,6 +223,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -275,7 +275,7 @@ index 1d6f0f8f0da0d619bf199038d6bbb9bb0dcf9596..39aa0f7fd959385237fdb7593f764493
      // CraftBukkit start
      private final ResourceKey<LevelStem> typeKey;
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 0d2f47d6a5b247c98ee7c6fb8f113a06858135c5..167da06374f4b2f8c0b244e778f9e4be626ba79b 100644
+index c62308ed71e5ea771f00ceab26f1e8dacf7199cb..1258e4b0329699f43d251286a44aaaf1dbb76a34 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -1754,7 +1754,30 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -429,7 +429,7 @@ index 9fad06eda81b4c2c1889a9cfa7a6948e7ee01862..854f8954ccfd8c34c9f9c91fd1805260
          private final Vec2 spawnAngle;
  
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 850366a24f1848488141163db13adddea5e849ac..61c26127fd1f38b84fca9de2fb61936ed6306eb1 100644
+index 5a0f269632292778ae21fb79e5592c88890d3601..497b03e018f3b3bfee2c1f13e781f773c77c2631 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -399,6 +399,9 @@ public abstract class Entity

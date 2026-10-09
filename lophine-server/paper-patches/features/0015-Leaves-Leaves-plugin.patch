@@ -244,10 +244,10 @@ index 26422904751647a061397ce978bba752149003cd..884ed63dab16acca83fe8f421762f256
      }
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index a1124bdd4a8a0738c3a21620d9a926bdf20985e8..bff22d6cb4f6eaf3e6968c76ed58bf3edb59bd05 100644
+index f0cf46cfcd242a9357c5c65b85d97bbe1f61ebbb..9918f98261fcce0d999c2e41122676414c304d75 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-@@ -3097,6 +3097,13 @@ public final class CraftServer implements Server {
+@@ -3095,6 +3095,13 @@ public final class CraftServer implements Server {
      }
      // Luminol end - Config API
  

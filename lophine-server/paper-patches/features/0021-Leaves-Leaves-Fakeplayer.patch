@@ -53,10 +53,10 @@ index 40a49c50b0d468ebdcd5c9b9753c2a8b3c8e1116..d77333fdfc4bb5b177f704c922773d72
          if (nmsEntity.level() != this.getHandle().getLevel()) {
              throw new IllegalArgumentException(entity + " wasn't created with this world, you must create the entity with the world you want to add it to.");
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index b71a6cbb9114fbbfd8874b20d18701372b9d90f6..bc08a50576e29d580b78d015e81c2310ce8ed11b 100644
+index 916b348cf036db35d00675cefa83ef91716d17de..bdfcbcef836ac5185637ead7e86575b918999b08 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-@@ -307,6 +307,7 @@ public final class CraftServer implements Server {
+@@ -285,6 +285,7 @@ public final class CraftServer implements Server {
      private final io.papermc.paper.potion.PaperPotionBrewer potionBrewer;
      public io.papermc.paper.SparksFly spark; // Paper - spark // Luminol - Force disable builtin spark
      private final ServerConfiguration serverConfig = new PaperServerConfiguration();
@@ -64,7 +64,7 @@ index b71a6cbb9114fbbfd8874b20d18701372b9d90f6..bc08a50576e29d580b78d015e81c2310
  
      // Paper start - Folia region threading API
      private final io.papermc.paper.threadedregions.scheduler.FoliaRegionScheduler regionizedScheduler = new io.papermc.paper.threadedregions.scheduler.FoliaRegionScheduler(); // Folia - region threading
-@@ -483,6 +484,7 @@ public final class CraftServer implements Server {
+@@ -461,6 +462,7 @@ public final class CraftServer implements Server {
          datapackManager = new io.papermc.paper.datapack.PaperDatapackManager(console.getPackRepository()); // Paper
          if (false) this.spark = new io.papermc.paper.SparksFly(this); // Paper - spark // Luminol - Force disable builtin spark
          org.leavesmc.leaves.protocol.core.LeavesProtocolManager.init(); // Leaves - protocol
@@ -72,7 +72,7 @@ index b71a6cbb9114fbbfd8874b20d18701372b9d90f6..bc08a50576e29d580b78d015e81c2310
      }
  
      public boolean getCommandBlockOverride(String command) {
-@@ -1378,7 +1380,7 @@ public final class CraftServer implements Server {
+@@ -1356,7 +1358,7 @@ public final class CraftServer implements Server {
              return false;
          }
  
@@ -81,7 +81,7 @@ index b71a6cbb9114fbbfd8874b20d18701372b9d90f6..bc08a50576e29d580b78d015e81c2310
              return false;
          }
  
-@@ -3106,6 +3108,13 @@ public final class CraftServer implements Server {
+@@ -3104,6 +3106,13 @@ public final class CraftServer implements Server {
      }
      // Leaves end - Feature API
  
@@ -96,7 +96,7 @@ index b71a6cbb9114fbbfd8874b20d18701372b9d90f6..bc08a50576e29d580b78d015e81c2310
      /**
       * Gets the TPS from the region which owns the specified location, or {@code null} if no region owns
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 285996ac7bfd4399abebebc70f238886486da60a..d0d61b5971d81d9b7c4d689d721f295d268e347d 100644
+index 47a76b9c4029a58421df3e4096f36f62d18df7e4..e64ce9e27c18166b887acac8f1f8c136fea28843 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -248,7 +248,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
@@ -108,7 +108,7 @@ index 285996ac7bfd4399abebebc70f238886486da60a..d0d61b5971d81d9b7c4d689d721f295d
      }
  
      @Override
-@@ -1121,9 +1121,9 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+@@ -1125,9 +1125,9 @@ public class CraftWorld extends CraftRegionAccessor implements World {
  
      @Override
      public List<Player> getPlayers() {
@@ -120,7 +120,7 @@ index 285996ac7bfd4399abebebc70f238886486da60a..d0d61b5971d81d9b7c4d689d721f295d
              HumanEntity bukkitEntity = human.getBukkitEntity();
  
              if ((bukkitEntity != null) && (bukkitEntity instanceof Player)) {
-@@ -1628,7 +1628,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+@@ -1632,7 +1632,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
      public void playSound(final net.kyori.adventure.sound.Sound sound) {
          org.spigotmc.AsyncCatcher.catchOp("play sound"); // Paper
          final long seed = sound.seed().orElseGet(this.world.getRandom()::nextLong);
@@ -129,7 +129,7 @@ index 285996ac7bfd4399abebebc70f238886486da60a..d0d61b5971d81d9b7c4d689d721f295d
              player.connection.send(io.papermc.paper.adventure.PaperAdventure.asSoundPacket(sound, player.getX(), player.getY(), player.getZ(), seed, null));
          }
      }
-@@ -1656,7 +1656,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+@@ -1660,7 +1660,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
          org.spigotmc.AsyncCatcher.catchOp("play sound"); // Paper
          final long seed = sound.seed().orElseGet(this.getHandle().getRandom()::nextLong);
          if (emitter == net.kyori.adventure.sound.Sound.Emitter.self()) {
@@ -139,7 +139,7 @@ index 285996ac7bfd4399abebebc70f238886486da60a..d0d61b5971d81d9b7c4d689d721f295d
              }
          } else if (emitter instanceof CraftEntity craftEntity) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index ad1b230961a9187df749bc3e82a1feb6722dc82d..47b8f7f3db6e88fb41ae922388e2ed3ade79bd97 100644
+index a05239dd29b34ee03dc3006c7b26b6665a77887a..d2f7a1703efe08c8ad7f28137c89b427061c2fd8 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 @@ -133,6 +133,8 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
