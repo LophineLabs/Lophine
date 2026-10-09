@@ -13,7 +13,7 @@ public class WoolHopperCounterConfig {
     @ConfigInfo(name = "hopperCounters")
     public static volatile boolean hopperCounters = false;
 
-    @ConfigInfo(name = "hopperCountersUnlimitedSpeed")
+    @ConfigInfo(name = "hopperCountersUnlimitedSpeed", section = "tis")
     public static volatile boolean hopperCountersUnlimitedSpeed = false;
 
     @DoNotLoad

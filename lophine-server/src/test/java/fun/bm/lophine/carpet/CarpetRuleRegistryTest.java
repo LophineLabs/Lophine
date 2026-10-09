@@ -109,9 +109,27 @@ class CarpetRuleRegistryTest {
     }
 
     @Test
-    void rulesResolveToTheirExistingConfigurationPaths() {
-        assertEquals("carpet.general.largeEnderChest", CarpetRuleRegistry.get("largeEnderChest").path());
+    void rulesResolveToTheirProjectSections() {
+        assertEquals("carpet.ams.largeEnderChest", CarpetRuleRegistry.get("largeEnderChest").path());
+        assertEquals("carpet.tis.microTiming", CarpetRuleRegistry.get("microTiming").path());
+        assertEquals("carpet.org.commandFinder", CarpetRuleRegistry.get("commandFinder").path());
         assertEquals("carpet.fakeplayer.commandPlayer", CarpetRuleRegistry.get("commandPlayer").path());
+        assertEquals("carpet.ams.fakePlayerDefaultSurvivalMode", CarpetRuleRegistry.get("fakePlayerDefaultSurvivalMode").path());
+        assertEquals("carpet.tis.hopperCountersUnlimitedSpeed", CarpetRuleRegistry.get("hopperCountersUnlimitedSpeed").path());
+        assertEquals("carpet.general.commandScript", CarpetRuleRegistry.get("commandScript").path());
+    }
+
+    @Test
+    void everyAdditionRuleUsesItsDeclaredUpstreamProject() {
+        for (String name : CarpetRuleRegistry.names()) {
+            String section = switch (CarpetRuleMetadata.get(name).project()) {
+                case "Carpet AMS Addition" -> "ams";
+                case "Carpet TIS Addition" -> "tis";
+                case "Carpet Org Addition" -> "org";
+                default -> null;
+            };
+            if (section != null) assertEquals("carpet." + section + "." + name, CarpetRuleRegistry.get(name).path(), name);
+        }
     }
 
     @Test

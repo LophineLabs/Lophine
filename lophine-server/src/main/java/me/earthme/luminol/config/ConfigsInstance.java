@@ -193,14 +193,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                 ConfigClassInfo classInfo = getConfigClassInfo(module);
                 if (classInfo == null) continue;
 
-                final List<String> keys = new ArrayList<>();
-                String name = classInfo.category().getBaseKeyName();
-                if (name != null) keys.add(name);
-                keys.addAll(List.of(classInfo.directory()));
-                keys.add(classInfo.name());
-                keys.addAll(List.of(configInfo.directory()));
-                keys.add(configInfo.name());
-                final String fullConfigKeyName = String.join(".", keys);
+                final String fullConfigKeyName = ConfigPaths.resolve(classInfo, configInfo);
 
                 // Check if this config has a staged value
                 if (stagedConfigMap.containsKey(fullConfigKeyName)) {
@@ -249,6 +242,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
 
         try {
             instanceAllModule();
+            migrateConfigSections();
             if (this.name.equals("lophine_carpet")) {
                 try (var view = fun.bm.lophine.carpet.CarpetRuleRegistry.configurationView(this::peekCarpetConfigValue)) {
                     loadAllModules(keepComments);
@@ -260,6 +254,36 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         }
 
         saveConfigs();
+    }
+
+    /** Move old section keys before Carpet validates the complete requested rule set. */
+    private void migrateConfigSections() {
+        for (Object module : allInstanced.keySet()) {
+            ConfigClassInfo classInfo = getConfigClassInfo(module);
+            for (Field field : module.getClass().getDeclaredFields()) {
+                ConfigInfo info = field.getAnnotation(ConfigInfo.class);
+                if (info == null || info.section().isEmpty() || !Modifier.isStatic(field.getModifiers())
+                        || Modifier.isFinal(field.getModifiers()) || field.getAnnotation(DoNotLoad.class) != null) continue;
+                String legacy = ConfigPaths.legacy(classInfo, info);
+                String target = ConfigPaths.resolve(classInfo, info);
+                if (legacy.equals(target) || !configFileInstance.contains(legacy)) continue;
+                if (!configFileInstance.contains(target)) {
+                    configFileInstance.set(target, configFileInstance.get(legacy));
+                    String comment = configFileInstance.getComment(legacy);
+                    if (comment != null) configFileInstance.setComment(target, comment);
+                }
+                configFileInstance.remove(legacy);
+                List<String> parents = new ArrayList<>(List.of(legacy.split("\\.")));
+                parents.removeLast();
+                while (!parents.isEmpty()) {
+                    String parent = String.join(".", parents);
+                    Object value = configFileInstance.get(parent);
+                    if (!(value instanceof UnmodifiableConfig table) || !table.isEmpty()) break;
+                    configFileInstance.remove(parent);
+                    parents.removeLast();
+                }
+            }
+        }
     }
 
     /**
@@ -314,7 +338,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         Set<Exception> exception = new HashSet<>();
         for (Field field : fields) {
             try {
-                processConfigField(field, singleConfigModule, category, keepComments);
+                processConfigField(field, singleConfigModule, keepComments);
             } catch (Exception e) {
                 exception.add(e);
             }
@@ -365,7 +389,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
      * Process a single configuration field
      */
     private void processConfigField(Field field, @NotNull Object singleConfigModule,
-                                    List<String> category, boolean keepComments) throws IllegalAccessException {
+                                    boolean keepComments) throws IllegalAccessException {
         int modifiers = field.getModifiers();
         if (!(Modifier.isStatic(modifiers) && !Modifier.isFinal(modifiers))) {
             return;
@@ -380,10 +404,11 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         if (configInfo == null) return;
 
         // Build full configuration key
-        final List<String> keys = new ArrayList<>(category);
-        keys.addAll(List.of(configInfo.directory()));
-        keys.add(configInfo.name());
-        final String fullConfigKeyName = String.join(".", keys);
+        ConfigClassInfo moduleInfo = getConfigClassInfo(singleConfigModule);
+        final String fullConfigKeyName = ConfigPaths.resolve(moduleInfo, configInfo);
+        if (!configInfo.section().isEmpty()) {
+            handleClassLevelComments(String.join(".", ConfigPaths.section(moduleInfo, configInfo)), keepComments);
+        }
 
         if (!alreadyInit) {
             uniqueIdMap.put(uniqueIdMap.size(), fullConfigKeyName);
@@ -598,10 +623,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                 DoNotLoad loading = field.getAnnotation(DoNotLoad.class);
                 if (info == null || !Modifier.isStatic(field.getModifiers()) || Modifier.isFinal(field.getModifiers())
                         || loading != null) continue;
-                List<String> path = new ArrayList<>(buildConfigCategoryPath(classInfo));
-                path.addAll(List.of(info.directory()));
-                path.add(info.name());
-                String key = String.join(".", path);
+                String key = ConfigPaths.resolve(classInfo, info);
                 if (!defaultvalueMap.containsKey(key)) continue;
                 try {
                     field.setAccessible(true);
@@ -807,14 +829,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                 ConfigInfo info = field.getAnnotation(ConfigInfo.class);
                 if (info == null || !Modifier.isStatic(field.getModifiers()) || Modifier.isFinal(field.getModifiers()))
                     continue;
-                List<String> keys = new ArrayList<>();
-                String category = classInfo.category().getBaseKeyName();
-                if (category != null) keys.add(category);
-                keys.addAll(List.of(classInfo.directory()));
-                keys.add(classInfo.name());
-                keys.addAll(List.of(info.directory()));
-                keys.add(info.name());
-                if (!String.join(".", keys).equals(key)) continue;
+                if (!ConfigPaths.resolve(classInfo, info).equals(key)) continue;
                 DoNotLoad loading = field.getAnnotation(DoNotLoad.class);
                 if (loading != null && loading.when() == EnumLoadType.ALWAYS) return SingleConfigResult.UNKNOWN_KEY;
                 field.setAccessible(true);

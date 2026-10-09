@@ -26,13 +26,13 @@ public class FakePlayerCompatConfig {
     @ConfigInfo(name = "openFakePlayerInventory")
     public static volatile boolean openFakePlayerInventory = false;
 
-    @ConfigInfo(name = "fakePlayerTicksLikeRealPlayer")
+    @ConfigInfo(name = "fakePlayerTicksLikeRealPlayer", section = "tis")
     public static volatile boolean fakePlayerTicksLikeRealPlayer = false;
 
-    @ConfigInfo(name = "fakePlayerDefaultSurvivalMode")
+    @ConfigInfo(name = "fakePlayerDefaultSurvivalMode", section = "ams")
     public static volatile boolean fakePlayerDefaultSurvivalMode = false;
 
-    @ConfigInfo(name = "fakePlayerInteractLikeClient")
+    @ConfigInfo(name = "fakePlayerInteractLikeClient", section = "ams")
     public static volatile boolean fakePlayerInteractLikeClient = false;
 
     @ConfigInfo(name = "fakePlayerAutoReplaceTool")

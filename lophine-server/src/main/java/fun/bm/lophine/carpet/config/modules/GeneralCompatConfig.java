@@ -11,73 +11,73 @@ import java.util.List;
 
 @ConfigClassInfo(category = EnumConfigCategory.ROOT, name = "general", directory = {"carpet"})
 public class GeneralCompatConfig {
-    @ConfigInfo(name = "commandFinder")
+    @ConfigInfo(name = "commandFinder", section = "org")
     public static volatile String commandFinder = "true";
 
-    @ConfigInfo(name = "playerCommandOpenPlayerInventoryOption")
+    @ConfigInfo(name = "playerCommandOpenPlayerInventoryOption", section = "org")
     public static volatile String playerCommandOpenPlayerInventoryOption = "fake_player";
 
-    @ConfigInfo(name = "commandMail")
+    @ConfigInfo(name = "commandMail", section = "org")
     public static volatile String commandMail = "ops";
 
-    @ConfigInfo(name = "commandPlayerManager")
+    @ConfigInfo(name = "commandPlayerManager", section = "org")
     public static volatile String commandPlayerManager = "ops";
 
-    @ConfigInfo(name = "playerManagerForceComment")
+    @ConfigInfo(name = "playerManagerForceComment", section = "org")
     public static volatile boolean playerManagerForceComment = false;
 
-    @ConfigInfo(name = "fakePlayerSpawnMemoryLeakFix")
+    @ConfigInfo(name = "fakePlayerSpawnMemoryLeakFix", section = "org")
     public static volatile boolean fakePlayerSpawnMemoryLeakFix = false;
 
-    @ConfigInfo(name = "wetExplosionReintroduced")
+    @ConfigInfo(name = "wetExplosionReintroduced", section = "tis")
     public static volatile boolean wetExplosionReintroduced = false;
 
-    @ConfigInfo(name = "displayPlayerSummoner")
+    @ConfigInfo(name = "displayPlayerSummoner", section = "org")
     public static volatile boolean displayPlayerSummoner = false;
 
-    @ConfigInfo(name = "commandPlayerAction")
+    @ConfigInfo(name = "commandPlayerAction", section = "org")
     public static volatile String commandPlayerAction = "ops";
 
-    @ConfigInfo(name = "fakePlayerActionKeepItem")
+    @ConfigInfo(name = "fakePlayerActionKeepItem", section = "org")
     public static volatile boolean fakePlayerActionKeepItem = false;
 
-    @ConfigInfo(name = "fakePlayerMaxItemOperationCount")
+    @ConfigInfo(name = "fakePlayerMaxItemOperationCount", section = "org")
     public static volatile int fakePlayerMaxItemOperationCount = 3;
 
-    @ConfigInfo(name = "quickSettingFakePlayerCraft")
+    @ConfigInfo(name = "quickSettingFakePlayerCraft", section = "org")
     public static volatile String quickSettingFakePlayerCraft = "false";
 
 
-    @ConfigInfo(name = "playerCommandTeleportFakePlayer")
+    @ConfigInfo(name = "playerCommandTeleportFakePlayer", section = "org")
     public static volatile String playerCommandTeleportFakePlayer = "false";
 
-    @ConfigInfo(name = "playerCommandSummonMannequin")
+    @ConfigInfo(name = "playerCommandSummonMannequin", section = "org")
     public static volatile String playerCommandSummonMannequin = "false";
 
 
-    @ConfigInfo(name = "cauldronBlockItemInteractFix")
+    @ConfigInfo(name = "cauldronBlockItemInteractFix", section = "tis")
     public static volatile boolean cauldronBlockItemInteractFix = false;
 
-    @ConfigInfo(name = "chunkUpdatePacketThreshold")
+    @ConfigInfo(name = "chunkUpdatePacketThreshold", section = "tis")
     public static volatile int chunkUpdatePacketThreshold = 64;
 
-    @ConfigInfo(name = "deobfuscateCrashReportStackTrace")
+    @ConfigInfo(name = "deobfuscateCrashReportStackTrace", section = "tis")
     public static volatile boolean deobfuscateCrashReportStackTrace = false;
 
-    @ConfigInfo(name = "entityBrainMemoryUnfreedFix")
+    @ConfigInfo(name = "entityBrainMemoryUnfreedFix", section = "tis")
     public static volatile boolean entityBrainMemoryUnfreedFix = false;
 
-    @ConfigInfo(name = "entityChunkSectionIndexXOverflowFix")
+    @ConfigInfo(name = "entityChunkSectionIndexXOverflowFix", section = "tis")
     public static volatile boolean entityChunkSectionIndexXOverflowFix = false;
 
-    @ConfigInfo(name = "minecartFullDropBackport")
+    @ConfigInfo(name = "minecartFullDropBackport", section = "tis")
     public static volatile boolean minecartFullDropBackport = false;
 
-    @ConfigInfo(name = "yeetAsyncTaskExecutionDelay")
+    @ConfigInfo(name = "yeetAsyncTaskExecutionDelay", section = "tis")
     public static volatile boolean yeetAsyncTaskExecutionDelay = false;
 
 
-    @ConfigInfo(name = "visualizeProjectileLoggerEnabled")
+    @ConfigInfo(name = "visualizeProjectileLoggerEnabled", section = "tis")
     public static volatile boolean visualizeProjectileLoggerEnabled = false;
 
 
@@ -100,69 +100,69 @@ public class GeneralCompatConfig {
     public static volatile String scriptsAppStore = "gnembon/scarpet/contents/programs";
 
 
-    @ConfigInfo(name = "microTimingDyeMarker")
+    @ConfigInfo(name = "microTimingDyeMarker", section = "tis")
     public static volatile String microTimingDyeMarker = "true";
 
-    @ConfigInfo(name = "microTimingTarget")
+    @ConfigInfo(name = "microTimingTarget", section = "tis")
     public static volatile String microTimingTarget = "marker_only";
 
-    @ConfigInfo(name = "microTimingTickDivision")
+    @ConfigInfo(name = "microTimingTickDivision", section = "tis")
     public static volatile String microTimingTickDivision = "world_timer";
 
 
-    @ConfigInfo(name = "amsNetworkProtocol")
+    @ConfigInfo(name = "amsNetworkProtocol", section = "ams")
     public static volatile boolean amsNetworkProtocol = false;
 
-    @ConfigInfo(name = "amsTranslationMode")
+    @ConfigInfo(name = "amsTranslationMode", section = "ams")
     public static volatile String amsTranslationMode = "client";
 
-    @ConfigInfo(name = "commandAmspDebug")
+    @ConfigInfo(name = "commandAmspDebug", section = "ams")
     public static volatile String commandAmspDebug = "false";
 
-    @ConfigInfo(name = "commandGetClientPlayerFps")
+    @ConfigInfo(name = "commandGetClientPlayerFps", section = "ams")
     public static volatile String commandGetClientPlayerFps = "false";
 
-    @ConfigInfo(name = "commandPacketInternetGroper")
+    @ConfigInfo(name = "commandPacketInternetGroper", section = "ams")
     public static volatile String commandPacketInternetGroper = "false";
 
-    @ConfigInfo(name = "commandCustomAntiFireItems")
+    @ConfigInfo(name = "commandCustomAntiFireItems", section = "ams")
     public static volatile String commandCustomAntiFireItems = "false";
 
-    @ConfigInfo(name = "commandAnvilInteractionDisabled")
+    @ConfigInfo(name = "commandAnvilInteractionDisabled", section = "ams")
     public static volatile String commandAnvilInteractionDisabled = "false";
 
-    @ConfigInfo(name = "commandCustomMovableBlock")
+    @ConfigInfo(name = "commandCustomMovableBlock", section = "ams")
     public static volatile String commandCustomMovableBlock = "false";
 
-    @ConfigInfo(name = "commandCustomBlockBlastResistance")
+    @ConfigInfo(name = "commandCustomBlockBlastResistance", section = "ams")
     public static volatile String commandCustomBlockBlastResistance = "false";
 
-    @ConfigInfo(name = "commandCustomBlockHardness")
+    @ConfigInfo(name = "commandCustomBlockHardness", section = "ams")
     public static volatile String commandCustomBlockHardness = "false";
 
-    @ConfigInfo(name = "commandPlayerLeader")
+    @ConfigInfo(name = "commandPlayerLeader", section = "ams")
     public static volatile String commandPlayerLeader = "false";
 
-    @ConfigInfo(name = "commandPlayerNoNetherPortalTeleport")
+    @ConfigInfo(name = "commandPlayerNoNetherPortalTeleport", section = "ams")
     public static volatile String commandPlayerNoNetherPortalTeleport = "false";
 
-    @ConfigInfo(name = "commandCustomCommandPermissionLevel")
+    @ConfigInfo(name = "commandCustomCommandPermissionLevel", section = "ams")
     public static volatile String commandCustomCommandPermissionLevel = "false";
 
-    @ConfigInfo(name = "commandSetPlayerPose")
+    @ConfigInfo(name = "commandSetPlayerPose", section = "ams")
     public static volatile String commandSetPlayerPose = "false";
 
-    @ConfigInfo(name = "commandAtSomeOnePlayer")
+    @ConfigInfo(name = "commandAtSomeOnePlayer", section = "ams")
     public static volatile String commandAtSomeOnePlayer = "false";
 
-    @ConfigInfo(name = "commandCarpetExtensionModWikiHyperlink")
+    @ConfigInfo(name = "commandCarpetExtensionModWikiHyperlink", section = "ams")
     public static volatile String commandCarpetExtensionModWikiHyperlink = "false";
 
 
-    @ConfigInfo(name = "commandLifeTime")
+    @ConfigInfo(name = "commandLifeTime", section = "tis")
     public static volatile String commandLifeTime = "true";
 
-    @ConfigInfo(name = "lifeTimeTrackerConsidersMobcap")
+    @ConfigInfo(name = "lifeTimeTrackerConsidersMobcap", section = "tis")
     public static volatile boolean lifeTimeTrackerConsidersMobcap = true;
 
 
@@ -185,31 +185,31 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "commandDraw")
     public static volatile String commandDraw = "ops";
 
-    @ConfigInfo(name = "customBlockUpdateSuppressor")
+    @ConfigInfo(name = "customBlockUpdateSuppressor", section = "ams")
     public static volatile String customBlockUpdateSuppressor = "none";
 
-    @ConfigInfo(name = "renewableNetheriteScrap")
+    @ConfigInfo(name = "renewableNetheriteScrap", section = "ams")
     public static volatile double renewableNetheriteScrap = 0.0;
 
-    @ConfigInfo(name = "superLeash")
+    @ConfigInfo(name = "superLeash", section = "ams")
     public static volatile boolean superLeash = false;
 
-    @ConfigInfo(name = "redstoneComponentSound")
+    @ConfigInfo(name = "redstoneComponentSound", section = "ams")
     public static volatile boolean redstoneComponentSound = false;
 
-    @ConfigInfo(name = "preventAdministratorCheat")
+    @ConfigInfo(name = "preventAdministratorCheat", section = "ams")
     public static volatile boolean preventAdministratorCheat = false;
 
-    @ConfigInfo(name = "testRule")
+    @ConfigInfo(name = "testRule", section = "ams")
     public static volatile boolean testRule = false;
 
-    @ConfigInfo(name = "persistentLoggerSubscription")
+    @ConfigInfo(name = "persistentLoggerSubscription", section = "tis")
     public static volatile boolean persistentLoggerSubscription = false;
 
-    @ConfigInfo(name = "commandManipulate")
+    @ConfigInfo(name = "commandManipulate", section = "tis")
     public static volatile String commandManipulate = "false";
 
-    @ConfigInfo(name = "manipulateBlockLimit")
+    @ConfigInfo(name = "manipulateBlockLimit", section = "tis")
     public static volatile int manipulateBlockLimit = 1000000;
 
     @ConfigInfo(name = "commandInfo")
@@ -222,84 +222,84 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "commandSpawn")
     public static volatile String commandSpawn = "ops";
 
-    @ConfigInfo(name = "mobcapsDisplayIgnoreMisc")
+    @ConfigInfo(name = "mobcapsDisplayIgnoreMisc", section = "tis")
     public static volatile boolean mobcapsDisplayIgnoreMisc = false;
 
-    @ConfigInfo(name = "commandSpeedTest")
+    @ConfigInfo(name = "commandSpeedTest", section = "tis")
     public static volatile String commandSpeedTest = "false";
 
-    @ConfigInfo(name = "speedTestCommandMaxTestSize")
+    @ConfigInfo(name = "speedTestCommandMaxTestSize", section = "tis")
     public static volatile int speedTestCommandMaxTestSize = 10;
 
-    @ConfigInfo(name = "openPlayerInventory")
+    @ConfigInfo(name = "openPlayerInventory", section = "org")
     public static volatile String openPlayerInventory = "false";
 
-    @ConfigInfo(name = "playerCommandOpenPlayerInventoryGcaStyle")
+    @ConfigInfo(name = "playerCommandOpenPlayerInventoryGcaStyle", section = "org")
     public static volatile boolean playerCommandOpenPlayerInventoryGcaStyle = true;
 
-    @ConfigInfo(name = "playerCommandOpenPlayerInventory")
+    @ConfigInfo(name = "playerCommandOpenPlayerInventory", section = "org")
     public static volatile String playerCommandOpenPlayerInventory = "false";
 
-    @ConfigInfo(name = "playerCommandCloseScreen")
+    @ConfigInfo(name = "playerCommandCloseScreen", section = "org")
     public static volatile boolean playerCommandCloseScreen = false;
 
-    @ConfigInfo(name = "loggerMovement")
+    @ConfigInfo(name = "loggerMovement", section = "tis")
     public static volatile String loggerMovement = "ops";
 
-    @ConfigInfo(name = "entityIdCounterLoggerSamplingDuration")
+    @ConfigInfo(name = "entityIdCounterLoggerSamplingDuration", section = "tis")
     public static volatile int entityIdCounterLoggerSamplingDuration = 100;
 
-    @ConfigInfo(name = "lightQueueLoggerSamplingDuration")
+    @ConfigInfo(name = "lightQueueLoggerSamplingDuration", section = "tis")
     public static volatile int lightQueueLoggerSamplingDuration = 60;
 
-    @ConfigInfo(name = "fakePlayerNamePrefix")
+    @ConfigInfo(name = "fakePlayerNamePrefix", section = "tis")
     public static volatile String fakePlayerNamePrefix = "#none";
 
-    @ConfigInfo(name = "fakePlayerNameSuffix")
+    @ConfigInfo(name = "fakePlayerNameSuffix", section = "tis")
     public static volatile String fakePlayerNameSuffix = "#none";
 
-    @ConfigInfo(name = "fakePlayerRemoteSpawning")
+    @ConfigInfo(name = "fakePlayerRemoteSpawning", section = "tis")
     public static volatile String fakePlayerRemoteSpawning = "true";
 
-    @ConfigInfo(name = "commandPlayerActionPerTick")
+    @ConfigInfo(name = "commandPlayerActionPerTick", section = "tis")
     public static volatile String commandPlayerActionPerTick = "false";
 
 
-    @ConfigInfo(name = "simpleUpdateSkipper")
+    @ConfigInfo(name = "simpleUpdateSkipper", section = "org")
     public static volatile boolean simpleUpdateSkipper = false;
 
-    @ConfigInfo(name = "CCEUpdateSuppression")
+    @ConfigInfo(name = "CCEUpdateSuppression", section = "org")
     public static volatile String CCEUpdateSuppression = "false";
 
-    @ConfigInfo(name = "suppressionMismatchInDestroyBlockPosWarn")
+    @ConfigInfo(name = "suppressionMismatchInDestroyBlockPosWarn", section = "org")
     public static volatile boolean suppressionMismatchInDestroyBlockPosWarn = false;
 
-    @ConfigInfo(name = "hopperXpCounters")
+    @ConfigInfo(name = "hopperXpCounters", section = "tis")
     public static volatile boolean hopperXpCounters = false;
 
 
-    @ConfigInfo(name = "commandItemShadowing")
+    @ConfigInfo(name = "commandItemShadowing", section = "org")
     public static volatile String commandItemShadowing = "ops";
 
-    @ConfigInfo(name = "commandLocations")
+    @ConfigInfo(name = "commandLocations", section = "org")
     public static volatile String commandLocations = "ops";
 
-    @ConfigInfo(name = "commandNavigate")
+    @ConfigInfo(name = "commandNavigate", section = "org")
     public static volatile String commandNavigate = "true";
 
-    @ConfigInfo(name = "maxLinesPerPage")
+    @ConfigInfo(name = "maxLinesPerPage", section = "org")
     public static volatile int maxLinesPerPage = 10;
 
-    @ConfigInfo(name = "updateSkippingSimulator")
+    @ConfigInfo(name = "updateSkippingSimulator", section = "tis")
     public static volatile boolean updateSkippingSimulator = false;
 
-    @ConfigInfo(name = "updateSuppressionSimulator")
+    @ConfigInfo(name = "updateSuppressionSimulator", section = "tis")
     public static volatile String updateSuppressionSimulator = "false";
 
-    @ConfigInfo(name = "soundSuppressionSimulator")
+    @ConfigInfo(name = "soundSuppressionSimulator", section = "tis")
     public static volatile boolean soundSuppressionSimulator = false;
 
-    @ConfigInfo(name = "yeetIdleMspt")
+    @ConfigInfo(name = "yeetIdleMspt", section = "tis")
     public static volatile boolean yeetIdleMspt = false;
 
 
@@ -309,163 +309,163 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "allowListingFakePlayers")
     public static volatile boolean allowListingFakePlayers = false;
 
-    @ConfigInfo(name = "commandRaid")
+    @ConfigInfo(name = "commandRaid", section = "tis")
     public static volatile String commandRaid = "true";
 
-    @ConfigInfo(name = "tickCommandCarpetfied")
+    @ConfigInfo(name = "tickCommandCarpetfied", section = "tis")
     public static volatile boolean tickCommandCarpetfied = false;
 
-    @ConfigInfo(name = "tickCommandEnhance")
+    @ConfigInfo(name = "tickCommandEnhance", section = "tis")
     public static volatile boolean tickCommandEnhance = false;
 
-    @ConfigInfo(name = "tickFreezeDeepCommand")
+    @ConfigInfo(name = "tickFreezeDeepCommand", section = "tis")
     public static volatile boolean tickFreezeDeepCommand = false;
 
-    @ConfigInfo(name = "tickProfilerCommandsReintroduced")
+    @ConfigInfo(name = "tickProfilerCommandsReintroduced", section = "tis")
     public static volatile boolean tickProfilerCommandsReintroduced = false;
 
-    @ConfigInfo(name = "tickWarpCommandAsAnAlias")
+    @ConfigInfo(name = "tickWarpCommandAsAnAlias", section = "tis")
     public static volatile boolean tickWarpCommandAsAnAlias = false;
 
     @ConfigInfo(name = "commandProfile")
     public static volatile String commandProfile = "true";
-    @ConfigInfo(name = "commandXpTransfer")
+    @ConfigInfo(name = "commandXpTransfer", section = "org")
     public static volatile String commandXpTransfer = "ops";
 
-    @ConfigInfo(name = "ultraSecretSetting")
+    @ConfigInfo(name = "ultraSecretSetting", section = "tis")
     public static volatile String ultraSecretSetting = "false";
 
-    @ConfigInfo(name = "stopCommandDoubleConfirmation")
+    @ConfigInfo(name = "stopCommandDoubleConfirmation", section = "tis")
     public static volatile boolean stopCommandDoubleConfirmation = false;
 
-    @ConfigInfo(name = "fillCommandModeEnhance")
+    @ConfigInfo(name = "fillCommandModeEnhance", section = "tis")
     public static volatile String fillCommandModeEnhance = "true";
 
-    @ConfigInfo(name = "commandRaycast")
+    @ConfigInfo(name = "commandRaycast", section = "tis")
     public static volatile String commandRaycast = "ops";
 
-    @ConfigInfo(name = "commandKillMe")
+    @ConfigInfo(name = "commandKillMe", section = "org")
     public static volatile String commandKillMe = "ops";
 
-    @ConfigInfo(name = "commandRuleSearch")
+    @ConfigInfo(name = "commandRuleSearch", section = "org")
     public static volatile String commandRuleSearch = "ops";
 
-    @ConfigInfo(name = "commandSpectator")
+    @ConfigInfo(name = "commandSpectator", section = "org")
     public static volatile String commandSpectator = "ops";
 
-    @ConfigInfo(name = "commandCreeper")
+    @ConfigInfo(name = "commandCreeper", section = "org")
     public static volatile String commandCreeper = "false";
 
-    @ConfigInfo(name = "commandRefresh")
+    @ConfigInfo(name = "commandRefresh", section = "tis")
     public static volatile String commandRefresh = "true";
 
-    @ConfigInfo(name = "fancyFakePlayerName")
+    @ConfigInfo(name = "fancyFakePlayerName", section = "ams")
     public static volatile String fancyFakePlayerName = "false";
 
-    @ConfigInfo(name = "fakePlayerUseOfflinePlayerUUID")
+    @ConfigInfo(name = "fakePlayerUseOfflinePlayerUUID", section = "ams")
     public static volatile boolean fakePlayerUseOfflinePlayerUUID = false;
 
-    @ConfigInfo(name = "onlyOpCanSpawnRealPlayerInWhitelist")
+    @ConfigInfo(name = "onlyOpCanSpawnRealPlayerInWhitelist", section = "ams")
     public static volatile boolean onlyOpCanSpawnRealPlayerInWhitelist = false;
 
-    @ConfigInfo(name = "welcomeMessage")
+    @ConfigInfo(name = "welcomeMessage", section = "ams")
     public static volatile boolean welcomeMessage = false;
 
-    @ConfigInfo(name = "opPlayerNoCheat")
+    @ConfigInfo(name = "opPlayerNoCheat", section = "tis")
     public static volatile boolean opPlayerNoCheat = false;
 
-    @ConfigInfo(name = "commandRemoveEntity")
+    @ConfigInfo(name = "commandRemoveEntity", section = "tis")
     public static volatile String commandRemoveEntity = "ops";
 
-    @ConfigInfo(name = "commandSleep")
+    @ConfigInfo(name = "commandSleep", section = "tis")
     public static volatile String commandSleep = "ops";
 
 
-    @ConfigInfo(name = "applyToolEffectsImmediately")
+    @ConfigInfo(name = "applyToolEffectsImmediately", section = "org")
     public static volatile boolean applyToolEffectsImmediately = false;
 
-    @ConfigInfo(name = "autoSyncPlayerStatus")
+    @ConfigInfo(name = "autoSyncPlayerStatus", section = "org")
     public static volatile boolean autoSyncPlayerStatus = false;
 
-    @ConfigInfo(name = "recordPlayerCommand")
+    @ConfigInfo(name = "recordPlayerCommand", section = "org")
     public static volatile boolean recordPlayerCommand = false;
 
-    @ConfigInfo(name = "fakePlayerAutoRestock")
+    @ConfigInfo(name = "fakePlayerAutoRestock", section = "org")
     public static volatile boolean fakePlayerAutoRestock = false;
 
-    @ConfigInfo(name = "fakePlayerShulkerBoxItemHandling")
+    @ConfigInfo(name = "fakePlayerShulkerBoxItemHandling", section = "org")
     public static volatile boolean fakePlayerShulkerBoxItemHandling = false;
 
-    @ConfigInfo(name = "fakePlayerKeepInventory")
+    @ConfigInfo(name = "fakePlayerKeepInventory", section = "org")
     public static volatile boolean fakePlayerKeepInventory = false;
 
-    @ConfigInfo(name = "fakePlayerKeepInventoryCondition")
+    @ConfigInfo(name = "fakePlayerKeepInventoryCondition", section = "org")
     public static volatile String fakePlayerKeepInventoryCondition = "unconditional";
 
-    @ConfigInfo(name = "instantCommandBlock")
+    @ConfigInfo(name = "instantCommandBlock", section = "tis")
     public static volatile boolean instantCommandBlock = false;
 
-    @ConfigInfo(name = "entityPathNavigationStuckDetectionUseRealTimeReintroduced")
+    @ConfigInfo(name = "entityPathNavigationStuckDetectionUseRealTimeReintroduced", section = "tis")
     public static volatile boolean entityPathNavigationStuckDetectionUseRealTimeReintroduced = false;
 
-    @ConfigInfo(name = "zombifiedPiglinDropLootIfAngryReintroduced")
+    @ConfigInfo(name = "zombifiedPiglinDropLootIfAngryReintroduced", section = "tis")
     public static volatile boolean zombifiedPiglinDropLootIfAngryReintroduced = false;
 
-    @ConfigInfo(name = "keepMobInLazyChunks")
+    @ConfigInfo(name = "keepMobInLazyChunks", section = "tis")
     public static volatile boolean keepMobInLazyChunks = false;
 
-    @ConfigInfo(name = "overspawningReintroduced")
+    @ConfigInfo(name = "overspawningReintroduced", section = "tis")
     public static volatile boolean overspawningReintroduced = false;
 
-    @ConfigInfo(name = "commandPlayerChunkLoadController")
+    @ConfigInfo(name = "commandPlayerChunkLoadController", section = "ams")
     public static volatile String commandPlayerChunkLoadController = "false";
 
     @ConfigInfo(name = "creativePlayersLoadChunks")
     public static volatile boolean creativePlayersLoadChunks = true;
 
-    @ConfigInfo(name = "noteBlockChunkLoader")
+    @ConfigInfo(name = "noteBlockChunkLoader", section = "ams")
     public static volatile String noteBlockChunkLoader = "false";
 
-    @ConfigInfo(name = "pistonBlockChunkLoader")
+    @ConfigInfo(name = "pistonBlockChunkLoader", section = "ams")
     public static volatile String pistonBlockChunkLoader = "false";
 
-    @ConfigInfo(name = "bellBlockChunkLoader")
+    @ConfigInfo(name = "bellBlockChunkLoader", section = "ams")
     public static volatile boolean bellBlockChunkLoader = false;
 
-    @ConfigInfo(name = "blockChunkLoaderKeepWorldTickUpdate")
+    @ConfigInfo(name = "blockChunkLoaderKeepWorldTickUpdate", section = "ams")
     public static volatile boolean blockChunkLoaderKeepWorldTickUpdate = false;
 
-    @ConfigInfo(name = "keepWorldTickUpdate")
+    @ConfigInfo(name = "keepWorldTickUpdate", section = "ams")
     public static volatile boolean keepWorldTickUpdate = false;
 
-    @ConfigInfo(name = "blockChunkLoaderTimeController")
+    @ConfigInfo(name = "blockChunkLoaderTimeController", section = "ams")
     public static volatile int blockChunkLoaderTimeController = 300;
 
-    @ConfigInfo(name = "blockChunkLoaderRangeController")
+    @ConfigInfo(name = "blockChunkLoaderRangeController", section = "ams")
     public static volatile int blockChunkLoaderRangeController = 3;
 
-    @ConfigInfo(name = "lightUpdates")
+    @ConfigInfo(name = "lightUpdates", section = "tis")
     public static volatile String lightUpdates = "on";
 
-    @ConfigInfo(name = "synchronizedLightThread")
+    @ConfigInfo(name = "synchronizedLightThread", section = "tis")
     public static volatile boolean synchronizedLightThread = false;
 
-    @ConfigInfo(name = "largeBarrel")
+    @ConfigInfo(name = "largeBarrel", section = "tis")
     public static volatile boolean largeBarrel = false;
 
-    @ConfigInfo(name = "quickShulker")
+    @ConfigInfo(name = "quickShulker", section = "org")
     public static volatile boolean quickShulker = false;
 
-    @ConfigInfo(name = "shulkerBoxStackable")
+    @ConfigInfo(name = "shulkerBoxStackable", section = "org")
     public static volatile boolean shulkerBoxStackable = false;
 
-    @ConfigInfo(name = "openVillagerInventory")
+    @ConfigInfo(name = "openVillagerInventory", section = "org")
     public static volatile boolean openVillagerInventory = false;
 
-    @ConfigInfo(name = "flippinCactusExtras")
+    @ConfigInfo(name = "flippinCactusExtras", section = "ams")
     public static volatile boolean flippinCactusExtras = false;
 
-    @ConfigInfo(name = "flippinCactusSoundEffect")
+    @ConfigInfo(name = "flippinCactusSoundEffect", section = "ams")
     public static volatile int flippinCactusSoundEffect = 0;
 
     @ConfigInfo(name = "perfPermissionLevel")
@@ -479,158 +479,158 @@ public class GeneralCompatConfig {
 
     @ConfigInfo(name = "commandLog")
     public static volatile String commandLog = "true";
-    @ConfigInfo(name = "endPortalChunkLoadDisabled")
+    @ConfigInfo(name = "endPortalChunkLoadDisabled", section = "ams")
     public static volatile boolean endPortalChunkLoadDisabled = false;
 
-    @ConfigInfo(name = "preventServerPause")
+    @ConfigInfo(name = "preventServerPause", section = "ams")
     public static volatile boolean preventServerPause = false;
 
-    @ConfigInfo(name = "customizedNetherPortal")
+    @ConfigInfo(name = "customizedNetherPortal", section = "ams")
     public static volatile boolean customizedNetherPortal = false;
 
-    @ConfigInfo(name = "stringDupeReintroduced")
+    @ConfigInfo(name = "stringDupeReintroduced", section = "ams")
     public static volatile boolean stringDupeReintroduced = false;
 
-    @ConfigInfo(name = "largeBundle")
+    @ConfigInfo(name = "largeBundle", section = "ams")
     public static volatile String largeBundle = "false";
 
-    @ConfigInfo(name = "creativeHitRemoveEntity")
+    @ConfigInfo(name = "creativeHitRemoveEntity", section = "tis")
     public static volatile boolean creativeHitRemoveEntity = false;
 
-    @ConfigInfo(name = "noToolBreak")
+    @ConfigInfo(name = "noToolBreak", section = "org")
     public static volatile boolean noToolBreak = false;
 
-    @ConfigInfo(name = "betterTotemOfUndying")
+    @ConfigInfo(name = "betterTotemOfUndying", section = "org")
     public static volatile String betterTotemOfUndying = "vanilla";
 
-    @ConfigInfo(name = "knockbackStick")
+    @ConfigInfo(name = "knockbackStick", section = "org")
     public static volatile boolean knockbackStick = false;
 
-    @ConfigInfo(name = "disableCreativeContainerDrops")
+    @ConfigInfo(name = "disableCreativeContainerDrops", section = "org")
     public static volatile boolean disableCreativeContainerDrops = false;
 
-    @ConfigInfo(name = "blockDropsDirectlyEnterInventory")
+    @ConfigInfo(name = "blockDropsDirectlyEnterInventory", section = "org")
     public static volatile String blockDropsDirectlyEnterInventory = "false";
 
-    @ConfigInfo(name = "itemPickupRangeExpand")
+    @ConfigInfo(name = "itemPickupRangeExpand", section = "org")
     public static volatile int itemPickupRangeExpand = 0;
 
-    @ConfigInfo(name = "itemPickupRangeExpandPlayerControl")
+    @ConfigInfo(name = "itemPickupRangeExpandPlayerControl", section = "org")
     public static volatile boolean itemPickupRangeExpandPlayerControl = false;
 
-    @ConfigInfo(name = "naturalSpawningUse13Heightmap")
+    @ConfigInfo(name = "naturalSpawningUse13Heightmap", section = "tis")
     public static volatile boolean naturalSpawningUse13Heightmap = false;
 
-    @ConfigInfo(name = "naturalSpawningUse13HeightmapExtra")
+    @ConfigInfo(name = "naturalSpawningUse13HeightmapExtra", section = "tis")
     public static volatile boolean naturalSpawningUse13HeightmapExtra = false;
 
-    @ConfigInfo(name = "preciseEntityPlacement")
+    @ConfigInfo(name = "preciseEntityPlacement", section = "tis")
     public static volatile boolean preciseEntityPlacement = false;
 
-    @ConfigInfo(name = "dispensersFireDragonBreath")
+    @ConfigInfo(name = "dispensersFireDragonBreath", section = "tis")
     public static volatile boolean dispensersFireDragonBreath = false;
 
-    @ConfigInfo(name = "redstoneDustRandomUpdateOrder")
+    @ConfigInfo(name = "redstoneDustRandomUpdateOrder", section = "tis")
     public static volatile boolean redstoneDustRandomUpdateOrder = false;
 
-    @ConfigInfo(name = "redstoneDustRepeaterComparatorIgnoreUpwardsStateUpdate")
+    @ConfigInfo(name = "redstoneDustRepeaterComparatorIgnoreUpwardsStateUpdate", section = "tis")
     public static volatile boolean redstoneDustRepeaterComparatorIgnoreUpwardsStateUpdate = false;
 
-    @ConfigInfo(name = "maxPlayerBlockInteractionRange")
+    @ConfigInfo(name = "maxPlayerBlockInteractionRange", section = "ams")
     public static volatile double maxPlayerBlockInteractionRange = -1.0;
 
-    @ConfigInfo(name = "maxPlayerEntityInteractionRange")
+    @ConfigInfo(name = "maxPlayerEntityInteractionRange", section = "ams")
     public static volatile double maxPlayerEntityInteractionRange = -1.0;
 
-    @ConfigInfo(name = "maxPlayerBlockInteractionRangeScope")
+    @ConfigInfo(name = "maxPlayerBlockInteractionRangeScope", section = "ams")
     public static volatile String maxPlayerBlockInteractionRangeScope = "server";
 
-    @ConfigInfo(name = "maxPlayerEntityInteractionRangeScope")
+    @ConfigInfo(name = "maxPlayerEntityInteractionRangeScope", section = "ams")
     public static volatile String maxPlayerEntityInteractionRangeScope = "server";
 
-    @ConfigInfo(name = "enhancedWorldEater")
+    @ConfigInfo(name = "enhancedWorldEater", section = "ams")
     public static volatile double enhancedWorldEater = -1.0;
 
-    @ConfigInfo(name = "fakePlayerNoScoreboardCounter")
+    @ConfigInfo(name = "fakePlayerNoScoreboardCounter", section = "ams")
     public static volatile boolean fakePlayerNoScoreboardCounter = false;
 
-    @ConfigInfo(name = "fakePlayerPickUpController")
+    @ConfigInfo(name = "fakePlayerPickUpController", section = "ams")
     public static volatile String fakePlayerPickUpController = "false";
 
-    @ConfigInfo(name = "fertilizableSmallFlower")
+    @ConfigInfo(name = "fertilizableSmallFlower", section = "ams")
     public static volatile boolean fertilizableSmallFlower = false;
 
-    @ConfigInfo(name = "sendPlayerDeathLocation")
+    @ConfigInfo(name = "sendPlayerDeathLocation", section = "ams")
     public static volatile String sendPlayerDeathLocation = "false";
 
-    @ConfigInfo(name = "maxChainUpdateDepth")
+    @ConfigInfo(name = "maxChainUpdateDepth", section = "ams")
     public static volatile int maxChainUpdateDepth = -1;
 
-    @ConfigInfo(name = "phantomSpawnAlert")
+    @ConfigInfo(name = "phantomSpawnAlert", section = "ams")
     public static volatile boolean phantomSpawnAlert = false;
 
-    @ConfigInfo(name = "experimentalMinecartSpeed")
+    @ConfigInfo(name = "experimentalMinecartSpeed", section = "ams")
     public static volatile int experimentalMinecartSpeed = -1;
 
     @me.earthme.luminol.config.flags.DoNotLoad(when = me.earthme.luminol.enums.EnumLoadType.RELOAD)
-    @ConfigInfo(name = "experimentalMinecartEnabled")
+    @ConfigInfo(name = "experimentalMinecartEnabled", section = "ams")
     public static volatile boolean experimentalMinecartEnabled = false;
 
-    @ConfigInfo(name = "chunkTickSpeed")
+    @ConfigInfo(name = "chunkTickSpeed", section = "tis")
     public static volatile int chunkTickSpeed = 1;
 
-    @ConfigInfo(name = "elytraFireworkKeepLeashConnection")
+    @ConfigInfo(name = "elytraFireworkKeepLeashConnection", section = "tis")
     public static volatile boolean elytraFireworkKeepLeashConnection = false;
 
-    @ConfigInfo(name = "sandDupingFix")
+    @ConfigInfo(name = "sandDupingFix", section = "tis")
     public static volatile boolean sandDupingFix = false;
 
-    @ConfigInfo(name = "oakBalloonPercent")
+    @ConfigInfo(name = "oakBalloonPercent", section = "tis")
     public static volatile int oakBalloonPercent = -1;
 
-    @ConfigInfo(name = "violentNetherPortalCreation")
+    @ConfigInfo(name = "violentNetherPortalCreation", section = "tis")
     public static volatile String violentNetherPortalCreation = "false";
 
-    @ConfigInfo(name = "renewableDragonEgg")
+    @ConfigInfo(name = "renewableDragonEgg", section = "tis")
     public static volatile boolean renewableDragonEgg = false;
 
-    @ConfigInfo(name = "beaconRangeExpand")
+    @ConfigInfo(name = "beaconRangeExpand", section = "org")
     public static volatile int beaconRangeExpand = 0;
 
-    @ConfigInfo(name = "beaconWorldHeight")
+    @ConfigInfo(name = "beaconWorldHeight", section = "org")
     public static volatile boolean beaconWorldHeight = false;
 
-    @ConfigInfo(name = "limitPhantomSpawn")
+    @ConfigInfo(name = "limitPhantomSpawn", section = "org")
     public static volatile boolean limitPhantomSpawn = false;
 
-    @ConfigInfo(name = "commandHere")
+    @ConfigInfo(name = "commandHere", section = "ams")
     public static volatile String commandHere = "false";
 
-    @ConfigInfo(name = "commandWhere")
+    @ConfigInfo(name = "commandWhere", section = "ams")
     public static volatile String commandWhere = "false";
 
-    @ConfigInfo(name = "commandGoto")
+    @ConfigInfo(name = "commandGoto", section = "ams")
     public static volatile String commandGoto = "false";
 
-    @ConfigInfo(name = "commandGetPlayerSkull")
+    @ConfigInfo(name = "commandGetPlayerSkull", section = "ams")
     public static volatile String commandGetPlayerSkull = "false";
 
-    @ConfigInfo(name = "commandGetHeldItemID")
+    @ConfigInfo(name = "commandGetHeldItemID", section = "ams")
     public static volatile String commandGetHeldItemID = "false";
 
-    @ConfigInfo(name = "commandGetSaveSize")
+    @ConfigInfo(name = "commandGetSaveSize", section = "ams")
     public static volatile String commandGetSaveSize = "false";
 
-    @ConfigInfo(name = "commandGetSystemInfo")
+    @ConfigInfo(name = "commandGetSystemInfo", section = "ams")
     public static volatile String commandGetSystemInfo = "false";
 
-    @ConfigInfo(name = "HUDLoggerUpdateInterval")
+    @ConfigInfo(name = "HUDLoggerUpdateInterval", section = "tis")
     public static volatile int HUDLoggerUpdateInterval = 20;
 
-    @ConfigInfo(name = "canMineSpawner")
+    @ConfigInfo(name = "canMineSpawner", section = "org")
     public static volatile boolean canMineSpawner = false;
 
-    @ConfigInfo(name = "tooledTNT")
+    @ConfigInfo(name = "tooledTNT", section = "tis")
     public static volatile boolean tooledTNT = false;
 
     public static boolean hasSilkTouch(net.minecraft.world.item.ItemStack stack) {
@@ -647,28 +647,28 @@ public class GeneralCompatConfig {
         return carpet.script.external.ScarpetAttribution.explosionTool(explosion);
     }
 
-    @ConfigInfo(name = "tileTickLimit")
+    @ConfigInfo(name = "tileTickLimit", section = "tis")
     public static volatile int tileTickLimit = 65536;
 
-    @ConfigInfo(name = "failSoftBlockStateParsing")
+    @ConfigInfo(name = "failSoftBlockStateParsing", section = "tis")
     public static volatile boolean failSoftBlockStateParsing = false;
 
-    @ConfigInfo(name = "chatMessageLengthLimitUnlocked")
+    @ConfigInfo(name = "chatMessageLengthLimitUnlocked", section = "tis")
     public static volatile boolean chatMessageLengthLimitUnlocked = false;
 
-    @ConfigInfo(name = "craftableEnchantedGoldenApples")
+    @ConfigInfo(name = "craftableEnchantedGoldenApples", section = "ams")
     public static volatile boolean craftableEnchantedGoldenApples = false;
 
-    @ConfigInfo(name = "craftableElytra")
+    @ConfigInfo(name = "craftableElytra", section = "ams")
     public static volatile boolean craftableElytra = false;
 
-    @ConfigInfo(name = "betterCraftablePolishedBlackStoneButton")
+    @ConfigInfo(name = "betterCraftablePolishedBlackStoneButton", section = "ams")
     public static volatile boolean betterCraftablePolishedBlackStoneButton = false;
 
-    @ConfigInfo(name = "rottenFleshBurnedIntoLeather")
+    @ConfigInfo(name = "rottenFleshBurnedIntoLeather", section = "ams")
     public static volatile boolean rottenFleshBurnedIntoLeather = false;
 
-    @ConfigInfo(name = "craftableCarvedPumpkin")
+    @ConfigInfo(name = "craftableCarvedPumpkin", section = "ams")
     public static volatile boolean craftableCarvedPumpkin = false;
 
     private static List<Boolean> appliedRecipeRules;
@@ -679,7 +679,7 @@ public class GeneralCompatConfig {
                 craftableElytra, betterCraftablePolishedBlackStoneButton, rottenFleshBurnedIntoLeather, craftableCarvedPumpkin);
     }
 
-    @ConfigInfo(name = "stackableDiscounts")
+    @ConfigInfo(name = "stackableDiscounts", section = "ams")
     public static volatile boolean stackableDiscounts = false;
     private static Boolean appliedStackableDiscounts;
 
@@ -688,16 +688,16 @@ public class GeneralCompatConfig {
 
     public static final ScopedValue<Boolean> CHANNELING_TRIDENT = ScopedValue.newInstance();
 
-    @ConfigInfo(name = "channelingIgnoreConditions")
+    @ConfigInfo(name = "channelingIgnoreConditions", section = "org")
     public static volatile String channelingIgnoreConditions = "false";
 
-    @ConfigInfo(name = "gazeDisguiseEquipmentExtended")
+    @ConfigInfo(name = "gazeDisguiseEquipmentExtended", section = "tis")
     public static volatile boolean gazeDisguiseEquipmentExtended = false;
 
-    @ConfigInfo(name = "renewableDragonHead")
+    @ConfigInfo(name = "renewableDragonHead", section = "tis")
     public static volatile boolean renewableDragonHead = false;
 
-    @ConfigInfo(name = "easyRefreshTrades")
+    @ConfigInfo(name = "easyRefreshTrades", section = "ams")
     public static volatile boolean easyRefreshTrades = false;
 
     public static boolean channelingIgnoresWeather() {
@@ -718,73 +718,73 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "rotatorBlock")
     public static volatile boolean rotatorBlock = false;
 
-    @ConfigInfo(name = "strongLeash")
+    @ConfigInfo(name = "strongLeash", section = "ams")
     public static volatile boolean strongLeash = false;
 
-    @ConfigInfo(name = "regeneratingDragonEgg")
+    @ConfigInfo(name = "regeneratingDragonEgg", section = "ams")
     public static volatile boolean regeneratingDragonEgg = false;
 
-    @ConfigInfo(name = "cryingObsidianNetherPortal")
+    @ConfigInfo(name = "cryingObsidianNetherPortal", section = "ams")
     public static volatile boolean cryingObsidianNetherPortal = false;
 
-    @ConfigInfo(name = "creativeNetherWaterPlacement")
+    @ConfigInfo(name = "creativeNetherWaterPlacement", section = "tis")
     public static volatile boolean creativeNetherWaterPlacement = false;
 
-    @ConfigInfo(name = "netherPortalMaxSize")
+    @ConfigInfo(name = "netherPortalMaxSize", section = "tis")
     public static volatile int netherPortalMaxSize = 21;
 
-    @ConfigInfo(name = "sharedVillagerDiscounts")
+    @ConfigInfo(name = "sharedVillagerDiscounts", section = "ams")
     public static volatile boolean sharedVillagerDiscounts = false;
 
-    @ConfigInfo(name = "debugNbtQueryNoPermission")
+    @ConfigInfo(name = "debugNbtQueryNoPermission", section = "tis")
     public static volatile boolean debugNbtQueryNoPermission = false;
 
-    @ConfigInfo(name = "flattenTriangularDistribution")
+    @ConfigInfo(name = "flattenTriangularDistribution", section = "tis")
     public static volatile boolean flattenTriangularDistribution = false;
 
-    @ConfigInfo(name = "leaderZombieSpawnWithMaxHealthDisabled")
+    @ConfigInfo(name = "leaderZombieSpawnWithMaxHealthDisabled", section = "tis")
     public static volatile boolean leaderZombieSpawnWithMaxHealthDisabled = false;
 
-    @ConfigInfo(name = "moveableReinforcedDeepslate")
+    @ConfigInfo(name = "moveableReinforcedDeepslate", section = "tis")
     public static volatile boolean moveableReinforcedDeepslate = false;
 
-    @ConfigInfo(name = "vaultBlacklistDisabled")
+    @ConfigInfo(name = "vaultBlacklistDisabled", section = "tis")
     public static volatile boolean vaultBlacklistDisabled = false;
 
-    @ConfigInfo(name = "blowUpEverything")
+    @ConfigInfo(name = "blowUpEverything", section = "ams")
     public static volatile boolean blowUpEverything = false;
 
-    @ConfigInfo(name = "blueSkullController")
+    @ConfigInfo(name = "blueSkullController", section = "ams")
     public static volatile String blueSkullController = "vanilla";
 
-    @ConfigInfo(name = "itemAntiExplosion")
+    @ConfigInfo(name = "itemAntiExplosion", section = "ams")
     public static volatile String itemAntiExplosion = "false";
 
-    @ConfigInfo(name = "superZombieDoctor")
+    @ConfigInfo(name = "superZombieDoctor", section = "ams")
     public static volatile boolean superZombieDoctor = false;
 
-    @ConfigInfo(name = "easyCompost")
+    @ConfigInfo(name = "easyCompost", section = "ams")
     public static volatile boolean easyCompost = false;
 
-    @ConfigInfo(name = "setAnvilExperienceConsumptionLimit")
+    @ConfigInfo(name = "setAnvilExperienceConsumptionLimit", section = "org")
     public static volatile int setAnvilExperienceConsumptionLimit = -1;
 
     @ConfigInfo(name = "language")
     public static volatile String language = "en_us";
 
-    @ConfigInfo(name = "amsUpdateSuppressionCrashFix")
+    @ConfigInfo(name = "amsUpdateSuppressionCrashFix", section = "ams")
     public static volatile String amsUpdateSuppressionCrashFix = "false";
 
-    @ConfigInfo(name = "yeetUpdateSuppressionCrash")
+    @ConfigInfo(name = "yeetUpdateSuppressionCrash", section = "tis")
     public static volatile boolean yeetUpdateSuppressionCrash = false;
 
-    @ConfigInfo(name = "dustTrapdoorReintroduced")
+    @ConfigInfo(name = "dustTrapdoorReintroduced", section = "tis")
     public static volatile boolean dustTrapdoorReintroduced = false;
 
-    @ConfigInfo(name = "shulkerBoxCCEReintroduced")
+    @ConfigInfo(name = "shulkerBoxCCEReintroduced", section = "tis")
     public static volatile boolean shulkerBoxCCEReintroduced = false;
 
-    @ConfigInfo(name = "instantBlockUpdaterReintroduced")
+    @ConfigInfo(name = "instantBlockUpdaterReintroduced", section = "tis")
     public static volatile boolean instantBlockUpdaterReintroduced = false;
 
     @ConfigInfo(name = "commandTick")
@@ -797,34 +797,34 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "creativeNoClip")
     public static volatile boolean creativeNoClip = false;
 
-    @ConfigInfo(name = "optimizedDragonRespawn")
+    @ConfigInfo(name = "optimizedDragonRespawn", section = "ams")
     public static volatile boolean optimizedDragonRespawn = false;
 
-    @ConfigInfo(name = "antiSpamDisabled")
+    @ConfigInfo(name = "antiSpamDisabled", section = "tis")
     public static volatile boolean antiSpamDisabled = false;
 
-    @ConfigInfo(name = "blockPlacementIgnoreEntity")
+    @ConfigInfo(name = "blockPlacementIgnoreEntity", section = "tis")
     public static volatile boolean blockPlacementIgnoreEntity = false;
 
-    @ConfigInfo(name = "creativeOpenContainerForcibly")
+    @ConfigInfo(name = "creativeOpenContainerForcibly", section = "tis")
     public static volatile boolean creativeOpenContainerForcibly = false;
 
-    @ConfigInfo(name = "creativeOneHitKill")
+    @ConfigInfo(name = "creativeOneHitKill", section = "ams")
     public static volatile boolean creativeOneHitKill = false;
 
-    @ConfigInfo(name = "observerNoDetection")
+    @ConfigInfo(name = "observerNoDetection", section = "tis")
     public static volatile boolean observerNoDetection = false;
 
-    @ConfigInfo(name = "bambooModelNoOffset")
+    @ConfigInfo(name = "bambooModelNoOffset", section = "ams")
     public static volatile boolean bambooModelNoOffset = false;
 
-    @ConfigInfo(name = "creativeNoItemCooldown")
+    @ConfigInfo(name = "creativeNoItemCooldown", section = "tis")
     public static volatile boolean creativeNoItemCooldown = false;
 
     @ConfigInfo(name = "ctrlQCraftingFix")
     public static volatile boolean ctrlQCraftingFix = false;
 
-    @ConfigInfo(name = "carpetAlwaysSetDefault")
+    @ConfigInfo(name = "carpetAlwaysSetDefault", section = "ams")
     public static volatile boolean carpetAlwaysSetDefault = false;
 
     @ConfigInfo(name = "placementRotationFix")
@@ -833,13 +833,13 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "tntDoNotUpdate")
     public static volatile boolean tntDoNotUpdate = false;
 
-    @ConfigInfo(name = "totallyNoBlockUpdate")
+    @ConfigInfo(name = "totallyNoBlockUpdate", section = "tis")
     public static volatile boolean totallyNoBlockUpdate = false;
 
-    @ConfigInfo(name = "tiscmNetworkProtocol")
+    @ConfigInfo(name = "tiscmNetworkProtocol", section = "tis")
     public static volatile boolean tiscmNetworkProtocol = false;
 
-    @ConfigInfo(name = "hopperNoItemCost")
+    @ConfigInfo(name = "hopperNoItemCost", section = "tis")
     public static volatile boolean hopperNoItemCost = false;
 
     @ConfigInfo(name = "explosionNoBlockDamage")
@@ -857,16 +857,16 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "disableGhastFire")
     public static volatile boolean disableGhastFire = false;
 
-    @ConfigInfo(name = "optimizedTNTHighPriority")
+    @ConfigInfo(name = "optimizedTNTHighPriority", section = "tis")
     public static volatile boolean optimizedTNTHighPriority = false;
 
     @ConfigInfo(name = "tntPrimerMomentumRemoved")
     public static volatile boolean tntPrimerMomentumRemoved = false;
 
-    @ConfigInfo(name = "tntIgnoreRedstoneSignal")
+    @ConfigInfo(name = "tntIgnoreRedstoneSignal", section = "tis")
     public static volatile boolean tntIgnoreRedstoneSignal = false;
 
-    @ConfigInfo(name = "tntDupingFix")
+    @ConfigInfo(name = "tntDupingFix", section = "tis")
     public static volatile boolean tntDupingFix = false;
 
     @ConfigInfo(name = "interactionUpdates")
@@ -902,112 +902,112 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "movableAmethyst")
     public static volatile boolean movableAmethyst = false;
 
-    @ConfigInfo(name = "endPortalOpenedSoundDisabled")
+    @ConfigInfo(name = "endPortalOpenedSoundDisabled", section = "tis")
     public static volatile boolean endPortalOpenedSoundDisabled = false;
 
-    @ConfigInfo(name = "fluidDestructionDisabled")
+    @ConfigInfo(name = "fluidDestructionDisabled", section = "tis")
     public static volatile boolean fluidDestructionDisabled = false;
 
-    @ConfigInfo(name = "poiUpdates")
+    @ConfigInfo(name = "poiUpdates", section = "tis")
     public static volatile boolean poiUpdates = true;
 
-    @ConfigInfo(name = "enchantCommandNoRestriction")
+    @ConfigInfo(name = "enchantCommandNoRestriction", section = "tis")
     public static volatile boolean enchantCommandNoRestriction = false;
 
-    @ConfigInfo(name = "entityMomentumLoss")
+    @ConfigInfo(name = "entityMomentumLoss", section = "tis")
     public static volatile boolean entityMomentumLoss = true;
 
-    @ConfigInfo(name = "dispenserNoItemCost")
+    @ConfigInfo(name = "dispenserNoItemCost", section = "tis")
     public static volatile boolean dispenserNoItemCost = false;
 
-    @ConfigInfo(name = "explosionNoEntityInfluence")
+    @ConfigInfo(name = "explosionNoEntityInfluence", section = "tis")
     public static volatile boolean explosionNoEntityInfluence = false;
 
-    @ConfigInfo(name = "scheduledRandomTickCactus")
+    @ConfigInfo(name = "scheduledRandomTickCactus", section = "ams")
     public static volatile boolean scheduledRandomTickCactus = false;
 
-    @ConfigInfo(name = "scheduledRandomTickBamboo")
+    @ConfigInfo(name = "scheduledRandomTickBamboo", section = "ams")
     public static volatile boolean scheduledRandomTickBamboo = false;
 
-    @ConfigInfo(name = "scheduledRandomTickChorusFlower")
+    @ConfigInfo(name = "scheduledRandomTickChorusFlower", section = "ams")
     public static volatile boolean scheduledRandomTickChorusFlower = false;
 
-    @ConfigInfo(name = "scheduledRandomTickSugarCane")
+    @ConfigInfo(name = "scheduledRandomTickSugarCane", section = "ams")
     public static volatile boolean scheduledRandomTickSugarCane = false;
 
-    @ConfigInfo(name = "scheduledRandomTickStem")
+    @ConfigInfo(name = "scheduledRandomTickStem", section = "ams")
     public static volatile boolean scheduledRandomTickStem = false;
 
-    @ConfigInfo(name = "scheduledRandomTickAllPlants")
+    @ConfigInfo(name = "scheduledRandomTickAllPlants", section = "ams")
     public static volatile boolean scheduledRandomTickAllPlants = false;
 
-    @ConfigInfo(name = "netherWaterPlacement")
+    @ConfigInfo(name = "netherWaterPlacement", section = "ams")
     public static volatile boolean netherWaterPlacement = false;
 
-    @ConfigInfo(name = "bambooCollisionBoxDisabled")
+    @ConfigInfo(name = "bambooCollisionBoxDisabled", section = "ams")
     public static volatile boolean bambooCollisionBoxDisabled = false;
 
-    @ConfigInfo(name = "useItemCooldownDisabled")
+    @ConfigInfo(name = "useItemCooldownDisabled", section = "ams")
     public static volatile boolean useItemCooldownDisabled = false;
 
-    @ConfigInfo(name = "enderDragonNoDestroyBlock")
+    @ConfigInfo(name = "enderDragonNoDestroyBlock", section = "ams")
     public static volatile boolean enderDragonNoDestroyBlock = false;
 
-    @ConfigInfo(name = "disableBatCanSpawn")
+    @ConfigInfo(name = "disableBatCanSpawn", section = "org")
     public static volatile boolean disableBatCanSpawn = false;
 
-    @ConfigInfo(name = "disableWaterFreezes")
+    @ConfigInfo(name = "disableWaterFreezes", section = "org")
     public static volatile boolean disableWaterFreezes = false;
 
-    @ConfigInfo(name = "turtleEggFastHatch")
+    @ConfigInfo(name = "turtleEggFastHatch", section = "org")
     public static volatile boolean turtleEggFastHatch = false;
 
-    @ConfigInfo(name = "farmlandPreventStepping")
+    @ConfigInfo(name = "farmlandPreventStepping", section = "org")
     public static volatile boolean farmlandPreventStepping = false;
 
-    @ConfigInfo(name = "bindingCurseInvalidation")
+    @ConfigInfo(name = "bindingCurseInvalidation", section = "org")
     public static volatile boolean bindingCurseInvalidation = false;
 
-    @ConfigInfo(name = "peacefulCreeper")
+    @ConfigInfo(name = "peacefulCreeper", section = "org")
     public static volatile boolean peacefulCreeper = false;
 
-    @ConfigInfo(name = "staringEndermanNotAngry")
+    @ConfigInfo(name = "staringEndermanNotAngry", section = "org")
     public static volatile boolean staringEndermanNotAngry = false;
 
-    @ConfigInfo(name = "healthNotFullCanEat")
+    @ConfigInfo(name = "healthNotFullCanEat", section = "org")
     public static volatile boolean healthNotFullCanEat = false;
 
-    @ConfigInfo(name = "turtleEggFastMine")
+    @ConfigInfo(name = "turtleEggFastMine", section = "org")
     public static volatile boolean turtleEggFastMine = false;
 
-    @ConfigInfo(name = "disableRespawnBlocksExplode")
+    @ConfigInfo(name = "disableRespawnBlocksExplode", section = "org")
     public static volatile boolean disableRespawnBlocksExplode = false;
 
-    @ConfigInfo(name = "fireworkRocketUseCooldown")
+    @ConfigInfo(name = "fireworkRocketUseCooldown", section = "org")
     public static volatile boolean fireworkRocketUseCooldown = false;
 
-    @ConfigInfo(name = "noCakeEating")
+    @ConfigInfo(name = "noCakeEating", section = "ams")
     public static volatile boolean noCakeEating = false;
 
-    @ConfigInfo(name = "sneakToEatCake")
+    @ConfigInfo(name = "sneakToEatCake", section = "ams")
     public static volatile boolean sneakToEatCake = false;
 
-    @ConfigInfo(name = "shulkerHitLevitationDisabled")
+    @ConfigInfo(name = "shulkerHitLevitationDisabled", section = "ams")
     public static volatile boolean shulkerHitLevitationDisabled = false;
 
-    @ConfigInfo(name = "immuneShulkerBullet")
+    @ConfigInfo(name = "immuneShulkerBullet", section = "ams")
     public static volatile boolean immuneShulkerBullet = false;
 
-    @ConfigInfo(name = "noEnchantedGoldenAppleEating")
+    @ConfigInfo(name = "noEnchantedGoldenAppleEating", section = "ams")
     public static volatile boolean noEnchantedGoldenAppleEating = false;
 
-    @ConfigInfo(name = "easyMineDragonEgg")
+    @ConfigInfo(name = "easyMineDragonEgg", section = "ams")
     public static volatile boolean easyMineDragonEgg = false;
 
-    @ConfigInfo(name = "endermanPickUpDisabled")
+    @ConfigInfo(name = "endermanPickUpDisabled", section = "ams")
     public static volatile boolean endermanPickUpDisabled = false;
 
-    @ConfigInfo(name = "endermanTeleportRandomlyDisabled")
+    @ConfigInfo(name = "endermanTeleportRandomlyDisabled", section = "ams")
     public static volatile boolean endermanTeleportRandomlyDisabled = false;
 
     @ConfigInfo(name = "renewableBlackstone")
@@ -1016,7 +1016,7 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "renewableDeepslate")
     public static volatile boolean renewableDeepslate = false;
 
-    @ConfigInfo(name = "explosionPacketRange")
+    @ConfigInfo(name = "explosionPacketRange", section = "tis")
     public static volatile double explosionPacketRange = 64.0D;
 
     @ConfigInfo(name = "renewableSponges")
@@ -1034,40 +1034,40 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "forceloadLimit")
     public static volatile int forceloadLimit = 256;
 
-    @ConfigInfo(name = "infiniteTrades")
+    @ConfigInfo(name = "infiniteTrades", section = "ams")
     public static volatile boolean infiniteTrades = false;
 
-    @ConfigInfo(name = "villagerInfiniteTrade")
+    @ConfigInfo(name = "villagerInfiniteTrade", section = "org")
     public static volatile boolean villagerInfiniteTrade = false;
 
-    @ConfigInfo(name = "infiniteDurability")
+    @ConfigInfo(name = "infiniteDurability", section = "ams")
     public static volatile boolean infiniteDurability = false;
 
-    @ConfigInfo(name = "noFamilyPlanning")
+    @ConfigInfo(name = "noFamilyPlanning", section = "ams")
     public static volatile boolean noFamilyPlanning = false;
 
-    @ConfigInfo(name = "undyingCoral")
+    @ConfigInfo(name = "undyingCoral", section = "ams")
     public static volatile boolean undyingCoral = false;
 
-    @ConfigInfo(name = "safeFlight")
+    @ConfigInfo(name = "safeFlight", section = "ams")
     public static volatile boolean safeFlight = false;
 
-    @ConfigInfo(name = "invulnerable")
+    @ConfigInfo(name = "invulnerable", section = "ams")
     public static volatile boolean invulnerable = false;
 
-    @ConfigInfo(name = "quickVillagerLevelUp")
+    @ConfigInfo(name = "quickVillagerLevelUp", section = "ams")
     public static volatile boolean quickVillagerLevelUp = false;
 
-    @ConfigInfo(name = "fullMoonEveryDay")
+    @ConfigInfo(name = "fullMoonEveryDay", section = "ams")
     public static volatile boolean fullMoonEveryDay = false;
 
-    @ConfigInfo(name = "fakePeace")
+    @ConfigInfo(name = "fakePeace", section = "ams")
     public static volatile String fakePeace = "false";
 
-    @ConfigInfo(name = "ironGolemNoDropFlower")
+    @ConfigInfo(name = "ironGolemNoDropFlower", section = "ams")
     public static volatile boolean ironGolemNoDropFlower = false;
 
-    @ConfigInfo(name = "easyMaxLevelBeacon")
+    @ConfigInfo(name = "easyMaxLevelBeacon", section = "ams")
     public static volatile boolean easyMaxLevelBeacon = false;
 
     @ConfigInfo(name = "persistentParrots")
@@ -1079,130 +1079,130 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "lightningKillsDropsFix")
     public static volatile boolean lightningKillsDropsFix = false;
 
-    @ConfigInfo(name = "xpTrackingDistance")
+    @ConfigInfo(name = "xpTrackingDistance", section = "tis")
     public static volatile double xpTrackingDistance = 8.0;
 
-    @ConfigInfo(name = "witherSpawnedSoundDisabled")
+    @ConfigInfo(name = "witherSpawnedSoundDisabled", section = "tis")
     public static volatile boolean witherSpawnedSoundDisabled = false;
 
-    @ConfigInfo(name = "snowMeltMinLightLevel")
+    @ConfigInfo(name = "snowMeltMinLightLevel", section = "tis")
     public static volatile int snowMeltMinLightLevel = 12;
 
-    @ConfigInfo(name = "turtleEggTrampledDisabled")
+    @ConfigInfo(name = "turtleEggTrampledDisabled", section = "tis")
     public static volatile boolean turtleEggTrampledDisabled = false;
 
-    @ConfigInfo(name = "voidRelatedAltitude")
+    @ConfigInfo(name = "voidRelatedAltitude", section = "tis")
     public static volatile double voidRelatedAltitude = -64.0;
 
-    @ConfigInfo(name = "voidDamageAmount")
+    @ConfigInfo(name = "voidDamageAmount", section = "tis")
     public static volatile double voidDamageAmount = 4.0;
 
-    @ConfigInfo(name = "voidDamageIgnorePlayer")
+    @ConfigInfo(name = "voidDamageIgnorePlayer", section = "tis")
     public static volatile String voidDamageIgnorePlayer = "false";
 
-    @ConfigInfo(name = "undeadDontBurnInSunlight")
+    @ConfigInfo(name = "undeadDontBurnInSunlight", section = "tis")
     public static volatile boolean undeadDontBurnInSunlight = false;
 
     @ConfigInfo(name = "disableDamageImmunity")
     public static volatile boolean disableDamageImmunity = false;
 
-    @ConfigInfo(name = "notDamageEnderPearl")
+    @ConfigInfo(name = "notDamageEnderPearl", section = "org")
     public static volatile boolean notDamageEnderPearl = false;
 
-    @ConfigInfo(name = "reusableSmithingTemplate")
+    @ConfigInfo(name = "reusableSmithingTemplate", section = "org")
     public static volatile String reusableSmithingTemplate = "false";
 
-    @ConfigInfo(name = "disableFurnaceDropExperience")
+    @ConfigInfo(name = "disableFurnaceDropExperience", section = "org")
     public static volatile boolean disableFurnaceDropExperience = false;
 
-    @ConfigInfo(name = "hopperSuctionDisabled")
+    @ConfigInfo(name = "hopperSuctionDisabled", section = "ams")
     public static volatile boolean hopperSuctionDisabled = false;
 
-    @ConfigInfo(name = "safePointedDripstone")
+    @ConfigInfo(name = "safePointedDripstone", section = "ams")
     public static volatile boolean safePointedDripstone = false;
 
-    @ConfigInfo(name = "pointedDripstoneCollisionBoxDisabled")
+    @ConfigInfo(name = "pointedDripstoneCollisionBoxDisabled", section = "ams")
     public static volatile boolean pointedDripstoneCollisionBoxDisabled = false;
 
-    @ConfigInfo(name = "sneakToEditSign")
+    @ConfigInfo(name = "sneakToEditSign", section = "ams")
     public static volatile boolean sneakToEditSign = false;
 
-    @ConfigInfo(name = "meekEnderman")
+    @ConfigInfo(name = "meekEnderman", section = "ams")
     public static volatile boolean meekEnderman = false;
 
-    @ConfigInfo(name = "furnaceSmeltingTimeController")
+    @ConfigInfo(name = "furnaceSmeltingTimeController", section = "ams")
     public static volatile int furnaceSmeltingTimeController = -1;
 
-    @ConfigInfo(name = "fasterMovement")
+    @ConfigInfo(name = "fasterMovement", section = "ams")
     public static volatile String fasterMovement = "VANILLA";
 
-    @ConfigInfo(name = "fasterMovementController")
+    @ConfigInfo(name = "fasterMovementController", section = "ams")
     public static volatile String fasterMovementController = "all";
 
-    @ConfigInfo(name = "easyWitherSkeletonSkullDrop")
+    @ConfigInfo(name = "easyWitherSkeletonSkullDrop", section = "ams")
     public static volatile boolean easyWitherSkeletonSkullDrop = false;
 
-    @ConfigInfo(name = "witchRedstoneDustDropController")
+    @ConfigInfo(name = "witchRedstoneDustDropController", section = "ams")
     public static volatile int witchRedstoneDustDropController = -1;
 
-    @ConfigInfo(name = "witchGlowstoneDustDropController")
+    @ConfigInfo(name = "witchGlowstoneDustDropController", section = "ams")
     public static volatile int witchGlowstoneDustDropController = -1;
 
-    @ConfigInfo(name = "jebSheepDropRandomColorWool")
+    @ConfigInfo(name = "jebSheepDropRandomColorWool", section = "ams")
     public static volatile boolean jebSheepDropRandomColorWool = false;
 
-    @ConfigInfo(name = "cakeBlockDropOnBreak")
+    @ConfigInfo(name = "cakeBlockDropOnBreak", section = "ams")
     public static volatile boolean cakeBlockDropOnBreak = false;
 
-    @ConfigInfo(name = "easyGetPitcherPod")
+    @ConfigInfo(name = "easyGetPitcherPod", section = "ams")
     public static volatile int easyGetPitcherPod = 0;
 
-    @ConfigInfo(name = "creativeShulkerBoxDropsDisabled")
+    @ConfigInfo(name = "creativeShulkerBoxDropsDisabled", section = "ams")
     public static volatile boolean creativeShulkerBoxDropsDisabled = false;
 
-    @ConfigInfo(name = "mitePearl")
+    @ConfigInfo(name = "mitePearl", section = "ams")
     public static volatile boolean mitePearl = false;
 
-    @ConfigInfo(name = "kirinArm")
+    @ConfigInfo(name = "kirinArm", section = "ams")
     public static volatile boolean kirinArm = false;
 
-    @ConfigInfo(name = "superBow")
+    @ConfigInfo(name = "superBow", section = "ams")
     public static volatile boolean superBow = false;
 
-    @ConfigInfo(name = "tntPowerController")
+    @ConfigInfo(name = "tntPowerController", section = "ams")
     public static volatile double tntPowerController = -1.0;
 
-    @ConfigInfo(name = "truePeacefulMode")
+    @ConfigInfo(name = "truePeacefulMode", section = "org")
     public static volatile boolean truePeacefulMode = false;
 
-    @ConfigInfo(name = "disableMobPeacefulDespawn")
+    @ConfigInfo(name = "disableMobPeacefulDespawn", section = "org")
     public static volatile boolean disableMobPeacefulDespawn = false;
 
-    @ConfigInfo(name = "disableWindChargeEffect")
+    @ConfigInfo(name = "disableWindChargeEffect", section = "org")
     public static volatile boolean disableWindChargeEffect = false;
 
-    @ConfigInfo(name = "itemEntitySkipMovementDisabled")
+    @ConfigInfo(name = "itemEntitySkipMovementDisabled", section = "tis")
     public static volatile boolean itemEntitySkipMovementDisabled = false;
 
-    @ConfigInfo(name = "toughWitherRose")
+    @ConfigInfo(name = "toughWitherRose", section = "tis")
     public static volatile boolean toughWitherRose = false;
 
-    @ConfigInfo(name = "structureBlockDoNotPreserveFluid")
+    @ConfigInfo(name = "structureBlockDoNotPreserveFluid", section = "tis")
     public static volatile boolean structureBlockDoNotPreserveFluid = false;
 
-    @ConfigInfo(name = "renewableElytra")
+    @ConfigInfo(name = "renewableElytra", section = "tis")
     public static volatile double renewableElytra = 0.0;
 
-    @ConfigInfo(name = "entityTrackerDistance")
+    @ConfigInfo(name = "entityTrackerDistance", section = "tis")
     public static volatile int entityTrackerDistance = -1;
 
-    @ConfigInfo(name = "entityTrackerInterval")
+    @ConfigInfo(name = "entityTrackerInterval", section = "tis")
     public static volatile int entityTrackerInterval = -1;
 
-    @ConfigInfo(name = "repeaterHalfDelay")
+    @ConfigInfo(name = "repeaterHalfDelay", section = "tis")
     public static volatile boolean repeaterHalfDelay = false;
 
-    @ConfigInfo(name = "breedableParrots")
+    @ConfigInfo(name = "breedableParrots", section = "ams")
     public static volatile String breedableParrots = "none";
 
     @ConfigInfo(name = "quasiConnectivity")
@@ -1229,64 +1229,64 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "mergeTNT")
     public static volatile boolean mergeTNT = false;
 
-    @ConfigInfo(name = "creativeInstantTame")
+    @ConfigInfo(name = "creativeInstantTame", section = "tis")
     public static volatile boolean creativeInstantTame = false;
 
-    @ConfigInfo(name = "openSeedPermission")
+    @ConfigInfo(name = "openSeedPermission", section = "org")
     public static volatile boolean openSeedPermission = false;
 
-    @ConfigInfo(name = "openTpPermission")
+    @ConfigInfo(name = "openTpPermission", section = "org")
     public static volatile boolean openTpPermission = false;
 
-    @ConfigInfo(name = "openGameRulePermission")
+    @ConfigInfo(name = "openGameRulePermission", section = "org")
     public static volatile boolean openGameRulePermission = false;
 
-    @ConfigInfo(name = "forceOpenContainer")
+    @ConfigInfo(name = "forceOpenContainer", section = "org")
     public static volatile String forceOpenContainer = "false";
 
-    @ConfigInfo(name = "villagerHeal")
+    @ConfigInfo(name = "villagerHeal", section = "org")
     public static volatile boolean villagerHeal = false;
 
-    @ConfigInfo(name = "fakePlayerHeal")
+    @ConfigInfo(name = "fakePlayerHeal", section = "org")
     public static volatile boolean fakePlayerHeal = false;
 
-    @ConfigInfo(name = "playerDropsNotDespawning")
+    @ConfigInfo(name = "playerDropsNotDespawning", section = "org")
     public static volatile boolean playerDropsNotDespawning = false;
 
-    @ConfigInfo(name = "totemOfUndyingInvincibleTime")
+    @ConfigInfo(name = "totemOfUndyingInvincibleTime", section = "org")
     public static volatile boolean totemOfUndyingInvincibleTime = false;
 
-    @ConfigInfo(name = "superChargedCreeper")
+    @ConfigInfo(name = "superChargedCreeper", section = "org")
     public static volatile boolean superChargedCreeper = false;
 
-    @ConfigInfo(name = "playerDropHead")
+    @ConfigInfo(name = "playerDropHead", section = "org")
     public static volatile boolean playerDropHead = false;
 
-    @ConfigInfo(name = "villagerVoidTrading")
+    @ConfigInfo(name = "villagerVoidTrading", section = "org")
     public static volatile boolean villagerVoidTrading = false;
 
-    @ConfigInfo(name = "forceRestock")
+    @ConfigInfo(name = "forceRestock", section = "org")
     public static volatile boolean forceRestock = false;
 
-    @ConfigInfo(name = "fakePlayerSpawnNoKnockback")
+    @ConfigInfo(name = "fakePlayerSpawnNoKnockback", section = "org")
     public static volatile boolean fakePlayerSpawnNoKnockback = false;
 
-    @ConfigInfo(name = "perfectInvisibility")
+    @ConfigInfo(name = "perfectInvisibility", section = "ams")
     public static volatile boolean perfectInvisibility = false;
 
-    @ConfigInfo(name = "sneakInvisibility")
+    @ConfigInfo(name = "sneakInvisibility", section = "ams")
     public static volatile boolean sneakInvisibility = false;
 
-    @ConfigInfo(name = "onlyPlayerCanCreateNetherPortal")
+    @ConfigInfo(name = "onlyPlayerCanCreateNetherPortal", section = "ams")
     public static volatile boolean onlyPlayerCanCreateNetherPortal = false;
 
-    @ConfigInfo(name = "itemEntityCreateNetherPortalDisabled")
+    @ConfigInfo(name = "itemEntityCreateNetherPortalDisabled", section = "ams")
     public static volatile boolean itemEntityCreateNetherPortalDisabled = false;
 
-    @ConfigInfo(name = "foliageGenerateDisabled")
+    @ConfigInfo(name = "foliageGenerateDisabled", section = "ams")
     public static volatile boolean foliageGenerateDisabled = false;
 
-    @ConfigInfo(name = "headHunter")
+    @ConfigInfo(name = "headHunter", section = "ams")
     public static volatile boolean headHunter = false;
 
     @ConfigInfo(name = "setBedrockHardness")
@@ -1295,61 +1295,61 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "pickaxeMinedBedrock")
     public static volatile boolean pickaxeMinedBedrock = false;
 
-    @ConfigInfo(name = "softDeepslate")
+    @ConfigInfo(name = "softDeepslate", section = "org")
     public static volatile boolean softDeepslate = false;
 
-    @ConfigInfo(name = "softObsidian")
+    @ConfigInfo(name = "softObsidian", section = "org")
     public static volatile boolean softObsidian = false;
 
-    @ConfigInfo(name = "softOres")
+    @ConfigInfo(name = "softOres", section = "org")
     public static volatile boolean softOres = false;
 
-    @ConfigInfo(name = "softNetherite")
+    @ConfigInfo(name = "softNetherite", section = "org")
     public static volatile boolean softNetherite = false;
 
-    @ConfigInfo(name = "riptideIgnoreConditions")
+    @ConfigInfo(name = "riptideIgnoreConditions", section = "org")
     public static volatile boolean riptideIgnoreConditions = false;
 
-    @ConfigInfo(name = "protectionEnchantmentCompatible")
+    @ConfigInfo(name = "protectionEnchantmentCompatible", section = "org")
     public static volatile boolean protectionEnchantmentCompatible = false;
 
-    @ConfigInfo(name = "damageEnchantmentCompatible")
+    @ConfigInfo(name = "damageEnchantmentCompatible", section = "org")
     public static volatile boolean damageEnchantmentCompatible = false;
 
-    @ConfigInfo(name = "maxBlockPlaceDistance")
+    @ConfigInfo(name = "maxBlockPlaceDistance", section = "org")
     public static volatile double maxBlockPlaceDistance = -1.0D;
 
-    @ConfigInfo(name = "maxBlockPlaceDistanceReferToEntity")
+    @ConfigInfo(name = "maxBlockPlaceDistanceReferToEntity", section = "org")
     public static volatile boolean maxBlockPlaceDistanceReferToEntity = false;
 
-    @ConfigInfo(name = "canActivatesObserver")
+    @ConfigInfo(name = "canActivatesObserver", section = "org")
     public static volatile boolean canActivatesObserver = false;
 
-    @ConfigInfo(name = "customPiglinBarteringTime")
+    @ConfigInfo(name = "customPiglinBarteringTime", section = "org")
     public static volatile long customPiglinBarteringTime = -1L;
 
-    @ConfigInfo(name = "climbingBoat")
+    @ConfigInfo(name = "climbingBoat", section = "org")
     public static volatile boolean climbingBoat = false;
 
-    @ConfigInfo(name = "experienceOrbMerge")
+    @ConfigInfo(name = "experienceOrbMerge", section = "org")
     public static volatile boolean experienceOrbMerge = false;
 
-    @ConfigInfo(name = "spawnBabyProbably")
+    @ConfigInfo(name = "spawnBabyProbably", section = "tis")
     public static volatile double spawnBabyProbably = -1.0D;
 
-    @ConfigInfo(name = "spawnJockeyProbably")
+    @ConfigInfo(name = "spawnJockeyProbably", section = "tis")
     public static volatile double spawnJockeyProbably = -1.0D;
 
-    @ConfigInfo(name = "spawnLeaderZombieProbably")
+    @ConfigInfo(name = "spawnLeaderZombieProbably", section = "tis")
     public static volatile double spawnLeaderZombieProbably = -1.0D;
 
-    @ConfigInfo(name = "entityPlacementIgnoreCollision")
+    @ConfigInfo(name = "entityPlacementIgnoreCollision", section = "tis")
     public static volatile boolean entityPlacementIgnoreCollision = false;
 
-    @ConfigInfo(name = "minecartPlaceableOnGround")
+    @ConfigInfo(name = "minecartPlaceableOnGround", section = "tis")
     public static volatile boolean minecartPlaceableOnGround = false;
 
-    @ConfigInfo(name = "minecartTakePassengerMinVelocity")
+    @ConfigInfo(name = "minecartTakePassengerMinVelocity", section = "tis")
     public static volatile double minecartTakePassengerMinVelocity = 0.1D;
 
     @ConfigInfo(name = "chainStone")
@@ -1379,14 +1379,14 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "tntRandomRange")
     public static volatile double tntRandomRange = -1.0D;
 
-    @ConfigInfo(name = "largeEnderChest")
+    @ConfigInfo(name = "largeEnderChest", section = "ams")
     public static volatile boolean largeEnderChest = false;
 
     @ConfigInfo(name = "carpetCommandPermissionLevel")
     public static volatile String carpetCommandPermissionLevel = "ops";
 
     @me.earthme.luminol.config.flags.DoNotLoad(when = me.earthme.luminol.enums.EnumLoadType.RELOAD)
-    @ConfigInfo(name = "largeShulkerBox")
+    @ConfigInfo(name = "largeShulkerBox", section = "ams")
     public static volatile boolean largeShulkerBox = false;
 
     public static int effectiveEnderChestRows() {
@@ -1474,49 +1474,49 @@ public class GeneralCompatConfig {
         return type < 0 ? original : (type == wanted ? 0 : 1);
     }
 
-    @ConfigInfo(name = "breedingCooldownDisabled")
+    @ConfigInfo(name = "breedingCooldownDisabled", section = "tis")
     public static volatile boolean breedingCooldownDisabled = false;
 
-    @ConfigInfo(name = "blockEventPacketRange")
+    @ConfigInfo(name = "blockEventPacketRange", section = "tis")
     public static volatile double blockEventPacketRange = 64.0D;
 
-    @ConfigInfo(name = "disableOpenOrWaterDetection")
+    @ConfigInfo(name = "disableOpenOrWaterDetection", section = "org")
     public static volatile boolean disableOpenOrWaterDetection = false;
 
-    @ConfigInfo(name = "creativeImmuneKill")
+    @ConfigInfo(name = "creativeImmuneKill", section = "org")
     public static volatile boolean creativeImmuneKill = false;
 
-    @ConfigInfo(name = "extinguishedCampfire")
+    @ConfigInfo(name = "extinguishedCampfire", section = "ams")
     public static volatile boolean extinguishedCampfire = false;
 
-    @ConfigInfo(name = "powerfulExpMending")
+    @ConfigInfo(name = "powerfulExpMending", section = "ams")
     public static volatile boolean powerfulExpMending = false;
 
-    @ConfigInfo(name = "clientSettingsLostOnRespawnFix")
+    @ConfigInfo(name = "clientSettingsLostOnRespawnFix", section = "tis")
     public static volatile boolean clientSettingsLostOnRespawnFix = false;
 
-    @ConfigInfo(name = "sensibleEnderman")
+    @ConfigInfo(name = "sensibleEnderman", section = "ams")
     public static volatile boolean sensibleEnderman = false;
 
-    @ConfigInfo(name = "entityInstantDeathRemoval")
+    @ConfigInfo(name = "entityInstantDeathRemoval", section = "tis")
     public static volatile boolean entityInstantDeathRemoval = false;
 
-    @ConfigInfo(name = "farmlandTrampledDisabled")
+    @ConfigInfo(name = "farmlandTrampledDisabled", section = "tis")
     public static volatile boolean farmlandTrampledDisabled = false;
 
-    @ConfigInfo(name = "shulkerGolem")
+    @ConfigInfo(name = "shulkerGolem", section = "ams")
     public static volatile boolean shulkerGolem = false;
 
-    @ConfigInfo(name = "preventEndSpikeRespawn")
+    @ConfigInfo(name = "preventEndSpikeRespawn", section = "ams")
     public static volatile String preventEndSpikeRespawn = "false";
 
-    @ConfigInfo(name = "yeetOutOfOrderChatKick")
+    @ConfigInfo(name = "yeetOutOfOrderChatKick", section = "tis")
     public static volatile boolean yeetOutOfOrderChatKick = false;
 
-    @ConfigInfo(name = "betterCraftableBoneBlock")
+    @ConfigInfo(name = "betterCraftableBoneBlock", section = "ams")
     public static volatile boolean betterCraftableBoneBlock = false;
 
-    @ConfigInfo(name = "betterCraftableDispenser")
+    @ConfigInfo(name = "betterCraftableDispenser", section = "ams")
     public static volatile boolean betterCraftableDispenser = false;
 
     @ConfigInfo(name = "viewDistance")
@@ -1525,19 +1525,19 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "simulationDistance")
     public static volatile int simulationDistance = 0;
 
-    @ConfigInfo(name = "tickCommandPermission")
+    @ConfigInfo(name = "tickCommandPermission", section = "tis")
     public static volatile String tickCommandPermission = "3";
 
-    @ConfigInfo(name = "tickFreezeCommandToggleable")
+    @ConfigInfo(name = "tickFreezeCommandToggleable", section = "tis")
     public static volatile boolean tickFreezeCommandToggleable = false;
 
-    @ConfigInfo(name = "syncServerMsptMetricsData")
+    @ConfigInfo(name = "syncServerMsptMetricsData", section = "tis")
     public static volatile boolean syncServerMsptMetricsData = false;
 
     @ConfigInfo(name = "simpleInGameCalculator")
     public static volatile boolean simpleInGameCalculator = false;
 
-    @ConfigInfo(name = "microTiming")
+    @ConfigInfo(name = "microTiming", section = "tis")
     public static volatile boolean microTiming = false;
 
     @ConfigInfo(name = "fastRedstoneDust")
@@ -1546,13 +1546,13 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "lagFreeSpawning")
     public static volatile boolean lagFreeSpawning = false;
 
-    @ConfigInfo(name = "optimizedFastEntityMovement")
+    @ConfigInfo(name = "optimizedFastEntityMovement", section = "tis")
     public static volatile boolean optimizedFastEntityMovement = false;
 
-    @ConfigInfo(name = "optimizedHardHitBoxEntityCollision")
+    @ConfigInfo(name = "optimizedHardHitBoxEntityCollision", section = "tis")
     public static volatile boolean optimizedHardHitBoxEntityCollision = false;
 
-    @ConfigInfo(name = "tntFuseDuration")
+    @ConfigInfo(name = "tntFuseDuration", section = "tis")
     public static volatile int tntFuseDuration = 80;
 
     @ConfigInfo(name = "defaultLoggers")

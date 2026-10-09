@@ -4,6 +4,7 @@ import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import fun.bm.lophine.carpet.config.modules.WoolHopperCounterConfig;
 import me.earthme.luminol.config.ConfigManager;
+import me.earthme.luminol.config.ConfigPaths;
 import me.earthme.luminol.config.ConfigsInstance;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
@@ -85,14 +86,7 @@ public final class CarpetRuleRegistry {
                 ConfigInfo info = field.getAnnotation(ConfigInfo.class);
                 if (info == null || !Modifier.isStatic(field.getModifiers()) || Modifier.isFinal(field.getModifiers()))
                     continue;
-                List<String> path = new ArrayList<>();
-                String category = module.category().getBaseKeyName();
-                if (category != null) path.add(category);
-                path.addAll(List.of(module.directory()));
-                path.add(module.name());
-                path.addAll(List.of(info.directory()));
-                path.add(info.name());
-                result.put(info.name(), new Binding(info.name(), String.join(".", path), field));
+                result.put(info.name(), new Binding(info.name(), ConfigPaths.resolve(module, info), field));
             }
         }
         return Collections.unmodifiableMap(result);
