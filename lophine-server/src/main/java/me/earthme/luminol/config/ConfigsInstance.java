@@ -256,14 +256,17 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         saveConfigs();
     }
 
-    /** Move old section keys before Carpet validates the complete requested rule set. */
+    /**
+     * Move old section keys before Carpet validates the complete requested rule set.
+     */
     private void migrateConfigSections() {
         for (Object module : allInstanced.keySet()) {
             ConfigClassInfo classInfo = getConfigClassInfo(module);
             for (Field field : module.getClass().getDeclaredFields()) {
                 ConfigInfo info = field.getAnnotation(ConfigInfo.class);
                 if (info == null || info.section().isEmpty() || !Modifier.isStatic(field.getModifiers())
-                        || Modifier.isFinal(field.getModifiers()) || field.getAnnotation(DoNotLoad.class) != null) continue;
+                        || Modifier.isFinal(field.getModifiers()) || field.getAnnotation(DoNotLoad.class) != null)
+                    continue;
                 String legacy = ConfigPaths.legacy(classInfo, info);
                 String target = ConfigPaths.resolve(classInfo, info);
                 if (legacy.equals(target) || !configFileInstance.contains(legacy)) continue;

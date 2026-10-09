@@ -6,10 +6,10 @@ import me.earthme.luminol.config.flags.ConfigInfo;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Shared paths for file loading, runtime edits, defaults and rule bindings. */
+/**
+ * Shared paths for file loading, runtime edits, defaults and rule bindings.
+ */
 public final class ConfigPaths {
-    private ConfigPaths() {
-    }
 
     public static List<String> section(ConfigClassInfo module, ConfigInfo entry) {
         List<String> path = new ArrayList<>();

@@ -9,7 +9,9 @@ public @interface ConfigInfo {
 
     String[] directory() default {};
 
-    /** Overrides the module's section name while retaining its category and parent directory. */
+    /**
+     * Overrides the module's section name while retaining its category and parent directory.
+     */
     String section() default "";
 
     boolean allowAutoReset() default true;
