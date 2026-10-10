@@ -18,7 +18,7 @@ index 97a44bd7196551477a124cb05368c9e7e9bad22b..3a60137dbd4409ce1880eb68780c4b28
      }
  
 diff --git a/net/minecraft/world/entity/item/PrimedTnt.java b/net/minecraft/world/entity/item/PrimedTnt.java
-index 11ac254964674714a5a506fb059236cef870d814..c6208f1c30649acdec8d0ff039ce3276068a46b2 100644
+index 30d63b6114b4bfcb8a1e3b34b2ec36e7d52c7be9..827100c641f308f7b2bf38ca6615f715670a1e34 100644
 --- a/net/minecraft/world/entity/item/PrimedTnt.java
 +++ b/net/minecraft/world/entity/item/PrimedTnt.java
 @@ -141,7 +141,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {

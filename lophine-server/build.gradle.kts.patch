@@ -100,7 +100,7 @@
      implementation(platform("ca.spottedleaf.leafpile:bom:1.2.4"))
      implementation("ca.spottedleaf.leafpile:profiler")
      implementation("ca.spottedleaf.leafpile:common")
-@@ -193,21 +_,21 @@
+@@ -192,21 +_,21 @@
          val git = Git(rootProject.layout.projectDirectory.path)
          val mcVersion = rootProject.providers.gradleProperty("mcVersion").get()
          val build = System.getenv("BUILD_NUMBER") ?: null
@@ -128,7 +128,7 @@
              "Build-Number" to (build ?: ""),
              "Build-Time" to buildTime.toString(),
              "Git-Branch" to gitBranch,
-@@ -218,6 +_,20 @@
+@@ -217,6 +_,20 @@
          }
      }
  }

@@ -240,7 +240,7 @@ index 6e08d50794c4af4405f3e164a3fd46f376b3f78f..dd2d0940eece3e85078e574f66f71a4c
  
      int getContainerSize();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index f3ec771960b24f3acddf71e287f9bedd550c8408..5639a31a2df7c205aeb222566dc61c04b7fd8b59 100644
+index 1caaca32790a1eb5e403095e6143ef17b6393151..164066430db43d98cde65b1db2f077c02e1d0d85 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -327,7 +327,7 @@ public abstract class Entity
@@ -297,7 +297,7 @@ index f3ec771960b24f3acddf71e287f9bedd550c8408..5639a31a2df7c205aeb222566dc61c04
      }
  
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index f5e051095d0dbb0be7fa06c1817e2ff0567dba2e..8db83810ba4d3721779803e724150ff3a22bf926 100644
+index e8264bb8e389d0ad07463d42994f77d1642c5faf..ba1224d890a909ce34a2c1ae9c26d2de5ab47962 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
 @@ -36,8 +36,12 @@ import net.minecraft.world.level.storage.ValueInput;

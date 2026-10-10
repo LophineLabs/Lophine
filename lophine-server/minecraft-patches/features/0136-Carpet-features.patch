@@ -7400,7 +7400,7 @@ index 0000000000000000000000000000000000000000..369b05fe54b357b4307347b072eefd55
 +    }
 +}
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 8f2a858d4996391e39408f4017d6465a168f339d..deb220b2d7b456defec138d57cfdce49a4c17b5b 100644
+index 54ef6989943d46ec7bd45e2ef9b75010c936d0c2..3ec1121782b90ecc81e2d486775c6d67f5aa1883 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -267,6 +267,8 @@ public abstract class Entity
@@ -8206,7 +8206,7 @@ index f287eb4022a1c75ad4c0157c3e1929f91844ac57..ca050a6c42402b9ea332ff78a5cdf86e
  
      public boolean hasUpdateInterval() {
 diff --git a/net/minecraft/world/entity/ExperienceOrb.java b/net/minecraft/world/entity/ExperienceOrb.java
-index e679e863eacdcec40dfa9d91e8ee051610d64601..e5306b6e1591cb18a7217969fba46bc1bedf7700 100644
+index f6b0505f3c53196967dcf264c5e929e346090188..ff11317e02ebc791144b2b1f8a5e146487a7ec8a 100644
 --- a/net/minecraft/world/entity/ExperienceOrb.java
 +++ b/net/minecraft/world/entity/ExperienceOrb.java
 @@ -112,6 +112,7 @@ public class ExperienceOrb extends Entity {
@@ -8468,7 +8468,7 @@ index 90630d3528cb6c07b5242fe868a6b610df241570..c4d15884fb0118767143f3673746d280
          Vec3 position = this.position();
          return BlockPos.containing(position.x, position.y - 1.0E-6, position.z);
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index a489e198f43c64968ee74447cb9b6c1c8baacbab..7f4be44bb6ea504ce43511f78f0f79cfa9808ed0 100644
+index 6b4ef5ce02962f3a9d746635d85c94088821a769..b4e8112a3996fa08a6f52aae216b42ac6bafd847 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -228,7 +228,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -10914,7 +10914,7 @@ index 5432ce87e68a10c4c4547f9df14b35f8f0a8510e..b70990b4c03aaa2be4bbd9a78f91d2be
              this.setDarkTicks(100);
          }
 diff --git a/net/minecraft/world/entity/animal/squid/Squid.java b/net/minecraft/world/entity/animal/squid/Squid.java
-index 8b1d8462ae27dad466ee1d0e6130035907856979..50ef99ec95d7885125945a62c37ab6237d10b57b 100644
+index 11e3b1546e97beee7d6e702441ed28763ac25763..5d6edd39dbc996da48b76151d9493f7910a042d7 100644
 --- a/net/minecraft/world/entity/animal/squid/Squid.java
 +++ b/net/minecraft/world/entity/animal/squid/Squid.java
 @@ -177,7 +177,17 @@ public class Squid extends AgeableWaterCreature {
@@ -11368,7 +11368,7 @@ index 1ab44f34b5d18d12259717444370f886b3a56144..f3f3ecd554b8368892e8e4373e6449e3
          } else {
              this.noActionTime = 0;
 diff --git a/net/minecraft/world/entity/item/FallingBlockEntity.java b/net/minecraft/world/entity/item/FallingBlockEntity.java
-index 6a7565204e71fb81531f2822078baf7f6b5e0fce..564523600c7b7ce82d03d047fbd35caaab2a7d1e 100644
+index a830c259baedf90cc4f9d21664d24d838d377cda..0bef19ff5c0e8693fd3340271a86a082e6d7f949 100644
 --- a/net/minecraft/world/entity/item/FallingBlockEntity.java
 +++ b/net/minecraft/world/entity/item/FallingBlockEntity.java
 @@ -78,6 +78,25 @@ public class FallingBlockEntity extends Entity {
@@ -11431,7 +11431,7 @@ index 6a7565204e71fb81531f2822078baf7f6b5e0fce..564523600c7b7ce82d03d047fbd35caa
                  boolean isConcrete = this.blockState.getBlock() instanceof ConcretePowderBlock;
                  boolean isStuckInWater = isConcrete && this.level().getFluidState(pos).is(FluidTags.WATER);
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index de2af889221f1506ea71646689b5c52d407c420f..19b3d13d38bf57908344e49904e23190c4b61853 100644
+index 608ca58945245ecaff145c8dc7e6ca9ff9a8773a..5e047ad3a713eb51ca7bede299b0ccf1f9168a37 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
 @@ -66,6 +66,13 @@ public class ItemEntity extends Entity implements TraceableEntity, ChangePublish
@@ -11543,7 +11543,7 @@ index de2af889221f1506ea71646689b5c52d407c420f..19b3d13d38bf57908344e49904e23190
                      itemStack.setCount(orgCount);
                  }
 diff --git a/net/minecraft/world/entity/item/PrimedTnt.java b/net/minecraft/world/entity/item/PrimedTnt.java
-index 57da729db959ad88acf85a0ee35042a3c32305a7..11ac254964674714a5a506fb059236cef870d814 100644
+index e810c03fdbd480eb2b7e1b904f9f761d524b3a99..30d63b6114b4bfcb8a1e3b34b2ec36e7d52c7be9 100644
 --- a/net/minecraft/world/entity/item/PrimedTnt.java
 +++ b/net/minecraft/world/entity/item/PrimedTnt.java
 @@ -11,6 +11,7 @@ import net.minecraft.util.Mth;
@@ -13888,7 +13888,7 @@ index 91366122bd075c1b29b8e7ee4ebcdd5d8229d102..125bdd8ca42c130188c2c66b920ef6c0
              }
          }
 diff --git a/net/minecraft/world/entity/projectile/FishingHook.java b/net/minecraft/world/entity/projectile/FishingHook.java
-index 1fe6f5229d446fd04e66d16df923d99dacd19f02..268f3c220472de49c099c8bda5433dcc14289e27 100644
+index 3c328afbe635dee08a49f6e0554f83e1124ad395..084a81ef57e9bea4043b1f2573e6498cae790bc4 100644
 --- a/net/minecraft/world/entity/projectile/FishingHook.java
 +++ b/net/minecraft/world/entity/projectile/FishingHook.java
 @@ -440,6 +440,11 @@ public class FishingHook extends Projectile {
@@ -13904,7 +13904,7 @@ index 1fe6f5229d446fd04e66d16df923d99dacd19f02..268f3c220472de49c099c8bda5433dcc
  
          for (int y = -1; y <= 2; y++) {
 diff --git a/net/minecraft/world/entity/projectile/LlamaSpit.java b/net/minecraft/world/entity/projectile/LlamaSpit.java
-index e84a13565c4d6632f948fc25ecb599675adbb564..cb39babf54053035c67a1c69e07c72616f3594f8 100644
+index 021c574ad559a4098e5cb257c95e5f90bc765b9f..ebfa473ac0b7f4fe2e53a957cc9ef98383719ce0 100644
 --- a/net/minecraft/world/entity/projectile/LlamaSpit.java
 +++ b/net/minecraft/world/entity/projectile/LlamaSpit.java
 @@ -77,8 +77,20 @@ public class LlamaSpit extends Projectile {
@@ -14016,7 +14016,7 @@ index 926b15590d804494cd55f587bba10a4af74809c5..70bfece304b7e263cac939a69d503539
  
      protected void onHitEntity(final EntityHitResult hitResult) {
 diff --git a/net/minecraft/world/entity/projectile/ShulkerBullet.java b/net/minecraft/world/entity/projectile/ShulkerBullet.java
-index 2c46a3983d8b9f50972101a87dcca24a64ab9a92..e8e8808e61ee85afdd7eb1ab5806309db5c5d062 100644
+index 6b76ec7868f7ee9676cb4c514185681ae694b13b..7ce890fb87f1f30ff0ae8254f421039fc79270ed 100644
 --- a/net/minecraft/world/entity/projectile/ShulkerBullet.java
 +++ b/net/minecraft/world/entity/projectile/ShulkerBullet.java
 @@ -291,28 +291,55 @@ public class ShulkerBullet extends Projectile {
@@ -14122,7 +14122,7 @@ index 2c46a3983d8b9f50972101a87dcca24a64ab9a92..e8e8808e61ee85afdd7eb1ab5806309d
      }
  
 diff --git a/net/minecraft/world/entity/projectile/ThrowableProjectile.java b/net/minecraft/world/entity/projectile/ThrowableProjectile.java
-index 9c202eb01d440341d5cc175d1a1f09899003d39e..23f78ceded0eb58c7fc6578545582ea1ab1d5e32 100644
+index e131cd7180b5310f2b4392f0d547f112967b17b4..e0759c3d75db9ff37f6e2ea6cc6c638b65c315a5 100644
 --- a/net/minecraft/world/entity/projectile/ThrowableProjectile.java
 +++ b/net/minecraft/world/entity/projectile/ThrowableProjectile.java
 @@ -2,6 +2,7 @@ package net.minecraft.world.entity.projectile;
@@ -14170,7 +14170,7 @@ index 9c202eb01d440341d5cc175d1a1f09899003d39e..23f78ceded0eb58c7fc6578545582ea1
          if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor((net.minecraft.server.level.ServerLevel)this.level(), this.position(), this.getDeltaMovement(), 1)) {
              return;
 diff --git a/net/minecraft/world/entity/projectile/arrow/AbstractArrow.java b/net/minecraft/world/entity/projectile/arrow/AbstractArrow.java
-index 2fb7fb789c20ffc31b36aef98728f8048c722ccd..832ae38b03b93f187f7acca3096be86f2ca64004 100644
+index 35aee6c15baeb648de7b8dc6e559f1a26636b21b..cf1a367bb1683e1a9f6278d2e3b604de9504be8e 100644
 --- a/net/minecraft/world/entity/projectile/arrow/AbstractArrow.java
 +++ b/net/minecraft/world/entity/projectile/arrow/AbstractArrow.java
 @@ -78,6 +78,15 @@ public abstract class AbstractArrow extends Projectile {
@@ -15155,7 +15155,7 @@ index 96b0fa2ebab15a939a5162d23b3ad9b92365d818..75981c78229190215618a54d9eda83d8
          }
  
 diff --git a/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java b/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java
-index 8be82f8b3632fa0a0f7fe44bc28ad03ad64279bc..c421f838a1dfda69a8788c0e0d0257ec716f09b5 100644
+index 94c603a7229ee6ecfc2da8eb522dc65c5630e38d..d8ba230bdf290f35fd4609107f304cab09470a00 100644
 --- a/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java
 +++ b/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java
 @@ -716,7 +716,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
@@ -15194,7 +15194,7 @@ index 3bb07698d1908f310ea7a1bb7a0da531f4040999..edb61a22a8ea32de47130e0755266a29
          }
  
 diff --git a/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java b/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java
-index a0ec7349253973af9158a4f6a3f05e4675f777c0..f80c6c1a1dae0e530ece60bbc9a5f04835e231b9 100644
+index 39d162c6085ed3114795b34c807bb67d468f3aaf..a2ebb7ced3cd08f61268853195c38c6a77d80660 100644
 --- a/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java
 +++ b/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java
 @@ -210,10 +210,10 @@ public abstract class AbstractMinecart extends VehicleEntity {
