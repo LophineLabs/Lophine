@@ -303,7 +303,7 @@ index bdf6fbea0f29e3b63b054954fbf635a1de6cac93..343dc0c1013a749293a8e6c0c9e01441
          }
          // Leaves end - bot support
 diff --git a/net/minecraft/world/entity/ExperienceOrb.java b/net/minecraft/world/entity/ExperienceOrb.java
-index e679e863eacdcec40dfa9d91e8ee051610d64601..6815246ed284e70acdceaed78435d2195bc7c936 100644
+index f6b0505f3c53196967dcf264c5e929e346090188..9d1a108cadd2dad9df9c576d83ffebd089eee740 100644
 --- a/net/minecraft/world/entity/ExperienceOrb.java
 +++ b/net/minecraft/world/entity/ExperienceOrb.java
 @@ -354,8 +354,27 @@ public class ExperienceOrb extends Entity {
@@ -428,7 +428,7 @@ index e679e863eacdcec40dfa9d91e8ee051610d64601..6815246ed284e70acdceaed78435d219
          return this.entityData.get(DATA_VALUE);
      }
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index a489e198f43c64968ee74447cb9b6c1c8baacbab..8f726449972fc446d2c428b6f84ac7d49bc5e5b1 100644
+index 6b4ef5ce02962f3a9d746635d85c94088821a769..f2bd4e3bc4ac492694a663cbf87357c407cb1ebf 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -624,7 +624,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -444,7 +444,7 @@ index a489e198f43c64968ee74447cb9b6c1c8baacbab..8f726449972fc446d2c428b6f84ac7d4
              if (!(this instanceof ServerPlayer)) this.remove(Entity.RemovalReason.KILLED, org.bukkit.event.entity.EntityRemoveEvent.Cause.DEATH); // CraftBukkit - add Bukkit remove cause // Folia - region threading - don't remove, we want the tick scheduler to be running
              if ((this instanceof ServerPlayer)) this.unRide(); // Folia - region threading - unmount player when dead
 diff --git a/net/minecraft/world/entity/item/PrimedTnt.java b/net/minecraft/world/entity/item/PrimedTnt.java
-index 57da729db959ad88acf85a0ee35042a3c32305a7..0da06f339fa8ffe7e2b64326727025967256df28 100644
+index e810c03fdbd480eb2b7e1b904f9f761d524b3a99..23ff6564b66ae3944890f5bd3d7eaaddc4c0c931 100644
 --- a/net/minecraft/world/entity/item/PrimedTnt.java
 +++ b/net/minecraft/world/entity/item/PrimedTnt.java
 @@ -74,8 +74,14 @@ public class PrimedTnt extends Entity implements TraceableEntity {

@@ -7,7 +7,7 @@ License: GPL-3.0-only (https://www.gnu.org/licenses/gpl-3.0.html)
 Gale - https://github.com/GaleMC/Gale
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 641600eeed26990974755d9dc39831e1ba1bb556..d3093167e983370d8a81ee9eaab0fa20a0e96eae 100644
+index 873e90a5d378549a26fc051e5d89bc163bafd5fc..5bf905edbc96384cc0cb90a97165d23ea9bdcd49 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1333,8 +1333,17 @@ public abstract class Entity

@@ -139,7 +139,7 @@ index 47a76b9c4029a58421df3e4096f36f62d18df7e4..e64ce9e27c18166b887acac8f1f8c136
              }
          } else if (emitter instanceof CraftEntity craftEntity) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index a05239dd29b34ee03dc3006c7b26b6665a77887a..d2f7a1703efe08c8ad7f28137c89b427061c2fd8 100644
+index d4ac14014f21f772ff00232e6b066db9e42932d4..115608e5c4dc520d96c283e1b4a445e4d5506c95 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 @@ -133,6 +133,8 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {

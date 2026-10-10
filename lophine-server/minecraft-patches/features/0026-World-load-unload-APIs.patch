@@ -429,7 +429,7 @@ index 9fad06eda81b4c2c1889a9cfa7a6948e7ee01862..854f8954ccfd8c34c9f9c91fd1805260
          private final Vec2 spawnAngle;
  
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 5a0f269632292778ae21fb79e5592c88890d3601..497b03e018f3b3bfee2c1f13e781f773c77c2631 100644
+index c7b7495b281aae673b046d653fd711b7777b24c6..c27655c62fd4120c8f37f9609cbd1dfec183064b 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -399,6 +399,9 @@ public abstract class Entity

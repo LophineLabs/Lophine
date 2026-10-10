@@ -5,7 +5,7 @@ Subject: [PATCH] Add config for unsafe teleportation
 
 
 diff --git a/net/minecraft/world/entity/item/FallingBlockEntity.java b/net/minecraft/world/entity/item/FallingBlockEntity.java
-index 0ee702caeedd29c7f4cde07e88608e837f93dd28..6a7565204e71fb81531f2822078baf7f6b5e0fce 100644
+index 97d137339aa6995b9c1044e5e072d278e0caf3fc..a830c259baedf90cc4f9d21664d24d838d377cda 100644
 --- a/net/minecraft/world/entity/item/FallingBlockEntity.java
 +++ b/net/minecraft/world/entity/item/FallingBlockEntity.java
 @@ -72,7 +72,7 @@ public class FallingBlockEntity extends Entity {

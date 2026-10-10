@@ -252,7 +252,7 @@ index 4b018c64d3123bb7a0687491d2ac3a535302890c..0e4d6c9a35d29c240a0cf30694211ea3
  
      private static Map<EquipmentSlot, Float> createForAllSlots(final List<EquipmentSlot> slots, final float dropChance) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index f7c4c3d7b25eb99e0e2b0d19a6f799032fb131c8..6024ac1d4f1ed66f10f767db13760cfb8c65f8f5 100644
+index db5c99b8b0173b854f373af7c27861e5818285fa..42be09774fc5811e659b179b9cc3114c88fee8f8 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -3604,7 +3604,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
