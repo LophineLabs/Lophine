@@ -70,6 +70,9 @@ public class TISCMProtocol implements LeavesProtocol {
         switch (packetType.get()) {
             case HI -> handleHi(player, payload.nbt());
             case SUPPORTED_S2C_PACKETS -> handleSupportedS2CPackets(player, payload.nbt());
+            case SPEED_TEST_UPLOAD_PAYLOAD ->
+                    fun.bm.lophine.carpet.TisSpeedTestCommand.handleUpload(player, payload.nbt());
+            case SPEED_TEST_PING -> fun.bm.lophine.carpet.TisSpeedTestCommand.handlePing(player, payload.nbt());
             default -> {
             }
         }
@@ -78,6 +81,7 @@ public class TISCMProtocol implements LeavesProtocol {
     @ProtocolHandler.PlayerLeave
     public static void onPlayerLeave(ServerPlayer player) {
         CLIENT_SUPPORTED_PACKETS.remove(player.getStringUUID());
+        fun.bm.lophine.carpet.TisSpeedTestCommand.disconnected(player);
     }
 
     private static void handleHi(ServerPlayer player, CompoundTag payload) {
@@ -91,7 +95,9 @@ public class TISCMProtocol implements LeavesProtocol {
         });
         send(player, S2CPacket.SUPPORTED_C2S_PACKETS, nbt -> nbt.put("supported_c2s_packets", stringList(List.of(
                 C2SPacket.HI.id,
-                C2SPacket.SUPPORTED_S2C_PACKETS.id
+                C2SPacket.SUPPORTED_S2C_PACKETS.id,
+                C2SPacket.SPEED_TEST_UPLOAD_PAYLOAD.id,
+                C2SPacket.SPEED_TEST_PING.id
         ))));
     }
 
@@ -104,7 +110,7 @@ public class TISCMProtocol implements LeavesProtocol {
         CLIENT_SUPPORTED_PACKETS.put(player.getStringUUID(), packets);
     }
 
-    private static void send(ServerPlayer player, S2CPacket packet, PayloadBuilder builder) {
+    public static void send(ServerPlayer player, S2CPacket packet, java.util.function.Consumer<CompoundTag> builder) {
         if (!supports(player, packet)) {
             return;
         }
@@ -114,7 +120,16 @@ public class TISCMProtocol implements LeavesProtocol {
         ProtocolUtils.sendPayloadPacket(player, new TISCMPayload(packet.id, nbt));
     }
 
-    private static boolean supports(ServerPlayer player, S2CPacket packet) {
+    public static boolean send(ServerPlayer player, S2CPacket packet, java.util.function.Consumer<CompoundTag> builder,
+                               io.netty.channel.ChannelFutureListener listener) {
+        if (!GeneralCompatConfig.tiscmNetworkProtocol || !supports(player, packet)) return false;
+        CompoundTag nbt = new CompoundTag();
+        builder.accept(nbt);
+        player.connection.send(new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(new TISCMPayload(packet.id, nbt)), listener);
+        return true;
+    }
+
+    public static boolean supports(ServerPlayer player, S2CPacket packet) {
         if (packet.handshake) {
             return true;
         }

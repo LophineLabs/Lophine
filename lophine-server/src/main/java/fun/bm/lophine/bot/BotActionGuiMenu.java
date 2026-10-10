@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import fun.bm.lophine.bot.action.gui.ActionType;
 import fun.bm.lophine.bot.action.gui.GuiNode;
 import fun.bm.lophine.bot.action.gui.GuiRootNode;
-import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
 import fun.bm.lophine.config.modules.function.FakeplayerConfig;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -246,13 +245,9 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
     }
 
     private String getStopActionCommand(String actionHash) throws UnexpectedException {
-        boolean botCommand = FakeplayerConfig.enable;
-        boolean playerCommand = FakePlayerCompatConfig.commandPlayer;
         String command;
-        if (botCommand) {
+        if (FakeplayerConfig.checkEnabled()) {
             command = "bot ";
-        } else if (playerCommand) {
-            command = "player ";
         } else {
             throw new UnexpectedException("Unable to build String from commandNode.");
         }

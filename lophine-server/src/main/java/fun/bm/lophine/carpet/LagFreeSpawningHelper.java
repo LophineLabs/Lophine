@@ -26,7 +26,7 @@ import java.util.WeakHashMap;
 
 public final class LagFreeSpawningHelper {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final Map<RegionizedWorldData, Map<EntityType<?>, Mob>> PRECOOKED_MOBS = new WeakHashMap<>();
+    private static final Map<RegionizedWorldData, Map<EntityType<?>, Mob>> PRECOOKED_MOBS = java.util.Collections.synchronizedMap(new WeakHashMap<>());
 
     public static boolean hasNoCollision(ServerLevel world, AABB bb) {
         if (!TickThread.isTickThreadFor(world, bb)) return world.noCollision(bb);
@@ -36,7 +36,7 @@ public final class LagFreeSpawningHelper {
         int maxY = Mth.ceil(bb.maxY) - 1;
         BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
 
-        if (bb.getXsize() <= 1.0 && bb.getZsize() <= 1.0) {
+        if (bb.getXsize() <= 1.0) {
             for (int y = minY; y <= maxY; y++) {
                 blockPos.set(minX, y, minZ);
                 VoxelShape shape = world.getBlockState(blockPos).getCollisionShape(world, blockPos);
@@ -92,7 +92,6 @@ public final class LagFreeSpawningHelper {
         Map<EntityType<?>, Mob> cache = PRECOOKED_MOBS.computeIfAbsent(level.getCurrentWorldData(), key -> new HashMap<>());
         Mob mob = cache.get(entityType);
         if (mob != null && !mob.isRemoved()) {
-            if (!TickThread.isTickThreadFor(mob)) return createMob(level, entityType);
             return mob;
         }
 
@@ -102,7 +101,8 @@ public final class LagFreeSpawningHelper {
     public static @Nullable Mob createMob(ServerLevel level, EntityType<?> entityType) {
         try {
             if (entityType.create(level, EntitySpawnReason.NATURAL) instanceof Mob created) {
-                PRECOOKED_MOBS.get(level.getCurrentWorldData()).put(entityType, created);
+                RegionizedWorldData data = level.getCurrentWorldData();
+                if (data != null) PRECOOKED_MOBS.computeIfAbsent(data, key -> new HashMap<>()).put(entityType, created);
                 return created;
             }
             LOGGER.warn("Can't precook non-mob entity type: {}", entityType);

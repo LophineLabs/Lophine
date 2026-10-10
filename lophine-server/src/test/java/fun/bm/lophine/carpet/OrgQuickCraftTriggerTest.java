@@ -1,0 +1,115 @@
+package fun.bm.lophine.carpet;
+
+import carpet.script.external.ScarpetNativeWork;
+import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class OrgQuickCraftTriggerTest {
+    @TempDir
+    Path directory;
+
+    @BeforeAll
+    static void bootstrap() {
+        OrgInventoryPersistenceTest.bootstrap();
+        for (var item : java.util.List.of(Items.CRAFTING_TABLE, Items.STONECUTTER)) {
+            try {
+                item.builtInRegistryHolder().components();
+            } catch (NullPointerException unbound) {
+                item.builtInRegistryHolder().bindComponents(net.minecraft.core.component.DataComponentMap.builder().set(net.minecraft.core.component.DataComponents.MAX_STACK_SIZE, 64).build());
+            }
+        }
+    }
+
+    @Test
+    void sourceFalseSneakingSpectatorFakeHeldHandAndPlayerActionPermissionGatesAreExact() throws Exception {
+        String mode = GeneralCompatConfig.quickSettingFakePlayerCraft, permission = GeneralCompatConfig.commandPlayerAction;
+        try (var f = new OrgInventoryPersistenceTest.Fixture(directory)) {
+            var viewer = f.viewer.player();
+            var fake = f.actor(org.leavesmc.leaves.bot.ServerBot.class).player();
+            var source = mock(CommandSourceStack.class);
+            when(source.permissions()).thenReturn(net.minecraft.server.permissions.PermissionSet.NO_PERMISSIONS);
+            when(viewer.createCommandSourceStack()).thenReturn(source);
+            when(viewer.blockPosition()).thenReturn(net.minecraft.core.BlockPos.ZERO);
+            when(viewer.getItemInHand(InteractionHand.MAIN_HAND)).thenReturn(new ItemStack(Items.CRAFTING_TABLE));
+            when(viewer.getItemInHand(InteractionHand.OFF_HAND)).thenReturn(new ItemStack(Items.STONECUTTER));
+            when(viewer.openMenu(any())).thenReturn(java.util.OptionalInt.of(3));
+            f.owner.set(viewer);
+            GeneralCompatConfig.commandPlayerAction = "true";
+            GeneralCompatConfig.quickSettingFakePlayerCraft = "false";
+            assertNull(OrgFakePlayerRecipeMenus.interactAsync(viewer, fake, InteractionHand.MAIN_HAND));
+            GeneralCompatConfig.quickSettingFakePlayerCraft = "sneaking";
+            assertNull(OrgFakePlayerRecipeMenus.interactAsync(viewer, fake, InteractionHand.MAIN_HAND));
+            when(viewer.isShiftKeyDown()).thenReturn(true);
+            assertTrue(OrgFakePlayerRecipeMenus.interactAsync(viewer, fake, InteractionHand.MAIN_HAND).join());
+            GeneralCompatConfig.quickSettingFakePlayerCraft = "true";
+            when(viewer.isShiftKeyDown()).thenReturn(false);
+            assertTrue(OrgFakePlayerRecipeMenus.interactAsync(viewer, fake, InteractionHand.OFF_HAND).join());
+            when(viewer.isSpectator()).thenReturn(true);
+            assertNull(OrgFakePlayerRecipeMenus.interactAsync(viewer, fake, InteractionHand.OFF_HAND));
+            when(viewer.isSpectator()).thenReturn(false);
+            assertNull(OrgFakePlayerRecipeMenus.interactAsync(viewer, f.target.player(), InteractionHand.MAIN_HAND));
+            when(viewer.getItemInHand(InteractionHand.MAIN_HAND)).thenReturn(new ItemStack(Items.DIAMOND));
+            assertNull(OrgFakePlayerRecipeMenus.interactAsync(viewer, fake, InteractionHand.MAIN_HAND));
+            GeneralCompatConfig.commandPlayerAction = "ops";
+            assertNull(OrgFakePlayerRecipeMenus.interactAsync(viewer, fake, InteractionHand.OFF_HAND));
+            verify(viewer, times(2)).openMenu(any());
+        } finally {
+            GeneralCompatConfig.quickSettingFakePlayerCraft = mode;
+            GeneralCompatConfig.commandPlayerAction = permission;
+        }
+    }
+
+    @Test
+    void realPlayerInteractionKeepsOriginalSuccessDecisionAfterCancelledOpenAndWaitsPhysicalMenuChildren() throws Exception {
+        String mode = GeneralCompatConfig.quickSettingFakePlayerCraft, permission = GeneralCompatConfig.commandPlayerAction;
+        GeneralCompatConfig.quickSettingFakePlayerCraft = "true";
+        GeneralCompatConfig.commandPlayerAction = "true";
+        try (var f = new OrgInventoryPersistenceTest.Fixture(directory)) {
+            var viewer = f.viewer.player();
+            var fake = f.actor(org.leavesmc.leaves.bot.ServerBot.class).player();
+            var source = mock(CommandSourceStack.class);
+            when(source.permissions()).thenReturn(net.minecraft.server.permissions.PermissionSet.NO_PERMISSIONS);
+            when(viewer.createCommandSourceStack()).thenReturn(source);
+            when(viewer.blockPosition()).thenReturn(net.minecraft.core.BlockPos.ZERO);
+            when(viewer.getItemInHand(InteractionHand.MAIN_HAND)).thenReturn(new ItemStack(Items.CRAFTING_TABLE));
+            var packet = new CompletableFuture<Void>();
+            when(viewer.openMenu(any())).thenAnswer(call -> {
+                ScarpetNativeWork.record(packet);
+                return java.util.OptionalInt.empty();
+            });
+            f.owner.set(viewer);
+            var method = net.minecraft.world.entity.player.Player.class.getDeclaredMethod("carpetInteractOnNative", net.minecraft.world.entity.Entity.class, InteractionHand.class, net.minecraft.world.phys.Vec3.class);
+            method.setAccessible(true);
+            net.minecraft.world.InteractionResult.Deferred result;
+            try (var opened = carpet.script.external.ScarpetInteractionContinuations.open()) {
+                result = (net.minecraft.world.InteractionResult.Deferred) method.invoke(viewer, fake, InteractionHand.MAIN_HAND, net.minecraft.world.phys.Vec3.ZERO);
+                assertFalse(result.plan().future().isDone());
+                assertFalse(ScarpetNativeWork.whenIdle(f.server).isDone());
+            }
+            packet.complete(null);
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+            while (!result.plan().future().isDone() && System.nanoTime() < deadline) {
+                f.drain(f.viewer);
+                Thread.sleep(1);
+            }
+            assertSame(net.minecraft.world.InteractionResult.SUCCESS, result.plan().future().get(3, TimeUnit.SECONDS));
+            verify(viewer).openMenu(any());
+        } finally {
+            GeneralCompatConfig.quickSettingFakePlayerCraft = mode;
+            GeneralCompatConfig.commandPlayerAction = permission;
+        }
+    }
+}

@@ -22,6 +22,7 @@ import fun.bm.lophine.utils.ServerI18nUtil;
 import it.unimi.dsi.fastutil.objects.Object2LongLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
@@ -35,7 +36,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -57,7 +57,7 @@ import static java.util.Map.entry;
 
 public class HopperCounter {
 
-    private static boolean enabled = false;
+    private static volatile boolean enabled = false;
     private static final Map<DyeColor, HopperCounter> COUNTERS;
 
     static {
@@ -69,6 +69,7 @@ public class HopperCounter {
     }
 
     public final DyeColor color;
+    private final TextComponent coloredName;
     private final Object2LongMap<Item> counter = new Object2LongLinkedOpenHashMap<>();
     private long startTick;
     private long startMillis;
@@ -76,39 +77,36 @@ public class HopperCounter {
     private HopperCounter(DyeColor color) {
         this.startTick = -1;
         this.color = color;
+        this.coloredName = Component.text(color.getName(), TextColor.color(color.getTextColor()));
     }
 
-    public void add(MinecraftServer server, ItemStack stack) {
+    public synchronized void add(MinecraftServer server, ItemStack stack) {
         if (startTick < 0) {
-            startTick = server.overworld().getGameTime();
+            startTick = fun.bm.lophine.carpet.CarpetServerClock.gameTime();
             startMillis = System.currentTimeMillis();
         }
         Item item = stack.getItem();
         counter.put(item, counter.getLong(item) + stack.getCount());
     }
 
-    public void reset(MinecraftServer server) {
+    public synchronized void reset(MinecraftServer server) {
         counter.clear();
-        startTick = server.overworld().getGameTime();
+        startTick = fun.bm.lophine.carpet.CarpetServerClock.gameTime();
         startMillis = System.currentTimeMillis();
     }
 
     public static void resetAll(MinecraftServer server, boolean fresh) {
         for (HopperCounter counter : COUNTERS.values()) {
-            counter.reset(server);
-            if (fresh) {
-                counter.startTick = -1;
+            synchronized (counter) {
+                counter.reset(server);
+                if (fresh) counter.startTick = -1;
             }
         }
     }
 
-    public List<Component> format(ServerLevel level, boolean realTime) {
-        MinecraftServer server = level == null ? MinecraftServer.getServer() : level.getServer();
-        if (level == null) {
-            level = server.overworld();
-        }
-        long ticks = Math.max(realTime ? (System.currentTimeMillis() - startMillis) / 50 : level.getGameTime() - startTick, -1);
-        String colorName = ServerI18nUtil.getLocalizedText("color.minecraft." + color.getName());
+    public synchronized List<Component> format(MinecraftServer server, boolean realTime) {
+        long ticks = Math.max(realTime ? (System.currentTimeMillis() - startMillis) / 50 : fun.bm.lophine.carpet.CarpetServerClock.gameTime() - startTick, -1);
+        String colorName = ServerI18nUtil.getLocalizedText("color.minecraft." + coloredName.content().toLowerCase());
         String minText = ServerI18nUtil.getLocalizedText("lophine.hopper_counter.format.min");
         String realTimeText = realTime ? ServerI18nUtil.getLocalizedText("lophine.hopper_counter.format.real_time") : "";
 
@@ -127,11 +125,11 @@ public class HopperCounter {
         String parenClose = ServerI18nUtil.getLocalizedText("lophine.hopper_counter.format.paren_close");
         String comma = ServerI18nUtil.getLocalizedText("lophine.hopper_counter.format.comma");
         items.add(Component.text()
-                .append(Component.text(ServerI18nUtil.getFormatedLocalizedText("lophine.hopper_counter.format.items_for", colorName), TextColor.color(color.getTextColor())))
+                .append(Component.text(ServerI18nUtil.getLocalizedText("lophine.hopper_counter.format.items_for")), coloredName)
                 .append(Component.text(parenOpen), Component.text(String.format("%.2f", ticks * 1.0 / (20 * 60)), Style.style(TextDecoration.BOLD)))
                 .append(Component.text(minText), Component.text(realTimeText), Component.text(parenClose), Component.text(comma))
                 .append(Component.text(ServerI18nUtil.getLocalizedText("lophine.hopper_counter.format.total")), Component.text(total, Style.style(TextDecoration.BOLD)), Component.text(comma))
-                .append(Component.text(parenOpen), Component.text(String.format("%.1f", total * 1.0 * (20 * 60 * 60) / ticks), Style.style(TextDecoration.BOLD)))
+                .append(Component.text(ServerI18nUtil.getLocalizedText("lophine.hopper_counter.format.paren_open")), Component.text(String.format("%.1f", total * 1.0 * (20 * 60 * 60) / ticks), Style.style(TextDecoration.BOLD)))
                 .append(Component.text(ServerI18nUtil.getLocalizedText("lophine.hopper_counter.format.per_hour_suffix")))
                 .build());
 
@@ -342,7 +340,7 @@ public class HopperCounter {
         return (r << 16) + (g << 8) + b;
     }
 
-    public long getTotalItems() {
+    public synchronized long getTotalItems() {
         return counter.isEmpty() ? 0 : counter.values().longStream().sum();
     }
 

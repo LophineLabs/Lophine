@@ -27,7 +27,7 @@ public class DisplayCommand extends CounterSubCommand {
 
     public static void displayCounter(CommandContext context, @NotNull HopperCounter counter, boolean realTime) {
         Entity entity = context.getSource().getExecutor();
-        for (Component component : counter.format(entity == null ? null : entity instanceof ServerPlayer sp ? sp.level() : null, realTime)) {
+        for (Component component : counter.format(entity == null ? null : entity instanceof ServerPlayer sp ? sp.level().getServer() : null, realTime)) {
             context.getSender().sendMessage(component);
         }
     }

@@ -1,0 +1,149 @@
+package fun.bm.lophine.carpet;
+
+import ca.spottedleaf.moonrise.common.util.TickThread;
+import carpet.script.CarpetEventServer.Event;
+import carpet.script.EntityEventsGroup;
+import carpet.script.external.*;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.EntityBasedExplosionDamageCalculator;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.ExplosionDamageCalculator;
+import net.minecraft.world.level.SimpleExplosionDamageCalculator;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
+
+/**
+ * Only already loaded, fully owned native work can satisfy Bukkit's synchronous Boolean contract.
+ */
+public final class CarpetSynchronousExplosionPreflight {
+    private CarpetSynchronousExplosionPreflight() {
+    }
+
+    private static void reject(String reason) {
+        throw CarpetSynchronousExplosionScope.unavailable(reason);
+    }
+
+    public static double packetRange() {
+        double range = fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.explosionPacketRange;
+        return range >= 0 ? range : 64D;
+    }
+
+    public static void require(ServerLevel world, Entity source, net.minecraft.world.damagesource.DamageSource damage, ExplosionDamageCalculator calculator, Vec3 center, float power) {
+        require(world, source, damage, calculator, center, power, true);
+    }
+
+    /**
+     * No native effect occurs before this admission decision; packets choose their own recipients' owners.
+     */
+    public static boolean canRunCore(ServerLevel world, Entity source, net.minecraft.world.damagesource.DamageSource damage, ExplosionDamageCalculator calculator, Vec3 center, float power) {
+        try {
+            require(world, source, damage, calculator, center, power, false);
+            return true;
+        } catch (CarpetSynchronousExplosionScope.Unavailable unavailable) {
+            return false;
+        }
+    }
+
+    private static void require(ServerLevel world, Entity source, net.minecraft.world.damagesource.DamageSource damage, ExplosionDamageCalculator calculator, Vec3 center, float power, boolean packetAudience) {
+        if (!Double.isFinite(center.x) || !Double.isFinite(center.y) || !Double.isFinite(center.z) || !Float.isFinite(power) || power < 0F)
+            reject("Explosion coordinates and nonnegative power must be finite");
+        if (ScarpetNativeWork.isDraining(world.getServer()) && ScarpetNativeWork.capture() == null)
+            reject("The server is draining previously accepted native operations");
+        if (!ScarpetRuntime.EVENT_DISABLED.get() && (Event.EXPLOSION.isNeeded() || Event.EXPLOSION_OUTCOME.isNeeded() || Event.PLAYER_TAKES_DAMAGE.isNeeded() || Event.PLAYER_DEALS_DAMAGE.isNeeded() || Event.PLAYER_DIES.isNeeded()))
+            reject("Scarpet explosion, damage or death callbacks require asynchronous owner continuations");
+        if (calculator != null && calculator.getClass() != ExplosionDamageCalculator.class && calculator.getClass() != SimpleExplosionDamageCalculator.class && calculator.getClass() != EntityBasedExplosionDamageCalculator.class)
+            reject("A custom explosion calculator requires the asynchronous interface");
+        double physical = Math.ceil(power * 2D) + 2D, extent = packetAudience ? Math.max(physical, packetRange()) : physical;
+        requireRectangle(world, center, extent, physical);
+        if (source != null) {
+            requireEntity(world, source, source);
+            LivingEntity indirect = Explosion.getIndirectSourceEntity(source);
+            if (indirect != null) requireEntity(world, indirect, source);
+        }
+        if (damage != null) {
+            Entity direct = damage.getDirectEntity(), causing = damage.getEntity();
+            if (direct != null) requireEntity(world, direct, source);
+            if (causing != null) requireEntity(world, causing, source);
+        }
+        AABB affected = new AABB(center.x - physical, center.y - physical, center.z - physical, center.x + physical, center.y + physical, center.z + physical);
+        for (Entity target : world.getEntities((Entity) null, affected, entity -> true)) {
+            if (ScarpetExplosionActors.retiredFakePlayer(target)) continue;
+            requireEntity(world, target, source);
+            if (!packetAudience && target instanceof LivingEntity)
+                // Native death/loot phases query a 32-block neighborhood. Admission
+                // must also prove these helpers cannot introduce a foreign/loading phase.
+                requireRectangle(world, target.position(), 32D, 32D);
+        }
+        if (!packetAudience) return;
+        // Complete ownership of the packet rectangle puts every eligible recipient in this region's live audience.
+        for (ServerPlayer player : List.copyOf(world.getLocalPlayers())) {
+            if (!TickThread.isTickThreadFor(player)) reject("A local packet recipient is changing native owner");
+            if (player.level() == world && player.distanceToSqr(center) < packetRange() * packetRange())
+                requireEntity(world, player, source);
+        }
+    }
+
+    private static void requireEntity(ServerLevel world, Entity entity, Entity explosionSource) {
+        if (!TickThread.isTickThreadFor(entity))
+            reject("An explosion source, indirect cause or target is on another native owner");
+        if (entity.level() != world) reject("An explosion source, indirect cause or target changed world");
+        if (ScarpetNativeRemovals.isPending(entity) || ScarpetDamageContinuations.pendingCompletion(entity) != null)
+            reject("A target has a pending native damage or removal operation");
+        var group = entity.carpetPeekEventContainer();
+        if (group != null && (group.hasEvent(EntityEventsGroup.Event.ON_DAMAGE) || group.hasEvent(EntityEventsGroup.Event.ON_DEATH) || group.hasEvent(EntityEventsGroup.Event.ON_REMOVED)))
+            reject("A target has asynchronous entity damage, death or removal callbacks");
+        if (entity instanceof ServerPlayer player) {
+            if (ScarpetPlayerInventoryGate.paused(player))
+                reject("A target player inventory is held by another operation");
+            var inventory = player.getInventory();
+            for (int slot = 0; slot < inventory.getContainerSize(); slot++)
+                if (OrgItemShadowGroups.managed(inventory.getItem(slot)))
+                    reject("A player inventory has a shared item scope");
+        }
+        if (entity instanceof LivingEntity living) {
+            // Vanilla marks a primed creeper dead before calling explode. This is
+            // the accepted explosion source, not a target waiting for damage/death.
+            boolean primedCreeper = entity == explosionSource && living instanceof net.minecraft.world.entity.monster.Creeper
+                    && living.getHealth() > 0F && !living.isRemoved() && ScarpetExplosionContinuations.pending(entity);
+            if (living.isDeadOrDying() && !primedCreeper) reject("A target is already in a native death phase");
+            for (EquipmentSlot slot : EquipmentSlot.VALUES_ARRAY)
+                if (OrgItemShadowGroups.managed(living.getItemBySlot(slot)))
+                    reject("Target equipment has a shared item scope");
+        }
+        if (entity instanceof net.minecraft.world.entity.item.ItemEntity item && OrgItemShadowGroups.managed(item.getItem()))
+            reject("A target item has a shared item scope");
+    }
+
+    private static void requireRectangle(ServerLevel world, Vec3 center, double extent, double physical) {
+        double minXd = Math.floor((center.x - extent) / 16D), maxXd = Math.floor((center.x + extent) / 16D), minZd = Math.floor((center.z - extent) / 16D), maxZd = Math.floor((center.z + extent) / 16D);
+        if (minXd < Integer.MIN_VALUE || maxXd > Integer.MAX_VALUE || minZd < Integer.MIN_VALUE || maxZd > Integer.MAX_VALUE)
+            reject("The complete explosion footprint cannot be represented as a native chunk rectangle");
+        for (long z = (long) minZd; z <= (long) maxZd; z++)
+            for (long x = (long) minXd; x <= (long) maxXd; x++) {
+                if (!TickThread.isTickThreadFor(world, (int) x, (int) z))
+                    reject("The complete explosion and packet footprint is not on the current native owner");
+                var chunk = world.getChunkIfLoaded((int) x, (int) z);
+                if (chunk == null) reject("The complete explosion footprint is not already loaded");
+                for (var position : chunk.getBlockEntities().keySet())
+                    if (Math.abs(position.getX() - center.x) <= physical && Math.abs(position.getY() - center.y) <= physical && Math.abs(position.getZ() - center.z) <= physical)
+                        reject("A block entity may require an asynchronous inventory or loot scope");
+            }
+    }
+
+    public static void requireBlocks(ServerLevel world, List<net.minecraft.core.BlockPos> blocks) {
+        for (var position : blocks) {
+            if (!TickThread.isTickThreadFor(world, position))
+                reject("A Bukkit explosion callback added a block on another native owner");
+            var chunk = world.getChunkIfLoaded(position.getX() >> 4, position.getZ() >> 4);
+            if (chunk == null) reject("A Bukkit explosion callback added a block outside the loaded footprint");
+            if (chunk.getBlockEntities().containsKey(position))
+                reject("A Bukkit explosion callback added a block entity with an unproved synchronous inventory scope");
+        }
+    }
+}

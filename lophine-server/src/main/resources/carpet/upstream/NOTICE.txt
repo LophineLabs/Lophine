@@ -1,0 +1,19 @@
+Bundled rule translations are copied from the pinned official upstream sources:
+
+fabric-carpet: f358000b175ddbcf1dd0bc59641c715fb0545664
+https://github.com/gnembon/fabric-carpet
+Source: src/main/resources/assets/carpet/lang
+
+Carpet TIS Addition: 62c3cb6fff26cd9c4e12aa616b403c184a4a6ca0
+https://github.com/TISUnion/Carpet-TIS-Addition
+Source: src/main/resources/assets/carpettisaddition/lang
+
+Carpet Org Addition: c2142c213269f85fb1851263bf60f147849224a1
+https://github.com/fcsailboat/Carpet-Org-Addition
+Source: src/main/resources/assets/carpet-org-addition/lang
+
+Carpet AMS Addition: 750310179368b2569dd6121a2769b2fb1bbc7343
+https://github.com/Minecraft-AMS/Carpet-AMS-Addition
+Source: src/main/resources/assets/carpetamsaddition/lang
+
+See the adjacent project LICENSE files for the original terms and attribution.

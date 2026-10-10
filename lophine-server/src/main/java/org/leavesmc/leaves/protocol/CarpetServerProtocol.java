@@ -4,8 +4,6 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -24,7 +22,9 @@ import org.leavesmc.leaves.protocol.core.ProtocolHandler;
 import org.leavesmc.leaves.protocol.core.ProtocolUtils;
 import org.slf4j.Logger;
 
-import java.util.*;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @LeavesProtocol.Register(namespace = "carpet")
@@ -38,9 +38,11 @@ public class CarpetServerProtocol implements LeavesProtocol {
     private static final String HELLO = "420";
     private static final int MAX_CLIENT_COMMAND_LENGTH = 16_384;
     private static final int MAX_CLIENT_COMMAND_ID_LENGTH = 1_024;
-    private static final int MAX_CLIENT_COMMAND_RESPONSE_LINES = 12;
-    private static final int MAX_CLIENT_COMMAND_RESPONSE_LINE_CODE_POINTS = 512;
-    private static final Set<UUID> activePlayers = ConcurrentHashMap.newKeySet();
+
+    private record ClientSession(ServerPlayer player, String version) {
+    }
+
+    private static final Map<UUID, ClientSession> clients = new ConcurrentHashMap<>();
     private static boolean batchingRules = false;
     private static boolean rulesDirty = false;
 
@@ -63,19 +65,19 @@ public class CarpetServerProtocol implements LeavesProtocol {
             String carpetVersion = payload.nbt.getString(HELLO).orElse("Unknown");
             player.getBukkitEntity().getScheduler().execute(MinecraftInternalPlugin.INSTANCE, () -> {
                 ServerPlayer onlinePlayer = MinecraftServer.getServer().getPlayerList().getPlayer(playerId);
-                if (onlinePlayer == null) {
+                if (onlinePlayer != player || player.hasDisconnected()) {
                     return;
                 }
 
                 LOGGER.info("Player {} joined with carpet {}", onlinePlayer.getScoreboardName(), carpetVersion);
+                clients.put(playerId, new ClientSession(player, carpetVersion));
                 sendServerData(onlinePlayer);
-                activePlayers.add(playerId);
             }, null, 1L);
             return;
         }
 
         CompoundTag clientCommand = payload.nbt.getCompound("clientCommand").orElse(null);
-        if (clientCommand == null || !activePlayers.contains(player.getUUID())) {
+        if (clientCommand == null || !hasClient(player)) {
             return;
         }
 
@@ -95,97 +97,67 @@ public class CarpetServerProtocol implements LeavesProtocol {
         UUID playerId = player.getUUID();
         player.getBukkitEntity().getScheduler().execute(MinecraftInternalPlugin.INSTANCE, () -> {
             ServerPlayer onlinePlayer = MinecraftServer.getServer().getPlayerList().getPlayer(playerId);
-            if (onlinePlayer == null || !activePlayers.contains(playerId)) {
+            if (onlinePlayer != player || player.hasDisconnected() || !hasClient(player)) {
                 return;
             }
 
-            List<Component> output = new ArrayList<>();
-            Component[] error = {null};
-            int[] returnValue = {0};
             MinecraftServer server = onlinePlayer.level().getServer();
-            if (server == null) {
-                error[0] = Component.literal("No Server");
-            } else {
-                try {
-                    CommandSource outputSink = new CommandSource() {
-                        @Override
-                        public void sendSystemMessage(Component message) {
-                            output.add(message);
-                        }
+            var actual = fun.bm.lophine.carpet.CarpetClientCommandResult.execute(commandId, output -> {
+                if (server == null) throw new IllegalStateException("No Server");
+                CommandSource outputSink = new CommandSource() {
+                    @Override
+                    public void sendSystemMessage(Component message) {
+                        output.message(message);
+                    }
 
-                        @Override
-                        public boolean acceptsSuccess() {
-                            return true;
-                        }
+                    @Override
+                    public boolean acceptsSuccess() {
+                        return true;
+                    }
 
-                        @Override
-                        public boolean acceptsFailure() {
-                            return true;
-                        }
+                    @Override
+                    public boolean acceptsFailure() {
+                        return true;
+                    }
 
-                        @Override
-                        public boolean shouldInformAdmins() {
-                            return false;
-                        }
+                    @Override
+                    public boolean shouldInformAdmins() {
+                        return false;
+                    }
 
-                        @Override
-                        public org.bukkit.command.CommandSender getBukkitSender(CommandSourceStack stack) {
-                            return onlinePlayer.getBukkitEntity();
-                        }
-                    };
-                    PermissionSet permissions = server.getProfilePermissions(onlinePlayer.nameAndId());
-                    ServerLevel level = onlinePlayer.level() instanceof ServerLevel serverLevel ? serverLevel : null;
-                    CommandSourceStack commandSource = new CommandSourceStack(
-                            outputSink,
-                            onlinePlayer.position(),
-                            onlinePlayer.getRotationVector(),
-                            level,
-                            permissions,
-                            server,
-                            onlinePlayer
-                    ).withCallback((success, resultValue) -> returnValue[0] = resultValue);
-                    server.getCommands().performPrefixedCommand(commandSource, command);
-                } catch (RuntimeException exception) {
-                    error[0] = Component.literal(exception.getMessage() == null
-                            ? "Command failed"
-                            : exception.getMessage());
-                }
-            }
-
-            CompoundTag result = new CompoundTag();
-            result.putString("id", commandId);
-            if (error[0] != null) {
-                result.putString("error", limitCodePoints(error[0].getString(), MAX_CLIENT_COMMAND_RESPONSE_LINE_CODE_POINTS));
-            }
-            result.putInt("return", returnValue[0]);
-            if (!output.isEmpty()) {
-                ListTag outputTag = new ListTag();
-                for (int i = 0; i < Math.min(output.size(), MAX_CLIENT_COMMAND_RESPONSE_LINES); i++) {
-                    Component line = output.get(i);
-                    outputTag.add(StringTag.valueOf(limitCodePoints(
-                            line.getString(), MAX_CLIENT_COMMAND_RESPONSE_LINE_CODE_POINTS
-                    )));
-                }
-                result.put("output", outputTag);
-            }
-
-            CompoundTag response = new CompoundTag();
-            response.put("clientCommand", result);
-            ProtocolUtils.sendPayloadPacket(onlinePlayer, new CarpetPayload(response));
+                    @Override
+                    public org.bukkit.command.CommandSender getBukkitSender(CommandSourceStack stack) {
+                        return onlinePlayer.getBukkitEntity();
+                    }
+                };
+                PermissionSet permissions = server.getProfilePermissions(onlinePlayer.nameAndId());
+                ServerLevel level = onlinePlayer.level() instanceof ServerLevel serverLevel ? serverLevel : null;
+                CommandSourceStack commandSource = new CommandSourceStack(
+                        outputSink,
+                        onlinePlayer.position(),
+                        onlinePlayer.getRotationVector(),
+                        level,
+                        permissions,
+                        server,
+                        onlinePlayer
+                ).withCallback(output::returned);
+                server.getCommands().performPrefixedCommand(commandSource, command);
+            });
+            fun.bm.lophine.carpet.AmsNativeCommandEffects.then(actual, result ->
+                    fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(player, () -> {
+                        if (player.hasDisconnected() || player.isRemoved() || !hasClient(player)) return null;
+                        CompoundTag response = new CompoundTag();
+                        response.put("clientCommand", result);
+                        fun.bm.lophine.carpet.AmsNativeCommandEffects.packet(player,
+                                new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(new CarpetPayload(response)));
+                        return (Void) null;
+                    }));
         }, null, 1L);
-    }
-
-    private static String limitCodePoints(String value, int maxCodePoints) {
-        int codePointCount = value.codePointCount(0, value.length());
-        if (codePointCount <= maxCodePoints) {
-            return value;
-        }
-        return value.substring(0, value.offsetByCodePoints(0, maxCodePoints));
     }
 
     @ProtocolHandler.PlayerLeave
     public static void onPlayerLeave(ServerPlayer player) {
-        activePlayers.remove(player.getUUID());
+        clients.computeIfPresent(player.getUUID(), (id, session) -> session.player() == player ? null : session);
     }
 
     @Override
@@ -197,21 +169,33 @@ public class CarpetServerProtocol implements LeavesProtocol {
         sendServerData(player.getUUID());
     }
 
-    private static void sendServerData(UUID playerId) {
-        ServerPlayer player = MinecraftServer.getServer().getPlayerList().getPlayer(playerId);
-        if (player == null) {
-            activePlayers.remove(playerId);
-            return;
-        }
+    private static void broadcastServerData(UUID playerId) {
+        if (!fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.superSecretSetting) sendServerData(playerId);
+    }
 
-        CompoundTag data = new CompoundTag();
-        CarpetRules.write(data);
-        player.getBukkitEntity().getScheduler().execute(MinecraftInternalPlugin.INSTANCE, () -> {
-            ServerPlayer onlinePlayer = MinecraftServer.getServer().getPlayerList().getPlayer(playerId);
-            if (onlinePlayer != null) {
-                ProtocolUtils.sendPayloadPacket(onlinePlayer, new CarpetPayload(data));
+    private static void sendServerData(UUID playerId) {
+        var server = MinecraftServer.getServer();
+        if (server == null) return;
+        ClientSession session = clients.get(playerId);
+        if (session == null) return;
+        fun.bm.lophine.carpet.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.AmsNativeCommandEffects.global(server, () -> {
+            ServerPlayer player = server.getPlayerList().getPlayer(playerId);
+            if (player != session.player()) {
+                clients.remove(playerId, session);
+                return null;
             }
-        }, null, 1L);
+            CompoundTag data = new CompoundTag();
+            CarpetRules.write(data);
+            return new ServerData(player, data);
+        }), snapshot -> snapshot == null ? java.util.concurrent.CompletableFuture.completedFuture(null)
+                : fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(snapshot.player(), () -> {
+            if (clients.get(playerId) == session && !snapshot.player().isRemoved() && !snapshot.player().hasDisconnected())
+                fun.bm.lophine.carpet.AmsNativeCommandEffects.packet(snapshot.player(), new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(new CarpetPayload(snapshot.data())));
+            return (Void) null;
+        }));
+    }
+
+    private record ServerData(ServerPlayer player, CompoundTag data) {
     }
 
     public static class CarpetRules {
@@ -226,7 +210,7 @@ public class CarpetServerProtocol implements LeavesProtocol {
         public static void endBatch() {
             batchingRules = false;
             if (rulesDirty) {
-                activePlayers.forEach(CarpetServerProtocol::sendServerData);
+                clients.keySet().forEach(CarpetServerProtocol::broadcastServerData);
                 rulesDirty = false;
             }
         }
@@ -239,7 +223,7 @@ public class CarpetServerProtocol implements LeavesProtocol {
         }
 
         public static void register(CarpetRule rule) {
-            rules.put(rule.name, rule);
+            rules.put(rule.identifier + ":" + rule.name, rule);
             markDirty();
         }
 
@@ -256,7 +240,7 @@ public class CarpetServerProtocol implements LeavesProtocol {
             if (batchingRules) {
                 rulesDirty = true;
             } else {
-                activePlayers.forEach(CarpetServerProtocol::sendServerData);
+                clients.keySet().forEach(CarpetServerProtocol::broadcastServerData);
             }
         }
     }
@@ -289,6 +273,18 @@ public class CarpetServerProtocol implements LeavesProtocol {
 
         @NotNull
         @Contract("_, _, _ -> new")
+        public static CarpetRule of(String identifier, String name, float value) {
+            return new CarpetRule(identifier, name, Float.toString(value));
+        }
+
+        @NotNull
+        @Contract("_, _, _ -> new")
+        public static CarpetRule of(String identifier, String name, double value) {
+            return new CarpetRule(identifier, name, Double.toString(value));
+        }
+
+        @NotNull
+        @Contract("_, _, _ -> new")
         public static CarpetRule of(String identifier, String name, String value) {
             return new CarpetRule(identifier, name, value);
         }
@@ -316,5 +312,33 @@ public class CarpetServerProtocol implements LeavesProtocol {
         private static final StreamCodec<FriendlyByteBuf, CarpetPayload> CODEC = StreamCodec.composite(
                 ByteBufCodecs.COMPOUND_TAG, CarpetPayload::nbt, CarpetPayload::new
         );
+    }
+
+    // Lophine - original Carpet server payload endpoints
+    public static boolean isValidCarpetPlayer(ServerPlayer player) {
+        return !fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.superSecretSetting && hasClient(player);
+    }
+
+    private static boolean hasClient(ServerPlayer player) {
+        ClientSession session = clients.get(player.getUUID());
+        return session != null && session.player() == player;
+    }
+
+    public static String getPlayerStatus(ServerPlayer player) {
+        ClientSession session = clients.get(player.getUUID());
+        return !fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.superSecretSetting && session != null && session.player() == player
+                ? "carpet " + session.version() : "vanilla";
+    }
+
+    public static void sendCustomCommand(ServerPlayer player, String key, net.minecraft.nbt.Tag tag) {
+        if (!isValidCarpetPlayer(player)) return;
+        CompoundTag payload = new CompoundTag();
+        payload.put(key, tag.copy());
+        Runnable delivery = () -> {
+            if (isValidCarpetPlayer(player) && !player.isRemoved())
+                ProtocolUtils.sendPayloadPacket(player, new CarpetPayload(payload));
+        };
+        if (ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(player)) delivery.run();
+        else player.getBukkitEntity().taskScheduler.schedule(owned -> delivery.run(), null, 1L);
     }
 }
