@@ -5,7 +5,7 @@ Subject: [PATCH] Fix creative player item pick
 
 
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index 7dd431fb4b09ca6b8f9b98c2336d889a61ea89b8..f5e051095d0dbb0be7fa06c1817e2ff0567dba2e 100644
+index b9b35b714e26054e785594927b4a46d66db8cecb..e8264bb8e389d0ad07463d42994f77d1642c5faf 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
 @@ -413,7 +413,7 @@ public class ItemEntity extends Entity implements TraceableEntity {

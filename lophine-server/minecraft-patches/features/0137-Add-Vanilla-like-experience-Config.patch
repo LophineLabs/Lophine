@@ -34,7 +34,7 @@ index f5c5e0800998b099b9eef33f3a5b7a6d8a008f8f..f494ab99b5131d487c69677847baf38f
      }
  
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 8f726449972fc446d2c428b6f84ac7d49bc5e5b1..348bb4e1e9a110c2efdadc415d886d2fab087f49 100644
+index f2bd4e3bc4ac492694a663cbf87357c407cb1ebf..e4a180aac771c43c0bfb980af8813e2c5f32e668 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -4001,7 +4001,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -47,7 +47,7 @@ index 8f726449972fc446d2c428b6f84ac7d49bc5e5b1..348bb4e1e9a110c2efdadc415d886d2f
                  }
  
 diff --git a/net/minecraft/world/entity/item/FallingBlockEntity.java b/net/minecraft/world/entity/item/FallingBlockEntity.java
-index 6a7565204e71fb81531f2822078baf7f6b5e0fce..c4524c711cff6821da52b959d3136f9f5703dc06 100644
+index a830c259baedf90cc4f9d21664d24d838d377cda..3dd7bb9da910effd104c99cfdb574be305b6087b 100644
 --- a/net/minecraft/world/entity/item/FallingBlockEntity.java
 +++ b/net/minecraft/world/entity/item/FallingBlockEntity.java
 @@ -390,7 +390,7 @@ public class FallingBlockEntity extends Entity {
@@ -60,7 +60,7 @@ index 6a7565204e71fb81531f2822078baf7f6b5e0fce..c4524c711cff6821da52b959d3136f9f
      }
  
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index de2af889221f1506ea71646689b5c52d407c420f..a8ddf144a62beb051aca6df1b279189aa921a974 100644
+index 608ca58945245ecaff145c8dc7e6ca9ff9a8773a..e87762ae7fee4ca422fd6778b0cee5aa1c232993 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
 @@ -254,7 +254,7 @@ public class ItemEntity extends Entity implements TraceableEntity, ChangePublish
@@ -73,7 +73,7 @@ index de2af889221f1506ea71646689b5c52d407c420f..a8ddf144a62beb051aca6df1b279189a
                      // Paper start - Fix items merging through walls
                      if (this.level().paperConfig().fixes.fixItemsMergingThroughWalls) {
 diff --git a/net/minecraft/world/entity/item/PrimedTnt.java b/net/minecraft/world/entity/item/PrimedTnt.java
-index 0da06f339fa8ffe7e2b64326727025967256df28..bc1edf19b6afc42588610dae21835040b6248ac6 100644
+index 23ff6564b66ae3944890f5bd3d7eaaddc4c0c931..5058e47482efe70914ef91f3ddef6af85ab09047 100644
 --- a/net/minecraft/world/entity/item/PrimedTnt.java
 +++ b/net/minecraft/world/entity/item/PrimedTnt.java
 @@ -111,7 +111,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {

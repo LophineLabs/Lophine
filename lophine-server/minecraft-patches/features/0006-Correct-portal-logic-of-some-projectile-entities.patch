@@ -5,7 +5,7 @@ Subject: [PATCH] Correct portal logic of some projectile entities
 
 
 diff --git a/net/minecraft/world/entity/projectile/ShulkerBullet.java b/net/minecraft/world/entity/projectile/ShulkerBullet.java
-index 54caa09ef2a5c1a5cd254c13873058d54f990308..2c46a3983d8b9f50972101a87dcca24a64ab9a92 100644
+index 1b80fa0239ec0c23515639f2b58905eade80412d..6b76ec7868f7ee9676cb4c514185681ae694b13b 100644
 --- a/net/minecraft/world/entity/projectile/ShulkerBullet.java
 +++ b/net/minecraft/world/entity/projectile/ShulkerBullet.java
 @@ -229,7 +229,7 @@ public class ShulkerBullet extends Projectile {
@@ -18,7 +18,7 @@ index 54caa09ef2a5c1a5cd254c13873058d54f990308..2c46a3983d8b9f50972101a87dcca24a
  
          if (hitResult != null && this.isAlive() && hitResult.getType() != HitResult.Type.MISS) {
 diff --git a/net/minecraft/world/entity/projectile/arrow/AbstractArrow.java b/net/minecraft/world/entity/projectile/arrow/AbstractArrow.java
-index 8bf7b67fadbb28e725619a1ec1f4797ccdd2e803..2fb7fb789c20ffc31b36aef98728f8048c722ccd 100644
+index 89a67fa2d9e9939f77b2311f53624c0fb2f2db93..35aee6c15baeb648de7b8dc6e559f1a26636b21b 100644
 --- a/net/minecraft/world/entity/projectile/arrow/AbstractArrow.java
 +++ b/net/minecraft/world/entity/projectile/arrow/AbstractArrow.java
 @@ -274,7 +274,7 @@ public abstract class AbstractArrow extends Projectile {

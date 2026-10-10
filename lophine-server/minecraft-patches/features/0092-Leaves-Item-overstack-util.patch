@@ -124,7 +124,7 @@ index 073a3bbf1b1db7eac83cf35412543f370fa089ee..0f412551685a8ea76be3b389e0782e57
          if (diff > 0) {
              targetStack.grow(diff);
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index ce1721546ec22dd1044d9367456edb8b501f68ad..de2af889221f1506ea71646689b5c52d407c420f 100644
+index 994fb499b4dc47be3a872b15b6c1f21033be5634..608ca58945245ecaff145c8dc7e6ca9ff9a8773a 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
 @@ -275,10 +275,15 @@ public class ItemEntity extends Entity implements TraceableEntity, ChangePublish

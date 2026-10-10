@@ -29,7 +29,7 @@ index 58830b890ac65bbf17dd56da74dae0574b3eee6a..d6b0f75196dbb167bfeb631100b38158
                          // If the event is cancelled we move the player back to their old location.
                          if (event.isCancelled()) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index af780631666ad3903964842ed9cc91ec731dfee3..4c19a6f3d4f81722cea3b0b8e617b724454f0650 100644
+index bdb12df4431a6154c008ec41c1172ac2b7739d2b..2c1e2d694d8e39b0179f08cb700d99e5dba5ea9d 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -4595,12 +4595,25 @@ public abstract class Entity
@@ -59,7 +59,7 @@ index af780631666ad3903964842ed9cc91ec731dfee3..4c19a6f3d4f81722cea3b0b8e617b724
              return false;
          }
 diff --git a/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java b/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java
-index 12a3c8f1d325e545b52cf4d45536f3fbbf1a2df0..1a2a3ee823721dc3cb7855d0773f77ecba441d61 100644
+index 6c9ec44a46b6f40a2b8b008cc50c0cafe5e909e6..9260aa8a6ce61819c6c4eeaef5624344e72de5e0 100644
 --- a/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java
 +++ b/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java
 @@ -284,7 +284,9 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
@@ -73,7 +73,7 @@ index 12a3c8f1d325e545b52cf4d45536f3fbbf1a2df0..1a2a3ee823721dc3cb7855d0773f77ec
          this.lastLocation = vehicle.getLocation();
          // CraftBukkit end
 diff --git a/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java b/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java
-index 3667d28bbc1983d43e01dd33bf7c47e220c1d701..a0ec7349253973af9158a4f6a3f05e4675f777c0 100644
+index db16f4802235646d3e20eebf417951391f3193e8..39d162c6085ed3114795b34c807bb67d468f3aaf 100644
 --- a/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java
 +++ b/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java
 @@ -319,7 +319,9 @@ public abstract class AbstractMinecart extends VehicleEntity {

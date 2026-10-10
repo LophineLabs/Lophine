@@ -583,7 +583,7 @@ index d53257b2f05c9a5acb38840cb98ac83d0489354b..219d4071619168f3442d0beeee707954
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 63620b4370479ebf293cb3db1ea6cfd93d34faa7..54a8cc77316701eba6f90a731cc472c924e5dccd 100644
+index 35cba9ca335f0a9e51b31e433241384c6d4f0fd1..76b6c2bf5052ad20b770d573161bb3cf0a1a17f3 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1294,7 +1294,7 @@ public abstract class Entity
@@ -614,7 +614,7 @@ index 63620b4370479ebf293cb3db1ea6cfd93d34faa7..54a8cc77316701eba6f90a731cc472c9
              case SERVER_AND_CLIENT -> true;
              case AUTHORITATIVE_SIDE -> this.isLocalInstanceAuthoritative();
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index d91287bc8a4a733fb66eb278fcdb5ce4b9922eda..021d6ff756ce2d16557106c77ffc3e32b623ddcf 100644
+index b3418396443563a822fddd521a50d1969334613d..aeaffc5ecef15af255c067e8fecdb194aa381f90 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -2009,7 +2009,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -722,7 +722,7 @@ index d747a8c5d30bca18e235a3fc13aecac356663620..a7c5b1f7629b0b120458bcee738c3c81
              boolean cancelled = false;
              org.bukkit.entity.Player player = (org.bukkit.entity.Player) entity.getBukkitEntity();
 diff --git a/net/minecraft/world/entity/projectile/FishingHook.java b/net/minecraft/world/entity/projectile/FishingHook.java
-index 8c7ce4526196fe0e6e53b748e29c063574a408f8..1fe6f5229d446fd04e66d16df923d99dacd19f02 100644
+index 20deed9e67bd4b7e0ed2c5f8fafe58e2ee677844..3c328afbe635dee08a49f6e0554f83e1124ad395 100644
 --- a/net/minecraft/world/entity/projectile/FishingHook.java
 +++ b/net/minecraft/world/entity/projectile/FishingHook.java
 @@ -60,7 +60,7 @@ public class FishingHook extends Projectile {
@@ -735,7 +735,7 @@ index 8c7ce4526196fe0e6e53b748e29c063574a408f8..1fe6f5229d446fd04e66d16df923d99d
      public int timeUntilHooked;
      public float fishAngle;
 diff --git a/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java b/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java
-index 1a2a3ee823721dc3cb7855d0773f77ecba441d61..8be82f8b3632fa0a0f7fe44bc28ad03ad64279bc 100644
+index 9260aa8a6ce61819c6c4eeaef5624344e72de5e0..94c603a7229ee6ecfc2da8eb522dc65c5630e38d 100644
 --- a/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java
 +++ b/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java
 @@ -271,6 +271,11 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {

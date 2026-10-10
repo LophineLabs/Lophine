@@ -8,7 +8,7 @@ As a part of : Leaves (https://github.com/LeavesMC/Leaves/blob/da12a58e8d3bd3cd1
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/net/minecraft/world/entity/ExperienceOrb.java b/net/minecraft/world/entity/ExperienceOrb.java
-index 674ef836e7d996a5810e653cd1e00bb295308547..e679e863eacdcec40dfa9d91e8ee051610d64601 100644
+index 3a594416e711fc6fdbf0ac7c3484a9830324d4d8..f6b0505f3c53196967dcf264c5e929e346090188 100644
 --- a/net/minecraft/world/entity/ExperienceOrb.java
 +++ b/net/minecraft/world/entity/ExperienceOrb.java
 @@ -202,7 +202,7 @@ public class ExperienceOrb extends Entity {
