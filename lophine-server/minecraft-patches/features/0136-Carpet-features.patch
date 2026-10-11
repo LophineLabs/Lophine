@@ -12216,7 +12216,7 @@ index 54e7c0e1d3bf2d41c04d4661f48ac96bda7c1113..91b6a9a569da1a0018b86ccc6a386473
      protected Vec3 getPassengerAttachmentPoint(final Entity passenger, final EntityDimensions dimensions, final float scale) {
          return new Vec3(0.0, dimensions.height() - 0.015625 * this.getSize() * scale, 0.0);
 diff --git a/net/minecraft/world/entity/monster/cubemob/SulfurCube.java b/net/minecraft/world/entity/monster/cubemob/SulfurCube.java
-index 9feebec85cec55e8770228e3f513ad07664836b4..fbcb5ae1cda70ce8a17b101ec6b44b061918dc1c 100644
+index 2626154e60a4e8cf107ea1bb4f4e4c98ca0866c4..03d45bb0034f723bcd8cee1aa1825b969f43a994 100644
 --- a/net/minecraft/world/entity/monster/cubemob/SulfurCube.java
 +++ b/net/minecraft/world/entity/monster/cubemob/SulfurCube.java
 @@ -283,6 +283,11 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
@@ -12231,7 +12231,7 @@ index 9feebec85cec55e8770228e3f513ad07664836b4..fbcb5ae1cda70ce8a17b101ec6b44b06
          this.tickFuse();
          this.primeWhenOnPoweredPosition();
          super.tick();
-@@ -295,55 +300,31 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
+@@ -295,56 +300,33 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
  
          if (!this.explosionData.isEmpty()) {
              if (this.fuse == 0) {
@@ -12244,7 +12244,13 @@ index 9feebec85cec55e8770228e3f513ad07664836b4..fbcb5ae1cda70ce8a17b101ec6b44b06
 -                            this.dropLeash();
 -                        } else {
 -                            this.removeLeash();
--                        }
++                final boolean[] primed={false};
++                carpet.script.external.ScarpetExplosionContinuations.run(this,()->{
++                    Runnable afterEvent=()->{
++                        if(this.isLeashed()){
++                            var event=new org.bukkit.event.entity.EntityUnleashEvent(this.getBukkitEntity(),org.bukkit.event.entity.EntityUnleashEvent.UnleashReason.LEASHED_GONE,true);event.callEvent();
++                            if(event.isDropLeash())this.dropLeash();else this.removeLeash();
+                         }
 -                    }
 -                    this.dead = true;
 -                };
@@ -12259,15 +12265,17 @@ index 9feebec85cec55e8770228e3f513ad07664836b4..fbcb5ae1cda70ce8a17b101ec6b44b06
 -                        if (primeEvent.isCancelled()) {
 -                            this.setFuse(PrimedTnt.NO_FUSE);
 -                            this.entityData.set(MAX_FUSE, PrimedTnt.NO_FUSE);
--                            return;
-+                final boolean[] primed={false};
-+                carpet.script.external.ScarpetExplosionContinuations.run(this,()->{
-+                    Runnable afterEvent=()->{
-+                        if(this.isLeashed()){
-+                            var event=new org.bukkit.event.entity.EntityUnleashEvent(this.getBukkitEntity(),org.bukkit.event.entity.EntityUnleashEvent.UnleashReason.LEASHED_GONE,true);event.callEvent();
-+                            if(event.isDropLeash())this.dropLeash();else this.removeLeash();
+-                            this.setPermanentlyInvulnerable(false);
++                        this.dead=true;primed[0]=true;
++                    };
++                    if(this.level() instanceof ServerLevel level){
++                        if(level.getGameRules().get(GameRules.TNT_EXPLODES)){
++                            var mode=level.getGameRules().get(GameRules.MOB_GRIEFING)?Level.ExplosionInteraction.TNT:Level.ExplosionInteraction.NONE;
++                            var event=org.bukkit.craftbukkit.event.CraftEventFactory.callExplosionPrimeEvent(this,this.explosionData.get().power(),this.explosionData.get().causesFire());
++                            if(event.isCancelled()){this.setFuse(PrimedTnt.NO_FUSE);this.entityData.set(MAX_FUSE,PrimedTnt.NO_FUSE);this.setPermanentlyInvulnerable(false);
+                             return;
                          }
--                        afterEvent.run();
+                         afterEvent.run();
 -                        // Paper end - Fire events for SulfurCube explosions
 -                        level.explode(
 -                            this,
@@ -12290,14 +12298,6 @@ index 9feebec85cec55e8770228e3f513ad07664836b4..fbcb5ae1cda70ce8a17b101ec6b44b06
 -                }
 -
 -                this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.EXPLODE); // CraftBukkit - add Bukkit remove cause
-+                        this.dead=true;primed[0]=true;
-+                    };
-+                    if(this.level() instanceof ServerLevel level){
-+                        if(level.getGameRules().get(GameRules.TNT_EXPLODES)){
-+                            var mode=level.getGameRules().get(GameRules.MOB_GRIEFING)?Level.ExplosionInteraction.TNT:Level.ExplosionInteraction.NONE;
-+                            var event=org.bukkit.craftbukkit.event.CraftEventFactory.callExplosionPrimeEvent(this,this.explosionData.get().power(),this.explosionData.get().causesFire());
-+                            if(event.isCancelled()){this.setFuse(PrimedTnt.NO_FUSE);this.entityData.set(MAX_FUSE,PrimedTnt.NO_FUSE);return;}
-+                            afterEvent.run();
 +                            level.explode(this,Explosion.getDefaultDamageSource(level,this),this.getPortalCooldown()>0?PrimedTnt.USED_PORTAL_DAMAGE_CALCULATOR:null,
 +                                this.getX(),this.getY(0.0625),this.getZ(),event.getRadius(),event.getFire(),mode);
 +                        }else afterEvent.run();
@@ -12309,8 +12309,8 @@ index 9feebec85cec55e8770228e3f513ad07664836b4..fbcb5ae1cda70ce8a17b101ec6b44b06
 +                    },()->this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.EXPLODE));
 +                });
              }
-         }
-     }
+         // Paper start - properly reset fuse if explosion data was unset by game
+         } else if (this.tickCount > 1 && this.isPrimed()) {
 diff --git a/net/minecraft/world/entity/monster/hoglin/Hoglin.java b/net/minecraft/world/entity/monster/hoglin/Hoglin.java
 index 3502d3de38f088c62344e189ea9e68dfe58aa28a..19cbbc6bc6d731492e8146b337d90a9d86a2add0 100644
 --- a/net/minecraft/world/entity/monster/hoglin/Hoglin.java
@@ -22201,7 +22201,7 @@ index 0a4c99969f4ed14c8852802df80f98eabf07cc38..ae115be56b4b48acc0273cf75e0bd957
 +    }
  }
 diff --git a/net/minecraft/world/level/chunk/LevelChunkSection.java b/net/minecraft/world/level/chunk/LevelChunkSection.java
-index e4a99cf554b2cb0b5c39c7a5cb54bfbb77e320ed..f0d5714b4e211870de65cb8d210b51bdf1b6d1a0 100644
+index f2747c5b5da0a6ea5adc70b46541c6daf0944854..defd2532a480991669bbc0dbc954950fd65463d4 100644
 --- a/net/minecraft/world/level/chunk/LevelChunkSection.java
 +++ b/net/minecraft/world/level/chunk/LevelChunkSection.java
 @@ -13,6 +13,7 @@ public class LevelChunkSection implements ca.spottedleaf.moonrise.patches.block_
