@@ -139,10 +139,10 @@ index 47a76b9c4029a58421df3e4096f36f62d18df7e4..e64ce9e27c18166b887acac8f1f8c136
              }
          } else if (emitter instanceof CraftEntity craftEntity) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index d4ac14014f21f772ff00232e6b066db9e42932d4..115608e5c4dc520d96c283e1b4a445e4d5506c95 100644
+index d5bbdc04153f9a977165c46f09f5fff8806ad105..7c61275444ddf70fe3b119f3a4db8eea90776a70 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -133,6 +133,8 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+@@ -135,6 +135,8 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
              return new CraftHumanEntity(server, (net.minecraft.world.entity.player.Player) entity);
          }
  

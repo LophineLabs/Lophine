@@ -5,7 +5,7 @@ Subject: [PATCH] Fix entity portal-teleport speed
 
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 6f0d42eb5da9811e317e4b27c5fa800a7a03b639..d10ac9574c481088466585adf1cec4eff6e20423 100644
+index 8de586793aad692d80946f3c4d05399952333807..0e31f833e0b7d1101b1a79f04c39f05f4d26ab17 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -1499,7 +1499,42 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -61,7 +61,7 @@ index 6f0d42eb5da9811e317e4b27c5fa800a7a03b639..d10ac9574c481088466585adf1cec4ef
          } else {entity.inactiveTick();} // Paper - EAR 2
          profiler.pop();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index a01164873919280ca0ce3977f9639d7d106d8f7e..bdb12df4431a6154c008ec41c1172ac2b7739d2b 100644
+index 4861c3778c51e6340aed212269f52167e8fbebe0..e00dce9d24d22cd76f82e22335c45ffd8e8a7609 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -393,6 +393,8 @@ public abstract class Entity
@@ -89,7 +89,7 @@ index a01164873919280ca0ce3977f9639d7d106d8f7e..bdb12df4431a6154c008ec41c1172ac2
                  }
              }
          }
-@@ -4690,6 +4694,7 @@ public abstract class Entity
+@@ -4686,6 +4690,7 @@ public abstract class Entity
  
      public void postChangeDimension() {
          this.resetStoredPositions();

@@ -315,7 +315,7 @@ index ef8c1e81327dd3dd3535bb86920f2522f00b0b35..8e7029b560a99003858f09319f89a04f
              }
          }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 88d67af5fa4e575fd9c7caf3f333b10b96272a49..652997ce7823d8b44245c8f8a66a8e74e69eb502 100644
+index 49f709ef9efdf71e8e518229892d95787a4657c2..4b54ddda8d13e7be175e3129911474056acc25f7 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -245,6 +245,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -359,7 +359,7 @@ index 88d67af5fa4e575fd9c7caf3f333b10b96272a49..652997ce7823d8b44245c8f8a66a8e74
                  if (player.isReceivingWaypoints()) {
                      ServerLevel.this.getWaypointManager().addPlayer(player);
                  }
-@@ -3421,6 +3434,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3420,6 +3433,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              ServerLevel.this.getChunkSource().removeEntity(entity);
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.remove(player);
@@ -372,7 +372,7 @@ index 88d67af5fa4e575fd9c7caf3f333b10b96272a49..652997ce7823d8b44245c8f8a66a8e74
                  ServerLevel.this.updateSleepingPlayerList();
              }
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 3e1e66da023813c288ca453faa38d8753086d1df..1401fa771911bc9b68f7e629b0620ead61fbf7bb 100644
+index aba5e64d25aceedc7d95b6e25405eb0c6c84e732..a1aa38bd39b30c1e68cd995bc92c2cb4edf0d547 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -236,7 +236,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -405,7 +405,7 @@ index 3e1e66da023813c288ca453faa38d8753086d1df..1401fa771911bc9b68f7e629b0620ead
          AABB aabb = new AABB(this.blockPosition()).inflate(32.0, 10.0, 32.0);
          this.level()
              .getEntitiesOfClass(Mob.class, aabb, EntitySelector.NO_SPECTATORS)
-@@ -2201,6 +2201,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2202,6 +2202,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.lastSentHealth = -1.0F;
          this.lastSentFood = -1;
          this.teleportSpectators(transition, oldLevel);
@@ -496,7 +496,7 @@ index fb2c627a74e37f1270274d93d87f1262547dfd59..07e755ecbf55a18b63407483f91be88b
  
      // Paper start - utility method for common conversion back to the game profile
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index d53257b2f05c9a5acb38840cb98ac83d0489354b..219d4071619168f3442d0beeee70795416eb8b94 100644
+index ff8938fc79be73849e3713c3298eeb45986360bb..22d38d5f78fb8c279b5e7894bbc61dba7c28e343 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -323,6 +323,19 @@ public abstract class PlayerList {
@@ -519,7 +519,7 @@ index d53257b2f05c9a5acb38840cb98ac83d0489354b..219d4071619168f3442d0beeee707954
          final net.kyori.adventure.text.Component jm = playerJoinEvent.joinMessage();
  
          if (jm != null && !jm.equals(net.kyori.adventure.text.Component.empty())) { // Paper - Adventure
-@@ -800,6 +813,11 @@ public abstract class PlayerList {
+@@ -801,6 +814,11 @@ public abstract class PlayerList {
              respawnReason
          ).callEvent();
          // Paper end
@@ -531,7 +531,7 @@ index d53257b2f05c9a5acb38840cb98ac83d0489354b..219d4071619168f3442d0beeee707954
  
          return player;
      }
-@@ -902,11 +920,16 @@ public abstract class PlayerList {
+@@ -903,11 +921,16 @@ public abstract class PlayerList {
  
      public String[] getPlayerNamesArray() {
          List<ServerPlayer> players = new java.util.ArrayList<>(this.players); // Folia - region threading
@@ -549,7 +549,7 @@ index d53257b2f05c9a5acb38840cb98ac83d0489354b..219d4071619168f3442d0beeee707954
  
          return names;
      }
-@@ -1023,8 +1046,15 @@ public abstract class PlayerList {
+@@ -1024,8 +1047,15 @@ public abstract class PlayerList {
          return this.ops.contains(nameAndId) || this.server.isSingleplayerOwner(nameAndId) && this.server.getWorldData().isAllowCommands();
      }
  
@@ -567,7 +567,7 @@ index d53257b2f05c9a5acb38840cb98ac83d0489354b..219d4071619168f3442d0beeee707954
      }
  
      public void broadcast(
-@@ -1370,7 +1400,13 @@ public abstract class PlayerList {
+@@ -1371,7 +1401,13 @@ public abstract class PlayerList {
      }
  
      public @Nullable ServerPlayer getPlayer(final UUID uuid) {
@@ -583,7 +583,7 @@ index d53257b2f05c9a5acb38840cb98ac83d0489354b..219d4071619168f3442d0beeee707954
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 35cba9ca335f0a9e51b31e433241384c6d4f0fd1..76b6c2bf5052ad20b770d573161bb3cf0a1a17f3 100644
+index 471b1a107f5ec138d717f8dd8cc8cee2e21ecd72..509532f8a3b151c16db2b758ca7b3242449603d1 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1294,7 +1294,7 @@ public abstract class Entity
@@ -604,7 +604,7 @@ index 35cba9ca335f0a9e51b31e433241384c6d4f0fd1..76b6c2bf5052ad20b770d573161bb3cf
          // Paper start - optimise collisions
          final boolean xZero = movement.x == 0.0;
          final boolean yZero = movement.y == 0.0;
-@@ -6031,7 +6031,7 @@ public abstract class Entity
+@@ -6027,7 +6027,7 @@ public abstract class Entity
          return MoveSimulationType.AUTHORITATIVE_SIDE;
      }
  
