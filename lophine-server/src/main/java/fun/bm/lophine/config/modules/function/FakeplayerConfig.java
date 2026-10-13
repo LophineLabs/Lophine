@@ -15,7 +15,7 @@ import java.util.List;
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "fakeplayer")
 public class FakeplayerConfig {
     @ConfigInfo(name = "enable")
-    public static boolean enable = true;
+    public static boolean enable = false;
 
     @ConfigInfo(name = "unable-fakeplayer-names")
     public static List<String> unableNames = List.of("player-name");
