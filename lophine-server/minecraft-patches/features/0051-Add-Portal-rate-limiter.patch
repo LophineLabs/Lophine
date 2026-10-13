@@ -106,7 +106,7 @@ index 6c076c3dcb6d6ac7e573a19382609fb8155613fa..178c7b5e0c901ffd3216a15d2b4b455b
          //this.isIteratingOverLevels = false; // Paper - Throw exception on world create while being ticked // Folia - region threading
  
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 02a5da8897169cb91af4a70ab1bba186b9a156ec..c7f47ac14e72ad0b1555484930f33808d23a74f0 100644
+index f2d54d839ec548a09435ecb53c67c472d017ad5e..13c19fa414975823fe388f53dca562a3b017688f 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -1558,8 +1558,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -142,10 +142,10 @@ index 02a5da8897169cb91af4a70ab1bba186b9a156ec..c7f47ac14e72ad0b1555484930f33808
              }
              // Folia end - region threading
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 866aa4eb5ace3d481c689337071bb83798caea90..1caaca32790a1eb5e403095e6143ef17b6393151 100644
+index c62c3c27b9b08c79c73ce25e3a0188f7bc3ea9db..cd17f6bfb7d89b7a915bcbc6b624d549f767763b 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -5078,6 +5078,31 @@ public abstract class Entity
+@@ -5074,6 +5074,31 @@ public abstract class Entity
              return false;
          }
          // Luminol end

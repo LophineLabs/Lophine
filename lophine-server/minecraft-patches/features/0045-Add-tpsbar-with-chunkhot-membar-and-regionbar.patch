@@ -68,7 +68,7 @@ index 59d4742330ca7e0c17ec840a27d1f3dbbcb33116..6c076c3dcb6d6ac7e573a19382609fb8
              this.lastServerStatus = nano;
              this.status = this.buildServerStatus();
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 05c62341b2bb8a78ead6724fdc4f8c8a115140d7..02a5da8897169cb91af4a70ab1bba186b9a156ec 100644
+index f689eb2b4457edd1888a4ba3c347d711963d8c2a..f2d54d839ec548a09435ecb53c67c472d017ad5e 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -1500,6 +1500,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -106,7 +106,7 @@ index 05c62341b2bb8a78ead6724fdc4f8c8a115140d7..02a5da8897169cb91af4a70ab1bba186
      }
  
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 1258e4b0329699f43d251286a44aaaf1dbb76a34..8038a3e3bb1f51d227b2f44c05bf72cd40467115 100644
+index f0f79392cd20f05b5520317833baddc37ef39af9..686affa490bf675859bb03b04cde3ac8f74f8708 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -446,7 +446,9 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -183,10 +183,10 @@ index c5a212e73c2efeb1f440778cb3f1fa6ee8165e63..52f0b0ad01d852f5bd17202eeaccd9a5
 +    // KioCG end
  }
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index da5b9cc6d2f75cada8b58d8e61f62207d53f34a5..0fe65c48b1be8fcd874d48bcff588ca483dee1e0 100644
+index 3a180fb098458580fc08ba68e1454f9bc4757cb3..f32e7ad46735209b1fbf1cfb6814f851da6eeb10 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -6646,4 +6646,6 @@ public abstract class Entity
+@@ -6642,4 +6642,6 @@ public abstract class Entity
          return ((ServerLevel) this.level()).isPositionEntityTicking(this.blockPosition());
      }
      // Paper end

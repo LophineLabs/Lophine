@@ -289,7 +289,7 @@ index 37c9f983ae89c497f44a1b7967d741abf909e0a0..d7fb2505f2a86ca0d81f144624ef2e1a
  
              this.setListData(players);
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 652997ce7823d8b44245c8f8a66a8e74e69eb502..fa9429930803914d5093fb60e95f923e205b69c3 100644
+index 4b54ddda8d13e7be175e3129911474056acc25f7..36100598cd7c861dd2e7d6fe5a46d10755241b30 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -3349,7 +3349,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -301,7 +301,7 @@ index 652997ce7823d8b44245c8f8a66a8e74e69eb502..fa9429930803914d5093fb60e95f923e
                      ServerLevel.this.realPlayers.add(player);
                  }
                  // Leaves end - skip
-@@ -3435,7 +3435,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3434,7 +3434,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.remove(player);
                  // Leaves start - skip
@@ -311,7 +311,7 @@ index 652997ce7823d8b44245c8f8a66a8e74e69eb502..fa9429930803914d5093fb60e95f923e
                  }
                  // Leaves end - skip
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 219d4071619168f3442d0beeee70795416eb8b94..bdf6fbea0f29e3b63b054954fbf635a1de6cac93 100644
+index 22d38d5f78fb8c279b5e7894bbc61dba7c28e343..2b328796a3c31f744b6c5785cdb7a9b11faf338e 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -131,6 +131,7 @@ public abstract class PlayerList {
@@ -528,7 +528,7 @@ index 219d4071619168f3442d0beeee70795416eb8b94..bdf6fbea0f29e3b63b054954fbf635a1
          this.playersByName.remove(player.getScoreboardName().toLowerCase(java.util.Locale.ROOT)); // Spigot
          if (me.earthme.luminol.config.modules.misc.UsernameCheckConfig.allowOldPlayersJoin) this.playedPlayers.remove(player.getGameProfile().name()); // Leaf - Configurable vanilla username check
          this.server.getCustomBossEvents().onPlayerDisconnect(player);
-@@ -919,15 +1084,15 @@ public abstract class PlayerList {
+@@ -920,15 +1085,15 @@ public abstract class PlayerList {
      }
  
      public String[] getPlayerNamesArray() {

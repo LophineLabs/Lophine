@@ -9,10 +9,10 @@ As part of: Leaf (https://github.com/Winds-Studio/Leaf/blob/7f3e240bbe0970683c40
 Licensed under: MIT (https://github.com/Winds-Studio/Leaf/blob/7f3e240bbe0970683c40279a7a65f0fde47503b6/licenses/MIT.txt)
 
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 838a787b2b0d8db0b3297ea3a416809783cf3d7e..399605e560288ba1aa1101d045c883e148a93a9d 100644
+index 57cc03f81c3bbdf8cfe477f63de326fc6f17d0a8..530a99c2a77f13b100467d1847311e5d01b2c6e8 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -1297,22 +1297,26 @@ public abstract class PlayerList {
+@@ -1298,22 +1298,26 @@ public abstract class PlayerList {
          Path uuidStatsFile = statFolder.resolve(gameProfile.id() + ".json");
          if (Files.exists(uuidStatsFile)) {
              return uuidStatsFile;
