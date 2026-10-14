@@ -23023,7 +23023,7 @@ index 65fe53e795ee2c43f0e64d9d29a09c29e97b2dbe..43303211f5818688858a0adb64711083
      public MapCodec<ContextNbtProvider> codec() {
          return MAP_CODEC;
 diff --git a/net/minecraft/world/scores/Objective.java b/net/minecraft/world/scores/Objective.java
-index 64ea4741b7ed58fe7914b9431353abd1f658a935..5f415a7d93c19ac4889151ae5a83c5661003685d 100644
+index ab620a3a674c30ee74e2319a9223cd6dbea6ffa4..497bea321c4fddd98f3d6e4ca2b7a8bd46048dd5 100644
 --- a/net/minecraft/world/scores/Objective.java
 +++ b/net/minecraft/world/scores/Objective.java
 @@ -16,7 +16,7 @@ import org.jspecify.annotations.Nullable;
@@ -23033,9 +23033,9 @@ index 64ea4741b7ed58fe7914b9431353abd1f658a935..5f415a7d93c19ac4889151ae5a83c566
 -    private final ObjectiveCriteria criteria;
 +    private ObjectiveCriteria criteria;
      private Component displayName;
-     private Component formattedDisplayName;
+     private @Nullable Component lazyFormattedDisplayName; // Paper - Lazy initialization because only used internally by commands
      private ObjectiveCriteria.RenderType renderType;
-@@ -131,4 +131,7 @@ public class Objective {
+@@ -130,4 +130,7 @@ public class Objective {
                  .apply(i, Objective.Packed::new)
          );
      }
