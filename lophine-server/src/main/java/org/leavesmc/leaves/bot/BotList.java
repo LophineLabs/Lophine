@@ -211,7 +211,20 @@ public class BotList {
             }
 
             ServerLevel world = this.server.getLevel(resourcekey);
-            return this.placeNewBot(bot, world, bot.getLocation(), nbt);
+            if (world == null) {
+                return null;
+            }
+            // Entity.load restores coordinates only. The bot was constructed in the overworld,
+            // so its Bukkit location still names that world. Keep the saved world from WorldUUID.
+            Location savedLocation = new Location(
+                    world.getWorld(),
+                    bot.getX(),
+                    bot.getY(),
+                    bot.getZ(),
+                    bot.getYRot(),
+                    bot.getXRot()
+            );
+            return this.placeNewBot(bot, world, savedLocation, nbt);
         } catch (Exception e) {
             LOGGER.error("Failed to load bot {}", inputName, e);
             return null;
@@ -313,7 +326,7 @@ public class BotList {
                                                         .computeIfAbsent(bot.level().uuid.toString(), (k) -> java.util.concurrent.ConcurrentHashMap.newKeySet())
                                                         .add(bot.getBukkitEntity().getName());
                                                 if (!orgSilence)
-                                                    BotList.LOGGER.info("{}[{}] logged in with entity id {} at ([{}]{}, {}, {})", bot.getName().getString(), "Local", bot.getId(), bot.level().serverLevelData.getLevelName(), bot.getX(), bot.getY(), bot.getZ());
+                                                    BotList.LOGGER.info("{}[Local] logged in with entity id {} at ([{}]{}, {}, {})", bot.getName().getString(), bot.getId(), location.getWorld().getName(), location.getX(), location.getY(), location.getZ());
                                                 bot.carpetPlacementInitializer.run();
                                                 bot.carpetPlacementInitializer = () -> {
                                                 };
