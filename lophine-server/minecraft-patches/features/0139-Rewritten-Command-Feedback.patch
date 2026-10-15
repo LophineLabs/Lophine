@@ -1,0 +1,94 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Thu, 15 Oct 2026 19:44:10 +0800
+Subject: [PATCH] Rewritten Command Feedback
+
+
+diff --git a/net/minecraft/server/commands/CommandResponseTracker.java b/net/minecraft/server/commands/CommandResponseTracker.java
+index 8f4e8778c44f86bbf4d4809d4d920fc2c0ad0f8c..166709c04376567949632db1ce6b9bfb32c954e8 100644
+--- a/net/minecraft/server/commands/CommandResponseTracker.java
++++ b/net/minecraft/server/commands/CommandResponseTracker.java
+@@ -42,6 +42,83 @@ public class CommandResponseTracker<Element> {
+         this.track(element, 1);
+     }
+ 
++    // Lophine start - region threading
++    private final java.util.concurrent.atomic.AtomicReference<Runnable> onComplete = new java.util.concurrent.atomic.AtomicReference<>(null);
++    private final java.util.concurrent.atomic.AtomicInteger totalCount = new java.util.concurrent.atomic.AtomicInteger();
++    private final java.util.concurrent.atomic.AtomicInteger totalCalled = new java.util.concurrent.atomic.AtomicInteger();
++    public void track(final java.util.concurrent.atomic.AtomicReference<Element> entity, final java.util.function.IntSupplier runnable) {
++        if (entity.get() instanceof net.minecraft.world.entity.Entity newEntity) {
++            totalCount.incrementAndGet();
++            newEntity.getBukkitEntity().taskScheduler.scheduleOrExecute((target) -> {
++                entity.set((Element) target);
++                track((Element) target, runnable.getAsInt());
++                totalCalled.incrementAndGet();
++                onComplete();
++            });
++        } else {
++            throw new UnsupportedOperationException();
++        }
++    }
++    public void track(final java.util.concurrent.atomic.AtomicReference<Element> entity, final java.util.function.BooleanSupplier runnable) {
++        java.util.function.IntSupplier newTask = () -> {
++            boolean ret = runnable.getAsBoolean();
++            return ret ? 1 : 0;
++        };
++        track(entity, newTask);
++    }
++
++    public void track(final net.minecraft.server.level.ServerLevel level, final Element pos, final java.util.function.IntSupplier runnable) {
++        if (pos instanceof net.minecraft.core.BlockPos blockPos) {
++            totalCount.incrementAndGet();
++            io.papermc.paper.threadedregions.RegionizedServer.getInstance().taskQueue.queueTickTaskQueue(
++                    level,
++                    blockPos.getX() >> 4,
++                    blockPos.getZ() >> 4,
++                    () -> {
++                        track(pos, runnable.getAsInt());
++                        onComplete();
++                    }
++            );
++        } else if (pos instanceof net.minecraft.world.level.ChunkPos chunkPos) {
++            totalCount.incrementAndGet();
++            io.papermc.paper.threadedregions.RegionizedServer.getInstance().taskQueue.queueTickTaskQueue(
++                    level,
++                    chunkPos.x(),
++                    chunkPos.z(),
++                    () -> {
++                        track(pos, runnable.getAsInt());
++                        onComplete();
++                    }
++            );
++        } else {
++            throw new UnsupportedOperationException();
++        }
++    }
++
++    public void track(final net.minecraft.server.level.ServerLevel level, final Element pos, final java.util.function.BooleanSupplier runnable) {
++        java.util.function.IntSupplier newTask = () -> {
++            boolean ret = runnable.getAsBoolean();
++            return ret ? 1 : 0;
++        };
++        track(level, pos, newTask);
++    }
++
++    public void onComplete(final Runnable runnable) {
++        synchronized (onComplete) {
++            onComplete.set(runnable);
++            onComplete();
++        }
++    }
++
++    private void onComplete() {
++        synchronized (onComplete) {
++            if (onComplete.get() != null && totalCalled.get() == totalCount.get()) {
++                onComplete.get().run();
++            }
++        }
++    }
++    // Lophine end - region threading
++
+     private @Nullable Element firstElement(final CommandResponseTracker.ElementType type) {
+         return (Element)(switch (type) {
+             case ANY -> this.onlyElement;
