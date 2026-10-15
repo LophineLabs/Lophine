@@ -9,7 +9,7 @@ As a part of : Leaves (https://github.com/LeavesMC/Leaves/blob/ea91106ae57fc4cc1
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/net/minecraft/server/level/ServerPlayerGameMode.java b/net/minecraft/server/level/ServerPlayerGameMode.java
-index e5f75da9190eff8ae1538d392c618906de0f3424..abf9c737eab8ef2babdfbd4e2b97ea469f4a57ee 100644
+index f2b4023b14a7032c6de5827157f2d3c75957cd1c..5ae6f76181fb6a69068533ae129510364e1546f4 100644
 --- a/net/minecraft/server/level/ServerPlayerGameMode.java
 +++ b/net/minecraft/server/level/ServerPlayerGameMode.java
 @@ -425,7 +425,18 @@ public class ServerPlayerGameMode {

@@ -5,7 +5,7 @@ Subject: [PATCH] Restore vanilla ender pearl loading
 
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 3ca951da8cbc6829d56e9a3ddad408c83b75726d..7452ada9b5a0fa178e57d7194527a9c40f820fe7 100644
+index ffd61f955298d5b01c9c254c79c88894017cc585..37e14c86c47df8421dd90e97dc09ef7fdef52cf9 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -281,7 +281,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -51,7 +51,7 @@ index 3ca951da8cbc6829d56e9a3ddad408c83b75726d..7452ada9b5a0fa178e57d7194527a9c4
          }
      }
  
-@@ -2548,7 +2550,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2552,7 +2554,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          }
          // Paper start - disable player cramming
          return (super.isInvulnerableTo(level, source) || this.isChangingDimension() && !source.is(DamageTypes.ENDER_PEARL) || !this.connection.hasClientLoaded())
@@ -60,7 +60,7 @@ index 3ca951da8cbc6829d56e9a3ddad408c83b75726d..7452ada9b5a0fa178e57d7194527a9c4
          // Paper end - disable player cramming
      }
  
-@@ -3777,11 +3779,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3781,11 +3783,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      }
  
      public void registerEnderPearl(final ThrownEnderpearl enderPearl) {

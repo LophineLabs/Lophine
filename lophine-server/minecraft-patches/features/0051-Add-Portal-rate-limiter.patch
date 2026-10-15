@@ -106,10 +106,10 @@ index 6c076c3dcb6d6ac7e573a19382609fb8155613fa..178c7b5e0c901ffd3216a15d2b4b455b
          //this.isIteratingOverLevels = false; // Paper - Throw exception on world create while being ticked // Folia - region threading
  
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index f2d54d839ec548a09435ecb53c67c472d017ad5e..13c19fa414975823fe388f53dca562a3b017688f 100644
+index d9642c53577932eb06639509251c35aaac86c4ec..c8eef129acb5251cff89d2cffac0cdd2eb0dd48c 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -1558,8 +1558,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1557,8 +1557,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              // removed from region while ticking
              return;
          }
@@ -125,7 +125,7 @@ index f2d54d839ec548a09435ecb53c67c472d017ad5e..13c19fa414975823fe388f53dca562a3
              return;
          }
          }
-@@ -1604,8 +1611,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1603,8 +1610,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
                  // removed from region while ticking
                  return;
              }
@@ -142,10 +142,10 @@ index f2d54d839ec548a09435ecb53c67c472d017ad5e..13c19fa414975823fe388f53dca562a3
              }
              // Folia end - region threading
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index c62c3c27b9b08c79c73ce25e3a0188f7bc3ea9db..cd17f6bfb7d89b7a915bcbc6b624d549f767763b 100644
+index 0eb830d9983ebba5a4f7ef44786dcbb4cc0c3a7e..c2de7a68b8c5b014d6d160176704b21a00abfe02 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -5074,6 +5074,31 @@ public abstract class Entity
+@@ -5075,6 +5075,31 @@ public abstract class Entity
              return false;
          }
          // Luminol end

@@ -27,7 +27,7 @@ index 97d137339aa6995b9c1044e5e072d278e0caf3fc..a830c259baedf90cc4f9d21664d24d83
      }
  
 diff --git a/net/minecraft/world/level/block/EndPortalBlock.java b/net/minecraft/world/level/block/EndPortalBlock.java
-index f06584c0c04eda05772d2f8dff65c9402a3960fd..c06c5787e73fbaaddfc73beeb8fd97749c809205 100644
+index a0aaacdb40ce2e9d305f9f234aa398ad8ecd1b65..c95e941e58cb4c22d545f2d09b51ee79866655ef 100644
 --- a/net/minecraft/world/level/block/EndPortalBlock.java
 +++ b/net/minecraft/world/level/block/EndPortalBlock.java
 @@ -69,6 +69,12 @@ public class EndPortalBlock extends BaseEntityBlock implements Portal {
@@ -36,7 +36,7 @@ index f06584c0c04eda05772d2f8dff65c9402a3960fd..c06c5787e73fbaaddfc73beeb8fd9774
              } else {
 +                // Luminol start - unsafe teleportation
 +                if (me.earthme.luminol.config.modules.fixes.UnsafeTeleportationConfig.enabled && !(entity instanceof net.minecraft.world.entity.player.Player)) {
-+                    entity.endPortalLogicAsync(pos, null);
++                    entity.endPortalLogicAsync(pos);
 +                    return;
 +                }
 +                // Luminol end

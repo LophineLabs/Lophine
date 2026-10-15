@@ -6,10 +6,10 @@ Subject: [PATCH] Fix riding statistics desync
 Referred to: https://github.com/CraftCanvasMC/Canvas/commit/057175b0c10d5a4d1d9059fd9d077750c32633b2
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index cd9e7a283c3268c3ce0e93a454d2214914e0ec84..4eb9a6f4ef6ecb46ee8e24876d668e095c97cba8 100644
+index 731b5629f40943aa01f161627fb841da6f5cc34f..8e5883ebc6d05a3724ef61d46a7f9a9bea7beeb4 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
-@@ -2586,7 +2586,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2590,7 +2590,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          }
      }
  
@@ -19,7 +19,7 @@ index cd9e7a283c3268c3ce0e93a454d2214914e0ec84..4eb9a6f4ef6ecb46ee8e24876d668e09
              int distance = Math.round((float)Math.sqrt(dx * dx + dy * dy + dz * dz) * 100.0F);
              Entity vehicle = this.getVehicle();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 7b65e4bb74fd1656eb672dabb31cadfd5f9df66a..4861c3778c51e6340aed212269f52167e8fbebe0 100644
+index 7b8d9cdb7b0b1bf51b417962625a87afd7d2fa42..af4ad3df396e215251b09866e16879bbed8dff59 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -4311,7 +4311,13 @@ public abstract class Entity

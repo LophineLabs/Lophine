@@ -5,7 +5,7 @@ Subject: [PATCH] Add missing teleportation event APIs for folia
 
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 686affa490bf675859bb03b04cde3ac8f74f8708..a06ea9968fa26716ded704ab5241d8b4fce53e57 100644
+index 2f7d926353b57421a40bbd641369cee1cc48fd34..2500a3cf1cdd99b6941378b9a4b004feca2f5812 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -1863,6 +1863,9 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -19,7 +19,7 @@ index 686affa490bf675859bb03b04cde3ac8f74f8708..a06ea9968fa26716ded704ab5241d8b4
              );
          });
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index f32e7ad46735209b1fbf1cfb6814f851da6eeb10..c62c3c27b9b08c79c73ce25e3a0188f7bc3ea9db 100644
+index fac1078db6b8e643df89e9fd73fff8eebb63fb6d..0eb830d9983ebba5a4f7ef44786dcbb4cc0c3a7e 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -4668,6 +4668,31 @@ public abstract class Entity
@@ -108,8 +108,8 @@ index f32e7ad46735209b1fbf1cfb6814f851da6eeb10..c62c3c27b9b08c79c73ce25e3a0188f7
                  ca.spottedleaf.concurrentutil.completable.CallbackCompletable<BlockUtil.FoundRectangle> portalFound
                      = new ca.spottedleaf.concurrentutil.completable.CallbackCompletable<>();
  
-@@ -5008,6 +5065,15 @@ public abstract class Entity
-         if (!this.canPortalAsync(destination, takePassengers)) {
+@@ -5009,6 +5066,15 @@ public abstract class Entity
+             || !this.canPortalAsync(destination, takePassengers)) {
              return false;
          }
 +        // Luminol start - Add missing teleportation events
@@ -125,7 +125,7 @@ index f32e7ad46735209b1fbf1cfb6814f851da6eeb10..c62c3c27b9b08c79c73ce25e3a0188f7
          // Kaiiju start - sync end platform spawning & entity teleportation
          final java.util.function.Consumer<Entity> tpComplete = type == PortalType.END && destination.getTypeKey() == net.minecraft.world.level.dimension.LevelStem.END ?
 diff --git a/net/minecraft/world/level/block/entity/TheEndGatewayBlockEntity.java b/net/minecraft/world/level/block/entity/TheEndGatewayBlockEntity.java
-index 977511e8f1dba5010d0cce953de3911e688e6c5a..c39615836fbbf9a5bed91b3af93a5b28fa71ffe8 100644
+index 53b47d04f3643775ee6b12f40a1c48eeb5f2e794..ff716d0463476c354c0586c35fa4742fa4f6a064 100644
 --- a/net/minecraft/world/level/block/entity/TheEndGatewayBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/TheEndGatewayBlockEntity.java
 @@ -191,6 +191,18 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {

@@ -5,7 +5,7 @@ Subject: [PATCH] Add config to enable trigger command
 
 
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index 75fdf3e55251d96c3dc0785975d0a5cfacd92f78..2e58cd204edc1c628076e8b07194b7a22ab337df 100644
+index 2b26ab0528f75adf77f66e6dd8bf7e3b18158b62..9fd0d4ffe723357b1ab27d04960996f95651e521 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -278,7 +278,11 @@ public class Commands {

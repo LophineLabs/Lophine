@@ -315,7 +315,7 @@ index ef8c1e81327dd3dd3535bb86920f2522f00b0b35..8e7029b560a99003858f09319f89a04f
              }
          }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 49f709ef9efdf71e8e518229892d95787a4657c2..4b54ddda8d13e7be175e3129911474056acc25f7 100644
+index 0cba9a4ddb893d4658182bb66215dec9d5d9119b..d65cb2cec1a37e3f256d2bffe3e76407fbc5bb71 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -245,6 +245,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -334,7 +334,7 @@ index 49f709ef9efdf71e8e518229892d95787a4657c2..4b54ddda8d13e7be175e312991147405
          this.updateTickData(); // Folia - region threading - make sure it is initialised before ticked
      }
  
-@@ -2877,6 +2879,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2876,6 +2878,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          return this.players;
      }
  
@@ -347,7 +347,7 @@ index 49f709ef9efdf71e8e518229892d95787a4657c2..4b54ddda8d13e7be175e312991147405
      @Override
      public void updatePOIOnBlockStateChange(final BlockPos pos, final BlockState oldState, final BlockState newState) {
          Optional<Holder<PoiType>> oldType = PoiTypes.forState(oldState);
-@@ -3340,6 +3348,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3339,6 +3347,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              // ServerLevel.this.getChunkSource().addEntity(entity); // Paper - ignore and warn about illegal addEntity calls instead of crashing server; moved down below valid=true
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.add(player);
@@ -359,7 +359,7 @@ index 49f709ef9efdf71e8e518229892d95787a4657c2..4b54ddda8d13e7be175e312991147405
                  if (player.isReceivingWaypoints()) {
                      ServerLevel.this.getWaypointManager().addPlayer(player);
                  }
-@@ -3420,6 +3433,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3419,6 +3432,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              ServerLevel.this.getChunkSource().removeEntity(entity);
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.remove(player);
@@ -372,7 +372,7 @@ index 49f709ef9efdf71e8e518229892d95787a4657c2..4b54ddda8d13e7be175e312991147405
                  ServerLevel.this.updateSleepingPlayerList();
              }
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index aba5e64d25aceedc7d95b6e25405eb0c6c84e732..a1aa38bd39b30c1e68cd995bc92c2cb4edf0d547 100644
+index 92ee1b68d44684620a9e8e81c012a1e013b04a5a..86756033b7b14857171a6c7a664d9fa54ff79bee 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -236,7 +236,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -405,7 +405,7 @@ index aba5e64d25aceedc7d95b6e25405eb0c6c84e732..a1aa38bd39b30c1e68cd995bc92c2cb4
          AABB aabb = new AABB(this.blockPosition()).inflate(32.0, 10.0, 32.0);
          this.level()
              .getEntitiesOfClass(Mob.class, aabb, EntitySelector.NO_SPECTATORS)
-@@ -2202,6 +2202,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2206,6 +2206,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.lastSentHealth = -1.0F;
          this.lastSentFood = -1;
          this.teleportSpectators(transition, oldLevel);
@@ -418,10 +418,10 @@ index aba5e64d25aceedc7d95b6e25405eb0c6c84e732..a1aa38bd39b30c1e68cd995bc92c2cb4
          org.bukkit.event.player.PlayerChangedWorldEvent changeEvent = new org.bukkit.event.player.PlayerChangedWorldEvent(this.getBukkitEntity(), oldLevel.getWorld());
          this.level().getCraftServer().getPluginManager().callEvent(changeEvent);
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 54773d5448b086ab5efc5a70211b5e67e83e4094..b27d6ef2245dcd23a4b8f1abdfbe19b88e4f953c 100644
+index 034f0855cd873f1bc3df0d8a3dc8ed115fa7d4e8..f02de29d94b97237e1970170bccf367dff93bc49 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -3968,7 +3968,7 @@ public class ServerGamePacketListenerImpl
+@@ -3969,7 +3969,7 @@ public class ServerGamePacketListenerImpl
      }
  
      @Deprecated @io.papermc.paper.annotation.DoNotUse // Paper - Add PlayerLoadedWorldEvent
@@ -583,7 +583,7 @@ index ff8938fc79be73849e3713c3298eeb45986360bb..22d38d5f78fb8c279b5e7894bbc61dba
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 471b1a107f5ec138d717f8dd8cc8cee2e21ecd72..509532f8a3b151c16db2b758ca7b3242449603d1 100644
+index fe3b6113c09fe2553ab02ae12851afcb21cec9fc..3385ead4c29bb1c950bcaac7f5b71cd1080501a1 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1294,7 +1294,7 @@ public abstract class Entity
@@ -604,7 +604,7 @@ index 471b1a107f5ec138d717f8dd8cc8cee2e21ecd72..509532f8a3b151c16db2b758ca7b3242
          // Paper start - optimise collisions
          final boolean xZero = movement.x == 0.0;
          final boolean yZero = movement.y == 0.0;
-@@ -6027,7 +6027,7 @@ public abstract class Entity
+@@ -6028,7 +6028,7 @@ public abstract class Entity
          return MoveSimulationType.AUTHORITATIVE_SIDE;
      }
  
@@ -614,7 +614,7 @@ index 471b1a107f5ec138d717f8dd8cc8cee2e21ecd72..509532f8a3b151c16db2b758ca7b3242
              case SERVER_AND_CLIENT -> true;
              case AUTHORITATIVE_SIDE -> this.isLocalInstanceAuthoritative();
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index b3418396443563a822fddd521a50d1969334613d..aeaffc5ecef15af255c067e8fecdb194aa381f90 100644
+index 3a3bdc14239ac5066bfd8c036d06351006e523f3..ce681b3318add1e607115faf845aacbcb36e7530 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -2009,7 +2009,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -765,7 +765,7 @@ index 9260aa8a6ce61819c6c4eeaef5624344e72de5e0..94c603a7229ee6ecfc2da8eb522dc65c
          return switch (this.getStatus()) {
              case IN_WATER, UNDER_WATER, UNDER_FLOWING_WATER -> SoundEvents.BOAT_PADDLE_WATER;
 diff --git a/net/minecraft/world/inventory/AbstractContainerMenu.java b/net/minecraft/world/inventory/AbstractContainerMenu.java
-index 77df3d68693076e06b3d121234f2ad922d2b6c4a..a73c3f1b9fff4b151579be796e74494361134add 100644
+index 5dc4cd5154de5b5a410131b42a14858cf20bb300..6a09896d03d61be11a2265fb04b2a998a8284339 100644
 --- a/net/minecraft/world/inventory/AbstractContainerMenu.java
 +++ b/net/minecraft/world/inventory/AbstractContainerMenu.java
 @@ -409,6 +409,7 @@ public abstract class AbstractContainerMenu {

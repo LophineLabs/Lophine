@@ -8,7 +8,7 @@ As part of: Kaiiju (https://github.com/KaiijuMC/Kaiiju/blob/c2b7aec8f7b418a39a2e
 Licensed under: GPL-3.0 (https://github.com/KaiijuMC/Kaiiju/blob/c2b7aec8f7b418a39a2ec408e6411e6f752379da/LICENSE)
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index b2518956f05ba08e262bca365103a327b0cda4c8..98e62269931de2f59ebc6e8e638bb37dc046bc4e 100644
+index 7dd2195f8601e1898cabfac9448a57e8bbfd62ed..3c9ed0dc5c763debd0d67433d7260ab1b4061e91 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -4792,15 +4792,19 @@ public abstract class Entity
@@ -53,7 +53,7 @@ index b2518956f05ba08e262bca365103a327b0cda4c8..98e62269931de2f59ebc6e8e638bb37d
                                      false, false,
                                      Relative.union(Relative.DELTA, Relative.ROTATION),
                                      TeleportTransition.PLAY_PORTAL_SOUND.then(TeleportTransition.PLACE_PORTAL_TICKET),
-@@ -5001,6 +5009,10 @@ public abstract class Entity
+@@ -5002,6 +5010,10 @@ public abstract class Entity
              return false;
          }
  
@@ -64,7 +64,7 @@ index b2518956f05ba08e262bca365103a327b0cda4c8..98e62269931de2f59ebc6e8e638bb37d
          Vec3 initialPosition = this.position();
          ChunkPos initialPositionChunk = new ChunkPos(
              ca.spottedleaf.moonrise.common.util.CoordinateUtils.getChunkX(initialPosition),
-@@ -5075,9 +5087,14 @@ public abstract class Entity
+@@ -5076,9 +5088,14 @@ public abstract class Entity
                      destination.levelUnloadStateLock.releaseRead();
                      // Luminol end
  

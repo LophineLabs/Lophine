@@ -6,10 +6,10 @@ Subject: [PATCH] Do not enable any debug subscriptions
 Really this would really crash the server by accident when the operators used F3 + J or toggled the debug synchronizer
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 4c6f6fafa00dceef01dd57485d3ec2242121ef62..cd9e7a283c3268c3ce0e93a454d2214914e0ec84 100644
+index 6270be1b449b45d786cde962d1d9aa797d23e0c7..731b5629f40943aa01f161627fb841da6f5cc34f 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
-@@ -3537,7 +3537,8 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3541,7 +3541,8 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      }
  
      public Set<DebugSubscription<?>> debugSubscriptions() {

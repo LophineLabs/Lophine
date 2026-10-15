@@ -74,7 +74,7 @@ index f9f7ae3cfe960be2ac305958b288036499ec207c..cd56cae73a21800b8a8663836b050784
  
              profiler.pop();
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 6897af357b3f7e9f0ad5f9a0ac58889ecf2015fa..00d1f2f719c176d1b878df6a69d80f8a296de833 100644
+index b41e673d97c67ea4c796bfdefe17912afc166802..820b997c62cc59cd8f29262eea9ce6b60ff9f545 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -959,7 +959,18 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -98,7 +98,7 @@ index 6897af357b3f7e9f0ad5f9a0ac58889ecf2015fa..00d1f2f719c176d1b878df6a69d80f8a
                                  }
                              }
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index a1aa38bd39b30c1e68cd995bc92c2cb4edf0d547..754f3bd8d0aa376eba3bb9dd67769e1b881b001e 100644
+index 86756033b7b14857171a6c7a664d9fa54ff79bee..383c2159e753ddd74f7c949b45c6fa60d759fe59 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -1121,6 +1121,12 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -115,7 +115,7 @@ index a1aa38bd39b30c1e68cd995bc92c2cb4edf0d547..754f3bd8d0aa376eba3bb9dd67769e1b
              CrashReport report = CrashReport.forThrowable(t, "Ticking player");
              CrashReportCategory category = report.addCategory("Player being ticked");
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index d188e0d9128d0a76ac6dcd7f700291ead384519a..58efb11897f9d11b09d62472148f8fd7140b7da1 100644
+index 8f58c3878c91cda0702a578fd418896ba53be9ab..f7bceacef1f16a1067e32910c7e81befca7a97ef 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1562,8 +1562,18 @@ public abstract class Entity

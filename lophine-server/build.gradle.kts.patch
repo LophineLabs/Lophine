@@ -98,8 +98,8 @@
 +    // Leaves end - leaves plugin
 +    // Lophine end
      implementation(platform("ca.spottedleaf.leafpile:bom:1.2.4"))
-     implementation("ca.spottedleaf.leafpile:profiler")
      implementation("ca.spottedleaf.leafpile:common")
+     implementation("ca.spottedleaf.leafpile:concurrentutil")
 @@ -192,21 +_,21 @@
          val git = Git(rootProject.layout.projectDirectory.path)
          val mcVersion = rootProject.providers.gradleProperty("mcVersion").get()

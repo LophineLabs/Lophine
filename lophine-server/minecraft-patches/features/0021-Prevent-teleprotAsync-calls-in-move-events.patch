@@ -5,7 +5,7 @@ Subject: [PATCH] Prevent teleprotAsync calls in move events
 
 
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 58830b890ac65bbf17dd56da74dae0574b3eee6a..d6b0f75196dbb167bfeb631100b38158445fd62c 100644
+index 35c1a7a250ed43c4bc45fc80835974003ce2a8e0..bb6d0fc49c3fec15a36881128c23f7cee89923ce 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -741,7 +741,9 @@ public class ServerGamePacketListenerImpl
@@ -18,7 +18,7 @@ index 58830b890ac65bbf17dd56da74dae0574b3eee6a..d6b0f75196dbb167bfeb631100b38158
  
                      // If the event is cancelled we move the player back to their old location.
                      if (event.isCancelled()) {
-@@ -1777,7 +1779,9 @@ public class ServerGamePacketListenerImpl
+@@ -1778,7 +1780,9 @@ public class ServerGamePacketListenerImpl
  
                          Location oldTo = to.clone();
                          PlayerMoveEvent event = new PlayerMoveEvent(player, from, to);
@@ -29,7 +29,7 @@ index 58830b890ac65bbf17dd56da74dae0574b3eee6a..d6b0f75196dbb167bfeb631100b38158
                          // If the event is cancelled we move the player back to their old location.
                          if (event.isCancelled()) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index e00dce9d24d22cd76f82e22335c45ffd8e8a7609..0ef1d85f220b28f13fa2719dbb5b3d00eb9770c4 100644
+index c61b201cc2300b5ab278719900f0f43b5903a7cc..d05fa3bd263d20056d6c6821bee77801cdae9027 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -4591,12 +4591,25 @@ public abstract class Entity

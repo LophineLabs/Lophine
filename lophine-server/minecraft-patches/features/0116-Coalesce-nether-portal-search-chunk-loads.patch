@@ -12,7 +12,7 @@ Also honor the requested chunk status in Moonrise's async area loader instead
 of forcing every request to FULL. Portal searches request EMPTY explicitly.
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 36100598cd7c861dd2e7d6fe5a46d10755241b30..c6d88dce325f99dd7179fc6c203f86ebafd947a2 100644
+index 81a8202c0aecc7a16be66e982f093ac3fab66225..4f7de8191d1b6c2f4ea16a1b7065a0f4583d3f83 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -223,6 +223,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -24,7 +24,7 @@ index 36100598cd7c861dd2e7d6fe5a46d10755241b30..c6d88dce325f99dd7179fc6c203f86eb
      private static final java.util.concurrent.atomic.AtomicInteger UNLOADER_ID_GEN = new java.util.concurrent.atomic.AtomicInteger(0);
      public final me.earthme.luminol.utils.thread.LevelAwareRegionScheduler levelScheduler = new me.earthme.luminol.utils.thread.LevelAwareRegionScheduler(io.papermc.paper.threadedregions.TickRegions.getScheduler().scheduler);
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index d94176516f64679c50c0024aea25e5eef80556aa..d188e0d9128d0a76ac6dcd7f700291ead384519a 100644
+index 73d1a0435f07b992b8e16c904e710a56db13a6eb..8f58c3878c91cda0702a578fd418896ba53be9ab 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -4977,10 +4977,10 @@ public abstract class Entity

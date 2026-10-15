@@ -137,7 +137,7 @@ index e46f95b19da1c14f240ec6697f22b5e220e0a835..70769a9c177bd846b1c8306af32e14e9
                  if (!itemStack.isEmpty()) {
                      slots.add(Pair.of(slot, itemStack.copy()));
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index a06ea9968fa26716ded704ab5241d8b4fce53e57..60a1f0e7cba94a2bab1fef608bf54133f08fa2cb 100644
+index 2500a3cf1cdd99b6941378b9a4b004feca2f5812..dea9e6128695180c7f43870cfa40650924ce97cf 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -1435,7 +1435,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -150,10 +150,10 @@ index a06ea9968fa26716ded704ab5241d8b4fce53e57..60a1f0e7cba94a2bab1fef608bf54133
                      this.getInventory().equipment.set(value, net.minecraft.world.item.ItemStack.EMPTY);
                  }
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index e573c47396473d5153eaf2595410403150e5fb75..bf0e70771ceb9906be7ff52f2813775cf040f3d9 100644
+index 36e83c95cc26f4bc6ceb7706641444ebeee6fc2c..dd00f2dcc000dd61541c40d924e4d176d681be20 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -3086,7 +3086,7 @@ public class ServerGamePacketListenerImpl
+@@ -3087,7 +3087,7 @@ public class ServerGamePacketListenerImpl
                              // SPIGOT-7136 - Allays
                              if (target instanceof net.minecraft.world.entity.animal.allay.Allay || target instanceof net.minecraft.world.entity.animal.equine.AbstractHorse) { // Paper - Fix horse armor desync
                                  ServerGamePacketListenerImpl.this.send(new net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket(
@@ -252,7 +252,7 @@ index 4b018c64d3123bb7a0687491d2ac3a535302890c..0e4d6c9a35d29c240a0cf30694211ea3
  
      private static Map<EquipmentSlot, Float> createForAllSlots(final List<EquipmentSlot> slots, final float dropChance) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index db5c99b8b0173b854f373af7c27861e5818285fa..42be09774fc5811e659b179b9cc3114c88fee8f8 100644
+index a66f01754046bd9e3946552cac794b2f624214f9..c9a449041ced1bc4ba2f3dde0ab41fba8a1f5510 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -3604,7 +3604,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin

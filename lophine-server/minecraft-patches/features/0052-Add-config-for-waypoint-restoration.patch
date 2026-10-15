@@ -5,7 +5,7 @@ Subject: [PATCH] Add config for waypoint restoration
 
 
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index 8de1facc976e3ecd4b1f08415c5466ccb0804585..87218498d453152e8b305deead347d295977538c 100644
+index b1a15d378f0e840cb4be33396ead8cfd313d203f..21d82763856a8e7394a15b8db271df4531fe68fb 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -271,7 +271,7 @@ public class Commands {
@@ -33,7 +33,7 @@ index 178c7b5e0c901ffd3216a15d2b4b455b2c66f668..a90626bc11dc4b604a6a4ca16c0fdbf6
                      level.players().forEach(waypointManager::updatePlayer);
                  } else {
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 13c19fa414975823fe388f53dca562a3b017688f..c134b632003315aa06cea6b240a456783533a6a5 100644
+index c8eef129acb5251cff89d2cffac0cdd2eb0dd48c..f06539fe3ea2dd0687bed126acea5eaee4572237 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -691,7 +691,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
