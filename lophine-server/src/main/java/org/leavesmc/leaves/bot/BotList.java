@@ -104,6 +104,7 @@ public class BotList {
         MCUtil.ensureMain("Save Bots", () -> {
             final long now = System.currentTimeMillis() / 50;
             for (ServerBot bot : bots) {
+                if (bot.carpetNativePlayer) continue;
                 if (interval == -1 || now - bot.lastSave >= interval) {
                     this.resumeDataStorage.save(bot);
                     bot.lastSave = now;
@@ -118,6 +119,7 @@ public class BotList {
             return;
         }
         for (ServerBot bot : this.bots) {
+            if (bot.carpetNativePlayer) continue;
             this.resumeDataStorage.save(bot);
         }
     }
@@ -499,11 +501,7 @@ public class BotList {
 
         this.resumeDataStorage.removeSavedData(bot.nameAndId().name());
         if (event.shouldSave()) {
-            if (resume) {
-                this.resumeDataStorage.save(bot);
-            } else {
-                this.manualSaveDataStorage.save(bot);
-            }
+            this.carpetSaveLeavesCopy(bot, resume);
         } else {
             bot.dropExperience(bot.level(), null);
             bot.dropAll(true);
@@ -561,11 +559,7 @@ public class BotList {
 
         this.resumeDataStorage.removeSavedData(bot.nameAndId().name());
         if (event.shouldSave()) {
-            if (resume) {
-                this.resumeDataStorage.save(bot);
-            } else {
-                this.manualSaveDataStorage.save(bot);
-            }
+            this.carpetSaveLeavesCopy(bot, resume);
         } else {
             bot.dropExperience(bot.level(), null);
             bot.dropAll(true);
@@ -611,6 +605,15 @@ public class BotList {
         if (carpet.script.external.ScarpetNativeRemovals.thenOwner(bot, () -> this.carpetFinishBotRemoval(bot, event)))
             return true;
         return this.carpetFinishBotRemoval(bot, event);
+    }
+
+    /**
+     * Carpet players already live in playerdata and carpet/fake_players.dat.
+     */
+    private void carpetSaveLeavesCopy(ServerBot bot, boolean resume) {
+        if (bot.carpetNativePlayer) return;
+        if (resume) this.resumeDataStorage.save(bot);
+        else this.manualSaveDataStorage.save(bot);
     }
 
     private boolean carpetFinishBotRemoval(ServerBot bot, BotRemoveEvent event) {

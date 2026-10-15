@@ -200,7 +200,7 @@
 | `fastRedstoneDust` | 规则启用时，红石粉更新会统一走 Alternate Current 快速更新后端 |
 | `lagFreeSpawning` | 自然生成会使用轻量碰撞检查与预构造实体路径 |
 | `defaultLoggers` | 按 Carpet 默认订阅语义为玩家启用 HUD logger，当前支持 `tps`、`mobcaps`、`counter` |
-| `commandPlayer`  | `/player` 假人在线时写入 `carpet/fake_players.dat`，重启后按这份名单从玩家存档唤醒；`/player kill` 会从名单移除 |
+| `commandPlayer`  | `/player` 假人只写入 `carpet/fake_players.dat` 和玩家存档，不再写入 Leaves 的 `fakeplayerdata` / `resume_fakeplayer`；重启按 Carpet 名单唤醒，`/player kill` 会从名单移除 |
 | `hopperCounters`  | 转发到 Lophine 的羊毛漏斗计数器 |
 | `yeetUpdateSuppressionCrash`  | 转发到同一套 Lophine 崩溃修复逻辑 |
 | `dustTrapdoorReintroduced`  | 转发到 `lophine.experiment.redstone.redstone-ignore-upwards-update` |
