@@ -336,7 +336,8 @@ public class BotList {
                                                             carpet.script.external.ScarpetNativeWork.completionOf(carpet.script.external.ScarpetNativeWork.capture()));
                                                     try (var joined = carpet.script.external.ScarpetPlayerInventoryGate.acceptedScope(bot)) {
                                                         carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.AmsPlayerJoin.join(bot, true));
-                                                        if (!bot.carpetShadow) fun.bm.lophine.carpet.CarpetFakePlayerPersistence.recordOnline(bot);
+                                                        if (!bot.carpetShadow)
+                                                            fun.bm.lophine.carpet.CarpetFakePlayerPersistence.recordOnline(bot);
                                                     }
                                                 } else
                                                     carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.AmsPlayerJoin.join(bot, false));

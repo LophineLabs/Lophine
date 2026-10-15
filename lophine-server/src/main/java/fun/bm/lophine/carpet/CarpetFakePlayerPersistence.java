@@ -10,7 +10,6 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.storage.LevelResource;
@@ -22,11 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Carpet keeps the online fake-player roster in the world, then respawns that roster after restart.
@@ -71,7 +66,8 @@ public final class CarpetFakePlayerPersistence {
             return;
         }
         for (Entry entry : entries) {
-            if (server.getPlayerList().getPlayer(entry.id()) != null || server.getBotList().getBotByName(entry.name()) != null) continue;
+            if (server.getPlayerList().getPlayer(entry.id()) != null || server.getBotList().getBotByName(entry.name()) != null)
+                continue;
             try {
                 respawn(server, entry);
             } catch (RuntimeException failure) {
