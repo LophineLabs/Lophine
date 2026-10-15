@@ -76,6 +76,10 @@ public final class AmsFakePlayers {
     }
 
     public static void removed(final ServerBot bot) {
+        if (bot.carpetNativePlayer) {
+            if (bot.resume && !bot.carpetShadow) CarpetFakePlayerPersistence.recordOnline(bot);
+            else CarpetFakePlayerPersistence.forget(bot);
+        }
         if (bot.carpetShadow) return;
         // With fancy names disabled and the previous team already cleared, there
         // is no scoreboard cleanup. An empty global task would delay the enclosing

@@ -317,6 +317,15 @@ public class CarpetPlayerCommand {
     }
 
     /**
+     * Restart restoration already owns the saved position and the Carpet online roster.
+     */
+    public static ServerBot respawn(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
+                                    GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, net.minecraft.nbt.CompoundTag actions,
+                                    java.util.concurrent.CompletableFuture<?> fullBirth) {
+        return create(source, profile, level, position, rotation, mode, flying, saved, false, actions, null, null, fullBirth, true);
+    }
+
+    /**
      * The Org manager checks its own permission and acquires the destination region before entering this native creation path.
      */
     public static ServerBot createOrgManagedPlayer(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,

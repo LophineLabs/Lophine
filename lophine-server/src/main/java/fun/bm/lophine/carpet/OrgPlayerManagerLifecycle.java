@@ -23,10 +23,11 @@ public final class OrgPlayerManagerLifecycle {
     }
 
     public static void tick(MinecraftServer server) {
-        if (server.isReady() && !STOPS.containsKey(server) && STARTED.add(server)) {
+        if (!STOPS.containsKey(server) && STARTED.add(server)) {
             OrgServerPermissions.initialize(server);
             OrgPlayerManager.start(server);
             OrgFinderPlayerData.start(server);
+            CarpetFakePlayerPersistence.respawn(server, server.overworld());
         }
     }
 

@@ -323,6 +323,7 @@ public class BotList {
                                                             carpet.script.external.ScarpetNativeWork.completionOf(carpet.script.external.ScarpetNativeWork.capture()));
                                                     try (var joined = carpet.script.external.ScarpetPlayerInventoryGate.acceptedScope(bot)) {
                                                         carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.AmsPlayerJoin.join(bot, true));
+                                                        if (!bot.carpetShadow) fun.bm.lophine.carpet.CarpetFakePlayerPersistence.recordOnline(bot);
                                                     }
                                                 } else
                                                     carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.AmsPlayerJoin.join(bot, false));
@@ -502,6 +503,8 @@ public class BotList {
 
         if (bot.carpetNativePlayer) {
             this.server.getPlayerList().carpetSaveFakePlayer(bot);
+            if (resume && !bot.carpetShadow) fun.bm.lophine.carpet.CarpetFakePlayerPersistence.recordOnline(bot);
+            else fun.bm.lophine.carpet.CarpetFakePlayerPersistence.forget(bot);
         }
         if (bot.isPassenger() && event.shouldSave()) {
             Entity entity = bot.getRootVehicle();
@@ -562,6 +565,8 @@ public class BotList {
 
         if (bot.carpetNativePlayer) {
             this.server.getPlayerList().carpetSaveFakePlayer(bot);
+            if (resume && !bot.carpetShadow) fun.bm.lophine.carpet.CarpetFakePlayerPersistence.recordOnline(bot);
+            else fun.bm.lophine.carpet.CarpetFakePlayerPersistence.forget(bot);
         }
         if (bot.isPassenger() && event.shouldSave()) {
             Entity entity = bot.getRootVehicle();
@@ -633,9 +638,8 @@ public class BotList {
         for (ServerBot bot : java.util.List.copyOf(this.bots)) {
             if (bot.carpetNativePlayer) {
                 if (TickThread.isTickThreadFor(bot) || TickThread.isShutdownThread()) {
-                    bot.resume = FakePlayerCompatConfig.fakePlayerResident;
-                    var actual = this.carpetRemoveBotAsync(bot, BotRemoveEvent.RemoveReason.INTERNAL, null,
-                            FakePlayerCompatConfig.fakePlayerResident, FakePlayerCompatConfig.fakePlayerResident);
+                    bot.resume = true;
+                    var actual = this.carpetRemoveBotAsync(bot, BotRemoveEvent.RemoveReason.INTERNAL, null, true, true);
                     removals.add(actual);
                     finished &= actual.isDone();
                 } else {
@@ -644,10 +648,9 @@ public class BotList {
                     removals.add(actual);
                     boolean scheduled = bot.getBukkitEntity().taskScheduler.schedule(owner -> {
                         ServerBot owned = (ServerBot) owner;
-                        owned.resume = FakePlayerCompatConfig.fakePlayerResident;
+                        owned.resume = true;
                         try {
-                            this.carpetRemoveBotAsync(owned, BotRemoveEvent.RemoveReason.INTERNAL, null,
-                                            FakePlayerCompatConfig.fakePlayerResident, FakePlayerCompatConfig.fakePlayerResident)
+                            this.carpetRemoveBotAsync(owned, BotRemoveEvent.RemoveReason.INTERNAL, null, true, true)
                                     .whenComplete((removed, failure) -> {
                                         if (failure == null) actual.complete(removed);
                                         else actual.completeExceptionally(failure);
@@ -661,7 +664,7 @@ public class BotList {
                 continue;
             }
             if (TickThread.isTickThreadFor(bot.level(), bot.getX(), bot.getZ())) {
-                bot.resume = FakePlayerCompatConfig.fakePlayerResident;
+                bot.resume = true;
                 removals.add(java.util.concurrent.CompletableFuture.completedFuture(this.removeBot(bot,
                         BotRemoveEvent.RemoveReason.INTERNAL, null, FakePlayerCompatConfig.fakePlayerResident, FakePlayerCompatConfig.fakePlayerResident)));
             } else {
@@ -701,7 +704,7 @@ public class BotList {
             }
             counter.getAndIncrement();
             try {
-                bot.resume = FakePlayerCompatConfig.fakePlayerResident;
+                bot.resume = true;
                 actual.complete(this.removeBot(bot, BotRemoveEvent.RemoveReason.INTERNAL, null,
                         FakePlayerCompatConfig.fakePlayerResident, FakePlayerCompatConfig.fakePlayerResident));
             } catch (Exception e) {

@@ -439,7 +439,8 @@ public class ServerBot extends ServerPlayer {
         nbt.putBoolean("isShiftKeyDown", this.isShiftKeyDown());
         nbt.putBoolean("carpetRestoreAfterDeath", this.carpetRestoreAfterDeath);
         nbt.putBoolean("carpetNativePlayer", this.carpetNativePlayer);
-        if (FakePlayerCompatConfig.fakePlayerReloadAction) {
+        nbt.putBoolean("carpetShadow", this.carpetShadow);
+        if (this.carpetNativePlayer || FakePlayerCompatConfig.fakePlayerReloadAction) {
             nbt.store("carpetPlayerActions", CompoundTag.CODEC, this.carpetActionPack.save());
         }
 
@@ -478,7 +479,8 @@ public class ServerBot extends ServerPlayer {
         super.readAdditionalSaveData(nbt);
         this.setShiftKeyDown(nbt.getBooleanOr("isShiftKeyDown", false));
         this.carpetNativePlayer = nbt.getBooleanOr("carpetNativePlayer", this.carpetNativePlayer);
-        if (FakePlayerCompatConfig.fakePlayerReloadAction) {
+        this.carpetShadow = nbt.getBooleanOr("carpetShadow", this.carpetShadow);
+        if (this.carpetNativePlayer || FakePlayerCompatConfig.fakePlayerReloadAction) {
             nbt.read("carpetPlayerActions", CompoundTag.CODEC).ifPresent(this.carpetActionPack::load);
         }
         if (nbt.getBooleanOr("carpetRestoreAfterDeath", false)) {
