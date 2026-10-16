@@ -40,7 +40,9 @@ final class OrgShutdownActionSnapshot {
 
     static OrgShutdownActionSnapshot freeze(ServerPlayer player) {
         ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(player, "Shutdown controller freeze requires its owner");
-        return new OrgShutdownActionSnapshot(player);
+        var snapshot = new OrgShutdownActionSnapshot(player);
+        if (player instanceof CarpetFakePlayer fake) fake.preserveShutdownActions(snapshot.pack);
+        return snapshot;
     }
 
     CompletableFuture<Void> stop(ServerPlayer player) {

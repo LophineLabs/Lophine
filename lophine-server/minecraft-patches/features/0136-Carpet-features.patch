@@ -4640,7 +4640,7 @@ index eec91bcc1e50f5eea6fd508a6d0f914052fe424f..a8bcc283673245b12d8da3c3a2420a84
          Optional<Holder<PoiType>> newType = PoiTypes.forState(newState);
          if (!Objects.equals(oldType, newType)) {
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de50353441 100644
+index 383c2159e753ddd74f7c949b45c6fa60d759fe59..de29c9dab796e1488d2b2d65102de45b3da0f400 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -264,6 +264,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -4817,7 +4817,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
          // Luminol start - Status bars
          this.statusBarList.tick();
          // Luminol end - Status bars
-@@ -1025,6 +1013,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1025,9 +1013,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      }
  
      public void doTick() {
@@ -4825,7 +4825,11 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
          try {
              if (this.valid && (!this.isSpectator() || !this.touchingUnloadedChunk())) { // Paper - don't tick dead players that are not in the world currently (pending respawn)
                  super.tick();
-@@ -1170,7 +1159,8 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
++                if (this.isRemoved() || this.hasDisconnected()) return; // Lophine - native death may complete logout inside Player.tick
+                 if (!this.containerMenu.stillValid(this)) {
+                     this.closeContainer(org.bukkit.event.inventory.InventoryCloseEvent.Reason.CANT_USE); // Paper - Inventory close reason
+                     this.containerMenu = this.inventoryMenu;
+@@ -1170,7 +1160,8 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      public void handleShoulderEntities() {
          this.playShoulderEntityAmbientSound(this.getShoulderEntityLeft());
          this.playShoulderEntityAmbientSound(this.getShoulderEntityRight());
@@ -4835,7 +4839,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
              if (!this.level().paperConfig().entities.behavior.parrotsAreUnaffectedByPlayerMovement) // Paper - Add option to make parrots stay
              this.removeEntitiesOnShoulder();
          }
-@@ -1213,64 +1203,88 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1213,64 +1204,88 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          }
      }
  
@@ -4962,7 +4966,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
      }
  
      @Override
-@@ -1364,14 +1378,43 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1364,14 +1379,43 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      // Paper end - Expand PlayerDeathEvent API
      @Override
      public void die(final DamageSource source) {
@@ -5008,7 +5012,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
          if (!keepInventory) {
              for (ItemStack item : this.getInventory().getContents()) {
                  if (!item.isEmpty() && !EnchantmentHelper.has(item, net.minecraft.world.item.enchantment.EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
-@@ -1379,15 +1422,27 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1379,15 +1423,27 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
                  }
              }
          }
@@ -5044,7 +5048,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
          Component defaultMessage = this.getCombatTracker().getDeathMessage();
  
          this.keepLevel = keepInventory; // SPIGOT-2222: pre-set keepLevel
-@@ -1398,7 +1453,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1398,7 +1454,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
              if (this.getHealth() <= 0) {
                  this.setHealth((float) event.getReviveHealth());
              }
@@ -5053,7 +5057,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
          }
          this.gameEvent(GameEvent.ENTITY_DIE); // moved from the top of this method
          // Paper end
-@@ -1462,20 +1517,10 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1462,20 +1518,10 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          // CraftBukkit end
  
          this.level().getCraftServer().getScoreboardManager().forAllObjectives(ObjectiveCriteria.DEATH_COUNT, this, ScoreAccess::increment); // CraftBukkit - Get our scores instead
@@ -5077,7 +5081,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
          this.level().broadcastEntityEvent(this, EntityEvent.DEATH);
          this.awardStat(Stats.DEATHS);
          this.resetStat(Stats.CUSTOM.get(Stats.TIME_SINCE_DEATH));
-@@ -1486,6 +1531,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1486,6 +1532,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.getCombatTracker().recheckStatus();
          this.setLastDeathLocation(Optional.of(GlobalPos.of(this.level().dimension(), this.blockPosition())));
          this.connection.markClientUnloadedAfterDeath();
@@ -5085,7 +5089,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
      }
  
      // Lophine Start - Cross Region Damage trace
-@@ -1547,6 +1593,21 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1547,6 +1594,21 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
      @Override
      public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
@@ -5107,7 +5111,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
          if (this.isInvulnerableTo(level, source)) {
              return false;
          }
-@@ -1564,17 +1625,65 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1564,17 +1626,65 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
                  && !(entity instanceof AbstractArrow arrow && arrow.getOwner() instanceof Player owner && !this.canHarmPlayer(owner))
          )) return false; // Paper - split the if statement. If below statement is false, hurtServer would not have been evaluated. Return false.
          // Paper start - cancellable death events
@@ -5181,7 +5185,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
      @Override
      public boolean canHarmPlayer(final Player target) {
          return this.isPvpAllowed() && super.canHarmPlayer(target);
-@@ -1775,8 +1884,13 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1775,8 +1885,13 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      }
  
      public void showEndCredits() {
@@ -5195,7 +5199,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
          if (!this.wonGame) {
              this.wonGame = true;
              this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.WIN_GAME, 0.0F));
-@@ -1857,6 +1971,14 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1857,6 +1972,14 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
          this.isChangingDimension = true;
          origin.removePlayerImmediately(this, RemovalReason.CHANGED_DIMENSION);
@@ -5210,7 +5214,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
          // reset player if needed, only after removal from world
          if (!alive) {
              ServerPlayer.this.reset();
-@@ -1986,8 +2108,20 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1986,8 +2109,20 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          return this;
      }
  
@@ -5231,7 +5235,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
          super.preChangeDimension();
          this.stopUsingItem();
      }
-@@ -2213,7 +2347,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2213,7 +2348,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.lastSentFood = -1;
          this.teleportSpectators(transition, oldLevel);
          // Leaves start - bot support
@@ -5240,7 +5244,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
              this.server.getBotList().bots.forEach(bot -> bot.sendFakeDataIfNeed(this, true)); // Leaves - render bot
          }
          // Leaves end - bot support
-@@ -2410,6 +2544,12 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2410,6 +2545,12 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
      @Override
      public boolean isInvulnerableTo(final ServerLevel level, final DamageSource source) {
@@ -5253,7 +5257,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
          // Paper start - disable player cramming
          return (super.isInvulnerableTo(level, source) || this.isChangingDimension() && !source.is(DamageTypes.ENDER_PEARL) || !this.connection.hasClientLoaded())
              || (!this.level().paperConfig().collisions.allowPlayerCrammingDamage && source.is(DamageTypes.CRAMMING));
-@@ -2721,6 +2861,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2721,6 +2862,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
      @Override
      public void awardStat(final Stat<?> stat, final int count) {
@@ -5261,7 +5265,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
          this.stats.increment(this, stat, count);
          this.level().getCraftServer().getScoreboardManager().forAllObjectives(stat, this, score -> score.add(count)); // CraftBukkit - Get our scores instead
      }
-@@ -2797,6 +2938,30 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2797,6 +2939,30 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
      @Override
      public void completeUsingItem() {
@@ -5292,7 +5296,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
          if (!this.useItem.isEmpty() && this.isUsingItem()) {
              this.connection.send(new ClientboundEntityEventPacket(this, EntityEvent.USE_ITEM_COMPLETE));
              super.completeUsingItem();
-@@ -2856,6 +3021,13 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2856,6 +3022,13 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.setShoulderEntityRight(oldPlayer.getShoulderEntityRight());
          this.setLastDeathLocation(oldPlayer.getLastDeathLocation());
          this.waypointIcon().copyFrom(oldPlayer.waypointIcon());
@@ -5306,7 +5310,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
      }
  
      private void transferInventoryXpAndScore(final Player oldPlayer) {
-@@ -2967,6 +3139,9 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2967,6 +3140,9 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(entity, ClientboundAnimatePacket.MAGIC_CRITICAL_HIT));
      }
  
@@ -5316,7 +5320,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
      @Override
      public void onUpdateAbilities() {
          if (this.connection != null) {
-@@ -3040,7 +3215,8 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3040,7 +3216,8 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.sendOverlayMessage(Component.translatable("build.spawn_protection", pos.toShortString()).withStyle(ChatFormatting.RED));
      }
  
@@ -5326,7 +5330,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
          if (this.acceptsSystemMessages(overlay)) {
              this.connection
                  .send(
-@@ -3125,6 +3301,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3125,6 +3302,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.particleStatus = information.particleStatus();
          this.getEntityData().set(DATA_PLAYER_MODE_CUSTOMISATION, (byte)information.modelCustomisation());
          this.getEntityData().set(DATA_PLAYER_MAIN_HAND, information.mainHand());
@@ -5338,7 +5342,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
      }
  
      public ClientInformation clientInformation() {
-@@ -3369,6 +3550,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3369,6 +3551,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
      @Override
      public @Nullable ItemEntity drop(final ItemStack itemStack, final boolean thrownFromHand, final Prediction prediction, final boolean callEvent, final java.util.function.@Nullable Consumer<org.bukkit.entity.Item> entityOperation) { // Paper - Extend dropItem API
@@ -5346,7 +5350,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de
          ItemEntity entity = super.drop(itemStack, thrownFromHand, prediction, callEvent, entityOperation); // Paper - Extend dropItem API
          ItemStack droppedItemStack = entity != null ? entity.getItem() : ItemStack.EMPTY; // Paper - move up
          if (thrownFromHand) {
-@@ -3573,6 +3755,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3573,6 +3756,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          return EnchantmentHelper.modifyDamage(this.level(), this.getWeaponItem(), entity, damageSource, dmg);
      }
  
@@ -12899,7 +12903,7 @@ index 282ccfc3b6a422bdccaf65446186db625983e763..e257291b9e28eac9455e26e39ff91af8
      public void setChanged() {
          this.timesChanged++;
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db8213edc0ee 100644
+index 1607008fd8bd7c7295248d47f7763c486986c36f..d8f0fc150cb9c71efab6ccd97d5bf11e31db57f2 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -264,6 +264,10 @@ public abstract class Player extends Avatar implements ContainerUser {
@@ -12913,7 +12917,15 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
          // Luminol start - Ray tracing entity tracker
          if (!fun.bm.lophine.config.modules.experiment.RayTrackingEntityTrackerConfig.enabled) {
              if (this.cullTask != null) this.cullTask.signalStop();
-@@ -362,7 +366,7 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -320,6 +324,7 @@ public abstract class Player extends Avatar implements ContainerUser {
+ 
+         this.updateIsUnderwater();
+         super.tick();
++        if (this.isRemoved()) return; // Lophine - death/collision callbacks can retire fake players during physics
+         int maxPositionOffset = 29999999;
+         double nx = Mth.clamp(this.getX(), -2.9999999E7, 2.9999999E7);
+         double nz = Mth.clamp(this.getZ(), -2.9999999E7, 2.9999999E7);
+@@ -362,7 +367,7 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
      protected boolean wantsToStopRiding() {
@@ -12922,7 +12934,19 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
      }
  
      protected boolean isStayingOnGroundSurface() {
-@@ -559,8 +563,19 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -538,6 +543,7 @@ public abstract class Player extends Avatar implements ContainerUser {
+         }
+ 
+         super.aiStep();
++        if (this.isRemoved()) return; // Lophine - do not begin pickup after retirement in the movement/death phase
+         this.yHeadRot = this.getYRot();
+         this.setSpeed((float)this.getAttributeValue(Attributes.MOVEMENT_SPEED));
+         if (this.getHealth() > 0.0F && !this.isCreativeFlyOrSpectator()) { // Leaves - creative no clip
+@@ -556,11 +562,23 @@ public abstract class Player extends Avatar implements ContainerUser {
+                     orbs.add(entity);
+                 } else if (!entity.isRemoved()) {
+                     this.touch(entity);
++                    if (this.isRemoved()) return; // Lophine - a collision callback may remove this player
                  }
              }
  
@@ -12943,7 +12967,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
              }
          }
  
-@@ -576,7 +591,8 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -576,7 +594,8 @@ public abstract class Player extends Avatar implements ContainerUser {
      public void removeEntitiesOnShoulder() {
      }
  
@@ -12953,7 +12977,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
          entity.playerTouch(this);
      }
  
-@@ -611,6 +627,11 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -611,6 +630,11 @@ public abstract class Player extends Avatar implements ContainerUser {
      @Override
      public void die(final DamageSource source) {
          super.die(source);
@@ -12965,7 +12989,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
          this.reapplyPosition();
          if (!this.isSpectator() && this.level() instanceof ServerLevel level) {
              this.dropAllDeathLoot(level, source);
-@@ -636,13 +657,39 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -636,13 +660,39 @@ public abstract class Player extends Avatar implements ContainerUser {
  
      @Override
      protected void dropEquipment(final ServerLevel level) {
@@ -13005,7 +13029,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
      protected void destroyVanishingCursedItems() {
          for (int i = 0; i < this.inventory.getContainerSize(); i++) {
              ItemStack itemStack = this.inventory.getItem(i);
-@@ -666,6 +713,7 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -666,6 +716,7 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
      public float getDestroySpeed(final BlockState state) {
@@ -13013,7 +13037,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
          float speed = this.inventory.getSelectedItem().getDestroySpeed(state);
          if (speed > 1.0F) {
              speed += (float)this.getAttributeValue(Attributes.MINING_EFFICIENCY);
-@@ -690,7 +738,7 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -690,7 +741,7 @@ public abstract class Player extends Avatar implements ContainerUser {
              speed /= 5.0F;
          }
  
@@ -13022,7 +13046,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
      }
  
      public boolean hasCorrectToolForDrops(final BlockState state) {
-@@ -787,10 +835,15 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -787,10 +838,15 @@ public abstract class Player extends Avatar implements ContainerUser {
  
          // return damage != 0.0F && super.hurtServer(level, source, damage);
          // CraftBukkit start - Don't filter out 0 damage
@@ -13041,7 +13065,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
          return damaged;
          // CraftBukkit end
      }
-@@ -938,6 +991,59 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -938,6 +994,59 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
      public InteractionResult interactOn(final Entity entity, final InteractionHand hand, final Vec3 location) {
@@ -13101,7 +13125,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
          if (this.isSpectator()) {
              if (entity instanceof MenuProvider menuProvider) {
                  this.openMenu(menuProvider);
-@@ -976,6 +1082,9 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -976,6 +1085,9 @@ public abstract class Player extends Avatar implements ContainerUser {
          }
      }
  
@@ -13111,7 +13135,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
      @Override
      // Paper start - Force entity dismount during teleportation
      public void removeVehicle(boolean suppressCancellation) {
-@@ -1067,6 +1176,19 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1067,6 +1179,19 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
      public void attack(final Entity entity) {
@@ -13131,7 +13155,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
          // Paper start - PlayerAttackEntityEvent
          boolean willAttack = !this.cannotAttack(entity); // Vanilla logic
          io.papermc.paper.event.player.PrePlayerAttackEntityEvent playerAttackEntityEvent = new io.papermc.paper.event.player.PrePlayerAttackEntityEvent(
-@@ -1077,6 +1199,33 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1077,6 +1202,33 @@ public abstract class Player extends Avatar implements ContainerUser {
  
          if (playerAttackEntityEvent.callEvent() && willAttack) { // Logic moved to willAttack local variable.
          // Paper end - PlayerAttackEntityEvent
@@ -13165,7 +13189,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
              float baseDamage = this.isAutoSpinAttack() ? this.autoSpinAttackDmg : (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
              ItemStack attackingItemStack = this.getWeaponItem();
              DamageSource damageSource = this.createAttackSource(attackingItemStack); final DamageSource dmgSourceFinal = damageSource; // Paper - damage events
-@@ -1112,23 +1261,22 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1112,23 +1264,22 @@ public abstract class Player extends Avatar implements ContainerUser {
                      }
  
                      Vec3 oldMovement = entity.getDeltaMovement();
@@ -13204,7 +13228,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
                  }
  
                  this.postPiercingAttack();
-@@ -1136,6 +1284,246 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1136,6 +1287,246 @@ public abstract class Player extends Avatar implements ContainerUser {
          }
      }
  
@@ -13451,7 +13475,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
      private void playServerSideSound(final SoundEvent sound) {
          sendSoundEffect(this, this.getX(), this.getY(), this.getZ(), sound, this.getSoundSource(), 1.0F, 1.0F); // Paper - send while respecting visibility
      }
-@@ -1275,7 +1663,7 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1275,7 +1666,7 @@ public abstract class Player extends Avatar implements ContainerUser {
              // Paper end - Configurable sprint interruption on attack
          }
  
@@ -13460,7 +13484,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
              // CraftBukkit start - Add Velocity Event
              boolean cancelled = false;
              org.bukkit.entity.Player player = (org.bukkit.entity.Player) entity.getBukkitEntity();
-@@ -1304,34 +1692,97 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1304,34 +1695,97 @@ public abstract class Player extends Avatar implements ContainerUser {
          return 1.0F;
      }
  
@@ -13584,7 +13608,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
      }
  
      protected float getEnchantedDamage(final Entity entity, final float dmg, final DamageSource damageSource) {
-@@ -1355,7 +1806,18 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1355,7 +1809,18 @@ public abstract class Player extends Avatar implements ContainerUser {
      public boolean stabAttack(
          final EquipmentSlot slot, final Entity target, float baseDamage, final boolean dealsDamage, final boolean dealsKnockback, final boolean dismounts
      ) {
@@ -13603,7 +13627,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
          boolean cannotAttack = this.cannotAttack(target); // Vanilla logic
          io.papermc.paper.event.player.PrePlayerAttackEntityEvent playerAttackEntityEvent = new io.papermc.paper.event.player.PrePlayerAttackEntityEvent(
              (org.bukkit.entity.Player) this.getBukkitEntity(),
-@@ -1388,7 +1850,28 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1388,7 +1853,28 @@ public abstract class Player extends Avatar implements ContainerUser {
          }
  
          Vec3 oldMovement = target.getDeltaMovement();
@@ -13632,7 +13656,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
          if (dealsKnockback) {
              this.causeExtraKnockback(target, 0.4F, oldMovement, damageSource, totalDamage, false);
              this.causeExtraKnockback(target, this.getKnockback(target, damageSource), oldMovement, damageSource, totalDamage, true);
-@@ -1412,12 +1895,44 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1412,12 +1898,44 @@ public abstract class Player extends Avatar implements ContainerUser {
          return true;
      }
  
@@ -13677,7 +13701,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
          this.inventoryMenu.removed(this);
          if (this.hasContainerOpen()) {
              this.doCloseContainer();
-@@ -1549,6 +2064,9 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1549,6 +2067,9 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
      public void awardStat(final Stat<?> stat) {
@@ -13687,7 +13711,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
          this.awardStat(stat, 1);
      }
  
-@@ -1611,6 +2129,22 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1611,6 +2132,22 @@ public abstract class Player extends Avatar implements ContainerUser {
  
      @Override
      public float getSpeed() {
@@ -13710,7 +13734,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
          return (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED);
      }
  
-@@ -1628,6 +2162,15 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1628,6 +2165,15 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
      public boolean tryToStartFallFlying() {
@@ -13726,7 +13750,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
          if (!this.isFallFlying() && this.canGlide() && !this.isInLiquid()) {
              this.startFallFlying();
              return true;
-@@ -1793,6 +2336,13 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1793,6 +2339,13 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
      public boolean canEat(final boolean canAlwaysEat) {
@@ -13740,7 +13764,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
          return this.abilities.invulnerable || canAlwaysEat || this.foodData.needsFood();
      }
  
-@@ -2246,10 +2796,17 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -2246,10 +2799,17 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
      public double blockInteractionRange() {
@@ -13758,7 +13782,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
          return this.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE);
      }
  
-@@ -2258,8 +2815,14 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -2258,8 +2818,14 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
      public boolean isWithinEntityInteractionRange(final AABB aabb, final double buffer) {
@@ -13774,7 +13798,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db82
          return distanceToSq < maxRange * maxRange;
      }
  
-@@ -2268,7 +2831,14 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -2268,7 +2834,14 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
      public boolean isWithinBlockInteractionRange(final BlockPos pos, final double buffer) {

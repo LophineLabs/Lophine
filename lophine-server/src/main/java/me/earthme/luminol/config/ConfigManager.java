@@ -58,11 +58,9 @@ public class ConfigManager {
 
     public static void loadConfigFiles() {
         runTaskBeforeFinalLoad();
-        // Finalize loading
-        CompletableFuture<?>[] futures = configfiles.values().stream()
-                .map(config -> CompletableFuture.runAsync(config::finalizeLoadConfig))
-                .toArray(CompletableFuture[]::new);
-        CompletableFuture.allOf(futures).join();
+        // Loaded callbacks register commands and permissions in shared Paper registries.
+        // Keep that phase on the calling server thread; independent file preloads remain asynchronous.
+        configfiles.values().forEach(ConfigsInstance::finalizeLoadConfig);
         CommandRegister.register(); // register command after config loaded to enable some command didn't depend on config files
         initialized = true;
     }
@@ -153,11 +151,7 @@ public class ConfigManager {
     }
 
     public static void reloadComments() {
-        CompletableFuture<?>[] futures = configfiles.values().stream()
-                .map(config -> CompletableFuture.runAsync(() -> {
-                    config.reload(false, false);
-                }))
-                .toArray(CompletableFuture[]::new);
-        CompletableFuture.allOf(futures).join();
+        // Comment reload also invokes loaded callbacks and re-registers each config command.
+        configfiles.values().forEach(config -> config.reload(false, false));
     }
 }

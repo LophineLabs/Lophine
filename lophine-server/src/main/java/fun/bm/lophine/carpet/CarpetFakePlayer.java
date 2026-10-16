@@ -1,18 +1,18 @@
 /*
- * This file is part of Leaves (https://github.com/LeavesMC/Leaves)
- *
- * Leaves is free software: you can redistribute it and/or modify
+ * This file is part of Lophine.
+ * Portions derived from Leaves (https://github.com/LeavesMC/Leaves).
+ * This file is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Leaves is distributed in the hope that it will be useful,
+ * This file is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with Leaves. If not, see <https://www.gnu.org/licenses/>.
+ * along with this file. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package fun.bm.lophine.carpet;
@@ -61,6 +61,7 @@ public class CarpetFakePlayer extends ServerPlayer {
     public boolean handsBusy;
     public volatile boolean carpetPlacementReady;
     private boolean carpetRestoreAfterDeath;
+    private CompoundTag carpetShutdownActions;
     private int autoFishCooldown;
     private static final int AUTO_FISH_RECAST_DELAY = 4, AUTO_FISH_ENTITY_DELAY = 20;
     final java.util.concurrent.CompletableFuture<CarpetFakePlayer> carpetActualPlacementFuture = new java.util.concurrent.CompletableFuture<>();
@@ -75,19 +76,22 @@ public class CarpetFakePlayer extends ServerPlayer {
     public boolean isFakePlayer() { return true; }
 
     public void tick() {
-        if (!this.isAlive()) return;
+        if (this.isRemoved() || this.hasDisconnected() || !this.isAlive()) return;
         if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fakePlayerHeal && this.level().getGameTime() % 40L == 0L) {
             this.heal(1.0F);
             this.getFoodData().eat(1, 0.0F);
         }
         this.joining = false;
         super.tick();
+        if (this.isRemoved() || this.hasDisconnected()) return;
         if (!FakePlayerCompatConfig.fakePlayerTicksLikeRealPlayer) this.doTick();
     }
 
     public void doTick() {
+        if (this.isRemoved() || this.hasDisconnected()) return;
         if (!this.isAlive()) { this.die(this.damageSources().generic()); return; }
         super.doTick();
+        if (this.isRemoved() || this.hasDisconnected()) return;
         this.updateItemInHand(InteractionHand.MAIN_HAND);
         this.updateItemInHand(InteractionHand.OFF_HAND);
         tickAutoFish();
@@ -97,6 +101,7 @@ public class CarpetFakePlayer extends ServerPlayer {
         if (carpet.script.external.ScarpetNativeWork.isDraining(this.level().getServer()) || CarpetPlayerBirths.playerPending(this)) return;
         if (FakePlayerCompatConfig.fakePlayerTicksLikeRealPlayer) {
             this.carpetActionPack.onUpdate();
+            if (this.isRemoved() || this.hasDisconnected()) return;
             this.doTick();
         }
     }
@@ -106,7 +111,15 @@ public class CarpetFakePlayer extends ServerPlayer {
         nbt.putBoolean("isShiftKeyDown", this.isShiftKeyDown());
         nbt.putBoolean("carpetRestoreAfterDeath", this.carpetRestoreAfterDeath);
         nbt.putBoolean("carpetShadow", this.carpetShadow);
-        nbt.store("carpetPlayerActions", CompoundTag.CODEC, this.carpetActionPack.save());
+        nbt.store("carpetPlayerActions", CompoundTag.CODEC,
+                this.carpetShutdownActions == null ? this.carpetActionPack.save() : this.carpetShutdownActions.copy());
+    }
+
+    void preserveShutdownActions(CompoundTag actions) {
+        ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(this, "Shutdown action metadata requires its owner");
+        if (!carpet.script.external.ScarpetNativeWork.isDraining(this.level().getServer()))
+            throw new IllegalStateException("Resumable shutdown actions can only be frozen while draining");
+        this.carpetShutdownActions = actions.copy();
     }
 
     public void readAdditionalSaveData(ValueInput nbt) {

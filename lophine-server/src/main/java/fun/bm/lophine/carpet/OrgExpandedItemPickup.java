@@ -26,6 +26,7 @@ public final class OrgExpandedItemPickup {
     }
 
     public static void expand(ServerPlayer player, AABB pickupArea) {
+        if (player.isRemoved() || player.hasDisconnected() || player.isDeadOrDying()) return;
         TickThread.ensureTickThread(player, "Expanded pickup must be requested by its player owner");
         int range = OrgRulePlayerPreferences.itemPickupRange(player);
         if (range <= 0 || player.isRemoved() || player.isDeadOrDying() || ScarpetPlayerInventoryGate.paused(player))
@@ -77,6 +78,7 @@ public final class OrgExpandedItemPickup {
     }
 
     private static void touch(ServerPlayer player, ServerLevel world, int range) {
+        if (player.isRemoved() || player.hasDisconnected() || player.isDeadOrDying()) return;
         TickThread.ensureTickThread(player, "Expanded pickup requires both native owners");
         if (player.level() != world || player.isRemoved() || player.isDeadOrDying() || player.isCreativeFlyOrSpectator() || OrgRulePlayerPreferences.itemPickupRange(player) != range)
             return;
@@ -91,6 +93,7 @@ public final class OrgExpandedItemPickup {
         if (!TickThread.isTickThreadFor(world, Mth.floor(expanded.minX) >> 4, Mth.floor(expanded.minZ) >> 4, Mth.floor(expanded.maxX) >> 4, Mth.floor(expanded.maxZ) >> 4))
             return;
         for (Entity entity : world.getEntities(player, expanded, candidate -> candidate.is(EntityTypes.ITEM))) {
+            if (player.isRemoved() || player.hasDisconnected() || player.isDeadOrDying()) return;
             if (entity.isRemoved()) continue;
             TickThread.ensureTickThread(entity, "Expanded item pickup cannot cross a foreign owner");
             // Preserve the native Player.touch entry so Carpet's collision event fires too.
