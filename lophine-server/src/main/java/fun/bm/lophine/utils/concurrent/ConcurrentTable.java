@@ -1,15 +1,14 @@
 package fun.bm.lophine.utils.concurrent;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class ConcurrentTable<X, Y, Z> implements AbstractConcurrentTable<X, Y, Z> {
-    protected final ConcurrentLinkedDeque<TableEntry<X, Y, Z>> data = new ConcurrentLinkedDeque<>();
+    protected final Set<TableEntry<X, Y, Z>> data = ConcurrentHashMap.newKeySet();
+    protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     protected final boolean flagX;
     protected final boolean flagY;
     protected final boolean flagZ;
@@ -26,139 +25,213 @@ public class ConcurrentTable<X, Y, Z> implements AbstractConcurrentTable<X, Y, Z
 
     @Override
     public void put(X x, Y y, Z z) {
-        put(x, y, z, false);
-    }
-
-    public void put(X x, Y y, Z z, boolean flag) {
-        if (!flag) {
+        if (x == null || y == null || z == null) {
+            throw new IllegalArgumentException("x, y and z must not be null");
+        }
+        lock.writeLock().lock();
+        try {
             if (flagX) {
-                List<X> datas = getX(y, z);
-                for (X x1 : datas) {
-                    if (!x1.equals(x)) {
-                        remove(x1, y, z);
+                List<X> values = getX(y, z);
+                for (X value : values) {
+                    if (!Objects.equals(value, x)) {
+                        remove(value, y, z);
                     }
                 }
             }
             if (flagY) {
-                List<Y> datas = getY(x, z);
-                for (Y y1 : datas) {
-                    if (!y1.equals(y)) {
-                        remove(x, y1, z);
+                List<Y> values = getY(x, z);
+                for (Y value : values) {
+                    if (!Objects.equals(value, y)) {
+                        remove(x, value, z);
                     }
                 }
             }
             if (flagZ) {
-                List<Z> datas = getZ(x, y);
-                for (Z z1 : datas) {
-                    if (!z1.equals(z)) {
-                        remove(x, y, z1);
+                List<Z> values = getZ(x, y);
+                for (Z value : values) {
+                    if (!Objects.equals(value, z)) {
+                        remove(x, y, value);
                     }
                 }
             }
+            data.add(new TableEntry<>(x, y, z));
+        } finally {
+            lock.writeLock().unlock();
         }
-        data.add(new TableEntry<>(x, y, z));
     }
 
     @Override
     public void remove(X x, Y y, Z z) {
-        data.removeIf(entry -> entry.x().equals(x) && entry.y().equals(y) && entry.z().equals(z));
+        lock.writeLock().lock();
+        try {
+            data.removeIf(entry -> Objects.equals(entry.x(), x)
+                    && Objects.equals(entry.y(), y)
+                    && Objects.equals(entry.z(), z));
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     @Override
     public List<Z> getZ(X x, Y y) {
-        return filterAndCollect(
-                entry -> entry.x().equals(x) && entry.y().equals(y),
-                TableEntry::z
-        );
+        lock.readLock().lock();
+        try {
+            return filterAndCollect(
+                    entry -> Objects.equals(entry.x(), x) && Objects.equals(entry.y(), y),
+                    TableEntry::z
+            );
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     @Override
     public List<Y> getY(X x, Z z) {
-        return filterAndCollect(
-                entry -> entry.x().equals(x) && entry.z().equals(z),
-                TableEntry::y
-        );
+        lock.readLock().lock();
+        try {
+            return filterAndCollect(
+                    entry -> Objects.equals(entry.x(), x) && Objects.equals(entry.z(), z),
+                    TableEntry::y
+            );
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     @Override
     public List<X> getX(Y y, Z z) {
-        return filterAndCollect(
-                entry -> entry.y().equals(y) && entry.z().equals(z),
-                TableEntry::x
-        );
+        lock.readLock().lock();
+        try {
+            return filterAndCollect(
+                    entry -> Objects.equals(entry.y(), y) && Objects.equals(entry.z(), z),
+                    TableEntry::x
+            );
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     @Override
     public Map<X, Y> getXY(Z z) {
-        return filterAndMap(
-                entry -> entry.z().equals(z),
-                TableEntry::x,
-                TableEntry::y
-        );
+        lock.readLock().lock();
+        try {
+            return filterAndMap(
+                    entry -> Objects.equals(entry.z(), z),
+                    TableEntry::x,
+                    TableEntry::y
+            );
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     @Override
     public Map<Y, Z> getYZ(X x) {
-        return filterAndMap(
-                entry -> entry.x().equals(x),
-                TableEntry::y,
-                TableEntry::z
-        );
+        lock.readLock().lock();
+        try {
+            return filterAndMap(
+                    entry -> Objects.equals(entry.x(), x),
+                    TableEntry::y,
+                    TableEntry::z
+            );
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     @Override
     public Map<X, Z> getXZ(Y y) {
-        return filterAndMap(
-                entry -> entry.y().equals(y),
-                TableEntry::x,
-                TableEntry::z
-        );
+        lock.readLock().lock();
+        try {
+            return filterAndMap(
+                    entry -> Objects.equals(entry.y(), y),
+                    TableEntry::x,
+                    TableEntry::z
+            );
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     @Override
     public List<X> getAllX() {
-        return collectAll(TableEntry::x);
+        lock.readLock().lock();
+        try {
+            return collectAll(TableEntry::x);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     @Override
     public List<Y> getAllY() {
-        return collectAll(TableEntry::y);
+        lock.readLock().lock();
+        try {
+            return collectAll(TableEntry::y);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     @Override
     public List<Z> getAllZ() {
-        return collectAll(TableEntry::z);
+        lock.readLock().lock();
+        try {
+            return collectAll(TableEntry::z);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     @Override
     public void clearXY(Z z) {
-        data.removeIf(entry -> entry.z().equals(z));
+        lock.writeLock().lock();
+        try {
+            data.removeIf(entry -> Objects.equals(entry.z(), z));
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     @Override
     public void clearYZ(X x) {
-        data.removeIf(entry -> entry.x().equals(x));
+        lock.writeLock().lock();
+        try {
+            data.removeIf(entry -> Objects.equals(entry.x(), x));
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     @Override
     public void clearXZ(Y y) {
-        data.removeIf(entry -> entry.y().equals(y));
+        lock.writeLock().lock();
+        try {
+            data.removeIf(entry -> Objects.equals(entry.y(), y));
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     @Override
     public void clearAll() {
-        data.clear();
+        lock.writeLock().lock();
+        try {
+            data.clear();
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     private <T> List<T> filterAndCollect(Predicate<TableEntry<X, Y, Z>> filter,
                                          Function<TableEntry<X, Y, Z>, T> mapper) {
-        List<T> result = new ArrayList<>();
+        Set<T> result = new LinkedHashSet<>();
         for (TableEntry<X, Y, Z> entry : data) {
             if (filter.test(entry)) {
                 result.add(mapper.apply(entry));
             }
         }
-        return result;
+        return List.copyOf(result);
     }
 
     private <K, V> Map<K, V> filterAndMap(Predicate<TableEntry<X, Y, Z>> filter,
@@ -174,10 +247,10 @@ public class ConcurrentTable<X, Y, Z> implements AbstractConcurrentTable<X, Y, Z
     }
 
     private <T> List<T> collectAll(Function<TableEntry<X, Y, Z>, T> mapper) {
-        List<T> result = new ArrayList<>();
+        Set<T> result = new LinkedHashSet<>();
         for (TableEntry<X, Y, Z> entry : data) {
             result.add(mapper.apply(entry));
         }
-        return result;
+        return List.copyOf(result);
     }
 }
