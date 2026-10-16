@@ -17,11 +17,6 @@ public class ConfigManager {
     private static final Map<String, ConfigsInstance> configfiles = new HashMap<>();
     private static final Collection<Runnable> runnableBeforeFinalLoad = new ConcurrentLinkedQueue<>();
     private static final Set<TransformingConfig> needTransformedConfigs = ConcurrentHashMap.newKeySet();
-    // String[]:
-    // 0 -> origin key
-    // 1 -> target key
-    // 2 -> origin full path
-    // 3 -> target full path
 
     public static void initConfigs() {
         registerConfig(builder.of("luminol", "me.earthme.luminol.config.modules"));
