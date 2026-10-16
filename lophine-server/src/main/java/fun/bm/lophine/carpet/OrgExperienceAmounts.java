@@ -30,8 +30,15 @@ public final class OrgExperienceAmounts {
     }
 
     public static BigInteger read(ServerPlayer player) {
-        int level = Math.max(0, Math.min(player.experienceLevel, MAX_EFFECTIVE_LEVEL));
-        int partial = level == MAX_EFFECTIVE_LEVEL ? 0 : Math.max(0, (int) Math.floor(player.experienceProgress * player.getXpNeededForNextLevel()));
+        return read(player.experienceLevel, player.experienceProgress);
+    }
+
+    public static BigInteger read(int rawLevel, float progress) {
+        int level = Math.max(0, Math.min(rawLevel, MAX_EFFECTIVE_LEVEL));
+        long needed = level >= 30 ? 112L + (level - 30L) * 9 : level >= 15 ? 37L + (level - 15L) * 5 : 7L + level * 2L;
+        // Vanilla stores whole points as a float fraction. Flooring its round-off
+        // can turn nine points into eight on every transfer or offline reload.
+        long partial = level == MAX_EFFECTIVE_LEVEL ? 0 : Math.max(0L, Math.round((double) progress * needed));
         return forLevel(level).add(BigInteger.valueOf(partial));
     }
 

@@ -43,7 +43,7 @@ public final class TisSamplingLoggers {
     }
 
     public static void entityAllocated(int id, EntityType<?> type, String uuid) {
-        if (!CarpetLoggerProtocol.hasSubscribers("entityIdCounter")) return;
+        if (!CarpetLoggerProtocol.hasSubscribers("entityIdCounter", option -> contains(option, "increment"))) return;
         String thread = Thread.currentThread().getName();
         String trace = Arrays.stream(Thread.currentThread().getStackTrace()).skip(2).map(StackTraceElement::toString)
                 .collect(Collectors.joining("\n"));
@@ -97,7 +97,8 @@ public final class TisSamplingLoggers {
     }
 
     private static boolean contains(String option, String selected) {
-        return "all".equals(option) || option != null && Arrays.asList(option.split(",")).contains(selected);
+        return "all".equals(option) || selected.equals(option)
+                || option != null && option.indexOf(',') >= 0 && Arrays.asList(option.split(",")).contains(selected);
     }
 
     public static void reset() {

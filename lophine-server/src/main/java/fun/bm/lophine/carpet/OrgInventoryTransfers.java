@@ -616,6 +616,7 @@ public final class OrgInventoryTransfers {
         final AtomicBoolean vaultRunning = new AtomicBoolean();
         final CompletableFuture<Void> completed = new CompletableFuture<>(), vaultAvailable = new CompletableFuture<>();
         final ReentrantLock lock = new ReentrantLock();
+        CompoundTag durableSnapshot;
     }
 
     private static final class Coordinator {
@@ -1627,6 +1628,11 @@ public final class OrgInventoryTransfers {
 
         private void save(Transaction transaction) {
             CompoundTag data = write(transaction);
+            Path target = directory.resolve(transaction.id + ".nbt");
+            if (data.equals(transaction.durableSnapshot) && Files.isRegularFile(target)) return;
+            // A failed replacement/readback leaves the disk image uncertain, including
+            // when the caller later rolls its in-memory state back to an older phase.
+            transaction.durableSnapshot = null;
             Path staging = null;
             try {
                 Files.createDirectories(directory);
@@ -1635,14 +1641,12 @@ public final class OrgInventoryTransfers {
                 try (FileChannel channel = FileChannel.open(staging, StandardOpenOption.WRITE)) {
                     channel.force(true);
                 }
-                Path target = directory.resolve(transaction.id + ".nbt");
-                try {
-                    Files.move(staging, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-                } catch (java.nio.file.AtomicMoveNotSupportedException ignored) {
-                    Files.move(staging, target, StandardCopyOption.REPLACE_EXISTING);
-                }
+                OrgDurableFiles.replace(staging, target);
                 if (!data.equals(NbtIo.readCompressed(target, NbtAccounter.unlimitedHeap())))
                     throw new IOException("Escrow readback did not match");
+                // Region retries often observe the same phase while another actor runs.
+                // Publish an independent image only after this exact write is verified.
+                transaction.durableSnapshot = data.copy();
             } catch (IOException exception) {
                 throw new IllegalStateException("Cannot save inventory escrow", exception);
             } finally {

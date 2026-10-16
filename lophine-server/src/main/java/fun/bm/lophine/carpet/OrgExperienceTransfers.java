@@ -181,10 +181,7 @@ public final class OrgExperienceTransfers {
         float progress = data.getFloatOr("XpP", 0);
         if (level < 0 || !Float.isFinite(progress) || progress < 0 || progress > 1)
             throw new IllegalArgumentException("Malformed offline experience state");
-        level = Math.min(level, OrgExperienceAmounts.MAX_EFFECTIVE_LEVEL);
-        int needed = level >= 30 ? 9 * level - 158 : level >= 15 ? 5 * level - 38 : 2 * level + 7;
-        int partial = level == OrgExperienceAmounts.MAX_EFFECTIVE_LEVEL ? 0 : Math.max(0, (int) Math.floor(progress * needed));
-        return OrgExperienceAmounts.forLevel(level).add(BigInteger.valueOf(partial));
+        return OrgExperienceAmounts.read(level, progress);
     }
 
     private static final class OfflineClaim {
@@ -1063,11 +1060,7 @@ public final class OrgExperienceTransfers {
                     while (data.hasRemaining()) output.write(data);
                     output.force(true);
                 }
-                try {
-                    Files.move(temporary, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-                } catch (java.nio.file.AtomicMoveNotSupportedException ignored) {
-                    Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING);
-                }
+                OrgDurableFiles.replace(temporary, file);
                 if (!java.util.Arrays.equals(serialized, Files.readAllBytes(file)))
                     throw new IOException("Experience ledger readback is unknown");
             } catch (IOException exception) {

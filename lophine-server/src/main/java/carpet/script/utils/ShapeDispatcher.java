@@ -6,7 +6,6 @@ import carpet.script.exception.ThrowStatement;
 import carpet.script.exception.Throwables;
 import carpet.script.external.Carpet;
 import carpet.script.external.Vanilla;
-import carpet.script.language.Sys;
 import carpet.script.utils.shapes.ShapeDirection;
 import carpet.script.value.*;
 import com.google.common.collect.ImmutableMap;
@@ -37,6 +36,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -1863,7 +1863,7 @@ public class ShapeDispatcher {
                         towards.x * (1.0 - 1.0 / center) + from.x, towards.y * (1.0 - 1.0 / center) + from.y, towards.z * (1.0 - 1.0 / center) + from.z, particles / divider,
                         towards.x / dev, towards.y / dev, towards.z / dev, 0.0);
             }
-            parts += 2 * particles / divider;
+            parts += 2 * (particles / divider) * playerList.size();
             divider = 2 * divider;
         }
         return parts;
@@ -1871,12 +1871,13 @@ public class ShapeDispatcher {
 
     public static int drawParticleLine(List<ServerPlayer> players, ParticleOptions particle, Vec3 from, Vec3 to, double density) {
         if (players.isEmpty()) return 0;
-        if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThread()) {
-            int total = 0;
-            for (ServerPlayer player : players)
-                total += carpet.script.external.ScarpetRuntime.atEntity(player,
-                        () -> drawParticleLine(List.of(player), particle, from, to, density));
-            return total;
+        validateParticleLine(from, to, density);
+        if (players.stream().anyMatch(player -> !ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(player))) {
+            // A regional caller must use the future API instead of waiting on another owner.
+            // Check the complete audience before emitting anything or scheduling native work.
+            if (ca.spottedleaf.moonrise.common.util.TickThread.isTickThread())
+                throw new InternalExpressionException("Cross-region particle lines require drawParticleLineAsync; a tick actor cannot wait for another owner");
+            return carpet.script.external.ScarpetRuntime.await(drawParticleLineAsync(players, particle, from, to, density));
         }
         double distance = from.distanceToSqr(to);
         if (distance == 0) {
@@ -1906,7 +1907,7 @@ public class ShapeDispatcher {
 
         for (Vec3 delta = new Vec3(0.0, 0.0, 0.0);
              delta.lengthSqr() < distance;
-             delta = delta.add(incvec.scale(Sys.randomizer.nextFloat()))) {
+             delta = delta.add(incvec.scale(1.0 - ThreadLocalRandom.current().nextFloat()))) {
             for (ServerPlayer player : players) {
                 player.level().sendParticles(player, particle, true, true,
                         delta.x + from.x, delta.y + from.y, delta.z + from.z, 1,
@@ -1915,5 +1916,27 @@ public class ShapeDispatcher {
             }
         }
         return pcount;
+    }
+
+    /** Dispatches each recipient to its current entity owner without blocking a region thread. */
+    public static java.util.concurrent.CompletableFuture<Integer> drawParticleLineAsync(List<ServerPlayer> players, ParticleOptions particle, Vec3 from, Vec3 to, double density) {
+        validateParticleLine(from, to, density);
+        var recipients = List.copyOf(players);
+        var counts = new ArrayList<java.util.concurrent.CompletableFuture<Integer>>(recipients.size());
+        for (ServerPlayer player : recipients)
+            counts.add(carpet.script.external.ScarpetRuntime.atEntityFuture(player,
+                    () -> drawParticleLine(List.of(player), particle, from, to, density)));
+        var result = java.util.concurrent.CompletableFuture.allOf(counts.toArray(java.util.concurrent.CompletableFuture[]::new))
+                .thenApply(ignored -> counts.stream().mapToInt(java.util.concurrent.CompletableFuture::join).reduce(0, Math::addExact));
+        carpet.script.external.ScarpetNativeWork.record(result);
+        return result;
+    }
+
+    private static void validateParticleLine(Vec3 from, Vec3 to, double density) {
+        if (!Double.isFinite(density) || density <= 0)
+            throw new InternalExpressionException("Particle density must be finite and positive");
+        double squared = from.distanceToSqr(to);
+        if (!Double.isFinite(squared) || (squared < 100 ? squared : Math.sqrt(squared)) / density > 1_000_000)
+            throw new InternalExpressionException("Particle line exceeds the limit of 1000000 samples per player");
     }
 }

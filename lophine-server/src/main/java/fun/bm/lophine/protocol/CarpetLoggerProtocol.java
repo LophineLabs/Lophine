@@ -78,8 +78,13 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
     }
 
     public static boolean hasSubscribers(String name) {
+        return hasSubscribers(name, option -> true);
+    }
+
+    public static boolean hasSubscribers(String name, java.util.function.Predicate<String> accepts) {
         for (String player : ONLINE_PLAYERS) {
-            if (subscriptions(player).containsKey(name)) return true;
+            String option = subscriptions(player).get(name);
+            if (option != null && accepts.test(option)) return true;
         }
         return false;
     }
@@ -92,11 +97,11 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
         for (String player : ONLINE_PLAYERS) {
             String option = subscriptions(player).get(name);
             if (option == null) continue;
-            recipients.put(player, option);
-            messages.computeIfAbsent(option, key -> {
-                var output = render.apply(key);
-                return output == null ? List.of() : List.copyOf(output);
+            var output = messages.computeIfAbsent(option, key -> {
+                var rendered = render.apply(key);
+                return rendered == null ? List.of() : List.copyOf(rendered);
             });
+            if (!output.isEmpty()) recipients.put(player, option);
         }
         if (recipients.isEmpty()) return;
         io.papermc.paper.threadedregions.RegionizedServer.getInstance().addTask(() -> {

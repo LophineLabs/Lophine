@@ -259,10 +259,7 @@ public final class OrgFinderFiles {
     }
 
     static BigInteger experience(int rawLevel, float progress) {
-        int level = Math.max(0, Math.min(rawLevel, OrgExperienceAmounts.MAX_EFFECTIVE_LEVEL));
-        long needed = level >= 30 ? 112L + (level - 30L) * 9 : level >= 15 ? 37L + (level - 15L) * 5 : 7L + level * 2L;
-        int points = level == OrgExperienceAmounts.MAX_EFFECTIVE_LEVEL ? 0 : Math.max(0, (int) Math.floor(progress * needed));
-        return OrgExperienceAmounts.forLevel(level).add(BigInteger.valueOf(points));
+        return OrgExperienceAmounts.read(rawLevel, progress);
     }
 
     private static Component name(CommandSourceStack source, UUID uuid) {

@@ -378,6 +378,11 @@ public final class OrgPlayerInventoryMenus {
             carpet.script.external.ScarpetNativeWork.trackNative(viewer.level().getServer(), actual);
             boolean ender = bridge.snapshot.ender, gca = bridge.snapshot.gca;
             Runnable begin = () -> {
+                if (viewer.containerMenu != this || viewer.isRemoved()) {
+                    refreshing = false;
+                    actual.complete(null);
+                    return;
+                }
                 var captured = OrgFakePlayerActions.owned(target, () -> OrgFakePlayerActions.whenIdle(target,
                         () -> target.isDeadOrDying() || target.isRemoved() ? null : RemoteSnapshot.capture(target, ender, gca))).thenCompose(value -> value);
                 TisCommandContinuations.then(captured, snapshot -> OrgMenuNativeEffects.run(viewer, () -> {
@@ -395,8 +400,10 @@ public final class OrgPlayerInventoryMenus {
                     else failedRefresh(actual, failure);
                 }));
             };
-            if (!OrgDeferredPlayerCommands.deferIfCausal(viewer, begin, failure -> failedRefresh(actual, failure)))
-                begin.run();
+            // A transaction can finish inside a fresh command scope, whose own observer
+            // is deliberately ignored by deferIfCausal. UI refresh must still detach:
+            // waiting for the viewer gate here would retain the very commit releasing it.
+            OrgDeferredPlayerCommands.defer(viewer, begin, failure -> failedRefresh(actual, failure));
         }
 
         private void failedRefresh(java.util.concurrent.CompletableFuture<Void> actual, Throwable failure) {

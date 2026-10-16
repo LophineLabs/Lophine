@@ -73,7 +73,8 @@ public final class ScarpetNativeWork {
     }
 
     public static final class Token {
-        private final Entity owner;
+        private final java.lang.ref.WeakReference<Entity> owner;
+        private volatile Entity activeOwner;
         private final Token parent;
         private final java.util.Set<Token> prerequisites = java.util.concurrent.ConcurrentHashMap.newKeySet();
         private final AtomicInteger pending = new AtomicInteger(1);
@@ -82,12 +83,14 @@ public final class ScarpetNativeWork {
         private final CompletableFuture<Void> finished = new CompletableFuture<>();
 
         private Token(Entity owner, Token parent) {
-            this.owner = owner;
+            this.owner = new java.lang.ref.WeakReference<>(owner);
+            this.activeOwner = owner;
             this.parent = parent;
         }
 
         public Entity owner() {
-            return owner;
+            Entity active = activeOwner;
+            return active == null ? owner.get() : active;
         }
 
         private void retain() {
@@ -115,8 +118,15 @@ public final class ScarpetNativeWork {
                 Throwable error = failure.get();
                 if (error == null && guestFailure.get() != null)
                     error = new GuestContinuationFailure(guestFailure.get());
-                if (error == null) finished.complete(null);
-                else finished.completeExceptionally(error);
+                try {
+                    if (error == null) finished.complete(null);
+                    else finished.completeExceptionally(error);
+                } finally {
+                    // Dependency keys can be completed futures whose result is this entity.
+                    // Keep the actor alive through native completion callbacks, then break
+                    // the weak-key map's value -> actor -> future retention cycle.
+                    activeOwner = null;
+                }
             }
         }
     }

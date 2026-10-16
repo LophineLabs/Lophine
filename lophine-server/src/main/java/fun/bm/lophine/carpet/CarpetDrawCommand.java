@@ -189,7 +189,7 @@ public class CarpetDrawCommand {
     private static RequiredArgumentBuilder<CommandSourceStack, BlockInput>
     drawShape(Command<CommandSourceStack> drawer, CommandBuildContext commandBuildContext) {
         return argument("block", BlockStateArgument.block(commandBuildContext)).
-                executes(drawer)
+                executes(c -> enqueue(c, drawer))
                 .then(literal("replace")
                         .then(argument("filter", BlockPredicateArgument.blockPredicate(commandBuildContext))
                                 .executes(c -> enqueue(c, drawer))));

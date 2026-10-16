@@ -767,7 +767,11 @@ public final class ScarpetRuntime {
             EVENT_DISABLED.set(eventsDisabled);
             try (var ownerFrame = new ContextScope(capturedFrame); var accepted = ScarpetPlayerInventoryGate.inheritAccepted(capturedAccepted)) {
                 if (capturedFrame != null) capturedFrame.validate();
-                return capturedBorrows.call(() -> capturedRules.call(() -> ScarpetNativeWork.with(capturedWork, () -> ScarpetAttribution.with(capturedAttribution, operation))));
+                Supplier<T> attributed = () -> ScarpetAttribution.with(capturedAttribution, operation);
+                // An empty captured context must stay empty when a future completes
+                // inside an unrelated native commit, or its callbacks can await that commit's gate.
+                return capturedBorrows.call(() -> capturedRules.call(() -> capturedWork == null
+                        ? ScarpetNativeWork.without(attributed) : ScarpetNativeWork.with(capturedWork, attributed)));
             } finally {
                 FILL_SKIP_UPDATES.set(oldFill);
                 SKIP_GENERATION_CHECKS.set(oldGeneration);

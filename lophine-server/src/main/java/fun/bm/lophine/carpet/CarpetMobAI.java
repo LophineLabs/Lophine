@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public class CarpetMobAI {
-    private static Map<EntityType<?>, Set<TrackingType>> aiTrackers = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<EntityType<?>, Set<TrackingType>> aiTrackers = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<net.minecraft.world.entity.npc.villager.Villager> bedQueries = java.util.Collections.newSetFromMap(
             java.util.Collections.synchronizedMap(new java.util.IdentityHashMap<>()));
 
@@ -54,8 +54,12 @@ public class CarpetMobAI {
     }
 
     public static void startTracking(EntityType<?> e, TrackingType type) {
-        aiTrackers.putIfAbsent(e, java.util.concurrent.ConcurrentHashMap.newKeySet());
-        aiTrackers.get(e).add(type);
+        aiTrackers.compute(e, (ignored, previous) -> {
+            Set<TrackingType> next = java.util.EnumSet.noneOf(TrackingType.class);
+            if (previous != null) next.addAll(previous);
+            next.add(type);
+            return Set.copyOf(next);
+        });
     }
 
     public static void showNearbyBeds(net.minecraft.world.entity.npc.villager.Villager villager, net.minecraft.server.level.ServerPlayer source) {

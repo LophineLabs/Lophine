@@ -14,6 +14,12 @@ final class OrgDeferredPlayerCommands {
 
     static boolean deferIfCausal(ServerPlayer player, Runnable command, Consumer<Throwable> failed) {
         if (!CarpetAsyncCommandResults.hasNativeCause()) return false;
+        defer(player, command, failed);
+        return true;
+    }
+
+    /** Starts an external snapshot after the current native callback has released its owner. */
+    static void defer(ServerPlayer player, Runnable command, Consumer<Throwable> failed) {
         var detached = carpet.script.external.ScarpetRuntime.captureDetachedNativeContinuation(() ->
                 CarpetNativeActionContext.with(null, () -> {
                     command.run();
@@ -30,9 +36,8 @@ final class OrgDeferredPlayerCommands {
             }, retired -> failed.accept(new IllegalStateException("Fake player retired before the deferred command")), 1L);
         } catch (Throwable failure) {
             failed.accept(failure);
-            return true;
+            return;
         }
         if (!scheduled) failed.accept(new IllegalStateException("Fake-player command scheduler retired"));
-        return true;
     }
 }

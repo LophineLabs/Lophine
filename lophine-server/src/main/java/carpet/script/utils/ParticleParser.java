@@ -7,11 +7,11 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleOptions;
 import org.jspecify.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ParticleParser {
-    private static final Map<String, ParticleOptions> particleCache = new HashMap<>(); // we reset this on reloads, but probably need something better
+    private static final Map<String, ParticleOptions> particleCache = new ConcurrentHashMap<>();
 
     private static ParticleOptions parseParticle(String name, RegistryAccess lookup) {
         try {
