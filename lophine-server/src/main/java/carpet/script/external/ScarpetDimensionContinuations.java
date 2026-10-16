@@ -5,7 +5,7 @@ import ca.spottedleaf.moonrise.common.util.TickThread;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
+import fun.bm.lophine.carpet.CarpetInternalPlugin;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -42,7 +42,7 @@ public final class ScarpetDimensionContinuations {
         }
         var actual = new CompletableFuture<T>();
         try {
-            world.getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, world.getWorld(),
+            world.getServer().server.getRegionScheduler().execute(CarpetInternalPlugin.INSTANCE, world.getWorld(),
                     position.getX() >> 4, position.getZ() >> 4, () -> {
                         try {
                             actual.complete(owned.get());

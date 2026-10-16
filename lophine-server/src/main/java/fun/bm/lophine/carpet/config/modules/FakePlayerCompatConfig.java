@@ -2,9 +2,7 @@ package fun.bm.lophine.carpet.config.modules;
 
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
-import me.earthme.luminol.config.flags.NeedRun;
 import me.earthme.luminol.enums.EnumConfigCategory;
-import me.earthme.luminol.enums.EnumRunnableType;
 
 @ConfigClassInfo(category = EnumConfigCategory.ROOT, name = "fakeplayer", directory = {"carpet"})
 public class FakePlayerCompatConfig {
@@ -13,11 +11,6 @@ public class FakePlayerCompatConfig {
 
     public static boolean playerCommandEnabled() {
         return !"false".equalsIgnoreCase(commandPlayer);
-    }
-
-    @NeedRun(when = EnumRunnableType.ON_LOADED)
-    public void onLoaded() {
-        fun.bm.lophine.config.modules.function.FakeplayerConfig.ensureCommandBackend();
     }
 
     @ConfigInfo(name = "fakePlayerResident")

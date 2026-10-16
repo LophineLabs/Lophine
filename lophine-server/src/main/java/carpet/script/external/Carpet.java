@@ -19,7 +19,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import org.jspecify.annotations.Nullable;
-import org.leavesmc.leaves.bot.ServerBot;
+import fun.bm.lophine.carpet.CarpetFakePlayer;
 import org.leavesmc.leaves.protocol.CarpetServerProtocol;
 
 import java.nio.file.Path;
@@ -97,7 +97,7 @@ public final class Carpet {
 
     @Nullable
     public static String isModdedPlayer(Player player) {
-        return player instanceof ServerBot bot ? bot.carpetShadow ? "shadow" : "fake" : null;
+        return player instanceof CarpetFakePlayer bot ? bot.carpetShadow ? "shadow" : "fake" : null;
     }
 
     public static void registerExtensionAPI(Consumer<CarpetExpression> extension) {

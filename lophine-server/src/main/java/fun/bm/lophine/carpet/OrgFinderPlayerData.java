@@ -277,7 +277,7 @@ final class OrgFinderPlayerData {
         }
 
         private boolean online(UUID uuid) {
-            return server.getPlayerList().getPlayer(uuid) != null || server.getBotList() != null && server.getBotList().getBot(uuid) != null;
+            return server.getPlayerList().getPlayer(uuid) != null || server.getCarpetFakePlayers() != null && server.getCarpetFakePlayers().getBot(uuid) != null;
         }
 
         private void checkCancelled() {

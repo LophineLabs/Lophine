@@ -54,6 +54,7 @@ public class ServerBotPacketListenerImpl extends ServerGamePacketListenerImpl {
 
     @Override
     public void tick() {
+        ((ServerBot) this.player).networkTick();
     }
 
     @Override
@@ -73,6 +74,7 @@ public class ServerBotPacketListenerImpl extends ServerGamePacketListenerImpl {
 
         @Override
         public void tick() {
+            if (this.packetListener instanceof ServerBotPacketListenerImpl listener) listener.tick();
         }
 
         @Override

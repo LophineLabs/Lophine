@@ -18,7 +18,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelResource;
 import org.bukkit.NamespacedKey;
 import org.bukkit.persistence.PersistentDataType;
-import org.leavesmc.leaves.bot.ServerBot;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -223,7 +222,7 @@ public final class OrgExperienceTransfers {
     }
 
     private static int request(CommandSourceStack source, ServerPlayer from, ServerPlayer to, String mode, int value) throws CommandSyntaxException {
-        if (source.getPlayerOrException() != from && !(from instanceof ServerBot)) throw SELF_OR_FAKE.create();
+        if (source.getPlayerOrException() != from && !(from instanceof CarpetFakePlayer)) throw SELF_OR_FAKE.create();
         return OrgCommandNativeEffects.command(source, 1, () -> transferNative(source, from, to, mode, value));
     }
 
@@ -485,7 +484,7 @@ public final class OrgExperienceTransfers {
         }
 
         boolean online(UUID player) {
-            return server.getPlayerList().getPlayer(player) != null || server.getBotList() != null && server.getBotList().getBot(player) != null;
+            return server.getPlayerList().getPlayer(player) != null || server.getCarpetFakePlayers() != null && server.getCarpetFakePlayers().getBot(player) != null;
         }
 
         Path nativePath(UUID player) {
@@ -495,7 +494,7 @@ public final class OrgExperienceTransfers {
         }
 
         Path liveStatePath(ServerPlayer player) {
-            Path actual = player instanceof ServerBot bot && !bot.carpetNativePlayer ? server.getBotList().getCarpetBotStatePath(bot) : nativePath(player.getUUID());
+            Path actual = nativePath(player.getUUID());
             if (actual == null)
                 actual = server.getWorldPath(LevelResource.ROOT).resolve("fakeplayerdata").resolve(player.getUUID() + ".dat");
             return statePath(player.getUUID(), relativePath(player.getUUID(), actual));
@@ -1014,7 +1013,7 @@ public final class OrgExperienceTransfers {
 
         private java.util.concurrent.CompletableFuture<Void> dispatch(UUID playerId) {
             ServerPlayer player = server.getPlayerList().getPlayer(playerId);
-            if (player == null && server.getBotList() != null) player = server.getBotList().getBot(playerId);
+            if (player == null && server.getCarpetFakePlayers() != null) player = server.getCarpetFakePlayers().getBot(playerId);
             // A confirmed offline destination has durable custody, not an unfinished native job.
             if (player == null) return java.util.concurrent.CompletableFuture.completedFuture(null);
             ServerPlayer expected = player;
@@ -1039,10 +1038,8 @@ public final class OrgExperienceTransfers {
         private boolean persist(ServerPlayer player, NamespacedKey marker, String id, State state) {
             String expectedHeld = player.getBukkitEntity().getPersistentDataContainer().get(CREDIT_ESCROW, PersistentDataType.STRING);
             Optional<CompoundTag> result;
-            if (player instanceof ServerBot bot && !bot.carpetNativePlayer)
-                result = server.getBotList().saveCarpetBotState(bot);
-            else {
-                if (player instanceof ServerBot bot) server.getPlayerList().carpetSaveFakePlayer(bot);
+            {
+                if (player instanceof CarpetFakePlayer bot) server.getPlayerList().carpetSaveFakePlayer(bot);
                 else server.getPlayerList().playerIo.save(player);
                 result = server.getPlayerList().playerIo.load(player.nameAndId());
             }

@@ -21,7 +21,6 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.TimeArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.server.level.ServerPlayer;
-import org.leavesmc.leaves.bot.ServerBot;
 
 import java.io.IOException;
 import java.util.List;
@@ -116,7 +115,7 @@ public final class OrgPlayerManagerCommands {
 
     private static String player(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer player = EntityArgument.getPlayer(context, "player");
-        if (!(player instanceof ServerBot))
+        if (!(player instanceof CarpetFakePlayer))
             throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(net.minecraft.network.chat.Component.literal("The selected player must be a fake player")).create();
         return player.getScoreboardName();
     }
@@ -248,7 +247,7 @@ public final class OrgPlayerManagerCommands {
             CompletableFuture<Integer> count = CompletableFuture.completedFuture(0);
             for (var entry : profiles.entrySet()) {
                 String name = entry.getKey();
-                if (operation.equals("kill") && !(context.getSource().getServer().getPlayerList().getPlayerByName(name) instanceof ServerBot))
+                if (operation.equals("kill") && !(context.getSource().getServer().getPlayerList().getPlayerByName(name) instanceof CarpetFakePlayer))
                     continue;
                 count = TisCommandContinuations.then(count, before -> (operation.equals("spawn") ? manager.spawn(context.getSource(), name, entry.getValue(), true) : manager.killSilentAsync(context.getSource(), name)).thenApply(success -> before + (success ? 1 : 0)));
             }

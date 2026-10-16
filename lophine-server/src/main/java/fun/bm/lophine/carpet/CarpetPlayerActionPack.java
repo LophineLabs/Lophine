@@ -24,7 +24,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
-import org.leavesmc.leaves.bot.ServerBot;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -305,7 +304,6 @@ public class CarpetPlayerActionPack {
 
 
     public CarpetPlayerActionPack stopAll() {
-        if (player instanceof ServerBot bot && bot.getBotActions() != null) bot.getBotActions().clear();
         for (ActionType type : actions.keySet()) {
             actions.get(type).cancel();
             type.stop(player, actions.get(type));
@@ -434,10 +432,10 @@ public class CarpetPlayerActionPack {
             prepareTargets(); // release completed once scopes, retain active and deferred actions
             float vel = sneaking ? 0.3F : 1.0F;
             // The != 0.0F checks are needed given else real players can't control minecarts, however it works with fakes and else they don't stop immediately
-            if (forward != 0.0F || player instanceof ServerBot) {
+            if (forward != 0.0F || player instanceof CarpetFakePlayer) {
                 player.zza = forward * vel;
             }
-            if (strafing != 0.0F || player instanceof ServerBot) {
+            if (strafing != 0.0F || player instanceof CarpetFakePlayer) {
                 player.xxa = strafing * vel;
             }
 

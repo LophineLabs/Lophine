@@ -15,7 +15,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import org.leavesmc.leaves.bot.ServerBot;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,44 +28,55 @@ import java.util.*;
  */
 public final class CarpetFakePlayerPersistence {
     private static final String FILE = "carpet/fake_players.dat";
+    private static final Map<MinecraftServer, Object> ROSTER_LOCKS = Collections.synchronizedMap(new WeakHashMap<>());
 
-    public static void recordOnline(ServerBot bot) {
-        if (!bot.carpetNativePlayer || bot.carpetShadow) return;
+    private static Object rosterLock(MinecraftServer server) {
+        return ROSTER_LOCKS.computeIfAbsent(server, ignored -> new Object());
+    }
+
+    public static void recordOnline(CarpetFakePlayer bot) {
+        if (bot.carpetShadow) return;
         MinecraftServer server = bot.level().getServer();
-        try {
-            CompoundTag roster = load(server);
-            CompoundTag entry = new CompoundTag();
-            entry.store("uuid", UUIDUtil.CODEC, bot.getUUID());
-            entry.putString("name", bot.getGameProfile().name());
-            roster.put(bot.getGameProfile().name().toLowerCase(Locale.ROOT), entry);
-            save(server, roster);
-        } catch (IOException failure) {
-            MinecraftServer.LOGGER.warn("Cannot record Carpet fake player {}", bot.getGameProfile().name(), failure);
+        synchronized (rosterLock(server)) {
+            try {
+                CompoundTag roster = load(server);
+                CompoundTag entry = new CompoundTag();
+                entry.store("uuid", UUIDUtil.CODEC, bot.getUUID());
+                entry.putString("name", bot.getGameProfile().name());
+                roster.put(bot.getGameProfile().name().toLowerCase(Locale.ROOT), entry);
+                save(server, roster);
+            } catch (IOException failure) {
+                MinecraftServer.LOGGER.warn("Cannot record Carpet fake player {}", bot.getGameProfile().name(), failure);
+            }
         }
     }
 
-    public static void forget(ServerBot bot) {
-        if (!bot.carpetNativePlayer) return;
+    public static void forget(CarpetFakePlayer bot) {
         MinecraftServer server = bot.level().getServer();
-        try {
-            CompoundTag roster = load(server);
-            if (roster.remove(bot.getGameProfile().name().toLowerCase(Locale.ROOT)) != null) save(server, roster);
-        } catch (IOException failure) {
-            MinecraftServer.LOGGER.warn("Cannot forget Carpet fake player {}", bot.getGameProfile().name(), failure);
+        synchronized (rosterLock(server)) {
+            try {
+                CompoundTag roster = load(server);
+                if (roster.remove(bot.getGameProfile().name().toLowerCase(Locale.ROOT)) != null) save(server, roster);
+            } catch (IOException failure) {
+                MinecraftServer.LOGGER.warn("Cannot forget Carpet fake player {}", bot.getGameProfile().name(), failure);
+            }
         }
     }
 
     public static void respawn(MinecraftServer server, ServerLevel level) {
-        if (level == null || carpet.script.external.ScarpetNativeWork.isDraining(server)) return;
+        if (!fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig.fakePlayerResident
+                || level == null || carpet.script.external.ScarpetNativeWork.isDraining(server)) return;
         List<Entry> entries;
-        try {
-            entries = entries(load(server));
-        } catch (IOException failure) {
-            MinecraftServer.LOGGER.error("Cannot load Carpet fake players", failure);
-            return;
+        synchronized (rosterLock(server)) {
+            try {
+                entries = entries(load(server));
+            } catch (IOException failure) {
+                MinecraftServer.LOGGER.error("Cannot load Carpet fake players", failure);
+                return;
+            }
         }
         for (Entry entry : entries) {
-            if (server.getPlayerList().getPlayer(entry.id()) != null || server.getBotList().getBotByName(entry.name()) != null)
+            if (server.getPlayerList().getPlayer(entry.id()) != null || server.getCarpetFakePlayers().getBotByName(entry.name()) != null)
                 continue;
             try {
                 respawn(server, entry);
@@ -94,8 +104,8 @@ public final class CarpetFakePlayerPersistence {
         carpet.script.external.ScarpetNativeWork.trackNative(server, completion);
         CarpetPlayerBirths.track(server, completion, () -> {
         });
-        ServerBot created = CarpetPlayerCommand.respawn(server.createCommandSourceStack(), profile, level, position, rotation, mode, flying, tag, actions, completion);
-        server.getBotList().carpetPlacementCompletion(created).whenComplete((owned, failure) -> {
+        CarpetFakePlayer created = CarpetPlayerCommand.respawn(server.createCommandSourceStack(), profile, level, position, rotation, mode, flying, tag, actions, completion);
+        server.getCarpetFakePlayers().placementCompletion(created).whenComplete((owned, failure) -> {
             if (failure == null) completion.complete(null);
             else completion.completeExceptionally(failure);
         });

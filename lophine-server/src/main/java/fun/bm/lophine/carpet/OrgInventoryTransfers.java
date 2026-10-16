@@ -12,7 +12,6 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.bukkit.NamespacedKey;
 import org.bukkit.persistence.PersistentDataType;
-import org.leavesmc.leaves.bot.ServerBot;
 
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -1428,7 +1427,7 @@ public final class OrgInventoryTransfers {
                             throw new IOException("Native player-data write outcome is unknown; custody remains held");
                         throw new IllegalStateException("Native player-data changed before its upgrade");
                     }
-                    if (server.getPlayerList().getPlayer(custody.participant) != null || server.getBotList() != null && server.getBotList().getBot(custody.participant) != null)
+                    if (server.getPlayerList().getPlayer(custody.participant) != null || server.getCarpetFakePlayers() != null && server.getCarpetFakePlayers().getBot(custody.participant) != null)
                         throw new IllegalStateException("Native player-data upgrade cannot overwrite an online owner");
                     attempted.set(true);
                     writeVault(path, true, desired);
@@ -1613,7 +1612,7 @@ public final class OrgInventoryTransfers {
             byte[] expectedHeld = player.getBukkitEntity().getPersistentDataContainer().get(HOLD, PersistentDataType.BYTE_ARRAY);
             CompoundTag expected = inventoryTag(player);
             Optional<CompoundTag> saved;
-            if (player instanceof ServerBot bot) saved = server.getBotList().saveCarpetBotState(bot);
+            if (player instanceof CarpetFakePlayer bot) saved = server.getCarpetFakePlayers().saveState(bot);
             else {
                 server.getPlayerList().playerIo.save(player);
                 saved = server.getPlayerList().playerIo.load(player.nameAndId());

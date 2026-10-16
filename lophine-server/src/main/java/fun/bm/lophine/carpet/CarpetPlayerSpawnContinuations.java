@@ -392,7 +392,7 @@ public final class CarpetPlayerSpawnContinuations {
             }
         }
 
-        // A BotList/native login driver still has init/Join tails after extras. This is metadata
+        // A player placement driver still has init/Join tails after extras. This is metadata
         // only: recording the parent's own completion into its child would create a cycle.
         void releaseAfterParent() {
             if (parent == null) release();

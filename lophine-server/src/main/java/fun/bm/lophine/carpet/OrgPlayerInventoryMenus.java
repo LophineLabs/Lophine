@@ -34,8 +34,8 @@ public final class OrgPlayerInventoryMenus {
     public static java.util.concurrent.CompletableFuture<Boolean> openOffline(ServerPlayer viewer, java.util.UUID target, boolean ender) {
         return OrgMenuNativeEffects.admit(viewer.level().getServer(), () -> OrgFakePlayerActions.owned(viewer, () -> {
             ServerPlayer live = viewer.level().getServer().getPlayerList().getPlayer(target);
-            if (live == null && viewer.level().getServer().getBotList() != null)
-                live = viewer.level().getServer().getBotList().getBot(target);
+            if (live == null && viewer.level().getServer().getCarpetFakePlayers() != null)
+                live = viewer.level().getServer().getCarpetFakePlayers().getBot(target);
             if (live != null)
                 return allowedOnline(viewer, live) ? openOnlineCommand(viewer, live, ender) : java.util.concurrent.CompletableFuture.completedFuture(false);
             if (!allowedOffline(viewer, target)) return java.util.concurrent.CompletableFuture.completedFuture(false);
@@ -89,13 +89,13 @@ public final class OrgPlayerInventoryMenus {
     static boolean allowedOffline(ServerPlayer viewer, java.util.UUID target) {
         if (!TickThread.isTickThreadFor(viewer) || viewer.isRemoved() || viewer.isDeadOrDying()) return false;
         var server = viewer.level().getServer();
-        if (server.getPlayerList().getPlayer(target) != null || server.getBotList() != null && server.getBotList().getBot(target) != null)
+        if (server.getPlayerList().getPlayer(target) != null || server.getCarpetFakePlayers() != null && server.getCarpetFakePlayers().getBot(target) != null)
             return false;
         return permitted(viewer, new net.minecraft.server.players.NameAndId(target, target.toString()), false, false);
     }
 
     private static boolean allowedOnline(ServerPlayer viewer, ServerPlayer target) {
-        return permitted(viewer, target.nameAndId(), target instanceof org.leavesmc.leaves.bot.ServerBot, true);
+        return permitted(viewer, target.nameAndId(), target instanceof fun.bm.lophine.carpet.CarpetFakePlayer, true);
     }
 
     private static boolean permitted(ServerPlayer viewer, net.minecraft.server.players.NameAndId target, boolean fake, boolean online) {
@@ -123,7 +123,7 @@ public final class OrgPlayerInventoryMenus {
      */
     public static java.util.concurrent.@org.jspecify.annotations.Nullable CompletableFuture<Boolean> interactAsync(ServerPlayer viewer, ServerPlayer target) {
         String mode = GeneralCompatConfig.openPlayerInventory;
-        if (!mode.equals("any_player") && !(mode.equals("fake_player") && target instanceof org.leavesmc.leaves.bot.ServerBot))
+        if (!mode.equals("any_player") && !(mode.equals("fake_player") && target instanceof fun.bm.lophine.carpet.CarpetFakePlayer))
             return null;
         return openAsync(viewer, target, viewer.isShiftKeyDown());
     }
@@ -154,7 +154,7 @@ public final class OrgPlayerInventoryMenus {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         OrgPlayerExtraCommands.register(dispatcher);
         var target = Commands.argument("player", StringArgumentType.word())
-                .suggests((context, builder) -> SharedSuggestionProvider.suggest(java.util.stream.Stream.concat(context.getSource().getServer().getPlayerList().getPlayers().stream(), context.getSource().getServer().getBotList().bots.stream()).map(ServerPlayer::getScoreboardName).distinct(), builder));
+                .suggests((context, builder) -> SharedSuggestionProvider.suggest(java.util.stream.Stream.concat(context.getSource().getServer().getPlayerList().getPlayers().stream(), context.getSource().getServer().getCarpetFakePlayers().players.stream()).map(ServerPlayer::getScoreboardName).distinct(), builder));
         for (String name : List.of("inventory", "enderchest", "enderChest")) {
             target.then(Commands.literal(name).requires(source -> OrgUtilityCommands.permitted(source, GeneralCompatConfig.playerCommandOpenPlayerInventory))
                     .executes(context -> {
@@ -179,7 +179,7 @@ public final class OrgPlayerInventoryMenus {
         }
         com.mojang.brigadier.Command<CommandSourceStack> closeScreen = context -> {
             ServerPlayer selected = context.getSource().getServer().getPlayerList().getPlayerByName(StringArgumentType.getString(context, "player"));
-            if (!(selected instanceof org.leavesmc.leaves.bot.ServerBot)) {
+            if (!(selected instanceof fun.bm.lophine.carpet.CarpetFakePlayer)) {
                 context.getSource().sendFailure(Component.literal("The selected player must be an online fake player"));
                 return 0;
             }

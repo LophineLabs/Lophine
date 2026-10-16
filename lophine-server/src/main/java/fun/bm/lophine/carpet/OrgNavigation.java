@@ -198,7 +198,7 @@ public final class OrgNavigation {
             OrgNavigationProtocol.clear(observer);
             ACTIVE.put(navigation.observer, navigation);
             return message(observer, resolved.displayName());
-        }), message -> feedback(source, message, resolved.player() && resolved.reference() != observer && !(resolved.reference() instanceof org.leavesmc.leaves.bot.ServerBot)));
+        }), message -> feedback(source, message, resolved.player() && resolved.reference() != observer && !(resolved.reference() instanceof fun.bm.lophine.carpet.CarpetFakePlayer)));
     }
 
     private static int entity(CommandSourceStack source, Entity target, boolean continued) throws CommandSyntaxException {

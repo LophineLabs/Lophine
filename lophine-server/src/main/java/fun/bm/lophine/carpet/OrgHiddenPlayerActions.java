@@ -19,7 +19,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.leavesmc.leaves.bot.ServerBot;
 
 import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
@@ -72,7 +71,7 @@ public final class OrgHiddenPlayerActions {
 
     private static void own(ServerPlayer player) {
         TickThread.ensureTickThread(player, "Org hidden player action must own its player");
-        if (!(player instanceof ServerBot))
+        if (!(player instanceof CarpetFakePlayer))
             throw new IllegalArgumentException("Hidden action requires an online fake player");
     }
 
@@ -139,7 +138,7 @@ public final class OrgHiddenPlayerActions {
     }
 
     public static void tick(ServerPlayer player) {
-        if (!(player instanceof ServerBot)) return;
+        if (!(player instanceof CarpetFakePlayer)) return;
         own(player);
         Holder holder = PLAYERS.get(player.getUUID());
         if (holder == null || holder.player != player || holder.completion.paused()) return;

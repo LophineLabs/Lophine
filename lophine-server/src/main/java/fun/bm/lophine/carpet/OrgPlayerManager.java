@@ -32,9 +32,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import org.leavesmc.leaves.bot.ServerBot;
-import org.leavesmc.leaves.event.bot.BotRemoveEvent;
-import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -100,7 +97,7 @@ public final class OrgPlayerManager {
         synchronized (manager) {
             if (manager.task == null) {
                 manager.reloadSafeThresholds();
-                manager.task = server.server.getGlobalRegionScheduler().runAtFixedRate(MinecraftInternalPlugin.INSTANCE, ignored -> manager.tickGlobal(), 1L, 1L);
+                manager.task = server.server.getGlobalRegionScheduler().runAtFixedRate(CarpetInternalPlugin.INSTANCE, ignored -> manager.tickGlobal(), 1L, 1L);
                 try {
                     List<String> times = manager.residentTimes();
                     manager.previousResidentTime = times.isEmpty() ? null : times.getLast();
@@ -133,12 +130,12 @@ public final class OrgPlayerManager {
     }
 
     public static void observe(ServerPlayer player) {
-        if (!(player instanceof ServerBot) || !TickThread.isTickThreadFor(player)) return;
+        if (!(player instanceof CarpetFakePlayer) || !TickThread.isTickThreadFor(player)) return;
         OrgPlayerManager manager = MANAGERS.get(player.level().getServer());
         if (manager == null || manager.closed) return;
         manager.thresholds.computeIfAbsent(player, actor -> manager.permanentThresholds.getOrDefault(actor.getScoreboardName(), -1F));
         if (player.tickCount % 100 == 0 && manager.residentCaptures.add(player.getUUID()))
-            manager.captureIdle((ServerBot) player, false, (owner, profile) -> {
+            manager.captureIdle((CarpetFakePlayer) player, false, (owner, profile) -> {
                 if (!manager.closed) manager.residents.put(owner.getUUID(), profile);
             }).whenComplete((profile, failure) -> {
                 manager.residentCaptures.remove(player.getUUID());
@@ -154,7 +151,7 @@ public final class OrgPlayerManager {
         return current == null ? manager.permanentThresholds.getOrDefault(player.getScoreboardName(), -1F) : current;
     }
 
-    JsonObject capture(ServerBot player, boolean nativeState) throws IOException {
+    JsonObject capture(CarpetFakePlayer player, boolean nativeState) throws IOException {
         TickThread.ensureTickThread(player, "Org profile capture requires fake owner");
         JsonObject profile = new JsonObject();
         profile.addProperty("data_version", 5);
@@ -195,10 +192,8 @@ public final class OrgPlayerManager {
         if (nativeState) {
             CompoundTag expected = OrgInventoryTransfers.inventoryTag(player);
             java.util.Optional<CompoundTag> saved;
-            if (player.carpetNativePlayer) {
-                server.getPlayerList().carpetSaveFakePlayer(player);
-                saved = server.getPlayerList().loadPlayerData(player.nameAndId());
-            } else saved = server.getBotList().saveCarpetBotState(player);
+            server.getPlayerList().carpetSaveFakePlayer(player);
+            saved = server.getPlayerList().loadPlayerData(player.nameAndId());
             if (saved.isEmpty()) throw new IOException("Cannot verify saved fake-player state");
             for (String key : expected.keySet())
                 if (!java.util.Objects.equals(expected.get(key), saved.get().get(key)))
@@ -206,7 +201,7 @@ public final class OrgPlayerManager {
             if (saved.get().getIntOr("XpTotal", -1) != player.totalExperience || saved.get().getIntOr("XpLevel", -1) != player.experienceLevel)
                 throw new IOException("Fake-player experience save readback does not match");
             Path root = server.getWorldPath(LevelResource.ROOT).toAbsolutePath().normalize();
-            Path state = (player.carpetNativePlayer ? server.getPlayerList().playerIo.getPlayerDir().toPath().resolve(player.getStringUUID() + ".dat") : server.getBotList().getCarpetBotStatePath(player)).toAbsolutePath().normalize();
+            Path state = server.getPlayerList().playerIo.getPlayerDir().toPath().resolve(player.getStringUUID() + ".dat").toAbsolutePath().normalize();
             if (!state.startsWith(root)) throw new IOException("Fake-player state path leaves its world directory");
             profile.addProperty("_lophine_state_file", root.relativize(state).toString());
             // A manager profile never stores reusable inventory/XP. Spawn reloads the latest
@@ -223,7 +218,7 @@ public final class OrgPlayerManager {
         }
         if (!profile.has("_lophine_state_file")) {
             Path root = server.getWorldPath(LevelResource.ROOT).toAbsolutePath().normalize();
-            Path state = (player.carpetNativePlayer ? server.getPlayerList().playerIo.getPlayerDir().toPath().resolve(player.getStringUUID() + ".dat") : server.getBotList().getCarpetBotStatePath(player)).toAbsolutePath().normalize();
+            Path state = server.getPlayerList().playerIo.getPlayerDir().toPath().resolve(player.getStringUUID() + ".dat").toAbsolutePath().normalize();
             if (!state.startsWith(root)) throw new IOException("Fake-player state path leaves its world directory");
             profile.addProperty("_lophine_state_file", root.relativize(state).toString());
         }
@@ -233,13 +228,13 @@ public final class OrgPlayerManager {
     /**
      * Pause every producer before capture; accepted effects and their owner state finish first.
      */
-    private CompletableFuture<JsonObject> captureIdle(ServerBot player, boolean nativeState,
-                                                      java.util.function.BiConsumer<ServerBot, JsonObject> afterSnapshot) {
+    private CompletableFuture<JsonObject> captureIdle(CarpetFakePlayer player, boolean nativeState,
+                                                      java.util.function.BiConsumer<CarpetFakePlayer, JsonObject> afterSnapshot) {
         return captureIdle(player, nativeState, afterSnapshot, false);
     }
 
-    private CompletableFuture<JsonObject> captureIdle(ServerBot player, boolean nativeState,
-                                                      java.util.function.BiConsumer<ServerBot, JsonObject> afterSnapshot, boolean mandatory) {
+    private CompletableFuture<JsonObject> captureIdle(CarpetFakePlayer player, boolean nativeState,
+                                                      java.util.function.BiConsumer<CarpetFakePlayer, JsonObject> afterSnapshot, boolean mandatory) {
         return OrgMenuNativeEffects.admit(server, () -> OrgFakePlayerActions.owned(player, carpet.script.external.ScarpetRuntime.captureNativeContinuation(() -> {
             java.util.function.Supplier<JsonObject> snapshot = carpet.script.external.ScarpetRuntime.captureNativeContinuation(() -> {
                 try {
@@ -257,7 +252,7 @@ public final class OrgPlayerManager {
 
     void save(CommandSourceStack source, String name, String comment, boolean replace) {
         ServerPlayer player = server.getPlayerList().getPlayerByName(name);
-        if (player instanceof ServerBot bot && OrgDeferredPlayerCommands.deferIfCausal(bot, () -> save(source, name, comment, replace), failure -> message(source, "Cannot save profile: " + reason(failure))))
+        if (player instanceof CarpetFakePlayer bot && OrgDeferredPlayerCommands.deferIfCausal(bot, () -> save(source, name, comment, replace), failure -> message(source, "Cannot save profile: " + reason(failure))))
             return;
         saveAsync(source, name, comment, replace).whenComplete((value, failure) -> {
             if (failure != null) message(source, "Cannot save profile: " + reason(failure));
@@ -277,7 +272,7 @@ public final class OrgPlayerManager {
             if (!replace && GeneralCompatConfig.playerManagerForceComment && comment.isBlank())
                 return CompletableFuture.failedFuture(new IllegalArgumentException("A comment is required when saving a new fake-player profile"));
             ServerPlayer target = server.getPlayerList().getPlayerByName(name);
-            if (!(target instanceof ServerBot bot) || closed)
+            if (!(target instanceof CarpetFakePlayer bot) || closed)
                 return CompletableFuture.failedFuture(new IllegalStateException("The selected fake player is unavailable"));
             return TisCommandContinuations.then(captureIdle(bot, true, null), snapshot -> TisCommandContinuations.then(filePhase(() -> {
                 try {
@@ -353,7 +348,7 @@ public final class OrgPlayerManager {
                 Vec3 position = new Vec3(pos.get("x").getAsDouble(), pos.get("y").getAsDouble(), pos.get("z").getAsDouble());
                 int x = BlockPos.containing(position).getX() >> 4, z = BlockPos.containing(position).getZ() >> 4;
                 return CarpetRegionLease.<CompletableFuture<Boolean>>runValue(world, x - 2, z - 2, x + 2, z + 2, lease -> {
-                    if (closed || server.getPlayerList().getPlayer(gameProfile.id()) != null || server.getPlayerList().getPlayerByName(name) != null || server.getBotList().bots.stream().anyMatch(bot -> bot.getGameProfile().name().equalsIgnoreCase(name)))
+                    if (closed || server.getPlayerList().getPlayer(gameProfile.id()) != null || server.getPlayerList().getPlayerByName(name) != null || server.getCarpetFakePlayers().players.stream().anyMatch(bot -> bot.getGameProfile().name().equalsIgnoreCase(name)))
                         return CompletableFuture.completedFuture(false);
                     NameAndId identity = new NameAndId(gameProfile);
                     var list = server.getPlayerList();
@@ -365,12 +360,12 @@ public final class OrgPlayerManager {
                     try {
                         CompoundTag saved = restore.saved;
                         CompoundTag actions = restore.actions;
-                        ServerBot bot = CarpetPlayerCommand.createOrgManagedPlayer(source, gameProfile, world, position, new Vec2(direction.get("pitch").getAsFloat(), direction.get("yaw").getAsFloat()), GameType.byName(profile.get("gamemode").getAsString()), profile.has("flying") && profile.get("flying").getAsBoolean(), saved, actions, completion, silence);
-                        return server.getBotList().carpetPlacementCompletion(bot).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(joined -> {
+                        CarpetFakePlayer bot = CarpetPlayerCommand.createOrgManagedPlayer(source, gameProfile, world, position, new Vec2(direction.get("pitch").getAsFloat(), direction.get("yaw").getAsFloat()), GameType.byName(profile.get("gamemode").getAsString()), profile.has("flying") && profile.get("flying").getAsBoolean(), saved, actions, completion, silence);
+                        return server.getCarpetFakePlayers().placementCompletion(bot).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(joined -> {
                             CompletableFuture<Boolean> restored = new CompletableFuture<>();
                             boolean accepted = bot.getBukkitEntity().taskScheduler.schedule(carpet.script.external.ScarpetRuntime.captureNativeConsumer((net.minecraft.world.entity.Entity owner) -> {
-                                ServerBot actor = (ServerBot) owner;
-                                if (closed || actor.isRemoved() || actor.isDeadOrDying() || !server.getBotList().bots.contains(actor)) {
+                                CarpetFakePlayer actor = (CarpetFakePlayer) owner;
+                                if (closed || actor.isRemoved() || actor.isDeadOrDying() || !server.getCarpetFakePlayers().players.contains(actor)) {
                                     restored.complete(false);
                                     return;
                                 }
@@ -464,7 +459,7 @@ public final class OrgPlayerManager {
         return tag;
     }
 
-    private void startup(ServerBot bot, JsonObject function) {
+    private void startup(CarpetFakePlayer bot, JsonObject function) {
         if (bot.isRemoved() || bot.isDeadOrDying() || closed) return;
         String value = function.get("value").getAsString();
         if (function.get("type").getAsString().equals("command"))
@@ -554,7 +549,7 @@ public final class OrgPlayerManager {
         ServerPlayer player = server.getPlayerList().getPlayerByName(job.name);
         if (job.kind.equals("logout")) {
             jobs.remove(job.kind + ":" + job.name, job);
-            if (player instanceof ServerBot bot) logout(bot, job.source, true);
+            if (player instanceof CarpetFakePlayer bot) logout(bot, job.source, true);
             return;
         }
         if (!GeneralCompatConfig.fakePlayerSpawnMemoryLeakFix) {
@@ -563,7 +558,7 @@ public final class OrgPlayerManager {
             message(job.source, "Relogin stopped: fakePlayerSpawnMemoryLeakFix is disabled");
             return;
         }
-        if (player instanceof ServerBot bot) {
+        if (player instanceof CarpetFakePlayer bot) {
             captureAndRemove(bot, job).whenComplete((removed, failure) -> {
                 if (failure != null) {
                     jobs.remove(job.kind + ":" + job.name, job);
@@ -584,7 +579,7 @@ public final class OrgPlayerManager {
 
     void relogin(CommandSourceStack source, String name, int interval) {
         ServerPlayer target = server.getPlayerList().getPlayerByName(name);
-        if (target instanceof ServerBot bot && OrgDeferredPlayerCommands.deferIfCausal(bot, () -> relogin(source, name, interval), failure -> message(source, "Cannot capture relogin state: " + reason(failure))))
+        if (target instanceof CarpetFakePlayer bot && OrgDeferredPlayerCommands.deferIfCausal(bot, () -> relogin(source, name, interval), failure -> message(source, "Cannot capture relogin state: " + reason(failure))))
             return;
         reloginAsync(source, name, interval).whenComplete((value, failure) -> {
             if (failure != null) message(source, "Cannot schedule relogin: " + reason(failure));
@@ -602,7 +597,7 @@ public final class OrgPlayerManager {
                 return feedback(source, translated("schedule.relogin.modify", "Changed %s interval to %s", name, interval), interval);
             }
             ServerPlayer player = server.getPlayerList().getPlayerByName(name);
-            if (!(player instanceof ServerBot bot)) return failed("The selected player must be an online fake player");
+            if (!(player instanceof CarpetFakePlayer bot)) return failed("The selected player must be an online fake player");
             return TisCommandContinuations.then(captureIdle(bot, true, null), profile -> {
                 if (closed) return failed("The player manager is closing");
                 jobs.put("relogin:" + name, new Job(name, "relogin", source, ticks.get() + interval, interval, profile));
@@ -635,7 +630,7 @@ public final class OrgPlayerManager {
         });
     }
 
-    private CompletableFuture<Boolean> captureAndRemove(ServerBot bot, Job job) {
+    private CompletableFuture<Boolean> captureAndRemove(CarpetFakePlayer bot, Job job) {
         return OrgMenuNativeEffects.admit(server, () -> OrgFakePlayerActions.owned(bot, carpet.script.external.ScarpetRuntime.captureNativeContinuation(() -> OrgFakePlayerActions.whenIdleForRemoval(bot, () -> {
             if (closed || jobs.get(job.kind + ":" + job.name) != job) return CompletableFuture.completedFuture(false);
             boolean voidStopped = bot.getY() < bot.level().getMinY() - 64;
@@ -665,23 +660,23 @@ public final class OrgPlayerManager {
         return jobs.values().stream().map(job -> job.name + ": " + job.kind + ", remaining " + Math.max(0, job.due - ticks.get()) + "t, interval " + job.interval + "t").sorted().toList();
     }
 
-    private static CompletableFuture<Boolean> logout(ServerBot bot, CommandSourceStack source, boolean save) {
+    private static CompletableFuture<Boolean> logout(CarpetFakePlayer bot, CommandSourceStack source, boolean save) {
         return logout(bot, source, save, false);
     }
 
-    private static CompletableFuture<Boolean> logout(ServerBot bot, CommandSourceStack source, boolean save, boolean silence) {
+    private static CompletableFuture<Boolean> logout(CarpetFakePlayer bot, CommandSourceStack source, boolean save, boolean silence) {
         var removal = carpet.script.external.ScarpetRuntime.captureNativeContinuation(() -> logoutNow(bot, source, save, silence));
         return OrgMenuNativeEffects.admit(bot.level().getServer(), () -> OrgFakePlayerActions.owned(bot, carpet.script.external.ScarpetRuntime.captureNativeContinuation(() -> OrgFakePlayerActions.whenIdleForRemoval(bot, removal)))
                 .thenCompose(java.util.function.Function.identity()).thenCompose(java.util.function.Function.identity()));
     }
 
-    private static CompletableFuture<Boolean> logoutNow(ServerBot bot, CommandSourceStack source, boolean save) {
+    private static CompletableFuture<Boolean> logoutNow(CarpetFakePlayer bot, CommandSourceStack source, boolean save) {
         return logoutNow(bot, source, save, false);
     }
 
-    private static CompletableFuture<Boolean> logoutNow(ServerBot bot, CommandSourceStack source, boolean save, boolean silence) {
+    private static CompletableFuture<Boolean> logoutNow(CarpetFakePlayer bot, CommandSourceStack source, boolean save, boolean silence) {
         TickThread.ensureTickThread(bot, "Fake-player logout requires its owner");
-        return OrgNativePlayerMessages.remove(bot, silence, () -> bot.level().getServer().getBotList().carpetRemoveBotAsync(bot, BotRemoveEvent.RemoveReason.COMMAND, source.getBukkitSender(), save, false));
+        return OrgNativePlayerMessages.remove(bot, silence, () -> bot.level().getServer().getCarpetFakePlayers().removeAsync(bot, CarpetFakePlayerManager.RemoveReason.COMMAND, source.getBukkitSender(), save, false));
     }
 
     void kill(CommandSourceStack source, String name) {
@@ -693,18 +688,18 @@ public final class OrgPlayerManager {
     CompletableFuture<Boolean> killAsync(CommandSourceStack source, String name) {
         return OrgMenuNativeEffects.admit(server, () -> {
             ServerPlayer player = server.getPlayerList().getPlayerByName(name);
-            return player instanceof ServerBot bot ? logout(bot, source, true) : failed("The selected player must be an online fake player");
+            return player instanceof CarpetFakePlayer bot ? logout(bot, source, true) : failed("The selected player must be an online fake player");
         });
     }
 
     CompletableFuture<Boolean> killSilentAsync(CommandSourceStack source, String name) {
         return OrgMenuNativeEffects.admit(server, () -> {
             ServerPlayer player = server.getPlayerList().getPlayerByName(name);
-            return player instanceof ServerBot bot ? logout(bot, source, true, true) : failed("The selected player must be an online fake player");
+            return player instanceof CarpetFakePlayer bot ? logout(bot, source, true, true) : failed("The selected player must be an online fake player");
         });
     }
 
-    public static boolean reloginKeepTab(ServerBot bot) {
+    public static boolean reloginKeepTab(CarpetFakePlayer bot) {
         OrgPlayerManager manager = MANAGERS.get(bot.level().getServer());
         return manager != null && manager.jobs.values().stream().anyMatch(job -> job.kind.equals("relogin") && (job.profile.has("_lophine_uuid") ? job.profile.get("_lophine_uuid").getAsString().equals(bot.getUUID().toString()) : job.name.equalsIgnoreCase(bot.getScoreboardName())));
     }
@@ -739,7 +734,7 @@ public final class OrgPlayerManager {
                 CompletableFuture<Integer> count = CompletableFuture.completedFuture(0);
                 for (String name : names) {
                     ServerPlayer target = server.getPlayerList().getPlayerByName(name);
-                    if (!(target instanceof ServerBot bot)) continue;
+                    if (!(target instanceof CarpetFakePlayer bot)) continue;
                     count = TisCommandContinuations.then(count, before -> (operation.equals("kill") ? killSilentAsync(source, name) : dropBatch(bot)).thenApply(success -> before + (success ? 1 : 0)));
                 }
                 return count;
@@ -760,7 +755,7 @@ public final class OrgPlayerManager {
                             if (!success) return CompletableFuture.completedFuture(before);
                             if (!operation.equals("trial")) return CompletableFuture.completedFuture(before + 1);
                             ServerPlayer target = server.getPlayerList().getPlayerByName(name);
-                            if (!(target instanceof ServerBot bot))
+                            if (!(target instanceof CarpetFakePlayer bot))
                                 return failed("The trial player disappeared after native placement");
                             return delayed(bot, 30, () -> logout(bot, source, true, true)).thenApply(removed -> {
                                 if (!removed) throw new IllegalStateException("Trial-player removal was cancelled");
@@ -777,7 +772,7 @@ public final class OrgPlayerManager {
         });
     }
 
-    private CompletableFuture<Boolean> dropBatch(ServerBot bot) {
+    private CompletableFuture<Boolean> dropBatch(CarpetFakePlayer bot) {
         var done = new java.util.concurrent.atomic.AtomicBoolean();
         return OrgMenuNativeEffects.run(bot, () -> {
             if (bot.isRemoved() || bot.isDeadOrDying()) return null;
@@ -791,7 +786,7 @@ public final class OrgPlayerManager {
         }).thenApply(ignored -> done.get());
     }
 
-    private void startupDelayed(ServerBot player, long delay, JsonObject function) {
+    private void startupDelayed(CarpetFakePlayer player, long delay, JsonObject function) {
         // Source startup tasks are external jobs after birth, so a kill startup cannot await
         // the same still-admitted birth whose completion would otherwise await this task.
         var actual = new CompletableFuture<Boolean>();
@@ -817,7 +812,7 @@ public final class OrgPlayerManager {
         }
     }
 
-    private <T> CompletableFuture<T> delayed(ServerBot player, long delay, java.util.function.Supplier<CompletableFuture<T>> action) {
+    private <T> CompletableFuture<T> delayed(CarpetFakePlayer player, long delay, java.util.function.Supplier<CompletableFuture<T>> action) {
         return OrgMenuNativeEffects.admit(server, () -> {
             var actual = new CompletableFuture<T>();
             carpet.script.external.ScarpetNativeWork.record(actual);
@@ -910,7 +905,7 @@ public final class OrgPlayerManager {
         if (!manager.closed) manager.residents.remove(player.getUUID());
     }
 
-    CompletableFuture<JsonObject> captureForShutdown(ServerBot bot) {
+    CompletableFuture<JsonObject> captureForShutdown(CarpetFakePlayer bot) {
         return OrgFakePlayerActions.owned(bot, () -> OrgFakePlayerActions.whenIdleForRemoval(bot, () -> {
             if (bot.isDeadOrDying()) {
                 residents.remove(bot.getUUID());
@@ -952,10 +947,10 @@ public final class OrgPlayerManager {
 
     private CompletableFuture<Void> carpetCaptureShutdownCohort() {
         OrgPlayerManager manager = this;
-        var live = List.copyOf(server.getBotList().bots);
+        var live = List.copyOf(server.getCarpetFakePlayers().players);
         manager.residents.keySet().retainAll(live.stream().map(ServerPlayer::getUUID).collect(java.util.stream.Collectors.toSet()));
         var pending = new java.util.ArrayList<CompletableFuture<Void>>();
-        for (ServerBot bot : live) {
+        for (CarpetFakePlayer bot : live) {
             manager.residents.remove(bot.getUUID()); // Never fall back to an older action snapshot after a failed new save.
             pending.add(manager.captureForShutdown(bot).thenAccept(profile -> {
             }));
@@ -997,14 +992,14 @@ public final class OrgPlayerManager {
         });
     }
 
-    private record SafePlan(ServerBot player, String name, Component display, float requested, long intent) {
+    private record SafePlan(CarpetFakePlayer player, String name, Component display, float requested, long intent) {
     }
 
     CompletableFuture<Integer> safeAsync(CommandSourceStack source, String name, float threshold, boolean save) {
         return OrgMenuNativeEffects.admit(server, () -> {
             if (!Float.isFinite(threshold)) return failed("SafeAFK threshold must be finite");
             ServerPlayer target = server.getPlayerList().getPlayerByName(name);
-            if (!(target instanceof ServerBot bot)) return failed("The selected player must be an online fake player");
+            if (!(target instanceof CarpetFakePlayer bot)) return failed("The selected player must be an online fake player");
             final float requested = threshold <= 0 ? -1F : threshold;
             return TisCommandContinuations.then(OrgMenuNativeEffects.run(bot, () -> {
                 if (bot.isRemoved() || requested >= bot.getMaxHealth())
@@ -1025,7 +1020,7 @@ public final class OrgPlayerManager {
                 }), written -> {
                     if (!written) return CompletableFuture.completedFuture(false);
                     ServerPlayer current = server.getPlayerList().getPlayerByName(plan.name());
-                    if (!(current instanceof ServerBot)) return CompletableFuture.completedFuture(true);
+                    if (!(current instanceof CarpetFakePlayer)) return CompletableFuture.completedFuture(true);
                     return OrgMenuNativeEffects.run(current, () -> {
                         if (java.util.Objects.equals(safeRuntimeIntents.get(plan.name()), plan.intent()))
                             thresholds.put(current, plan.requested());
@@ -1049,7 +1044,7 @@ public final class OrgPlayerManager {
     CompletableFuture<Integer> safeQueryAsync(CommandSourceStack source, String name) {
         return OrgMenuNativeEffects.admit(server, () -> {
             ServerPlayer player = server.getPlayerList().getPlayerByName(name);
-            if (!(player instanceof ServerBot)) return failed("The selected player must be an online fake player");
+            if (!(player instanceof CarpetFakePlayer)) return failed("The selected player must be an online fake player");
             return TisCommandContinuations.then(OrgMenuNativeEffects.run(player, () -> new SafeRow(player.getDisplayName().copy(), safeThreshold(player))), row -> feedback(source, translated("safeafk.list.each", "%s: SafeAFK %s", row.name(), row.value()), (int) row.value()));
         });
     }
@@ -1063,7 +1058,7 @@ public final class OrgPlayerManager {
     CompletableFuture<Integer> safeListAsync(CommandSourceStack source) {
         return OrgMenuNativeEffects.admit(server, () -> {
             var rows = new java.util.ArrayList<CompletableFuture<SafeRow>>();
-            for (ServerBot bot : List.copyOf(server.getBotList().bots))
+            for (CarpetFakePlayer bot : List.copyOf(server.getCarpetFakePlayers().players))
                 rows.add(OrgMenuNativeEffects.run(bot, () -> new SafeRow(bot.getDisplayName().copy(), safeThreshold(bot))));
             return TisCommandContinuations.then(CompletableFuture.allOf(rows.toArray(CompletableFuture[]::new)), ignored -> TisCommandContinuations.feedback(source, () -> {
                 int count = 0;

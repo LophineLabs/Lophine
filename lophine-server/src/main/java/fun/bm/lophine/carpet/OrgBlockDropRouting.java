@@ -200,7 +200,7 @@ public final class OrgBlockDropRouting {
         ScarpetNativeWork.record(actual);
         var captured = ScarpetRuntime.captureNativeContinuation(body);
         try {
-            org.bukkit.Bukkit.getRegionScheduler().runDelayed(org.leavesmc.leaves.plugin.MinecraftInternalPlugin.INSTANCE,
+            org.bukkit.Bukkit.getRegionScheduler().runDelayed(fun.bm.lophine.carpet.CarpetInternalPlugin.INSTANCE,
                     world.getWorld(), origin.getX() >> 4, origin.getZ() >> 4, task -> {
                         try {
                             finish(actual, captured.get());

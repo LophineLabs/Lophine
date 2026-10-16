@@ -15,7 +15,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.LevelResource;
-import org.leavesmc.leaves.bot.ServerBot;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -252,12 +251,12 @@ public final class OrgMailService {
 
     private ServerPlayer player(String name) {
         ServerPlayer found = server.getPlayerList().getPlayerByName(name);
-        return found == null && server.getBotList() != null ? server.getBotList().getBotByName(name) : found;
+        return found == null && server.getCarpetFakePlayers() != null ? server.getCarpetFakePlayers().getBotByName(name) : found;
     }
 
     private ServerPlayer player(UUID id) {
         ServerPlayer found = server.getPlayerList().getPlayer(id);
-        return found == null && server.getBotList() != null ? server.getBotList().getBot(id) : found;
+        return found == null && server.getCarpetFakePlayers() != null ? server.getCarpetFakePlayers().getBot(id) : found;
     }
 
     private CompletableFuture<Boolean> submit(ServerPlayer player, int id, CompoundTag before, CompoundTag after, List<ItemStack> targetBefore, List<ItemStack> targetAfter, List<ItemStack> viewerBefore, List<ItemStack> viewerAfter, List<OrgItemShadowGroups.Change> shadows) {
@@ -302,7 +301,7 @@ public final class OrgMailService {
             throw new OrgMailPresentation.Failure(OrgMailPresentation.mail("send.check_player"));
         ServerPlayer target = player(recipient.id());
         if (target == null) target = player(recipient.name());
-        if (!debug && target instanceof ServerBot)
+        if (!debug && target instanceof CarpetFakePlayer)
             throw new OrgMailPresentation.Failure(OrgMailPresentation.mail("send.check_player"));
     }
 
@@ -623,7 +622,7 @@ public final class OrgMailService {
      * Called after join/tick only on the player's owner.
      */
     public static void observe(ServerPlayer player) {
-        if (player instanceof ServerBot || NOTICED.putIfAbsent(player, true) != null) return;
+        if (player instanceof CarpetFakePlayer || NOTICED.putIfAbsent(player, true) != null) return;
         OrgMailService service = get(player.level().getServer());
         String name = player.getScoreboardName();
         var actual = OrgMenuNativeEffects.admit(player.level().getServer(), () -> TisCommandContinuations.then(service.incoming(name), messages -> messages.isEmpty() ? CompletableFuture.completedFuture(null) : TisCommandContinuations.owned(player, () -> {

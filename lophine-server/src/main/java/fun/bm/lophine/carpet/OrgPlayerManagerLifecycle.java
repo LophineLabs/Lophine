@@ -31,6 +31,10 @@ public final class OrgPlayerManagerLifecycle {
         }
     }
 
+    public static void worldLoaded(MinecraftServer server, net.minecraft.server.level.ServerLevel level) {
+        if (STARTED.contains(server) && !STOPS.containsKey(server)) CarpetFakePlayerPersistence.respawn(server, level);
+    }
+
     public static boolean beforeStop(MinecraftServer server, Runnable nativeStop) {
         Stop stop = STOPS.computeIfAbsent(server, ignored -> new Stop());
         if (!stop.started.compareAndSet(false, true)) return !stop.ready;

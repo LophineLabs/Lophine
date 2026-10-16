@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Explosion;
-import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
+import fun.bm.lophine.carpet.CarpetInternalPlugin;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -33,7 +33,7 @@ public final class ScarpetExplosionActors {
         try {
             if (TickThread.isTickThreadFor(world, position)) action.run();
             else
-                world.getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, world.getWorld(), position.getX() >> 4, position.getZ() >> 4, action);
+                world.getServer().server.getRegionScheduler().execute(CarpetInternalPlugin.INSTANCE, world.getWorld(), position.getX() >> 4, position.getZ() >> 4, action);
         } catch (Throwable failure) {
             completed.completeExceptionally(failure);
         }
@@ -48,7 +48,7 @@ public final class ScarpetExplosionActors {
      * A leftover bot whose actor has retired cannot accept a new explosion hit.
      */
     public static boolean retiredFakePlayer(Entity entity) {
-        return entity instanceof org.leavesmc.leaves.bot.ServerBot
+        return entity instanceof fun.bm.lophine.carpet.CarpetFakePlayer
                 && entity.getBukkitEntity().taskScheduler.isRetiredOffThread();
     }
 
@@ -66,7 +66,7 @@ public final class ScarpetExplosionActors {
         }
         try {
             Runnable rejected = () -> {
-                if (unadmittedRetirement != null && entity instanceof org.leavesmc.leaves.bot.ServerBot)
+                if (unadmittedRetirement != null && entity instanceof fun.bm.lophine.carpet.CarpetFakePlayer)
                     result.complete(unadmittedRetirement.get());
                 else retired(entity, captured, result, 0);
             };
@@ -118,7 +118,7 @@ public final class ScarpetExplosionActors {
                 runEntity(entity, operation, result);
                 return;
             }
-            location.world().getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, location.world().getWorld(),
+            location.world().getServer().server.getRegionScheduler().execute(CarpetInternalPlugin.INSTANCE, location.world().getWorld(),
                     location.position().getX() >> 4, location.position().getZ() >> 4, () -> {
                         if (!ScarpetRetiredActors.matchesLastOwner(entity, location)) {
                             retired(entity, operation, result, attempts + 1);

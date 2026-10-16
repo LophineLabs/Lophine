@@ -145,7 +145,7 @@ public class BotDataStorage {
     }
 
     private static void writeAtomic(CompoundTag nbt, java.nio.file.Path target) throws IOException {
-        java.nio.file.Path staging = java.nio.file.Files.createTempFile(target.getParent(), "carpet-bot-", ".dat.tmp");
+        java.nio.file.Path staging = java.nio.file.Files.createTempFile(target.getParent(), "leaves-bot-", ".dat.tmp");
         try {
             NbtIo.writeCompressed(nbt, staging);
             try (var channel = java.nio.channels.FileChannel.open(staging, java.nio.file.StandardOpenOption.WRITE)) {
@@ -162,7 +162,7 @@ public class BotDataStorage {
         }
     }
 
-    public synchronized Optional<CompoundTag> readCarpetSavedState(ServerBot bot) {
+    public synchronized Optional<CompoundTag> readSavedState(ServerBot bot) {
         try {
             CompoundTag savedIndex = NbtIo.readCompressed(this.botListFile.toPath(), NbtAccounter.unlimitedHeap());
             CompoundTag entry = savedIndex.getCompoundOrEmpty(bot.createState.fullName().toLowerCase(Locale.ROOT));

@@ -32,7 +32,7 @@ public final class OrgHiddenPathProtocol {
         OrgCommandNativeEffects.global(server, () -> {
             for (ServerPlayer recipient : List.copyOf(server.getPlayerList().getPlayers()))
                 OrgMenuNativeEffects.run(recipient, () -> {
-                    if (!recipient.isRemoved() && !(recipient instanceof org.leavesmc.leaves.bot.ServerBot) && CarpetLoggerProtocol.subscriptions(recipient.getScoreboardName()).containsKey("fakePlayerPathfinding"))
+                    if (!recipient.isRemoved() && !(recipient instanceof fun.bm.lophine.carpet.CarpetFakePlayer) && CarpetLoggerProtocol.subscriptions(recipient.getScoreboardName()).containsKey("fakePlayerPathfinding"))
                         ProtocolUtils.sendRawPayloadPacket(recipient, CHANNEL, data);
                     return null;
                 });
@@ -50,7 +50,7 @@ public final class OrgHiddenPathProtocol {
         OrgCommandNativeEffects.global(server, () -> {
             ServerPlayer player = server.getPlayerList().getPlayerByName(playerName);
             if (player != null) OrgMenuNativeEffects.run(player, () -> {
-                if (!player.isRemoved() && !(player instanceof org.leavesmc.leaves.bot.ServerBot) && !CarpetLoggerProtocol.subscriptions(playerName).containsKey("fakePlayerPathfinding"))
+                if (!player.isRemoved() && !(player instanceof fun.bm.lophine.carpet.CarpetFakePlayer) && !CarpetLoggerProtocol.subscriptions(playerName).containsKey("fakePlayerPathfinding"))
                     ProtocolUtils.sendRawPayloadPacket(player, CHANNEL, encode(-1, List.of()));
                 return null;
             });

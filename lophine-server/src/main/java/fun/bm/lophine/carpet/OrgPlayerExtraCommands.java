@@ -13,7 +13,6 @@ import net.minecraft.world.entity.decoration.Mannequin;
 import net.minecraft.world.item.component.ResolvableProfile;
 import org.bukkit.Location;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.leavesmc.leaves.bot.ServerBot;
 
 /**
  * Org's native player extension actions, dispatched on the acting owner.
@@ -35,7 +34,7 @@ public final class OrgPlayerExtraCommands {
                     ServerPlayer summoner = context.getSource().getPlayerOrException();
                     String name = StringArgumentType.getString(context, "player");
                     ServerPlayer selected = context.getSource().getServer().getPlayerList().getPlayerByName(name);
-                    if (!(selected instanceof ServerBot)) {
+                    if (!(selected instanceof CarpetFakePlayer)) {
                         context.getSource().sendFailure(Component.literal("The selected player must be an online fake player"));
                         return 0;
                     }

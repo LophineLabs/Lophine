@@ -3,7 +3,6 @@ package fun.bm.lophine.carpet;
 import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import fun.bm.lophine.carpet.config.modules.WoolHopperCounterConfig;
-import fun.bm.lophine.config.modules.function.FakeplayerConfig;
 import fun.bm.lophine.config.modules.function.protocol.PcaSyncProtocolConfig;
 import fun.bm.lophine.protocol.CarpetLoggerProtocol;
 import org.leavesmc.leaves.protocol.CarpetServerProtocol;
@@ -87,7 +86,6 @@ public final class CarpetProtocalDataBase {
             registerRule(CarpetServerProtocol.CarpetRule.of("carpettisaddition", "tntFuseDuration", GeneralCompatConfig.normalizedTntFuseDuration()));
             registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "defaultLoggers", CarpetLoggerProtocol.serializeConfiguredDefaults(sanitizeDefaultLoggers(GeneralCompatConfig.defaultLoggers))));
 
-            registerRule(CarpetServerProtocol.CarpetRule.of("lophine", "commandBot", FakeplayerConfig.enable));
             registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "commandPlayer", FakePlayerCompatConfig.commandPlayer));
             registerRule(CarpetServerProtocol.CarpetRule.of("lophine", "fakePlayerResident", FakePlayerCompatConfig.fakePlayerResident));
             registerRule(CarpetServerProtocol.CarpetRule.of("lophine", "openFakePlayerInventory", FakePlayerCompatConfig.openFakePlayerInventory));

@@ -23,7 +23,6 @@ import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.phys.Vec3;
-import org.leavesmc.leaves.bot.ServerBot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -102,7 +101,7 @@ public final class OrgFakePlayerActions {
 
     public static <T> CompletableFuture<T> whenIdle(ServerPlayer player, Supplier<T> snapshot) {
         TickThread.ensureTickThread(player, "Org action snapshot requires its owner");
-        if (!(player instanceof ServerBot)) return nativePlayerSnapshot(player, snapshot, false);
+        if (!(player instanceof CarpetFakePlayer)) return nativePlayerSnapshot(player, snapshot, false);
         // Pause public, hidden and native-pack producers before closing the general inventory
         // gate. Otherwise a hidden job could wait for that gate while its snapshot waits for it.
         return completion(player).whenIdle(work -> owned(player, () ->
@@ -115,7 +114,7 @@ public final class OrgFakePlayerActions {
      */
     public static <T> CompletableFuture<T> whenIdleForRemoval(ServerPlayer player, Supplier<T> snapshot) {
         TickThread.ensureTickThread(player, "Mandatory Org snapshot requires its owner");
-        if (!(player instanceof ServerBot)) return nativePlayerSnapshot(player, snapshot, true);
+        if (!(player instanceof CarpetFakePlayer)) return nativePlayerSnapshot(player, snapshot, true);
         return completion(player).whenIdleAfterTermination(work -> owned(player, () ->
                 OrgHiddenPlayerActions.whenIdleForRemoval(player, () -> carpet.script.external.ScarpetPlayerInventoryGate.whenIdleForRemoval(player, work)))
                 .thenCompose(Function.identity()).thenCompose(Function.identity()), snapshot);
@@ -162,7 +161,7 @@ public final class OrgFakePlayerActions {
     }
 
     public static void set(ServerPlayer player, Action action) {
-        if (!(player instanceof ServerBot) || !TickThread.isTickThreadFor(player))
+        if (!(player instanceof CarpetFakePlayer) || !TickThread.isTickThreadFor(player))
             throw new IllegalStateException("Fake action assignment requires its owner");
         OrgHiddenPlayerActions.stopOwner(player);
         State previous = STATES.remove(player);
@@ -178,7 +177,7 @@ public final class OrgFakePlayerActions {
     }
 
     public static void tick(ServerPlayer player) {
-        if (!(player instanceof ServerBot bot) || !TickThread.isTickThreadFor(player)) return;
+        if (!(player instanceof CarpetFakePlayer bot) || !TickThread.isTickThreadFor(player)) return;
         if (player.isRemoved() || player.isDeadOrDying()) {
             STATES.remove(player);
             return;
@@ -226,7 +225,7 @@ public final class OrgFakePlayerActions {
         return location == null || TickThread.isTickThreadFor(((org.bukkit.craftbukkit.CraftWorld) location.getWorld()).getHandle(), BlockPos.containing(location.getX(), location.getY(), location.getZ()));
     }
 
-    private static void execute(ServerBot player, State state, AbstractContainerMenu menu) {
+    private static void execute(CarpetFakePlayer player, State state, AbstractContainerMenu menu) {
         var steps = new MenuSteps(player, state, menu);
         var prepared = steps.effect(() -> {
             if (menu instanceof AbstractCraftingMenu crafting) menu.slotsChanged(crafting.craftSlots);
@@ -268,11 +267,11 @@ public final class OrgFakePlayerActions {
      * Each physical menu call ends, including its dynamic children, before the next source read.
      */
     private static final class MenuSteps {
-        final ServerBot player;
+        final CarpetFakePlayer player;
         final State state;
         final AbstractContainerMenu menu;
 
-        MenuSteps(ServerBot player, State state, AbstractContainerMenu menu) {
+        MenuSteps(CarpetFakePlayer player, State state, AbstractContainerMenu menu) {
             this.player = player;
             this.state = state;
             this.menu = menu;
@@ -701,7 +700,7 @@ public final class OrgFakePlayerActions {
         return Math.max(0, stack.getCount() - (GeneralCompatConfig.fakePlayerActionKeepItem && stack.getMaxStackSize() > 1 ? 1 : 0));
     }
 
-    private static ItemStack extractBox(ServerBot player, ItemStack box, Predicate<ItemStack> filter, int maximum) {
+    private static ItemStack extractBox(CarpetFakePlayer player, ItemStack box, Predicate<ItemStack> filter, int maximum) {
         if (box.getCount() > 1 && player.getInventory().getFreeSlot() < 0) return ItemStack.EMPTY;
         var contents = new ArrayList<>(box.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).itemCopies().toList());
         for (ItemStack stack : contents) {
@@ -715,7 +714,7 @@ public final class OrgFakePlayerActions {
         return ItemStack.EMPTY;
     }
 
-    private static void area(ServerBot player, State state, net.minecraft.world.phys.AABB box, java.util.function.Consumer<ServerBot> action) {
+    private static void area(CarpetFakePlayer player, State state, net.minecraft.world.phys.AABB box, java.util.function.Consumer<CarpetFakePlayer> action) {
         if (state.pendingArea) return;
         state.pendingArea = true;
         long epoch = ++state.areaEpoch;
@@ -724,7 +723,7 @@ public final class OrgFakePlayerActions {
         var bounds = CarpetPlayerTargetArea.Bounds.query(box);
         var nativeArea = CarpetRegionLease.<CompletableFuture<Void>>runValue(world, bounds.minX(), bounds.minZ(), bounds.maxX(), bounds.maxZ(), lease -> {
             ServerPlayer actor = world.getServer().getPlayerList().getPlayer(id);
-            if (!(actor instanceof ServerBot bot) || !TickThread.isTickThreadFor(actor) || actor.isRemoved() || actor.level() != world || STATES.get(actor) != state || state.areaEpoch != epoch)
+            if (!(actor instanceof CarpetFakePlayer bot) || !TickThread.isTickThreadFor(actor) || actor.isRemoved() || actor.level() != world || STATES.get(actor) != state || state.areaEpoch != epoch)
                 return CompletableFuture.completedFuture(null);
             return carpet.script.external.ScarpetNativeWork.observeNative(actor, () -> {
                 try (var admitted = carpet.script.external.ScarpetPlayerInventoryGate.acceptedScope(actor)) {
@@ -752,7 +751,7 @@ public final class OrgFakePlayerActions {
         carpet.script.external.ScarpetNativeWork.record(committed);
     }
 
-    private static void openAnvil(ServerBot player, State state) {
+    private static void openAnvil(CarpetFakePlayer player, State state) {
         if (player.tickCount % 10 != 0) return;
         Vec3 end = player.getEyePosition().add(player.getViewVector(1.0F).scale(player.blockInteractionRange()));
         var box = player.getBoundingBox().expandTowards(end.subtract(player.getEyePosition())).inflate(1);
@@ -770,7 +769,7 @@ public final class OrgFakePlayerActions {
         return !stack.isEmpty() && EnchantmentHelper.getEnchantmentsForCrafting(stack).getLevel(enchantment) > 0;
     }
 
-    private static boolean canEnchant(ServerBot player, Action action, ItemStack stack) {
+    private static boolean canEnchant(CarpetFakePlayer player, Action action, ItemStack stack) {
         if (!action.filters.getFirst().test(stack) || !EnchantmentHelper.canStoreEnchantments(stack) || !action.enchantment.value().canEnchant(stack) && !player.hasInfiniteMaterials() && !stack.is(Items.ENCHANTED_BOOK))
             return false;
         for (var entry : EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet())
@@ -779,7 +778,7 @@ public final class OrgFakePlayerActions {
         return true;
     }
 
-    private static void fishing(ServerBot player, State state) {
+    private static void fishing(CarpetFakePlayer player, State state) {
         Inventory inventory = player.getInventory();
         if (!player.getMainHandItem().is(Items.FISHING_ROD) && !player.getOffhandItem().is(Items.FISHING_ROD)) {
             for (int i = 0; i < inventory.getNonEquipmentItems().size(); i++)
@@ -813,7 +812,7 @@ public final class OrgFakePlayerActions {
         }
     }
 
-    private static void librarian(ServerBot player, State state) {
+    private static void librarian(CarpetFakePlayer player, State state) {
         Librarian spec = state.action.librarian;
         if (spec == null) throw new IllegalStateException("Missing librarian job site");
         BlockPos pos = spec.jobSite;
@@ -913,7 +912,7 @@ public final class OrgFakePlayerActions {
         });
     }
 
-    private static void librarianLock(ServerBot actor, State state, net.minecraft.world.entity.npc.villager.Villager villager,
+    private static void librarianLock(CarpetFakePlayer actor, State state, net.minecraft.world.entity.npc.villager.Villager villager,
                                       net.minecraft.world.item.trading.MerchantOffer offer, int level) {
         var opened = OrgMenuNativeEffects.run(actor, () -> {
             TickThread.ensureTickThread(villager, "Librarian merchant interaction requires the original shared region");
@@ -935,7 +934,7 @@ public final class OrgFakePlayerActions {
         carpet.script.external.ScarpetNativeWork.record(closed);
     }
 
-    private static void lackExperience(ServerBot player, State state, AnvilMenu menu) {
+    private static void lackExperience(CarpetFakePlayer player, State state, AnvilMenu menu) {
         if (!player.hasInfiniteMaterials() && player.experienceLevel < menu.getCost() && !state.notifiedExperience) {
             state.notifiedExperience = true;
             announce(player, Component.literal("Org anvil action is waiting for experience"));
@@ -953,7 +952,7 @@ public final class OrgFakePlayerActions {
         carpet.script.external.ScarpetNativeWork.record(logged);
     }
 
-    private static void mergeEmptyBoxes(ServerBot player) {
+    private static void mergeEmptyBoxes(CarpetFakePlayer player) {
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             ItemStack first = player.getInventory().getItem(i);
             if (first.isEmpty() || !OrgGameplayHelper.isShulkerBox(first) || first.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).nonEmptyItemCopyStream().findAny().isPresent())

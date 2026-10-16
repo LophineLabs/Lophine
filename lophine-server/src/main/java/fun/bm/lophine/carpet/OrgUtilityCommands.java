@@ -108,7 +108,7 @@ public final class OrgUtilityCommands {
     }
 
     private static int toggleSpectator(CommandSourceStack source, ServerPlayer player, boolean fake) throws CommandSyntaxException {
-        if (fake && !(player instanceof org.leavesmc.leaves.bot.ServerBot)) throw FAKE_ONLY.create();
+        if (fake && !(player instanceof fun.bm.lophine.carpet.CarpetFakePlayer)) throw FAKE_ONLY.create();
         return OrgCommandNativeEffects.command(source, 1, () ->
                 TisCommandContinuations.then(OrgMenuNativeEffects.run(player, () -> {
                     ServerPlayer target = player;

@@ -22,7 +22,6 @@ import com.mojang.authlib.GameProfile;
 import fun.bm.lophine.LophineLogger;
 import fun.bm.lophine.bot.BotActionGuiContainer;
 import fun.bm.lophine.bot.BotActionGuiMenu;
-import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
 import fun.bm.lophine.config.modules.function.FakeplayerConfig;
 import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.event.entity.EntityKnockbackEvent;
@@ -55,11 +54,9 @@ import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -96,26 +93,13 @@ public class ServerBot extends ServerPlayer {
     private final List<AbstractBotAction<?>> actions;
     private final Map<String, AbstractBotConfig<?>> configs;
 
+    final java.util.concurrent.CompletableFuture<ServerBot> actualPlacement = new java.util.concurrent.CompletableFuture<>();
+    public java.util.concurrent.CompletableFuture<ServerBot> placementCompletion() { return actualPlacement.copy(); }
+
     public boolean resume = false;
     public BotCreateState createState;
     public UUID createPlayer;
     public boolean handsBusy = false;
-    public boolean carpetNativePlayer = false;
-    public boolean carpetShadow = false;
-    public volatile boolean carpetPlacementReady = false;
-    final java.util.concurrent.CompletableFuture<ServerBot> carpetActualPlacementFuture = new java.util.concurrent.CompletableFuture<>();
-    public final java.util.concurrent.CompletableFuture<ServerBot> carpetPlacementFuture = new java.util.concurrent.CompletableFuture<>();
-    public Runnable carpetPlacementInitializer = () -> {
-    };
-
-    public void carpetSetProfile(GameProfile profile) {
-        if (!profile.id().equals(this.getUUID()))
-            throw new IllegalArgumentException("A fake player's profile must retain its UUID");
-        this.gameProfile = profile;
-    }
-
-    private boolean carpetRestoreAfterDeath;
-
     private final int tracingRange;
     private final BotStatsCounter stats;
     private final BotInventoryContainer container;
@@ -125,13 +109,9 @@ public class ServerBot extends ServerPlayer {
     public int removeTaskId = -1;
     private int autoFishCooldown = 0;
 
-    public ServerBot(MinecraftServer server, ServerLevel world, GameProfile profile) {
-        this(server, world, profile, false);
-    }
 
-    public ServerBot(MinecraftServer server, ServerLevel world, GameProfile profile, boolean carpetNativePlayer) {
+    public ServerBot(MinecraftServer server, ServerLevel world, GameProfile profile) {
         super(server, world, profile, ClientInformation.createDefault());
-        this.carpetNativePlayer = carpetNativePlayer;
         this.entityData.set(Player.DATA_PLAYER_MODE_CUSTOMISATION, (byte) -2);
 
         this.gameMode = new ServerBotGameMode(this);
@@ -151,7 +131,6 @@ public class ServerBot extends ServerPlayer {
 
         this.notSleepTicks = 0;
         this.fauxSleeping = FakeplayerConfig.canSkipSleep;
-        if (!carpetNativePlayer)
             this.getBukkitEntity().setSimulationDistance(FakeplayerConfig.getSimulationDistance(this));
     }
 
@@ -161,22 +140,6 @@ public class ServerBot extends ServerPlayer {
             return;
         }
 
-        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fakePlayerHeal && this.level().getGameTime() % 40L == 0L) {
-            this.heal(1.0F);
-            this.getFoodData().eat(1, 0.0F);
-        }
-
-        if (this.carpetNativePlayer) {
-            this.joining = false;
-            super.tick();
-            if (!FakePlayerCompatConfig.fakePlayerTicksLikeRealPlayer) {
-                this.runAction();
-                this.doTick();
-            }
-            return;
-        }
-        fun.bm.lophine.carpet.OrgPlayerStatusSync.tick(this);
-        this.carpetActionPack.onUpdate();
 
         if (this.getConfigValue(Configs.TICK_TYPE) == TickType.ENTITY_LIST) {
             this.runAction();
@@ -231,11 +194,6 @@ public class ServerBot extends ServerPlayer {
             this.die(this.damageSources().generic());
             return;
         }
-        if (this.carpetNativePlayer) {
-            super.doTick();
-            this.tickAutoFish();
-            return;
-        }
 
         this.absSnapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
 
@@ -267,7 +225,7 @@ public class ServerBot extends ServerPlayer {
         this.updateIsUnderwater();
 
         if (this.getConfigValue(Configs.TICK_TYPE) == TickType.NETWORK) {
-            getServer().scheduleOnMain(this::runAction);
+            this.runAction();
         }
 
         this.livingEntityTick();
@@ -291,25 +249,15 @@ public class ServerBot extends ServerPlayer {
         }
 
         this.getCooldowns().tick();
-        this.tickAutoFish();
         this.updatePlayerPose();
     }
 
     public void networkTick() {
-        if (carpet.script.external.ScarpetNativeWork.isDraining(this.level().getServer()) || fun.bm.lophine.carpet.CarpetPlayerBirths.playerPending(this))
-            return;
-        if (this.carpetNativePlayer) {
-            if (FakePlayerCompatConfig.fakePlayerTicksLikeRealPlayer) {
-                this.carpetActionPack.onUpdate();
-                this.runAction();
-                this.doTick();
-            }
-            return;
-        }
-        if (this.getConfigValue(Configs.TICK_TYPE) == TickType.NETWORK) {
-            this.doTick();
-        }
+        if (this.getConfigValue(Configs.TICK_TYPE) == TickType.NETWORK) this.doTick();
     }
+
+    @Override
+    public boolean isFakePlayer() { return true; }
 
     @Override
     public boolean canSimulateMovement() {
@@ -403,8 +351,8 @@ public class ServerBot extends ServerPlayer {
     public @NotNull InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand, @NotNull net.minecraft.world.phys.Vec3 location) {
         if (player instanceof ServerPlayer player1 && player.getMainHandItem().isEmpty()) {
             boolean isSneaking = player.isShiftKeyDown();
-            boolean enabled1Only = FakePlayerCompatConfig.openFakePlayerInventory ^ FakeplayerConfig.canOpenActionGui;
-            boolean openInventory = enabled1Only ? FakePlayerCompatConfig.openFakePlayerInventory : FakePlayerCompatConfig.openFakePlayerInventory && !isSneaking;
+            boolean enabled1Only = FakeplayerConfig.openInventory ^ FakeplayerConfig.canOpenActionGui;
+            boolean openInventory = enabled1Only ? FakeplayerConfig.openInventory : FakeplayerConfig.openInventory && !isSneaking;
             boolean openActionGui = enabled1Only ? FakeplayerConfig.canOpenActionGui : FakeplayerConfig.canOpenActionGui && isSneaking;
 
             if (openInventory) {
@@ -437,12 +385,6 @@ public class ServerBot extends ServerPlayer {
     public void addAdditionalSaveData(@NotNull ValueOutput nbt) {
         super.addAdditionalSaveData(nbt);
         nbt.putBoolean("isShiftKeyDown", this.isShiftKeyDown());
-        nbt.putBoolean("carpetRestoreAfterDeath", this.carpetRestoreAfterDeath);
-        nbt.putBoolean("carpetNativePlayer", this.carpetNativePlayer);
-        nbt.putBoolean("carpetShadow", this.carpetShadow);
-        if (this.carpetNativePlayer || FakePlayerCompatConfig.fakePlayerReloadAction) {
-            nbt.store("carpetPlayerActions", CompoundTag.CODEC, this.carpetActionPack.save());
-        }
 
         CompoundTag createNbt = new CompoundTag();
         createNbt.putString("rawName", this.createState.rawName());
@@ -459,7 +401,7 @@ public class ServerBot extends ServerPlayer {
 
         nbt.store("createStatus", CompoundTag.CODEC, createNbt);
 
-        if (FakePlayerCompatConfig.fakePlayerReloadAction && !this.actions.isEmpty()) {
+        if (FakeplayerConfig.reloadAction && !this.actions.isEmpty()) {
             ValueOutput.TypedOutputList<CompoundTag> actionNbt = nbt.list("actions", CompoundTag.CODEC);
             for (AbstractBotAction<?> action : this.actions) {
                 actionNbt.add(action.save(new CompoundTag()));
@@ -478,19 +420,6 @@ public class ServerBot extends ServerPlayer {
     public void readAdditionalSaveData(@NotNull ValueInput nbt) {
         super.readAdditionalSaveData(nbt);
         this.setShiftKeyDown(nbt.getBooleanOr("isShiftKeyDown", false));
-        this.carpetNativePlayer = nbt.getBooleanOr("carpetNativePlayer", this.carpetNativePlayer);
-        this.carpetShadow = nbt.getBooleanOr("carpetShadow", this.carpetShadow);
-        if (this.carpetNativePlayer || FakePlayerCompatConfig.fakePlayerReloadAction) {
-            nbt.read("carpetPlayerActions", CompoundTag.CODEC).ifPresent(this.carpetActionPack::load);
-        }
-        if (nbt.getBooleanOr("carpetRestoreAfterDeath", false)) {
-            this.setHealth(this.getMaxHealth());
-            this.deathTime = 0;
-            this.setRemainingFireTicks(0);
-            this.fallDistance = 0.0F;
-            this.carpetRestoreAfterDeath = false;
-        }
-
         CompoundTag createNbt = nbt.read("createStatus", CompoundTag.CODEC).orElseThrow();
         BotCreateState.Builder createBuilder = BotCreateState
                 .builder(createNbt.getString("rawName")
@@ -514,7 +443,7 @@ public class ServerBot extends ServerPlayer {
         this.gameProfile = BotList.createBotProfile(this.getUUID(), this.createState.fullName(), this.createState.skin());
 
 
-        if (FakePlayerCompatConfig.fakePlayerReloadAction && nbt.list("actions", CompoundTag.CODEC).isPresent()) {
+        if (FakeplayerConfig.reloadAction && nbt.list("actions", CompoundTag.CODEC).isPresent()) {
             ValueInput.TypedInputList<CompoundTag> actionNbt = nbt.list("actions", CompoundTag.CODEC).orElseThrow();
             actionNbt.forEach(actionTag -> {
                 Actions<?> holder = Actions.getByName(actionTag.getString("actionName").orElseThrow());
@@ -584,43 +513,9 @@ public class ServerBot extends ServerPlayer {
     }
 
     @Override
-    public void die(@NotNull DamageSource damageSource) {
-        if (!this.carpetNativePlayer) {
-            this.carpetPerformLegacyBotDeath(damageSource);
-            return;
-        }
-        var observed = carpet.script.external.ScarpetNativeWork.observeNative(this, () -> {
-            var originalDeath = carpet.script.external.ScarpetRuntime.captureNativeContinuation(() ->
-                    carpet.script.external.ScarpetExplosionActors.entity(this, () ->
-                            carpet.script.external.ScarpetNativeWork.recoverGuestValue(carpet.script.external.ScarpetNativeWork.<Void>observeNative(this, () -> {
-                                super.die(damageSource);
-                                return null;
-                            }))).thenCompose(value -> value));
-            var afterDeath = carpet.script.external.ScarpetRuntime.captureNativeContinuation(() ->
-                    carpet.script.external.ScarpetExplosionActors.entity(this, () -> {
-                        // Paper revives the player when PlayerDeathEvent is cancelled.
-                        if (this.getHealth() > 0.0F || this.isRemoved())
-                            return java.util.concurrent.CompletableFuture.completedFuture(false);
-                        try (var accepted = carpet.script.external.ScarpetPlayerInventoryGate.acceptedScope(this)) {
-                            this.setHealth(20.0F);
-                            this.foodData = new net.minecraft.world.food.FoodData();
-                            // The true SP body already performed death drops/XP. The disconnect saves its final inventory once.
-                            this.carpetRestoreAfterDeath = true;
-                            return getServer().getBotList().carpetRemoveBotAsync(this, BotRemoveEvent.RemoveReason.DEATH, null, true, false);
-                        }
-                    }).thenCompose(value -> value));
-            var actual = carpet.script.external.ScarpetNativeDeaths.shakeOff(this)
-                    .thenCompose(ignored -> originalDeath.get()).thenCompose(ignored -> afterDeath.get());
-            carpet.script.external.ScarpetNativeWork.record(actual);
-            return actual;
-        });
-        var actual = carpet.script.external.ScarpetNativeWork.recoverGuestValue(observed).thenCompose(value -> value);
-        carpet.script.external.ScarpetNativeWork.aliasDependency(actual, observed);
-        carpet.script.external.ScarpetNativeWork.record(actual);
-        carpet.script.external.ScarpetNativeWork.trackNative(getServer(), actual);
-    }
+    public void die(@NotNull DamageSource damageSource) { this.performBotDeath(damageSource); }
 
-    private void carpetPerformLegacyBotDeath(@NotNull DamageSource damageSource) {
+    private void performBotDeath(@NotNull DamageSource damageSource) {
         boolean flag = this.level().getGameRules().get(GameRules.SHOW_DEATH_MESSAGES);
         Component defaultMessage = this.getCombatTracker().getDeathMessage();
 
@@ -646,32 +541,12 @@ public class ServerBot extends ServerPlayer {
         if (this.level().getGameRules().get(GameRules.FORGIVE_DEAD_PLAYERS)) {
             this.tellNeutralMobsThatIDied();
         }
-        this.carpetRestoreAfterDeath = fun.bm.lophine.carpet.OrgFakePlayerInventory.shouldKeepInventory(this, damageSource)
-                || this.carpetNativePlayer && (this.isSpectator() || this.level().getGameRules().get(GameRules.KEEP_INVENTORY));
-        if (this.carpetNativePlayer) {
-            this.awardStat(net.minecraft.stats.Stats.DEATHS);
-            this.resetStat(net.minecraft.stats.Stats.CUSTOM.get(net.minecraft.stats.Stats.TIME_SINCE_DEATH));
-            this.resetStat(net.minecraft.stats.Stats.CUSTOM.get(net.minecraft.stats.Stats.TIME_SINCE_REST));
-            this.level().getCraftServer().getScoreboardManager().forAllObjectives(net.minecraft.world.scores.criteria.ObjectiveCriteria.DEATH_COUNT, this, score -> score.increment());
-            if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.headHunter && !this.carpetRestoreAfterDeath) {
-                net.minecraft.world.item.ItemStack head = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.PLAYER_HEAD);
-                head.set(net.minecraft.core.component.DataComponents.PROFILE, net.minecraft.world.item.component.ResolvableProfile.createResolved(this.getGameProfile()));
-                this.drop(head, true, net.minecraft.util.Prediction.SERVER_ONLY);
-            }
-        }
-        fun.bm.lophine.carpet.AmsServerMessages.deathLocation(this);
-        if (!getServer().getBotList().removeBot(this, BotRemoveEvent.RemoveReason.DEATH, null, this.carpetRestoreAfterDeath, false, false)) {
-            this.carpetRestoreAfterDeath = false;
-            if (this.getHealth() <= 0.0F) this.setHealth(0.1F);
-        }
+        if (!getServer().getBotList().removeBot(this, BotRemoveEvent.RemoveReason.DEATH, null, false, false, false) && this.getHealth() <= 0.0F) this.setHealth(0.1F);
     }
 
     @Override
     protected int getBaseExperienceReward(@NotNull ServerLevel level) {
-        if (this.isSpectator() || this.carpetNativePlayer && this.keepLevel
-                || fun.bm.lophine.carpet.OrgFakePlayerInventory.shouldKeepInventory(this, this.getLastDamageSource()))
-            return 0;
-        return Math.min(this.experienceLevel * 7, 100);
+        return this.isSpectator() ? 0 : Math.min(this.experienceLevel * 7, 100);
     }
 
     @Override
@@ -703,17 +578,14 @@ public class ServerBot extends ServerPlayer {
 
     @Override
     public void awardKillScore(@NotNull Entity entity, @NotNull DamageSource damageSource) {
-        if (this.carpetNativePlayer) super.awardKillScore(entity, damageSource);
     }
 
     @Override
     public void awardStat(@NotNull Stat<?> stat) {
-        if (this.carpetNativePlayer) super.awardStat(stat);
     }
 
     @Override
     public void resetStat(@NotNull Stat<?> stat) {
-        if (this.carpetNativePlayer) super.resetStat(stat);
     }
 
     public void removeTab() {
@@ -781,74 +653,25 @@ public class ServerBot extends ServerPlayer {
     public void dropAll(boolean death) {
         NonNullList<ItemStack> items = this.getInventory().getNonEquipmentItems();
         for (int i = 0; i < items.size(); i++) {
-            ItemStack itemStack = items.get(i);
-            if (!itemStack.isEmpty()) {
-                if (!this.carpetNativePlayer || !death || !net.minecraft.world.item.enchantment.EnchantmentHelper.has(itemStack, net.minecraft.world.item.enchantment.EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
-                    ItemEntity dropped = this.drop(itemStack, false, net.minecraft.util.Prediction.PREDICTED, death, false, null);
-                    if (this.carpetNativePlayer && dropped != null && fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.playerDropsNotDespawning)
-                        dropped.setUnlimitedLifetime();
-                }
-                items.set(i, ItemStack.EMPTY);
-            }
+            ItemStack item = items.get(i);
+            if (!item.isEmpty()) this.drop(item, false, net.minecraft.util.Prediction.PREDICTED, death, false, null);
+            items.set(i, ItemStack.EMPTY);
         }
         for (EquipmentSlot slot : EquipmentSlot.values()) {
-            ItemStack itemStack;
-            if (!(itemStack = this.equipment.get(slot)).isEmpty()) {
-                if (!this.carpetNativePlayer || !death || !net.minecraft.world.item.enchantment.EnchantmentHelper.has(itemStack, net.minecraft.world.item.enchantment.EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
-                    this.drop(itemStack, false, net.minecraft.util.Prediction.PREDICTED, death, false, null);
-                }
-                this.equipment.set(slot, ItemStack.EMPTY);
-            }
+            ItemStack item = this.equipment.get(slot);
+            if (!item.isEmpty()) this.drop(item, false, net.minecraft.util.Prediction.PREDICTED, death, false, null);
+            this.equipment.set(slot, ItemStack.EMPTY);
         }
         this.detectEquipmentUpdates();
     }
 
     private void runAction() {
-        if (!this.carpetNativePlayer) fun.bm.lophine.carpet.OrgHiddenPlayerActions.tick(this);
         if (FakeplayerConfig.canUseAction) {
             this.actions.forEach(action -> action.tryTick(this));
             this.actions.removeIf(AbstractBotAction::isCancelled);
         }
     }
 
-    private void tickAutoFish() {
-        if (!FakePlayerCompatConfig.fakePlayerAutoFish || this.hasActiveAction("fish")) {
-            this.autoFishCooldown = 0;
-            return;
-        }
-
-        if (this.autoFishCooldown > 0) {
-            this.autoFishCooldown--;
-            return;
-        }
-
-        ItemStack mainHand = this.getMainHandItem();
-        if (mainHand.isEmpty() || !(mainHand.getItem() instanceof FishingRodItem)) {
-            return;
-        }
-
-        FishingHook fishingHook = this.fishing;
-        if (fishingHook != null) {
-            if (fishingHook.currentState == FishingHook.FishHookState.HOOKED_IN_ENTITY) {
-                mainHand.use(this.level(), this, InteractionHand.MAIN_HAND);
-                this.autoFishCooldown = AUTO_FISH_ENTITY_DELAY;
-                return;
-            }
-
-            if (fishingHook.nibble > 0) {
-                mainHand.use(this.level(), this, InteractionHand.MAIN_HAND);
-                this.autoFishCooldown = AUTO_FISH_RECAST_DELAY;
-            }
-            return;
-        }
-
-        mainHand.use(this.level(), this, InteractionHand.MAIN_HAND);
-        this.autoFishCooldown = AUTO_FISH_RECAST_DELAY;
-    }
-
-    private boolean hasActiveAction(String actionName) {
-        return this.actions.stream().anyMatch(action -> !action.isCancelled() && action.getName().equals(actionName));
-    }
 
     public boolean addBotAction(AbstractBotAction<?> action, CommandSender sender) {
         if (!FakeplayerConfig.canUseAction) {
@@ -871,12 +694,12 @@ public class ServerBot extends ServerPlayer {
     @Override
     @NotNull
     public ServerStatsCounter getStats() {
-        return this.carpetNativePlayer ? super.getStats() : stats;
+        return this.stats;
     }
 
     @Override
     public boolean allowsListing() {
-        return this.carpetNativePlayer ? fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.allowListingFakePlayers : super.allowsListing();
+        return super.allowsListing();
     }
 
     @SuppressWarnings("unchecked")

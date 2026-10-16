@@ -32,7 +32,6 @@ import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.leavesmc.leaves.bot.ServerBot;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -246,7 +245,7 @@ final class OrgHiddenBedrock extends OrgHiddenPlayerActions.Engine {
             announce(OrgHiddenPlayerActions.localized("carpet-org-addition.command.playerAction.bedrock.no_action.first", "%s has had no bedrock-breaking actions for %s minutes", player.getDisplayName(), minute)
                     .withStyle(net.minecraft.ChatFormatting.GRAY, net.minecraft.ChatFormatting.ITALIC), false);
             if (minute == 5) {
-                ((ServerBot) player).kill(world);
+                ((CarpetFakePlayer) player).kill(world);
                 cancelled = true;
                 return done();
             }

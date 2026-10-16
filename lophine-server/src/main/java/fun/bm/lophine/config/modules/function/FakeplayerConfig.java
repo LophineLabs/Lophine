@@ -1,6 +1,5 @@
 package fun.bm.lophine.config.modules.function;
 
-import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
 import me.earthme.luminol.config.flags.ConfigClassInfo;
 import me.earthme.luminol.config.flags.ConfigInfo;
 import me.earthme.luminol.config.flags.DoNotLoad;
@@ -14,6 +13,15 @@ import java.util.List;
 
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "fakeplayer")
 public class FakeplayerConfig {
+    @ConfigInfo(name = "resident")
+    public static boolean resident = false;
+
+    @ConfigInfo(name = "open-inventory")
+    public static boolean openInventory = false;
+
+    @ConfigInfo(name = "reload-action")
+    public static boolean reloadAction = false;
+
     @ConfigInfo(name = "enable")
     public static boolean enable = false;
 
@@ -70,13 +78,11 @@ public class FakeplayerConfig {
     }
 
     public static ServerBot.TickType tickType() {
-        return FakePlayerCompatConfig.fakePlayerTicksLikeRealPlayer
-                ? ServerBot.TickType.NETWORK
-                : ServerBot.TickType.ENTITY_LIST;
+        return ServerBot.TickType.ENTITY_LIST;
     }
 
     public static boolean checkEnabled() {
-        return enable || FakePlayerCompatConfig.playerCommandEnabled();
+        return enable;
     }
 
     @NeedRun(when = EnumRunnableType.ON_LOADED)

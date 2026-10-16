@@ -186,7 +186,7 @@ public final class OrgFinderFiles {
         }
 
         boolean online(UUID uuid) {
-            return server.getPlayerList().getPlayer(uuid) != null || server.getBotList() != null && server.getBotList().getBot(uuid) != null;
+            return server.getPlayerList().getPlayer(uuid) != null || server.getCarpetFakePlayers() != null && server.getCarpetFakePlayers().getBot(uuid) != null;
         }
 
         void collect(UUID uuid, OrgOfflinePlayerSnapshots.Snapshot snapshot) {

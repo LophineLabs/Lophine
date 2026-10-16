@@ -12,7 +12,6 @@ import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
-import org.leavesmc.leaves.bot.ServerBot;
 
 import java.util.ArrayList;
 import java.util.function.Predicate;
@@ -67,7 +66,7 @@ final class OrgHiddenInventory {
             ItemStack picked = pick(box, predicate, Integer.MAX_VALUE);
             if (picked.isEmpty()) continue;
             player.setItemInHand(hand, picked);
-            OrgFakePlayerInventory.insert((ServerBot) player, held);
+            OrgFakePlayerInventory.insert((CarpetFakePlayer) player, held);
             return true;
         }
         return false;

@@ -33,7 +33,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
-import org.leavesmc.leaves.bot.ServerBot;
 
 import java.util.*;
 import java.util.concurrent.CancellationException;
@@ -379,7 +378,7 @@ final class OrgFinderService {
             return switch (entity) {
                 case ItemEntity item ->
                         count(new SimpleContainer(item.getItem()), item.blockPosition(), OrgFinderText.localized("carpet-org-addition.item.drops"));
-                case ServerBot bot -> count(bot.getInventory(), bot.blockPosition(), bot.getName());
+                case CarpetFakePlayer bot -> count(bot.getInventory(), bot.blockPosition(), bot.getName());
                 case net.minecraft.world.entity.vehicle.ContainerEntity container ->
                         count(container, entity.blockPosition(), entity.getName());
                 case ItemFrame frame ->

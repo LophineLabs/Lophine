@@ -23,7 +23,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
-import org.leavesmc.leaves.bot.ServerBot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -143,7 +142,7 @@ public final class OrgFakePlayerActionCommands {
 
     private static int target(CommandContext<CommandSourceStack> context, java.util.function.Consumer<ServerPlayer> action) throws CommandSyntaxException {
         ServerPlayer target = EntityArgument.getPlayer(context, "player");
-        if (!(target instanceof ServerBot)) throw notFakePlayerException(target);
+        if (!(target instanceof CarpetFakePlayer)) throw notFakePlayerException(target);
         return OrgMenuNativeEffects.command(context.getSource(), () -> OrgMenuNativeEffects.run(target, () -> {
             if (target.isRemoved() || target.isDeadOrDying()) return false;
             action.accept(target);
@@ -154,7 +153,7 @@ public final class OrgFakePlayerActionCommands {
     private static int gui(CommandContext<CommandSourceStack> context, boolean stone) throws CommandSyntaxException {
         ServerPlayer viewer = context.getSource().getPlayerOrException();
         ServerPlayer target = EntityArgument.getPlayer(context, "player");
-        if (!(target instanceof ServerBot)) throw notFakePlayerException(target);
+        if (!(target instanceof CarpetFakePlayer)) throw notFakePlayerException(target);
         UUID id = target.getUUID();
         return OrgMenuNativeEffects.command(context.getSource(), () -> OrgFakePlayerRecipeMenus.openAsync(viewer, id, stone), "The fake-player recipe menu could not open");
     }

@@ -8,7 +8,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.server.MinecraftServer;
-import org.leavesmc.leaves.bot.ServerBot;
 
 /**
  * The upstream rule broadcasts the summoner on successful spawn; it does not change player identity.
@@ -17,7 +16,7 @@ public final class OrgPlayerSummoner {
     private OrgPlayerSummoner() {
     }
 
-    public static void spawned(ServerBot bot, Component summoner, boolean silence) {
+    public static void spawned(CarpetFakePlayer bot, Component summoner, boolean silence) {
         if (!GeneralCompatConfig.displayPlayerSummoner || summoner == null || silence) return;
         TickThread.ensureTickThread(bot, "Org spawn announcement requires the fake owner");
         Component hover = Component.literal(bot.level().dimension().identifier() + ": " + bot.blockPosition().toShortString());

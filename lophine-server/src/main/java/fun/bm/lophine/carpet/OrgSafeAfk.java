@@ -14,8 +14,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
-import org.leavesmc.leaves.bot.ServerBot;
-import org.leavesmc.leaves.event.bot.BotRemoveEvent;
 
 import java.util.function.Supplier;
 
@@ -39,7 +37,7 @@ public final class OrgSafeAfk {
     }
 
     public static <T> T withDamage(ServerPlayer player, DamageSource source, float amount, Supplier<T> original) {
-        if (!(player instanceof ServerBot)) return original.get();
+        if (!(player instanceof CarpetFakePlayer)) return original.get();
         if (DAMAGE.isBound() && DAMAGE.get().player == player) {
             DAMAGE.get().actual = true;
             return original.get();
@@ -53,7 +51,7 @@ public final class OrgSafeAfk {
      * Outer SP eligibility returns are checked only when no asynchronous damage is pending.
      */
     public static <T> T withDamageOuter(ServerPlayer player, DamageSource source, float amount, Supplier<T> original) {
-        if (!(player instanceof ServerBot)) return original.get();
+        if (!(player instanceof CarpetFakePlayer)) return original.get();
         if (DAMAGE.isBound() && DAMAGE.get().player == player) return original.get();
         Frame frame = new Frame(player);
         return scoped(player, source, amount, frame, original, true);
@@ -154,7 +152,7 @@ public final class OrgSafeAfk {
     }
 
     public static void afterDamage(ServerPlayer player, DamageSource source, float amount, boolean totemUsed) {
-        if (!(player instanceof ServerBot bot)) return;
+        if (!(player instanceof CarpetFakePlayer bot)) return;
         float threshold = OrgPlayerManager.safeThreshold(player);
         if (threshold <= 0 || totemUsed || canProtect(player, source)) return;
         boolean failed = player.getHealth() <= 0 || player.isDeadOrDying();
@@ -185,7 +183,7 @@ public final class OrgSafeAfk {
                         if (failed) return java.util.concurrent.CompletableFuture.completedFuture(null);
                         return TisCommandContinuations.then(OrgMenuNativeEffects.run(player, () -> {
                             player.getFoodData().setFoodLevel(20);
-                            return server.getBotList().carpetRemoveBotAsync(bot, BotRemoveEvent.RemoveReason.COMMAND, null, true, false);
+                            return server.getCarpetFakePlayers().removeAsync(bot, CarpetFakePlayerManager.RemoveReason.COMMAND, null, true, false);
                         }).thenCompose(value -> value), removed -> Boolean.TRUE.equals(removed) ? java.util.concurrent.CompletableFuture.completedFuture(null)
                                 : java.util.concurrent.CompletableFuture.failedFuture(new IllegalStateException("SafeAFK fake player removal was denied")));
                     })));

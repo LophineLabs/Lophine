@@ -13,7 +13,6 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import org.leavesmc.leaves.bot.ServerBot;
 
 import java.util.function.Consumer;
 
@@ -76,7 +75,7 @@ public final class OrgHiddenActionCommands {
 
     private static int target(CommandContext<CommandSourceStack> context, Consumer<ServerPlayer> action, boolean bedrock) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer player = EntityArgument.getPlayer(context, "player");
-        if (!(player instanceof ServerBot)) throw OrgFakePlayerActionCommands.notFakePlayerException(player);
+        if (!(player instanceof CarpetFakePlayer)) throw OrgFakePlayerActionCommands.notFakePlayerException(player);
         return OrgMenuNativeEffects.command(context.getSource(), () -> TisCommandContinuations.then(OrgMenuNativeEffects.run(player, () -> {
             if (player.isRemoved() || player.isDeadOrDying()) return false;
             action.accept(player);

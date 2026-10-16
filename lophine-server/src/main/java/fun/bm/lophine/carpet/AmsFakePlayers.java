@@ -9,8 +9,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.TeamColor;
 import org.bukkit.command.CommandSender;
-import org.leavesmc.leaves.bot.BotList;
-import org.leavesmc.leaves.bot.ServerBot;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -54,14 +52,14 @@ public final class AmsFakePlayers {
             if (entry.getUser() != null && entry.getUser().name().equalsIgnoreCase(name)
                     && (!GeneralCompatConfig.fakePlayerUseOfflinePlayerUUID
                     || entry.getUser().id().equals(net.minecraft.core.UUIDUtil.createOfflinePlayerUUID(name)))) {
-                creator.sendMessage("Whitelisted players can only be spawned by operators");
+                creator.sendMessage(net.kyori.adventure.text.Component.text("Whitelisted players can only be spawned by operators"));
                 return false;
             }
         }
         return true;
     }
 
-    public static void added(final ServerBot bot) {
+    public static void added(final CarpetFakePlayer bot) {
         if (bot.carpetShadow) return;
         final String name = bot.getGameProfile().name();
         final MinecraftServer server = bot.level().getServer();
@@ -75,11 +73,10 @@ public final class AmsFakePlayers {
         });
     }
 
-    public static void removed(final ServerBot bot) {
-        if (bot.carpetNativePlayer) {
-            if (bot.resume && !bot.carpetShadow) CarpetFakePlayerPersistence.recordOnline(bot);
-            else CarpetFakePlayerPersistence.forget(bot);
-        }
+    public static void removed(final CarpetFakePlayer bot) {
+        if (bot.resume && !bot.carpetShadow) CarpetFakePlayerPersistence.recordOnline(bot);
+        else CarpetFakePlayerPersistence.forget(bot);
+
         if (bot.carpetShadow) return;
         // With fancy names disabled and the previous team already cleared, there
         // is no scoreboard cleanup. An empty global task would delay the enclosing
@@ -98,7 +95,7 @@ public final class AmsFakePlayers {
 
     public static void refresh() {
         final MinecraftServer server = MinecraftServer.getServer();
-        if (server != null && BotList.INSTANCE != null) {
+        if (server != null && server.getCarpetFakePlayers() != null) {
             AmsNativeCommandEffects.global(server, () -> {
                 applyRuleChange(server);
                 return (Void) null;
@@ -119,7 +116,7 @@ public final class AmsFakePlayers {
         }
         previousTeam = current;
         if (!"false".equals(current)) {
-            for (ServerBot bot : server.getBotList().bots) {
+            for (CarpetFakePlayer bot : server.getCarpetFakePlayers().players) {
                 if (!bot.carpetShadow) addToTeam(server, bot.getGameProfile().name(), current);
             }
         }

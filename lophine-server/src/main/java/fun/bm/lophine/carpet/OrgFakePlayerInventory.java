@@ -1,6 +1,7 @@
 package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
+import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Prediction;
@@ -12,7 +13,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import org.leavesmc.leaves.bot.ServerBot;
 
 import java.util.ArrayList;
 import java.util.function.Predicate;
@@ -26,10 +26,19 @@ public final class OrgFakePlayerInventory {
 
     private static boolean fragile(ItemStack stack) {
         return !stack.isEmpty() && stack.isDamageableItem() && stack.getMaxDamage() - stack.getDamageValue() <= 10
-                && EnchantmentHelper.has(stack, EnchantmentEffectComponents.REPAIR_WITH_XP);
+                && (FakePlayerCompatConfig.fakePlayerAutoReplaceTool || EnchantmentHelper.has(stack, EnchantmentEffectComponents.REPAIR_WITH_XP));
     }
 
-    public static boolean shouldKeepInventory(ServerBot bot, DamageSource direct) {
+    private static boolean replenishEnabled() {
+        return GeneralCompatConfig.fakePlayerAutoRestock || FakePlayerCompatConfig.fakePlayerAutoReplenishment
+                || FakePlayerCompatConfig.fakePlayerAutoReplenishmentFormShulkerBox;
+    }
+
+    private static boolean shulkerEnabled() {
+        return GeneralCompatConfig.fakePlayerShulkerBoxItemHandling || FakePlayerCompatConfig.fakePlayerAutoReplenishmentFormShulkerBox;
+    }
+
+    public static boolean shouldKeepInventory(CarpetFakePlayer bot, DamageSource direct) {
         if (!GeneralCompatConfig.fakePlayerKeepInventory) return false;
         if ("unconditional".equals(GeneralCompatConfig.fakePlayerKeepInventoryCondition)) return true;
         return direct != null && (direct.getDirectEntity() instanceof Player || direct.getEntity() instanceof Player
@@ -37,13 +46,23 @@ public final class OrgFakePlayerInventory {
     }
 
     public static boolean restock(Player player, ItemStack before, ItemStack after, InteractionHand hand) {
-        if (OrgGameplayHelper.insideOrgAction() || !(player instanceof ServerBot bot) || !GeneralCompatConfig.fakePlayerAutoRestock || hand == null)
+        if (OrgGameplayHelper.insideOrgAction() || !(player instanceof CarpetFakePlayer bot) || hand == null)
             return false;
-        if (fragile(after)) {
-            replace(bot, hand, stack -> stack.is(after.getItem()) && !fragile(stack));
-        } else if (after.isEmpty()) {
+        boolean tools = GeneralCompatConfig.fakePlayerAutoRestock || FakePlayerCompatConfig.fakePlayerAutoReplaceTool;
+        boolean replenish = replenishEnabled();
+        if (!tools && !replenish) return false;
+        if (tools && fragile(after)) {
+            if (!replace(bot, hand, stack -> stack.is(after.getItem()) && !fragile(stack))
+                    && FakePlayerCompatConfig.fakePlayerAutoReplaceTool) {
+                int free = bot.getInventory().getFreeSlot();
+                if (free >= 0) {
+                    stored(bot, free, after);
+                    bot.setItemInHand(hand, ItemStack.EMPTY);
+                }
+            }
+        } else if (replenish && after.isEmpty() && !before.isEmpty()) {
             replace(bot, hand, stack -> ItemStack.isSameItemSameComponents(before, stack));
-        } else if (after.getCount() <= Math.max(1, after.getMaxStackSize() / 2) && after.getCount() < after.getMaxStackSize()) {
+        } else if (replenish && !after.isEmpty() && after.getCount() <= Math.max(1, after.getMaxStackSize() / 2) && after.getCount() < after.getMaxStackSize()) {
             for (int i = 0; i <= 36; i++) {
                 ItemStack source = stored(bot, i);
                 if (source == after || source.isEmpty()) continue;
@@ -55,7 +74,7 @@ public final class OrgFakePlayerInventory {
                     return true;
                 }
             }
-            if (GeneralCompatConfig.fakePlayerShulkerBoxItemHandling) {
+            if (shulkerEnabled()) {
                 for (int i = 0; i <= 36; i++) {
                     ItemStack source = stored(bot, i);
                     if (source == after || !OrgGameplayHelper.isShulkerBox(source)) continue;
@@ -72,23 +91,24 @@ public final class OrgFakePlayerInventory {
     }
 
     public static void broken(Player player, ItemStack before, EquipmentSlot slot) {
-        if (OrgGameplayHelper.insideOrgAction() || !(player instanceof ServerBot bot) || !GeneralCompatConfig.fakePlayerAutoRestock)
+        if (OrgGameplayHelper.insideOrgAction() || !(player instanceof CarpetFakePlayer bot)
+                || !(GeneralCompatConfig.fakePlayerAutoRestock || FakePlayerCompatConfig.fakePlayerAutoReplaceTool))
             return;
         InteractionHand hand = slot == EquipmentSlot.MAINHAND ? InteractionHand.MAIN_HAND : slot == EquipmentSlot.OFFHAND ? InteractionHand.OFF_HAND : null;
         if (hand != null) replace(bot, hand, stack -> stack.is(before.getItem()) && !fragile(stack));
     }
 
-    private static ItemStack stored(ServerBot bot, int slot) {
+    private static ItemStack stored(CarpetFakePlayer bot, int slot) {
         return slot == 36 ? bot.getOffhandItem() : bot.getInventory().getNonEquipmentItems().get(slot);
     }
 
-    private static void stored(ServerBot bot, int slot, ItemStack stack) {
+    private static void stored(CarpetFakePlayer bot, int slot, ItemStack stack) {
         if (slot == 36) bot.setItemInHand(InteractionHand.OFF_HAND, stack);
         else bot.getInventory().getNonEquipmentItems().set(slot, stack);
         bot.getInventory().setChanged();
     }
 
-    private static boolean replace(ServerBot bot, InteractionHand hand, Predicate<ItemStack> accept) {
+    private static boolean replace(CarpetFakePlayer bot, InteractionHand hand, Predicate<ItemStack> accept) {
         ItemStack current = bot.getItemInHand(hand);
         if (!current.isEmpty() && accept.test(current)) return true;
         for (int i = 0; i <= 36; i++) {
@@ -98,7 +118,7 @@ public final class OrgFakePlayerInventory {
             bot.setItemInHand(hand, candidate);
             return true;
         }
-        if (GeneralCompatConfig.fakePlayerShulkerBoxItemHandling) {
+        if (shulkerEnabled()) {
             for (int i = 0; i <= 36; i++) {
                 ItemStack candidate = stored(bot, i);
                 if (candidate == current || !OrgGameplayHelper.isShulkerBox(candidate) || candidate.getCount() != 1)
@@ -113,7 +133,7 @@ public final class OrgFakePlayerInventory {
         return false;
     }
 
-    private static ItemStack pickFromBox(ServerBot bot, ItemStack source, Predicate<ItemStack> accept, int maximum) {
+    private static ItemStack pickFromBox(CarpetFakePlayer bot, ItemStack source, Predicate<ItemStack> accept, int maximum) {
         ArrayList<ItemStack> contents = new ArrayList<>(source.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).itemCopies().toList());
         for (ItemStack contained : contents) {
             if (contained.isEmpty() || !accept.test(contained)) continue;
@@ -131,7 +151,7 @@ public final class OrgFakePlayerInventory {
         return ItemStack.EMPTY;
     }
 
-    public static void insert(ServerBot bot, ItemStack stack) {
+    public static void insert(CarpetFakePlayer bot, ItemStack stack) {
         if (stack.isEmpty()) return;
         bot.getInventory().add(stack);
         if (stack.isEmpty()) return;

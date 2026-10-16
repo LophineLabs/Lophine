@@ -17,7 +17,6 @@
 
 package org.leavesmc.leaves.bot;
 
-import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
 import net.kyori.adventure.text.Component;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
@@ -47,35 +46,32 @@ public class ServerBotGameMode extends ServerPlayerGameMode {
 
     @Override
     public boolean changeGameModeForPlayer(@NotNull GameType gameMode) {
-        return this.player instanceof ServerBot bot && bot.carpetNativePlayer && super.changeGameModeForPlayer(gameMode);
+        return false;
     }
 
     @Nullable
     @Override
     public PlayerGameModeChangeEvent changeGameModeForPlayer(@NotNull GameType gameMode, PlayerGameModeChangeEvent.@NotNull Cause cause, @Nullable Component cancelMessage) {
-        return this.player instanceof ServerBot bot && bot.carpetNativePlayer ? super.changeGameModeForPlayer(gameMode, cause, cancelMessage) : null;
+        return null;
     }
 
     @Override
     protected void setGameModeForPlayer(@NotNull GameType gameMode, @Nullable GameType previousGameMode) {
-        if (this.player instanceof ServerBot bot && bot.carpetNativePlayer)
-            super.setGameModeForPlayer(gameMode, previousGameMode);
+
     }
 
     @Override
     public void tick() {
-        if (this.player instanceof ServerBot bot && bot.carpetNativePlayer) super.tick();
+
     }
 
     @Override
     public void destroyAndAck(@NotNull BlockPos pos, int sequence, @NotNull String reason) {
-        if (this.player instanceof ServerBot bot && bot.carpetNativePlayer) super.destroyAndAck(pos, sequence, reason);
-        else this.destroyBlock(pos);
+        this.destroyBlock(pos);
     }
 
     @Override
     public boolean destroyBlock(@NotNull BlockPos pos) {
-        if (this.player instanceof ServerBot bot && bot.carpetNativePlayer) return super.destroyBlock(pos);
         BlockState blockState = this.level.getBlockState(pos);
         if (!this.player.getMainHandItem().canDestroyBlock(blockState, this.level, pos, this.player)) {
             return false;
@@ -108,8 +104,6 @@ public class ServerBotGameMode extends ServerPlayerGameMode {
     @NotNull
     @Override
     public InteractionResult useItemOn(@NotNull ServerPlayer player, Level level, @NotNull ItemStack stack, @NotNull InteractionHand hand, BlockHitResult hitResult) {
-        if (this.player instanceof ServerBot bot && bot.carpetNativePlayer)
-            return super.useItemOn(player, level, stack, hand, hitResult);
         BlockPos blockPos = hitResult.getBlockPos();
         BlockState blockState = level.getBlockState(blockPos);
 
@@ -144,6 +138,6 @@ public class ServerBotGameMode extends ServerPlayerGameMode {
     }
 
     private static GameType getInitialGameMode(ServerBot bot) {
-        return FakePlayerCompatConfig.fakePlayerDefaultSurvivalMode ? GameType.SURVIVAL : MinecraftServer.getServer().getDefaultGameType();
+        return MinecraftServer.getServer().getDefaultGameType();
     }
 }

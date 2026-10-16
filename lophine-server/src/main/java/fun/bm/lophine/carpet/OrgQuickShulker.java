@@ -144,7 +144,7 @@ public final class OrgQuickShulker {
 
         @Override
         public boolean stillValid(Player player) {
-            return (GeneralCompatConfig.quickShulker || player instanceof org.leavesmc.leaves.bot.ServerBot) && operable(this.source) && this.accessible.test(player);
+            return (GeneralCompatConfig.quickShulker || player instanceof fun.bm.lophine.carpet.CarpetFakePlayer) && operable(this.source) && this.accessible.test(player);
         }
 
         @Override

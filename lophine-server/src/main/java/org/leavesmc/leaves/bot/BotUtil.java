@@ -89,9 +89,6 @@ public class BotUtil {
     }
 
     public static UUID getBotUUID(@NotNull String fullName) {
-        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fakePlayerUseOfflinePlayerUUID) {
-            return net.minecraft.core.UUIDUtil.createOfflinePlayerUUID(fullName);
-        }
         return UUID.nameUUIDFromBytes(("Fakeplayer:" + fullName).getBytes(Charsets.UTF_8));
     }
 
@@ -111,7 +108,7 @@ public class BotUtil {
     }
 
     public static String getFullName(String inputName) {
-        return fun.bm.lophine.carpet.AmsFakePlayers.spawnName(FakeplayerConfig.prefix + inputName + FakeplayerConfig.suffix);
+        return FakeplayerConfig.prefix + inputName + FakeplayerConfig.suffix;
     }
 
     public static boolean isCreateLegal(@NotNull String name) {

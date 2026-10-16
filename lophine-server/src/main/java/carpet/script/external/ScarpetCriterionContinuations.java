@@ -50,7 +50,7 @@ public final class ScarpetCriterionContinuations {
     public static <T extends SimpleCriterionTrigger.SimpleInstance> CompletableFuture<Void> triggerNative(
             SimpleCriterionTrigger<T> trigger, ServerPlayer player, Function<T, CompletableFuture<Boolean>> matcher) {
         return jobNative(player, () -> ScarpetLootConditions.actor(player, () -> {
-            if (player instanceof org.leavesmc.leaves.bot.ServerBot) return new Snapshot<T>(null, List.of());
+            if (player instanceof fun.bm.lophine.carpet.CarpetFakePlayer) return new Snapshot<T>(null, List.of());
             PlayerAdvancements advancements = player.getAdvancements();
             var listeners = advancements.getTriggerMapForType(trigger);
             List<Listener<T>> snapshot = new ArrayList<>();

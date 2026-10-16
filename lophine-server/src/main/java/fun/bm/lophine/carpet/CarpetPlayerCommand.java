@@ -32,7 +32,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import org.leavesmc.leaves.bot.ServerBot;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -143,8 +142,8 @@ public class CarpetPlayerCommand {
 
     private static Collection<String> getPlayerSuggestions(CommandSourceStack source) {
         Set<String> players = new LinkedHashSet<>(List.of("Steve", "Alex"));
-        players.addAll(source.getOnlinePlayerNames());
-        for (ServerBot bot : source.getServer().getBotList().bots) players.add(bot.getGameProfile().name());
+        source.getServer().getPlayerList().getPlayers().forEach(player -> players.add(player.getScoreboardName()));
+        for (CarpetFakePlayer bot : source.getServer().getCarpetFakePlayers().players) players.add(bot.getGameProfile().name());
         return players;
     }
 
@@ -153,8 +152,8 @@ public class CarpetPlayerCommand {
     private static ServerPlayer getPlayer(CommandContext<CommandSourceStack> context) {
         String name = StringArgumentType.getString(context, "player");
         ServerPlayer real = context.getSource().getServer().getPlayerList().getPlayerByName(name);
-        if (real != null) return real;
-        for (ServerBot bot : context.getSource().getServer().getBotList().bots) {
+        if (real != null && (!real.isFakePlayer() || real instanceof CarpetFakePlayer)) return real;
+        for (CarpetFakePlayer bot : context.getSource().getServer().getCarpetFakePlayers().players) {
             if (bot.getGameProfile().name().equalsIgnoreCase(name)) return bot;
         }
         return null;
@@ -165,8 +164,12 @@ public class CarpetPlayerCommand {
             feedback(source, "Can only manipulate existing players", true);
             return false;
         }
+        if (player.isFakePlayer() && !(player instanceof CarpetFakePlayer)) {
+            feedback(source, "This fake player belongs to another backend", true);
+            return false;
+        }
         ServerPlayer sender = source.getPlayer();
-        if (sender != null && sender != player && !(player instanceof ServerBot)
+        if (sender != null && sender != player && !(player instanceof CarpetFakePlayer)
                 && !source.getServer().getPlayerList().isOp(sender.nameAndId())) {
             feedback(source, "Non OP players cannot control other real players", true);
             return false;
@@ -177,7 +180,8 @@ public class CarpetPlayerCommand {
     private static int manipulate(CommandContext<CommandSourceStack> context, Consumer<CarpetPlayerActionPack> action) {
         ServerPlayer player = getPlayer(context);
         if (!canManipulate(context.getSource(), player)) return 0;
-        player.getBukkitEntity().taskScheduler.scheduleOrExecute(entity -> action.accept(((ServerPlayer) entity).carpetActionPack));
+        if (ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(player)) action.accept(player.carpetActionPack);
+        else player.getBukkitEntity().getScheduler().execute(CarpetInternalPlugin.INSTANCE, () -> action.accept(player.carpetActionPack), null, 1L);
         return 1;
     }
 
@@ -188,16 +192,16 @@ public class CarpetPlayerCommand {
     private static int kill(CommandContext<CommandSourceStack> context) {
         ServerPlayer player = getPlayer(context);
         if (!canManipulate(context.getSource(), player)) return 0;
-        if (!(player instanceof ServerBot bot)) {
+        if (!(player instanceof CarpetFakePlayer bot)) {
             feedback(context.getSource(), "Only fake players can be killed", true);
             return 0;
         }
         var result = CarpetAsyncCommandResults.defer(context.getSource());
         OrgFakePlayerActions.owned(bot, carpet.script.external.ScarpetRuntime.captureNativeContinuation(() -> {
             bot.carpetActionPack.stopAll();
-            return context.getSource().getServer().getBotList().carpetRemoveBotAsync(bot,
-                    org.leavesmc.leaves.event.bot.BotRemoveEvent.RemoveReason.COMMAND,
-                    context.getSource().getBukkitSender(), bot.carpetNativePlayer, false);
+            return context.getSource().getServer().getCarpetFakePlayers().removeAsync(bot,
+                    fun.bm.lophine.carpet.CarpetFakePlayerManager.RemoveReason.COMMAND,
+                    context.getSource().getBukkitSender(), true, false);
         })).thenCompose(java.util.function.Function.identity()).whenComplete((removed, failure) -> {
             try {
                 if (failure != null)
@@ -253,8 +257,8 @@ public class CarpetPlayerCommand {
         };
         if (sender != null) {
             if (ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(sender)) begin.accept(sender);
-            else sender.getBukkitEntity().taskScheduler.schedule(entity -> begin.accept((ServerPlayer) entity),
-                    retired -> SPAWNING.remove(name.toLowerCase(Locale.ROOT)), 1L);
+            else if (!sender.getBukkitEntity().getScheduler().execute(CarpetInternalPlugin.INSTANCE, () -> begin.accept(sender),
+                    () -> SPAWNING.remove(name.toLowerCase(Locale.ROOT)), 1L)) SPAWNING.remove(name.toLowerCase(Locale.ROOT));
         } else begin.accept(null);
         return 1;
     }
@@ -289,15 +293,15 @@ public class CarpetPlayerCommand {
                                             throw new IllegalStateException("Server is stopping");
                                         PlayerList list = source.getServer().getPlayerList();
                                         NameAndId identity = new NameAndId(data.profile());
-                                        if (list.getPlayerByName(name) != null || source.getServer().getBotList().bots.stream().anyMatch(bot -> bot.getGameProfile().name().equalsIgnoreCase(name)))
+                                        if (list.getPlayerByName(name) != null || source.getServer().getCarpetFakePlayers().players.stream().anyMatch(bot -> bot.getGameProfile().name().equalsIgnoreCase(name)))
                                             throw new IllegalArgumentException("Player is already logged on");
                                         if (list.getBans().isBanned(identity))
                                             throw new IllegalArgumentException("Player is banned on this server");
                                         if ((list.isUsingWhitelist() || fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.onlyOpCanSpawnRealPlayerInWhitelist)
                                                 && list.getWhiteList().isWhiteListed(identity) && !Commands.hasPermission(Commands.LEVEL_GAMEMASTERS).test(source))
                                             throw new IllegalArgumentException("Whitelisted players can only be spawned by operators");
-                                        ServerBot created = create(source, data.profile(), level, position, rotation, mode, flying, data.saved(), false, null, null, null, completion);
-                                        return source.getServer().getBotList().carpetPlacementCompletion(created)
+                                        CarpetFakePlayer created = create(source, data.profile(), level, position, rotation, mode, flying, data.saved(), false, null, null, null, completion);
+                                        return source.getServer().getCarpetFakePlayers().placementCompletion(created)
                                                 .thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(owned -> OrgFakePlayerActions.owned(owned, () -> {
                                                     OrgPlayerSummoner.spawned(owned, summoner, false);
                                                     return null;
@@ -319,7 +323,7 @@ public class CarpetPlayerCommand {
     /**
      * Restart restoration already owns the saved position and the Carpet online roster.
      */
-    public static ServerBot respawn(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
+    public static CarpetFakePlayer respawn(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
                                     GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, net.minecraft.nbt.CompoundTag actions,
                                     java.util.concurrent.CompletableFuture<?> fullBirth) {
         return create(source, profile, level, position, rotation, mode, flying, saved, false, actions, null, null, fullBirth, true);
@@ -328,71 +332,50 @@ public class CarpetPlayerCommand {
     /**
      * The Org manager checks its own permission and acquires the destination region before entering this native creation path.
      */
-    public static ServerBot createOrgManagedPlayer(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
+    public static CarpetFakePlayer createOrgManagedPlayer(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
                                                    GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, net.minecraft.nbt.CompoundTag actions) {
         ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(level, BlockPos.containing(position), "Create managed fake player off owner");
         return createOrgManagedPlayer(source, profile, level, position, rotation, mode, flying, saved, actions, null);
     }
 
-    public static ServerBot createOrgManagedPlayer(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
+    public static CarpetFakePlayer createOrgManagedPlayer(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
                                                    GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, net.minecraft.nbt.CompoundTag actions,
                                                    java.util.concurrent.CompletableFuture<?> fullBirth) {
         return createOrgManagedPlayer(source, profile, level, position, rotation, mode, flying, saved, actions, fullBirth, false);
     }
 
-    public static ServerBot createOrgManagedPlayer(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
+    public static CarpetFakePlayer createOrgManagedPlayer(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
                                                    GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, net.minecraft.nbt.CompoundTag actions,
                                                    java.util.concurrent.CompletableFuture<?> fullBirth, boolean silence) {
         ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(level, BlockPos.containing(position), "Create managed fake player off owner");
         return create(source, profile, level, position, rotation, mode, flying, saved, false, actions, null, null, fullBirth, silence);
     }
 
-    private static ServerBot create(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
+    private static CarpetFakePlayer create(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
                                     GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, boolean shadow, net.minecraft.nbt.CompoundTag actions,
                                     net.minecraft.server.level.ClientInformation information, net.minecraft.network.chat.RemoteChatSession chatSession) {
         return create(source, profile, level, position, rotation, mode, flying, saved, shadow, actions, information, chatSession, null);
     }
 
-    private static ServerBot create(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
+    private static CarpetFakePlayer create(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
                                     GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, boolean shadow, net.minecraft.nbt.CompoundTag actions,
                                     net.minecraft.server.level.ClientInformation information, net.minecraft.network.chat.RemoteChatSession chatSession,
                                     java.util.concurrent.CompletableFuture<?> fullBirth) {
         return create(source, profile, level, position, rotation, mode, flying, saved, shadow, actions, information, chatSession, fullBirth, false);
     }
 
-    private static ServerBot create(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
+    private static CarpetFakePlayer create(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
                                     GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, boolean shadow, net.minecraft.nbt.CompoundTag actions,
                                     net.minecraft.server.level.ClientInformation information, net.minecraft.network.chat.RemoteChatSession chatSession,
                                     java.util.concurrent.CompletableFuture<?> fullBirth, boolean silence) {
-        GameProfile botProfile = org.leavesmc.leaves.bot.BotList.createBotProfile(profile.id(), profile.name(), null);
+        GameProfile botProfile = CarpetFakePlayerManager.createProfile(profile.id(), profile.name(), null);
         botProfile.properties().putAll(profile.properties());
-        ServerBot bot = new ServerBot(source.getServer(), level, botProfile, true);
-        bot.carpetNativePlayer = true;
+        CarpetFakePlayer bot = new CarpetFakePlayer(source.getServer(), level, botProfile);
         bot.carpetShadow = shadow;
         bot.getEntityData().set(net.minecraft.world.entity.player.Player.DATA_PLAYER_MODE_CUSTOMISATION, (byte) 0x7f);
-        String[] skin = null;
-        for (com.mojang.authlib.properties.Property texture : profile.properties().get("textures")) {
-            if (texture.signature() != null) skin = new String[]{texture.value(), texture.signature()};
-            break;
-        }
-        org.bukkit.Location location = new org.bukkit.Location(level.getWorld(), position.x, position.y, position.z, rotation.y, rotation.x);
-        bot.createState = org.leavesmc.leaves.bot.BotCreateState.builder(profile.name(), location).name(profile.name())
-                .skin(skin).createReason(org.leavesmc.leaves.event.bot.BotCreateEvent.CreateReason.COMMAND).creator(source.getBukkitSender()).build();
         net.minecraft.world.level.storage.ValueInput input = null;
         if (saved != null) {
             saved = saved.copy();
-            net.minecraft.nbt.CompoundTag creation = new net.minecraft.nbt.CompoundTag();
-            creation.putString("rawName", profile.name());
-            creation.putString("name", profile.name());
-            creation.putString("skinName", profile.name());
-            if (skin != null) {
-                net.minecraft.nbt.ListTag texture = new net.minecraft.nbt.ListTag();
-                texture.add(net.minecraft.nbt.StringTag.valueOf(skin[0]));
-                texture.add(net.minecraft.nbt.StringTag.valueOf(skin[1]));
-                creation.put("skin", texture);
-            }
-            saved.put("createStatus", creation);
-            saved.putBoolean("carpetNativePlayer", true);
             input = net.minecraft.world.level.storage.TagValueInput.create(net.minecraft.util.ProblemReporter.DISCARDING, bot.registryAccess(), saved);
             bot.load(input);
             bot.carpetSetProfile(botProfile);
@@ -408,8 +391,7 @@ public class CarpetPlayerCommand {
                 CarpetPlayerBirths.admitPlayer(bot, fullBirth);
             }
             bot.stopRiding();
-            bot.carpetNativePlayer = true;
-            bot.carpetShadow = shadow;
+                bot.carpetShadow = shadow;
             if (!shadow) {
                 bot.setHealth(20.0F);
                 bot.deathTime = 0;
@@ -419,7 +401,7 @@ public class CarpetPlayerCommand {
             bot.getAbilities().flying = flying;
             if (restoredActions != null) bot.carpetActionPack.load(restoredActions);
         };
-        OrgNativePlayerMessages.place(source.getServer(), bot, level, location, input, silence);
+        OrgNativePlayerMessages.place(source.getServer(), bot, level, position, rotation, input, silence);
         return bot;
     }
 
@@ -427,7 +409,7 @@ public class CarpetPlayerCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(context);
         if (!canManipulate(source, player)) return 0;
-        if (player instanceof ServerBot || source.getServer().isSingleplayerOwner(player.nameAndId())) {
+        if (player instanceof CarpetFakePlayer || source.getServer().isSingleplayerOwner(player.nameAndId())) {
             feedback(source, "Cannot shadow this player", true);
             return 0;
         }
@@ -475,13 +457,13 @@ public class CarpetPlayerCommand {
             waitForShadow(source, state, job, 40);
             return job.disconnected.thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored ->
                     OrgPlayerFileLease.withLease(source.getServer(), state.profile().id(), "Carpet player shadow", carpet.script.external.ScarpetRuntime.captureNativeFunction((OrgPlayerFileLease.Lease lease) ->
-                            CarpetRegionLease.<java.util.concurrent.CompletableFuture<ServerBot>>runValue(state.level(),
+                            CarpetRegionLease.<java.util.concurrent.CompletableFuture<CarpetFakePlayer>>runValue(state.level(),
                                     state.positionBlock().getX() >> 4, state.positionBlock().getZ() >> 4,
                                     state.positionBlock().getX() >> 4, state.positionBlock().getZ() >> 4, carpet.script.external.ScarpetRuntime.captureNativeFunction(region -> {
                                         job.beginPlacement();
-                                        ServerBot created = create(source, state.profile(), state.level(), state.position(), state.rotation(),
+                                        CarpetFakePlayer created = create(source, state.profile(), state.level(), state.position(), state.rotation(),
                                                 state.mode(), state.flying(), state.saved(), true, state.actions(), state.information(), state.chatSession(), job.actual);
-                                        return source.getServer().getBotList().carpetPlacementCompletion(created);
+                                        return source.getServer().getCarpetFakePlayers().placementCompletion(created);
                                     })).thenCompose(java.util.function.Function.identity())))));
         }));
         job.finish(chain);
@@ -501,7 +483,7 @@ public class CarpetPlayerCommand {
     private static void waitForShadow(CommandSourceStack source, ShadowState state, CarpetPlayerShadowJob job, int remaining) {
         if (job.disconnected.isDone()) return;
         try {
-            org.bukkit.Bukkit.getGlobalRegionScheduler().runDelayed(org.leavesmc.leaves.plugin.MinecraftInternalPlugin.INSTANCE, task -> {
+            org.bukkit.Bukkit.getGlobalRegionScheduler().runDelayed(fun.bm.lophine.carpet.CarpetInternalPlugin.INSTANCE, task -> {
                 try {
                     if (job.disconnected.isDone()) return;
                     if (source.getServer().getPlayerList().getPlayerByName(state.profile().name()) == null)
@@ -524,7 +506,7 @@ public class CarpetPlayerCommand {
             else source.sendSuccess(() -> net.minecraft.network.chat.Component.literal(message), false);
         };
         ServerPlayer recipient = source.getPlayer();
-        if (recipient != null) recipient.getBukkitEntity().taskScheduler.scheduleOrExecute(entity -> send.run());
-        else send.run();
+        if (recipient == null || ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(recipient)) send.run();
+        else recipient.getBukkitEntity().getScheduler().execute(CarpetInternalPlugin.INSTANCE, send, null, 1L);
     }
 }

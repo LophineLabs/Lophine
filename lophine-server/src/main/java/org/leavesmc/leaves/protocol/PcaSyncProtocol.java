@@ -42,7 +42,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.leavesmc.leaves.bot.ServerBot;
 import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 import org.leavesmc.leaves.protocol.core.LeavesCustomPayload;
 import org.leavesmc.leaves.protocol.core.LeavesProtocol;
@@ -385,9 +384,9 @@ public class PcaSyncProtocol implements LeavesProtocol {
     private static boolean maySyncPlayerEntity(UUID viewerId, boolean viewerIsOp, Entity entity) {
         return switch (PcaSyncProtocolConfig.syncPlayerEntity) {
             case NOBODY -> false;
-            case BOT -> entity instanceof ServerBot;
-            case OPS -> entity instanceof ServerBot || viewerIsOp;
-            case OPS_AND_SELF -> entity instanceof ServerBot || viewerIsOp || entity.getUUID().equals(viewerId);
+            case BOT -> entity.isFakePlayer();
+            case OPS -> entity.isFakePlayer() || viewerIsOp;
+            case OPS_AND_SELF -> entity.isFakePlayer() || viewerIsOp || entity.getUUID().equals(viewerId);
             case EVERYONE -> true;
         };
     }

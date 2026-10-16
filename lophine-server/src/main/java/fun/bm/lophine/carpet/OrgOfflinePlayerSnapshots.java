@@ -239,7 +239,7 @@ public final class OrgOfflinePlayerSnapshots {
     }
 
     private static void rejectOnline(MinecraftServer server, UUID player) {
-        if (server.getPlayerList().getPlayer(player) != null || server.getBotList() != null && server.getBotList().getBot(player) != null)
+        if (server.getPlayerList().getPlayer(player) != null || server.getCarpetFakePlayers() != null && server.getCarpetFakePlayers().getBot(player) != null)
             throw new IllegalStateException("An online player requires an actual owner snapshot: " + player);
     }
 

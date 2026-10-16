@@ -6,7 +6,6 @@ import io.papermc.paper.threadedregions.RegionizedServer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.execution.ExecutionContext;
 import net.minecraft.server.MinecraftServer;
-import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 
 import java.util.List;
 import java.util.Map;
@@ -45,7 +44,7 @@ public final class CarpetCommandContextContinuations {
                     context.carpetFail(new IllegalStateException("Native command context scheduler retired"));
             } else if (global || world == null) RegionizedServer.getInstance().addTask(restored);
             else
-                source.getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, world.getWorld(),
+                source.getServer().server.getRegionScheduler().execute(CarpetInternalPlugin.INSTANCE, world.getWorld(),
                         position.getX() >> 4, position.getZ() >> 4, restored);
         }, resume);
         var actual = context.carpetCompletion();

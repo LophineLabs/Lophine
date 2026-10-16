@@ -63,7 +63,7 @@ public final class OrgRulePlayerPreferences {
 
     private static int apply(CommandSourceStack source, ServerPlayer player, String rule, Boolean value) throws CommandSyntaxException {
         if (!RULES.contains(rule)) throw INVALID.create();
-        if (source.getEntity() != player && !(player instanceof org.leavesmc.leaves.bot.ServerBot)) {
+        if (source.getEntity() != player && !(player instanceof fun.bm.lophine.carpet.CarpetFakePlayer)) {
             throw OTHER.create();
         }
         return OrgCommandNativeEffects.command(source, 1, () -> TisCommandContinuations.then(OrgMenuNativeEffects.run(player, () -> {

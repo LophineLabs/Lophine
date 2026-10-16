@@ -36,7 +36,7 @@ public final class AmsServerMessages {
 
     private static Message deathMessage(final ServerPlayer player) {
         final String mode = GeneralCompatConfig.sendPlayerDeathLocation;
-        final boolean fake = player instanceof org.leavesmc.leaves.bot.ServerBot;
+        final boolean fake = player instanceof fun.bm.lophine.carpet.CarpetFakePlayer;
         if (!(mode.equals("all") || mode.equals(fake ? "fakePlayerOnly" : "realPlayerOnly"))) {
             return null;
         }

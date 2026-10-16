@@ -166,7 +166,7 @@ public final class AmsNetworkProtocol implements LeavesProtocol {
                         if (CLIENTS.get(claimed) != admitted) return null;
                         source = FPS.remove(claimed);
                     }
-                    return source == null || connectionPlayer instanceof org.leavesmc.leaves.bot.ServerBot ? null : new FpsReply(source, connectionPlayer.getGameProfile().name(), fps);
+                    return source == null || connectionPlayer.isFakePlayer() ? null : new FpsReply(source, connectionPlayer.getGameProfile().name(), fps);
                 }), reply -> reply == null ? java.util.concurrent.CompletableFuture.completedFuture(null) : feedback(reply.source(), net.minecraft.ChatFormatting.GREEN, "command.getClientPlayerFps.feedback", reply.name(), Integer.toString(reply.fps())));
                 carpet.script.external.ScarpetNativeWork.record(actual);
             }

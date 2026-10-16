@@ -2787,7 +2787,7 @@ index 5eb7d46bf0d84720662125711fa7b544e9299446..3fc3ee73ef31e67f7b6cd6059cd93d28
          i -> i.group(
                  ComponentSerialization.CODEC.lenientOptionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description),
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index cd56cae73a21800b8a8663836b050784e7fb3c79..6480a71e5070232a63940fbff93c76ed53e45feb 100644
+index cd56cae73a21800b8a8663836b050784e7fb3c79..d56124995659caaedfcc37b0bf2acf6aa8c21dec 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -629,7 +629,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -2802,7 +2802,15 @@ index cd56cae73a21800b8a8663836b050784e7fb3c79..6480a71e5070232a63940fbff93c76ed
          boolean startedWorldLoadProfiling = !JvmProfiler.INSTANCE.isRunning()
              && SharedConstants.DEBUG_JFR_PROFILING_ENABLE_LEVEL_LOADING
              && JvmProfiler.INSTANCE.start(Environment.from(this));
-@@ -1040,6 +1043,33 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -938,6 +941,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+         //level.entityManager.tick(); // SPIGOT-6526: Load pending entities so they are available to the API // Paper - rewrite chunk system
+         io.papermc.paper.threadedregions.RegionizedServer.getInstance().addWorld(level); // Folia - region threading
+         new org.bukkit.event.world.WorldLoadEvent(level.getWorld()).callEvent(); // Paper - call WorldLoadEvent
++        fun.bm.lophine.carpet.OrgPlayerManagerLifecycle.worldLoaded(this, level);
+     }
+ 
+     protected GlobalPos selectLevelLoadFocusPos() {
+@@ -1040,6 +1044,33 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      // Folia end - region threading
  
      public void stopServer() { // Folia - region threading - public
@@ -2836,7 +2844,7 @@ index cd56cae73a21800b8a8663836b050784e7fb3c79..6480a71e5070232a63940fbff93c76ed
          // Folia start - region threading
          // halt scheduler
          // don't wait, we may be on a scheduler thread
-@@ -1060,6 +1090,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1060,6 +1091,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          }
          if (!this.hasLoggedStop && this.isDebugging()) io.papermc.paper.util.TraceUtil.dumpTraceForThread("Server stopped"); // Paper - Debugging
          this.shutdownThread = Thread.currentThread(); // Paper - Improved watchdog support
@@ -2845,7 +2853,7 @@ index cd56cae73a21800b8a8663836b050784e7fb3c79..6480a71e5070232a63940fbff93c76ed
          org.spigotmc.WatchdogThread.doStop(); // Paper - Improved watchdog support
          // CraftBukkit end
          //this.packetProcessor.close(); // Folia - region threading
-@@ -1184,6 +1216,12 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1184,6 +1217,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      }
  
      public void halt(final boolean wait, final boolean isRestarting, boolean force) {
@@ -2855,10 +2863,11 @@ index cd56cae73a21800b8a8663836b050784e7fb3c79..6480a71e5070232a63940fbff93c76ed
 +        fun.bm.lophine.carpet.TisProjectileVisualizer.clearAtShutdown(this);
 +        if (carpet.script.external.ScarpetRuntime.beginShutdown(this, () -> this.halt(wait, isRestarting, force))) return;
 +        if (fun.bm.lophine.carpet.OrgPlayerManagerLifecycle.beforeStop(this, () -> this.halt(wait, isRestarting, force))) return;
++        if (!force && !this.carpetFakePlayers.forceShutdown && !this.carpetFakePlayers.removeAll()) return;
          if (!force && !this.getBotList().forceShutdown && !this.getBotList().removeAll()) { // Leaves - save or remove bot
              this.getPlayerList().broadcastSystemMessage(Component.literal("Bot Still need to save, please wait! If you want to shuntdown without bot data saving, please use /stop force"), false);
              return;
-@@ -1646,6 +1684,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1646,6 +1686,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      // Folia start - region threading
      public void tickServer(final long startTime, final long scheduledEnd, final long targetBuffer,
                             final io.papermc.paper.threadedregions.TickRegions.TickRegionData region) {
@@ -2867,7 +2876,7 @@ index cd56cae73a21800b8a8663836b050784e7fb3c79..6480a71e5070232a63940fbff93c76ed
          // Lophine start - save-all fix
          if (fun.bm.lophine.utils.SaveAllUtil.isSaving()) {
              fun.bm.lophine.utils.SaveAllUtil.postRegionSave(region);
-@@ -1655,7 +1695,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1655,7 +1697,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          // Folia end - region threading
          org.spigotmc.WatchdogThread.tick(); // Spigot
          long nano = startTime; // Folia - region threading
@@ -2876,7 +2885,7 @@ index cd56cae73a21800b8a8663836b050784e7fb3c79..6480a71e5070232a63940fbff93c76ed
          this.removeDisabledPluginsBlockingSleep(); // Paper - API to allow/disallow tick sleeping
          if (false && emptyTickThreshold > 0) { // Folia - region threading - this is complicated to implement, and even if done correctly is messy
              if (this.playerList.getPlayerCount() == 0 && this.botList.bots.isEmpty() && !this.tickRateManager.isSprinting() && this.pluginsBlockingSleep.isEmpty()) { // Paper - API to allow/disallow tick sleeping // Leaves - fakeplayer
-@@ -1693,7 +1733,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1693,7 +1735,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          // Folia start - region threading
          region.world.getCurrentWorldData().updateTickData();
          BooleanSupplier haveTime = () -> {
@@ -2886,7 +2895,7 @@ index cd56cae73a21800b8a8663836b050784e7fb3c79..6480a71e5070232a63940fbff93c76ed
          };
          // Folia end - region threading
  
-@@ -1708,7 +1749,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1708,7 +1751,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              // run all player packets
              for (ServerPlayer player : new java.util.ArrayList<>(region.world.getCurrentWorldData().getLocalPlayers())) {
                  PacketProcessor packetProcessor = ((org.bukkit.craftbukkit.entity.CraftPlayer)player.getBukkitEntity()).packetProcessor;
@@ -2895,7 +2904,7 @@ index cd56cae73a21800b8a8663836b050784e7fb3c79..6480a71e5070232a63940fbff93c76ed
              }
              } finally { foliaProfiler.stopTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.PLAYER_PACKET_PROCESSING); } // Folia - profiler
              foliaProfiler.startTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.PLUGIN_TICK_TASKS); try { // Folia - profiler
-@@ -1723,8 +1764,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1723,8 +1766,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                      continue;
                  }
  
@@ -2910,7 +2919,7 @@ index cd56cae73a21800b8a8663836b050784e7fb3c79..6480a71e5070232a63940fbff93c76ed
              }
              foliaProfiler.addCounter(ca.spottedleaf.leafprofiler.LProfilerRegistry.ENTITY_SCHEDULERS_TICKED, tickedEntitySchedulers); // Folia - profiler
              } finally { foliaProfiler.stopTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.ENTITY_SCHEDULER_TICK); } // Folia - profiler
-@@ -1808,7 +1854,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1808,7 +1856,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              }
              for (final ServerLevel level : (region == null ? this.getAllLevels() : Arrays.asList(region.world))) { // Folia - region threading
                  if (level.paperConfig().chunks.autoSaveInterval.value() > 0) {
@@ -2919,7 +2928,7 @@ index cd56cae73a21800b8a8663836b050784e7fb3c79..6480a71e5070232a63940fbff93c76ed
                  }
              }
          } finally {
-@@ -1827,6 +1873,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1827,6 +1875,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          // Paper end - Server Tick Events
          if (false) this.server.spark.tickEnd(((double)(endTime - startTime) / 1000000D)); // Paper - spark // Folia - region threading // Luminol - Force disable builtin spark
          // Folia - region threading
@@ -2928,12 +2937,12 @@ index cd56cae73a21800b8a8663836b050784e7fb3c79..6480a71e5070232a63940fbff93c76ed
      }
  
      protected void processPacketsAndTick(final boolean sprinting) {
-@@ -1893,12 +1941,18 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1893,12 +1943,18 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
  
      private ServerStatus.Players buildPlayerStatus() {
          List<ServerPlayer> players = new java.util.ArrayList<>(this.playerList.realPlayers); // Folia - region threading // Leaves - only real player
-+        for (org.leavesmc.leaves.bot.ServerBot bot : this.getBotList().bots) {
-+            if (bot.carpetNativePlayer) players.add(bot);
++        for (fun.bm.lophine.carpet.CarpetFakePlayer bot : this.getCarpetFakePlayers().players) {
++            players.add(bot);
 +        }
          int maxPlayers = this.getMaxPlayers();
          if (this.hidesOnlinePlayers()) {
@@ -2948,7 +2957,15 @@ index cd56cae73a21800b8a8663836b050784e7fb3c79..6480a71e5070232a63940fbff93c76ed
          ObjectArrayList<NameAndId> sample = new ObjectArrayList<>(sampleSize);
          int offset = Mth.nextInt(this.random, 0, players.size() - sampleSize);
  
-@@ -2503,7 +2557,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -2074,7 +2130,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+ 
+     protected void tickConnection() {
+         this.getConnection().tick();
+-        this.botList.networkTick(); // Leaves - fakeplayer
+     }
+ 
+     public void forceGameTimeSynchronization() {
+@@ -2503,7 +2558,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          return this.reloadResources(packsToEnable, io.papermc.paper.event.server.ServerResourcesReloadedEvent.Cause.PLUGIN);
      }
  
@@ -2957,7 +2974,7 @@ index cd56cae73a21800b8a8663836b050784e7fb3c79..6480a71e5070232a63940fbff93c76ed
      public void saveDatapacks(Collection<String> selectedPacks) {
          this.packRepository.setSelected(selectedPacks, false); // Paper - add pendingReload flag to determine required pack loading - false as this is *after* a reload (see above)
          WorldDataConfiguration worldDataConfiguration = new WorldDataConfiguration(
-@@ -2511,78 +2565,94 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -2511,78 +2566,94 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          );
          this.worldData.setDataConfiguration(worldDataConfiguration);
      }
@@ -3117,7 +3134,18 @@ index cd56cae73a21800b8a8663836b050784e7fb3c79..6480a71e5070232a63940fbff93c76ed
      }
  
      public static WorldDataConfiguration configurePackRepository(
-@@ -3399,4 +3469,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -3275,6 +3346,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+         this.botList = botList;
+     }
+ 
++    private final fun.bm.lophine.carpet.CarpetFakePlayerManager carpetFakePlayers = new fun.bm.lophine.carpet.CarpetFakePlayerManager(this);
++
++    public fun.bm.lophine.carpet.CarpetFakePlayerManager getCarpetFakePlayers() { return this.carpetFakePlayers; }
++
+     public org.leavesmc.leaves.bot.BotList getBotList() {
+         return botList;
+     }
+@@ -3399,4 +3474,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          // Folia - region threading
      }
      // Paper end - API to check if the server is sleeping
@@ -4612,7 +4640,7 @@ index eec91bcc1e50f5eea6fd508a6d0f914052fe424f..a8bcc283673245b12d8da3c3a2420a84
          Optional<Holder<PoiType>> newType = PoiTypes.forState(newState);
          if (!Objects.equals(oldType, newType)) {
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 383c2159e753ddd74f7c949b45c6fa60d759fe59..ffd61f955298d5b01c9c254c79c88894017cc585 100644
+index 383c2159e753ddd74f7c949b45c6fa60d759fe59..cb88ca68ee63e3698f2ab2d3b4cdd3de50353441 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -264,6 +264,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -4778,7 +4806,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..ffd61f955298d5b01c9c254c79c88894
 +        fun.bm.lophine.carpet.OrgExperienceTransfers.tick(this);
 +        fun.bm.lophine.carpet.OrgInventoryTransfers.tick(this);
 +        fun.bm.lophine.carpet.OrgNavigation.tick(this);
-+        if (!(this instanceof org.leavesmc.leaves.bot.ServerBot bot && bot.carpetNativePlayer
++        if (!(this instanceof fun.bm.lophine.carpet.CarpetFakePlayer bot
 +            && fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig.fakePlayerTicksLikeRealPlayer)) {
 +            this.carpetActionPack.onUpdate();
 +        }
@@ -4976,7 +5004,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..ffd61f955298d5b01c9c254c79c88894
          }
          List<DefaultDrop> loot = new java.util.ArrayList<>(this.getInventory().getContainerSize()); // Paper - Restore vanilla drops behavior
 -        boolean keepInventory = this.level().getGameRules().get(GameRules.KEEP_INVENTORY) || this.isSpectator();
-+        boolean keepInventory = this.level().getGameRules().get(GameRules.KEEP_INVENTORY) || this.isSpectator() || this instanceof org.leavesmc.leaves.bot.ServerBot bot && fun.bm.lophine.carpet.OrgFakePlayerInventory.shouldKeepInventory(bot,source);
++        boolean keepInventory = this.level().getGameRules().get(GameRules.KEEP_INVENTORY) || this.isSpectator() || this instanceof fun.bm.lophine.carpet.CarpetFakePlayer bot && fun.bm.lophine.carpet.OrgFakePlayerInventory.shouldKeepInventory(bot,source);
          if (!keepInventory) {
              for (ItemStack item : this.getInventory().getContents()) {
                  if (!item.isEmpty() && !EnchantmentHelper.has(item, net.minecraft.world.item.enchantment.EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
@@ -5208,7 +5236,7 @@ index 383c2159e753ddd74f7c949b45c6fa60d759fe59..ffd61f955298d5b01c9c254c79c88894
          this.teleportSpectators(transition, oldLevel);
          // Leaves start - bot support
 -        if (fun.bm.lophine.config.modules.function.FakeplayerConfig.enable) {
-+        if (fun.bm.lophine.config.modules.function.FakeplayerConfig.checkEnabled()) {
++        if (!this.isFakePlayer() && fun.bm.lophine.config.modules.function.FakeplayerConfig.checkEnabled()) {
              this.server.getBotList().bots.forEach(bot -> bot.sendFakeDataIfNeed(this, true)); // Leaves - render bot
          }
          // Leaves end - bot support
@@ -6617,8 +6645,30 @@ index 854f8954ccfd8c34c9f9c91fd1805260f9b429b5..3758bb2186ade87f1f64a91d9ab77851
                  return player;
              }
          }
+diff --git a/net/minecraft/server/players/CachedUserNameToIdResolver.java b/net/minecraft/server/players/CachedUserNameToIdResolver.java
+index 7109a22a9911d452242207ab0286ee985dafd439..08f61076ba332667533312e9811dabcacff488ac 100644
+--- a/net/minecraft/server/players/CachedUserNameToIdResolver.java
++++ b/net/minecraft/server/players/CachedUserNameToIdResolver.java
+@@ -122,12 +122,12 @@ public class CachedUserNameToIdResolver implements UserNameToIdResolver {
+ 
+     @Override
+     public Optional<NameAndId> get(final String name) {
+-        // Leaves start - fix bot
+-        org.leavesmc.leaves.bot.ServerBot bot = org.leavesmc.leaves.bot.BotList.INSTANCE.getBotByName(name);
+-        if (bot != null) {
+-            return Optional.of(bot.nameAndId());
++        // Resolve every online identity through the server, including independent fake-player backends.
++        net.minecraft.server.MinecraftServer server = net.minecraft.server.MinecraftServer.getServer();
++        if (server != null && server.getPlayerList() != null) {
++            net.minecraft.server.level.ServerPlayer online = server.getPlayerList().getPlayerByName(name);
++            if (online != null) return Optional.of(online.nameAndId());
+         }
+-        // Leaves end - fix bot
+         String userName = name.toLowerCase(Locale.ROOT);
+         boolean stateLocked = true; try { this.stateLock.lock(); // Paper - Fix GameProfileCache concurrency
+         CachedUserNameToIdResolver.GameProfileInfo profileInfo = this.profilesByName.get(userName);
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be12e8d532 100644
+index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..30ff4d8bb538b7ac6e73580bce0912259248580c 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -128,14 +128,14 @@ public abstract class PlayerList {
@@ -6639,7 +6689,47 @@ index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be
      public @Nullable String collideRuleTeamName; // Paper - Configurable player collision
      public final List<String> playedPlayers = new java.util.concurrent.CopyOnWriteArrayList<>(); // Leaf - Configurable vanilla username check
  
-@@ -282,7 +282,7 @@ public abstract class PlayerList {
+@@ -145,8 +145,17 @@ public abstract class PlayerList {
+     private final Map<UUID, Connection> connectionById = new java.util.HashMap<>();
+     private final it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<Connection> usersCountedAgainstLimit = new it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<>();
+ 
+-    public boolean pushPendingJoin(String userName, UUID byId, Connection conn) {
++    public synchronized boolean pushPendingJoin(String userName, UUID byId, Connection conn) {
+         userName = userName.toLowerCase(java.util.Locale.ROOT);
++        // Wait for the actual Carpet retirement/save before a real login reads the same playerdata.
++        var carpetPlayers = this.server.getCarpetFakePlayers();
++        var carpetId = carpetPlayers.getBot(byId);
++        var carpetName = carpetPlayers.getBotByName(userName);
++        if (carpetId != null || carpetName != null) {
++            if (carpetId != null) carpetId.connection.disconnect(DUPLICATE_LOGIN_DISCONNECT_MESSAGE, io.papermc.paper.connection.DisconnectionReason.DUPLICATE_LOGIN_MESSAGE);
++            if (carpetName != null && carpetName != carpetId) carpetName.connection.disconnect(DUPLICATE_LOGIN_DISCONNECT_MESSAGE, io.papermc.paper.connection.DisconnectionReason.DUPLICATE_LOGIN_MESSAGE);
++            return false;
++        }
+         Connection conflictingName, conflictingId;
+         synchronized (this.connectionsStateLock) {
+             conflictingName = this.connectionByName.get(userName);
+@@ -183,6 +192,12 @@ public abstract class PlayerList {
+         return conflictingName == null && conflictingId == null;
+     }
+ 
++    public boolean hasPendingConnection(UUID id, String name) {
++        synchronized (this.connectionsStateLock) {
++            return this.connectionById.containsKey(id) || this.connectionByName.containsKey(name.toLowerCase(java.util.Locale.ROOT));
++        }
++    }
++
+     public void removeConnection(String userName, UUID byId, Connection conn) {
+         userName = userName.toLowerCase(java.util.Locale.ROOT);
+         synchronized (this.connectionsStateLock) {
+@@ -194,6 +209,7 @@ public abstract class PlayerList {
+ 
+     private boolean countConnection(Connection conn, int limit) {
+         synchronized (this.connectionsStateLock) {
++            if (conn instanceof fun.bm.lophine.carpet.CarpetFakePlayerPacketListener.FakePlayerConnection) return true;
+             if (conn instanceof org.leavesmc.leaves.bot.ServerBotPacketListenerImpl.BotConnection) return true;
+             int count = this.usersCountedAgainstLimit.size();
+             if (count >= limit) {
+@@ -282,7 +298,7 @@ public abstract class PlayerList {
          // org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handlePlayerJoin(player); // Leaves - protocol
  
          // Leaves start - bot support
@@ -6648,7 +6738,16 @@ index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be
              org.leavesmc.leaves.bot.ServerBot bot = this.server.getBotList().getBotByName(player.getScoreboardName());
              if (bot != null) {
                  this.server.getBotList().removeBot(bot, org.leavesmc.leaves.event.bot.BotRemoveEvent.RemoveReason.INTERNAL, player.getBukkitEntity(), false, false);
-@@ -445,7 +445,7 @@ public abstract class PlayerList {
+@@ -294,6 +310,8 @@ public abstract class PlayerList {
+         }
+         // Leaves end - bot support
+ 
++        this.server.getCarpetFakePlayers().sendPlayerInfo(player);
++
+         final List<ServerPlayer> onlinePlayers = Lists.newArrayListWithExpectedSize(this.players.size() - 1);
+         for (int i = 0; i < this.players.size(); ++i) {
+             ServerPlayer entityplayer1 = this.players.get(i);
+@@ -445,7 +463,7 @@ public abstract class PlayerList {
          org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handlePlayerJoin(player); // Leaves - protocol
  
          // Leaves start - bot support
@@ -6657,7 +6756,16 @@ index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be
              org.leavesmc.leaves.bot.ServerBot bot = this.server.getBotList().getBotByName(player.getScoreboardName());
              if (bot != null) {
                  this.server.getBotList().removeBot(bot, org.leavesmc.leaves.event.bot.BotRemoveEvent.RemoveReason.INTERNAL, player.getBukkitEntity(), false, false);
-@@ -557,6 +557,7 @@ public abstract class PlayerList {
+@@ -457,6 +475,8 @@ public abstract class PlayerList {
+         }
+         // Leaves end - bot support
+ 
++        this.server.getCarpetFakePlayers().sendPlayerInfo(player);
++
+         final net.kyori.adventure.text.Component jm = playerJoinEvent.joinMessage();
+ 
+         if (jm != null && !jm.equals(net.kyori.adventure.text.Component.empty())) { // Paper - Adventure
+@@ -557,6 +577,7 @@ public abstract class PlayerList {
              );
          }
          // Luminol end
@@ -6665,11 +6773,11 @@ index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be
      }
  
      public void updateEntireScoreboard(final ServerScoreboard scoreboard, final ServerPlayer player) {
-@@ -634,6 +635,16 @@ public abstract class PlayerList {
+@@ -634,6 +655,16 @@ public abstract class PlayerList {
          }
      }
  
-+    public void carpetSaveFakePlayer(final org.leavesmc.leaves.bot.ServerBot player) {
++    public void carpetSaveFakePlayer(final fun.bm.lophine.carpet.CarpetFakePlayer player) {
 +        ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(player, "Saving a Carpet fake player must own its region");
 +        this.save(player);
 +    }
@@ -6682,7 +6790,7 @@ index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be
      protected void save(final ServerPlayer player) {
          if (player instanceof org.leavesmc.leaves.replay.ServerPhotographer) return; // Leaves - skip photographer
          if (!player.getBukkitEntity().isPersistent()) return; // CraftBukkit
-@@ -677,9 +688,7 @@ public abstract class PlayerList {
+@@ -677,9 +708,7 @@ public abstract class PlayerList {
          this.players.remove(entityplayer);
          // Leaves - guard name removal so a photographer sharing a real player's name won't evict the real player's mapping
          final String nameKey = entityplayer.getScoreboardName().toLowerCase(java.util.Locale.ROOT);
@@ -6693,7 +6801,7 @@ index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be
          this.server.getCustomBossEvents().onPlayerDisconnect(entityplayer);
          UUID uuid = entityplayer.getUUID();
          ServerPlayer entityplayer1 = this.playersByUUID.get(uuid);
-@@ -697,6 +706,9 @@ public abstract class PlayerList {
+@@ -697,6 +726,9 @@ public abstract class PlayerList {
          return this.remove(player, net.kyori.adventure.text.Component.translatable("multiplayer.player.left", net.kyori.adventure.text.format.NamedTextColor.YELLOW, io.papermc.paper.configuration.GlobalConfiguration.get().messages.useDisplayNameInQuitMessage ? player.getBukkitEntity().displayName() : io.papermc.paper.adventure.PaperAdventure.asAdventure(player.getDisplayName())));
      }
      public net.kyori.adventure.text.@Nullable Component remove(final ServerPlayer player, final net.kyori.adventure.text.Component leaveMessage) {
@@ -6703,7 +6811,7 @@ index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be
          org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handlePlayerLeave(player); // Leaves - protocol
          // Paper end - Fix kick event leave message not being sent
          ServerLevel level = player.level();
-@@ -761,18 +773,24 @@ public abstract class PlayerList {
+@@ -761,18 +793,24 @@ public abstract class PlayerList {
          }
  
          level.removePlayerImmediately(player, Entity.RemovalReason.UNLOADED_WITH_PLAYER);
@@ -6732,7 +6840,7 @@ index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be
              // CraftBukkit start
              // this.stats.remove(uuid);
              // this.advancements.remove(uuid);
-@@ -794,7 +812,27 @@ public abstract class PlayerList {
+@@ -794,7 +832,27 @@ public abstract class PlayerList {
          // This removes the scoreboard (and player reference) for the specific player in the manager
          this.cserver.getScoreboardManager().removePlayer(player.getBukkitEntity());
          // CraftBukkit end
@@ -6761,7 +6869,7 @@ index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be
      }
  
      // Paper start - PlayerLoginEvent
-@@ -860,6 +898,7 @@ public abstract class PlayerList {
+@@ -860,6 +918,7 @@ public abstract class PlayerList {
  
      // Paper start - respawn event
      public ServerPlayer respawn(final ServerPlayer serverPlayer, final boolean keepAllPlayerData, final Entity.RemovalReason removalReason, final org.bukkit.event.player.PlayerRespawnEvent.RespawnReason respawnReason) {
@@ -6769,7 +6877,7 @@ index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be
          // Folia start - region threading
          if (true) {
              throw new UnsupportedOperationException("Must use teleportAsync while in region threading");
-@@ -873,7 +912,7 @@ public abstract class PlayerList {
+@@ -873,7 +932,7 @@ public abstract class PlayerList {
          Level fromLevel = serverPlayer.level();
          // Paper end - respawn event
          this.players.remove(serverPlayer);
@@ -6778,7 +6886,7 @@ index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be
          serverPlayer.level().removePlayerImmediately(serverPlayer, removalReason);
          ServerLevel level = respawnInfo.newLevel();
          ServerPlayer player = serverPlayer; // Paper - TODO - recreate instance
-@@ -980,7 +1019,7 @@ public abstract class PlayerList {
+@@ -980,7 +1039,7 @@ public abstract class PlayerList {
          ).callEvent();
          // Paper end
          // Leaves start - bot support
@@ -6787,7 +6895,7 @@ index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be
              this.server.getBotList().bots.forEach(bot -> bot.sendFakeDataIfNeed(player, true)); // Leaves - render bot
          }
          // Leaves end - bot support
-@@ -1085,19 +1124,10 @@ public abstract class PlayerList {
+@@ -1085,19 +1144,11 @@ public abstract class PlayerList {
      }
  
      public String[] getPlayerNamesArray() {
@@ -6807,11 +6915,12 @@ index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be
 +        List<ServerPlayer> players = new java.util.ArrayList<>(this.realPlayers);
 +        org.leavesmc.leaves.bot.BotList bots = this.server.getBotList();
 +        if (bots != null) players.addAll(bots.bots);
++        players.addAll(this.server.getCarpetFakePlayers().players);
 +        return players.stream().map(player -> player.getGameProfile().name()).toArray(String[]::new);
      }
  
      public UserBanList getBans() {
-@@ -1164,7 +1194,7 @@ public abstract class PlayerList {
+@@ -1164,7 +1215,7 @@ public abstract class PlayerList {
          } // Paper - Add sendOpLevel API
  
          // Purpur start - Barrels and enderchests 6 rows
@@ -6820,7 +6929,15 @@ index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be
          // Purpur end - Barrels and enderchests 6 rows
      }
  
-@@ -1346,7 +1376,7 @@ public abstract class PlayerList {
+@@ -1216,6 +1267,7 @@ public abstract class PlayerList {
+         // Leaves start - fakeplayer support
+         name = name.toLowerCase(java.util.Locale.ROOT);
+         ServerPlayer player = this.playersByName.get(name);
++        if (player == null) player = this.server.getCarpetFakePlayers().getBotByName(name);
+         if (player == null) {
+             player = this.server.getBotList().getBotByName(name);
+         }
+@@ -1346,7 +1398,7 @@ public abstract class PlayerList {
      }
  
      public int getPlayerCount() {
@@ -6829,7 +6946,7 @@ index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be
      }
  
      public int getMaxPlayers() {
-@@ -1453,6 +1483,8 @@ public abstract class PlayerList {
+@@ -1453,6 +1505,8 @@ public abstract class PlayerList {
          this.broadcastChatMessage(message, isFiltered, senderPlayer, chatType, null);
      }
      public void broadcastChatMessage(final PlayerChatMessage message, final Predicate<ServerPlayer> isFiltered, final @Nullable ServerPlayer senderPlayer, final ChatType.Bound chatType, final @Nullable Function<net.kyori.adventure.audience.Audience, Component> unsignedFunction) {
@@ -6838,15 +6955,15 @@ index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be
          // Paper end
          boolean trusted = this.verifyChatTrusted(message);
          this.server.logChatMessage((unsignedFunction == null ? message.decoratedContent() : unsignedFunction.apply(this.server.console)), chatType, trusted ? null : "Not Secure"); // Paper
-@@ -1558,6 +1590,16 @@ public abstract class PlayerList {
+@@ -1558,6 +1612,16 @@ public abstract class PlayerList {
      }
  
      public List<ServerPlayer> getPlayers() {
-+        org.leavesmc.leaves.bot.BotList bots = this.server.getBotList();
++        var bots = this.server.getCarpetFakePlayers();
 +        if (bots != null) {
 +            java.util.List<ServerPlayer> combined = null;
-+            for (org.leavesmc.leaves.bot.ServerBot bot : bots.bots) {
-+                if (!bot.carpetNativePlayer || !bot.carpetPlacementReady) continue;
++            for (fun.bm.lophine.carpet.CarpetFakePlayer bot : bots.players) {
++                if (!bot.carpetPlacementReady) continue;
 +                if (combined == null) combined = new java.util.ArrayList<>(this.players);
 +                combined.add(bot);
 +            }
@@ -6855,7 +6972,15 @@ index 2b328796a3c31f744b6c5785cdb7a9b11faf338e..d065229c099c61f1fee8fc02cace12be
          return this.players;
      }
  
-@@ -1589,7 +1631,45 @@ public abstract class PlayerList {
+@@ -1568,6 +1632,7 @@ public abstract class PlayerList {
+     public @Nullable ServerPlayer getPlayer(final UUID uuid) {
+         // Leaves start - fakeplayer support
+         ServerPlayer player = this.playersByUUID.get(uuid);
++        if (player == null) player = this.server.getCarpetFakePlayers().getBot(uuid);
+         if (player == null) {
+             player = this.server.getBotList().getBot(uuid);
+         }
+@@ -1589,7 +1654,45 @@ public abstract class PlayerList {
          return false;
      }
  
@@ -7168,7 +7293,7 @@ index 6541fe108f60d2c55a47f0bb5ba3b17f270cd5fa..df6c5b7cefa43c23e8cb0ede133b5c2d
          this.age = newAge;
          if (oldAge < 0 && newAge >= 0 || oldAge >= 0 && newAge < 0) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7c7fa9362 100644
+index f7bceacef1f16a1067e32910c7e81befca7a97ef..a1db9985f889e5f3a2ad18f28822d14035cfe81e 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -267,6 +267,8 @@ public abstract class Entity
@@ -7206,7 +7331,17 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
      }
  
      public boolean isColliding(final BlockPos pos, final BlockState state) {
-@@ -703,6 +710,14 @@ public abstract class Entity
+@@ -625,6 +632,9 @@ public abstract class Entity
+     }
+     // CraftBukkit end
+ 
++    /** A server-controlled player without a remote client. */
++    public boolean isFakePlayer() { return false; }
++
+     public boolean isSpectator() {
+         return false;
+     }
+@@ -703,6 +713,14 @@ public abstract class Entity
          this.discard(null);
      }
  
@@ -7221,7 +7356,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
      public final void discard(org.bukkit.event.entity.EntityRemoveEvent.@Nullable Cause cause) {
          this.remove(Entity.RemovalReason.DISCARDED, cause);
          // CraftBukkit end
-@@ -772,8 +787,20 @@ public abstract class Entity
+@@ -772,8 +790,20 @@ public abstract class Entity
      }
  
      public void remove(final Entity.RemovalReason reason, org.bukkit.event.entity.EntityRemoveEvent.@Nullable Cause eventCause) {
@@ -7242,7 +7377,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
      }
  
      public void onClientRemoval() {
-@@ -796,7 +823,7 @@ public abstract class Entity
+@@ -796,7 +826,7 @@ public abstract class Entity
      }
  
      public Pose getPose() {
@@ -7251,7 +7386,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
      }
  
      public boolean hasPose(final Pose pose) {
-@@ -885,6 +912,7 @@ public abstract class Entity
+@@ -885,6 +915,7 @@ public abstract class Entity
      }
  
      public void tick() {
@@ -7259,7 +7394,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
          // Paper start - entity despawn time limit
          if (this.despawnTime >= 0 && this.totalEntityAge >= this.despawnTime) {
              this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DESPAWN);
-@@ -994,10 +1022,15 @@ public abstract class Entity
+@@ -994,10 +1025,15 @@ public abstract class Entity
      public void checkBelowWorld() {
          if (!this.level.getWorld().isVoidDamageEnabled()) return; // Paper - check if void damage is enabled on the world
          // Paper start - Configurable nether ceiling damage
@@ -7276,7 +7411,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
              this.onBelowWorld();
          }
      }
-@@ -1058,15 +1091,26 @@ public abstract class Entity
+@@ -1058,15 +1094,26 @@ public abstract class Entity
      public void lavaHurt(@Nullable BlockPos pos) {
          // Paper end - track lava contact
          if (!this.fireImmune()) {
@@ -7309,7 +7444,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
      }
  
      protected boolean shouldPlayLavaHurtSound() {
-@@ -1180,6 +1224,10 @@ public abstract class Entity
+@@ -1180,6 +1227,10 @@ public abstract class Entity
      private boolean boundingBoxChanged = false; // Gale - VMP - skip entity move if movement is zero
  
      public void move(final MoverType moverType, Vec3 delta) {
@@ -7320,7 +7455,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
          if (SharedConstants.IS_RUNNING_IN_IDE && !moverType.isServerAndClientSimulated() && !this.canSimulateMovement()) {
              throw (IllegalStateException)Util.pauseInIde(
                  new IllegalStateException("Attempted to move entity on a logical side not permitted to simulate movement")
-@@ -1226,6 +1274,7 @@ public abstract class Entity
+@@ -1226,6 +1277,7 @@ public abstract class Entity
          } else {
              if (moverType == MoverType.PISTON) {
                  delta = this.limitPistonMovement(delta);
@@ -7328,7 +7463,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
                  // Paper start - EAR 2
                  this.activatedTick = Math.max(this.activatedTick, io.papermc.paper.threadedregions.RegionizedServer.getCurrentTick() + 20); // Folia - region threading
                  this.activatedImmunityTick = Math.max(this.activatedImmunityTick, io.papermc.paper.threadedregions.RegionizedServer.getCurrentTick() + 20); // Folia - region threading
-@@ -1240,6 +1289,7 @@ public abstract class Entity
+@@ -1240,6 +1292,7 @@ public abstract class Entity
              if (this.stuckSpeedMultiplier.lengthSqr() > 1.0E-7) {
                  if (moverType != MoverType.PISTON) {
                      delta = delta.multiply(this.stuckSpeedMultiplier);
@@ -7336,7 +7471,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
                  }
  
                  this.stuckSpeedMultiplier = Vec3.ZERO;
-@@ -1247,6 +1297,7 @@ public abstract class Entity
+@@ -1247,6 +1300,7 @@ public abstract class Entity
              }
              // Paper start - ignore movement changes while inactive.
              if (isTemporarilyActive && !(this instanceof ItemEntity) && delta == getDeltaMovement() && moverType == MoverType.SELF) {
@@ -7344,7 +7479,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
                  setDeltaMovement(Vec3.ZERO);
                  profiler.pop();
                  return;
-@@ -1254,7 +1305,9 @@ public abstract class Entity
+@@ -1254,7 +1308,9 @@ public abstract class Entity
              // Paper end
  
              delta = this.maybeBackOffFromEdge(delta, moverType);
@@ -7354,7 +7489,16 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
              double movementLength = movement.lengthSqr();
              if (movementLength > 1.0E-7 || delta.lengthSqr() - movementLength < 1.0E-7) {
                  if (this.fallDistance != 0.0 && movementLength >= 1.0) {
-@@ -1354,6 +1407,12 @@ public abstract class Entity
+@@ -1294,7 +1350,7 @@ public abstract class Entity
+ 
+             BlockPos effectPos = this.getOnPosLegacy();
+             BlockState effectState = this.level().getBlockState(effectPos);
+-            if (this.isLocalInstanceAuthoritative() || this instanceof org.leavesmc.leaves.bot.ServerBot) {  // Leaves - ServerBot needs check fall damage
++            if (this.isLocalInstanceAuthoritative() || this.isFakePlayer()) {  // Leaves - ServerBot needs check fall damage
+                 this.checkFallDamage(movement.y, this.onGround(), effectState, effectPos);
+             }
+ 
+@@ -1354,6 +1410,12 @@ public abstract class Entity
              } // Paper
          }
          // Paper end - detailed watchdog information
@@ -7367,7 +7511,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
      }
  
      public void recordMovement(final MoverType moverType, final Vec3 movement) {
-@@ -1748,12 +1807,17 @@ public abstract class Entity
+@@ -1748,12 +1810,17 @@ public abstract class Entity
              this.level, (Entity)(Object)this, entityQueryBox, entityAABBs, 0, null
          );
  
@@ -7391,7 +7535,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
  
          final boolean collidedX = collided.x != movement.x;
          final boolean collidedY = collided.y != movement.y;
-@@ -1818,6 +1882,9 @@ public abstract class Entity
+@@ -1818,6 +1885,9 @@ public abstract class Entity
      public static Vec3 collideBoundingBox(
          final Entity source, final Vec3 movement, final AABB boundingBox, final Level level, final List<VoxelShape> entityColliders
      ) {
@@ -7401,7 +7545,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
          List<VoxelShape> colliders = collectCollidersIgnoringWorldBorder(source, level, entityColliders, boundingBox.expandTowards(movement));
          return collideWithShapes(movement, boundingBox, colliders);
      }
-@@ -2734,6 +2801,8 @@ public abstract class Entity
+@@ -2734,6 +2804,8 @@ public abstract class Entity
      }
  
      public boolean saveAsPassenger(final ValueOutput output, final boolean includeAll, final boolean includeNonSaveable, final boolean forceSerialization) {
@@ -7410,7 +7554,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
          // Paper end - Raw entity serialization API
          // CraftBukkit end
          if (this.removalReason != null && !this.removalReason.shouldSave() && !forceSerialization) { // Paper - Raw entity serialization API
-@@ -2911,8 +2980,9 @@ public abstract class Entity
+@@ -2911,8 +2983,9 @@ public abstract class Entity
              Vec3 pos = input.read("Pos", Vec3.CODEC).orElse(Vec3.ZERO);
              Vec3 motion = input.read("Motion", Vec3.CODEC).orElse(Vec3.ZERO);
              Vec2 rotation = input.read("Rotation", Vec2.CODEC).orElse(Vec2.ZERO);
@@ -7421,7 +7565,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
              );
              this.needsSync = true;
              double maxHorizontalPosition = 3.0000512E7;
-@@ -3072,7 +3142,22 @@ public abstract class Entity
+@@ -3072,7 +3145,22 @@ public abstract class Entity
      }
  
      public @Nullable ItemEntity spawnAtLocation(final ServerLevel level, final ItemStack itemStack) {
@@ -7445,7 +7589,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
      }
  
      public @Nullable ItemEntity spawnAtLocation(final ServerLevel level, final ItemStack itemStack, final Vec3 offset) {
-@@ -3105,6 +3190,7 @@ public abstract class Entity
+@@ -3105,6 +3193,7 @@ public abstract class Entity
              livingEntity.deathDropItems.add(new DefaultDrop(itemStack, dropStack -> {
                  ItemEntity dropEntity = new ItemEntity(this.level, this.getX() + offset.x, this.getY() + offset.y, this.getZ() + offset.z, dropStack); // stack is copied before consumer
                  dropEntity.setDefaultPickUpDelay();
@@ -7453,7 +7597,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
                  this.level.addFreshEntity(dropEntity);
                  if (delayedAddConsumer != null) delayedAddConsumer.accept(dropEntity);
              }));
-@@ -3127,6 +3213,7 @@ public abstract class Entity
+@@ -3127,6 +3216,7 @@ public abstract class Entity
              return null;
          }
          // CraftBukkit end
@@ -7461,7 +7605,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
          level.addFreshEntity(entity);
          return entity;
      }
-@@ -3511,6 +3598,8 @@ public abstract class Entity
+@@ -3511,6 +3601,8 @@ public abstract class Entity
              this.setPose(Pose.STANDING);
              this.vehicle = entityToRide;
              this.vehicle.addPassenger(this);
@@ -7470,7 +7614,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
              if (sendEventAndTriggers) {
                  this.level().gameEvent(this, GameEvent.ENTITY_MOUNT, this.vehicle.position);
                  entityToRide.getIndirectPassengersStream()
-@@ -3551,6 +3640,7 @@ public abstract class Entity
+@@ -3551,6 +3643,7 @@ public abstract class Entity
              Entity oldVehicle = this.vehicle;
              this.vehicle = null;
              if (!oldVehicle.removePassenger(this, suppressCancellation)) this.vehicle = oldVehicle; // CraftBukkit // Paper - Force entity dismount during teleportation
@@ -7478,7 +7622,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
              Entity.RemovalReason removalReason = this.getRemovalReason();
              if (removalReason == null || removalReason.shouldDestroy()) {
                  if (!this.hasNullCallback()) this.level().gameEvent(this, GameEvent.ENTITY_DISMOUNT, oldVehicle.position); // Folia - region threading - do not fire game events for entities not added
-@@ -3636,6 +3726,43 @@ public abstract class Entity
+@@ -3636,6 +3729,43 @@ public abstract class Entity
          return true; // CraftBukkit
      }
  
@@ -7522,7 +7666,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
      protected boolean canAddPassenger(final Entity passenger) {
          return this.passengers.isEmpty();
      }
-@@ -4613,11 +4740,13 @@ public abstract class Entity
+@@ -4613,11 +4743,13 @@ public abstract class Entity
  
      protected Entity transformForAsyncTeleport(ServerLevel destination, Vec3 pos, Float yaw, Float pitch, Vec3 velocity) {
          final boolean toSameWorld = this.level != destination; // Anonymous - Region threading for lithium sleeping block entity
@@ -7536,7 +7680,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
          if (toSameWorld) copy.notifyLithiumTrackerIfNeeded(); // Anonymous - Region threading for lithium sleeping block entity
          if (copy instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) dragon.syncDragonPartsAfterTeleportTransform(); // Luminol - Sync dragon part when teleportation or firstly created
          // vanilla code used to call remove _after_ copying, and some stuff is required to be after copy - so add hook here
-@@ -4627,6 +4756,26 @@ public abstract class Entity
+@@ -4627,6 +4759,26 @@ public abstract class Entity
          return copy;
      }
  
@@ -7563,7 +7707,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
      public final boolean teleportAsync(TeleportTransition teleportTarget, long teleportFlags,
                                         java.util.function.Consumer<Entity> teleportComplete) {
          PositionMoveRotation move = PositionMoveRotation.calculateAbsolute(PositionMoveRotation.of(this), PositionMoveRotation.of(teleportTarget), teleportTarget.relatives());
-@@ -4746,6 +4895,7 @@ public abstract class Entity
+@@ -4746,6 +4898,7 @@ public abstract class Entity
                          entity.root.xRot
                  );
                  // Luminol end
@@ -7571,7 +7715,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
                  entity.root.teleportSyncSameRegion(pos, yaw, pitch, velocity);
              }
  
-@@ -4761,6 +4911,9 @@ public abstract class Entity
+@@ -4761,6 +4914,9 @@ public abstract class Entity
                  // performs add/remove from world logic which will also perform add/remove tracker logic
              }
  
@@ -7581,7 +7725,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
              if (finalTeleportComplete != null) { // Luminol - Level hot unload apis
                  finalTeleportComplete.accept(this); // Luminol - Level hot unload apis
              }
-@@ -4775,11 +4928,17 @@ public abstract class Entity
+@@ -4775,11 +4931,17 @@ public abstract class Entity
              node.root.preChangeDimension();
          }
  
@@ -7604,7 +7748,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
  
          return true;
      }
-@@ -4793,6 +4952,7 @@ public abstract class Entity
+@@ -4793,6 +4955,7 @@ public abstract class Entity
      public void postChangeDimension() {
          this.resetStoredPositions();
          this.teleportTickType = fun.bm.lophine.enums.EnumTeleportStage.NEED_SYNC; // Lophine - Entity portal-teleport speed fix
@@ -7612,7 +7756,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
      }
  
      protected static enum PortalType {
-@@ -4869,7 +5029,8 @@ public abstract class Entity
+@@ -4869,7 +5032,8 @@ public abstract class Entity
                                      destination, finalPos, this.getDeltaMovement(), Direction.WEST.toYRot(), 0.0f, // Kaiiju - Vanilla end teleportation
                                      false, false,
                                      /*Relative.union(Relative.DELTA, Set.of(Relative.X_ROT))*/Set.of(), // Kaiiju - Vanilla end teleportation
@@ -7622,7 +7766,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
                                      org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.END_PORTAL,
                                      TeleportTransition.PassengerTeleportationMode.POSITION_RIDER
                                  )
-@@ -4906,7 +5067,8 @@ public abstract class Entity
+@@ -4906,7 +5070,8 @@ public abstract class Entity
                                      destination, finalPos, this.getDeltaMovement(), 0.0f, 0.0f, // Kaiiju - Vanilla end teleportation
                                      false, false,
                                      Relative.union(Relative.DELTA, Relative.ROTATION),
@@ -7632,7 +7776,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
                                      org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.END_PORTAL,
                                      TeleportTransition.PassengerTeleportationMode.POSITION_RIDER
                                  )
-@@ -5156,13 +5318,20 @@ public abstract class Entity
+@@ -5156,13 +5321,20 @@ public abstract class Entity
              node.root.prePortalLogic(originWorld, destination, type);
          }
  
@@ -7659,7 +7803,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
          // ensure the region is always ticking in case of a shutdown
          // otherwise, the shutdown will not be able to complete the shutdown as it requires a ticking region
          Long teleportHoldId = Long.valueOf(TELEPORT_HOLD_TICKET_GEN.getAndIncrement());
-@@ -5178,10 +5347,11 @@ public abstract class Entity
+@@ -5178,10 +5350,11 @@ public abstract class Entity
          ca.spottedleaf.concurrentutil.completable.CallbackCompletable<TeleportTransition> portalInfoCompletable
              = new ca.spottedleaf.concurrentutil.completable.CallbackCompletable<>();
  
@@ -7672,7 +7816,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
                  return;
              }
              originWorld.moonrise$getChunkTaskScheduler().chunkHolderManager.removeTicketAtLevel(
-@@ -5198,14 +5368,19 @@ public abstract class Entity
+@@ -5198,14 +5371,19 @@ public abstract class Entity
              passengerTree.root.placeInAsync(
                  originWorld, destination, Entity.TELEPORT_FLAG_LOAD_CHUNK | (takePassengers ? Entity.TELEPORT_FLAG_TELEPORT_PASSENGERS : 0L),
                  passengerTree,
@@ -7696,7 +7840,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
  
                      // Kaiiju start - vanilla end teleportation
                      /*if (teleportComplete != null) {
-@@ -5215,15 +5390,20 @@ public abstract class Entity
+@@ -5215,15 +5393,20 @@ public abstract class Entity
                          tpComplete.accept(teleported);
                      }
                      // Kaiiju end
@@ -7721,7 +7865,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
      // Folia end - region threading
      // Folia start - fix passenger desync
      public void fixPassengerDesync() {
-@@ -6296,6 +6476,8 @@ public abstract class Entity
+@@ -6296,6 +6479,8 @@ public abstract class Entity
      }
  
      public final void setPosRaw(double x, double y, double z, boolean forceBoundingBoxUpdate) {
@@ -7730,7 +7874,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
          // Paper start - rewrite chunk system
          if (this.updatingSectionStatus) {
              LOGGER.error(
-@@ -6348,6 +6530,7 @@ public abstract class Entity
+@@ -6348,6 +6533,7 @@ public abstract class Entity
          }
          // Paper end - Block invalid positions and bounding box
          this.notifyLithiumTrackerIfNeeded(); // Anonymous - Leaves lithium sleeping block entity
@@ -7738,7 +7882,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
      }
  
      // Anonymous start - Region threading for lithium sleeping block entity
-@@ -6472,6 +6655,11 @@ public abstract class Entity
+@@ -6472,6 +6658,11 @@ public abstract class Entity
      }
  
      public float maxUpStep() {
@@ -7750,7 +7894,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
          return 0.0F;
      }
  
-@@ -6503,6 +6691,10 @@ public abstract class Entity
+@@ -6503,6 +6694,10 @@ public abstract class Entity
          // Paper end - rewrite chunk system
          org.bukkit.craftbukkit.event.CraftEventFactory.callEntityRemoveEvent(this, cause); // CraftBukkit
          final boolean alreadyRemoved = this.removalReason != null; // Paper - Folia schedulers
@@ -7761,7 +7905,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
          // Folia start - region threading
          this.preRemove(reason);
          // Folia end - region threading
-@@ -6511,6 +6703,11 @@ public abstract class Entity
+@@ -6511,6 +6706,11 @@ public abstract class Entity
              this.removeEventCause = cause; // Paper
          }
  
@@ -7773,7 +7917,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
          if (this.removalReason.shouldDestroy()) {
              this.stopRiding();
          }
-@@ -6543,6 +6740,7 @@ public abstract class Entity
+@@ -6543,6 +6743,7 @@ public abstract class Entity
       * Invoked only when the entity is truly removed from the server, never to be added to any world.
       */
      public final void retireScheduler() {
@@ -7781,7 +7925,7 @@ index f7bceacef1f16a1067e32910c7e81befca7a97ef..a58ce9df032d4ee5611f916dbc2f94b7
          // we need to force create the bukkit entity so that the scheduler can be retired...
          this.getBukkitEntity().taskScheduler.retire();
      }
-@@ -6834,4 +7032,18 @@ public abstract class Entity
+@@ -6834,4 +7035,18 @@ public abstract class Entity
      }
  
      // Lophine end - Add config to enable raytracing tracker
@@ -8236,7 +8380,7 @@ index 90630d3528cb6c07b5242fe868a6b610df241570..c4d15884fb0118767143f3673746d280
          Vec3 position = this.position();
          return BlockPos.containing(position.x, position.y - 1.0E-6, position.z);
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index c4bf3a516d3c2652b50cce41da9ff7ab609606f6..cc5d5c5fad3affde56bbb168ffd921234e194fb3 100644
+index c4bf3a516d3c2652b50cce41da9ff7ab609606f6..00fa7a3776f68113ce21a3310a319794f0637972 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -228,7 +228,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -8836,6 +8980,15 @@ index c4bf3a516d3c2652b50cce41da9ff7ab609606f6..cc5d5c5fad3affde56bbb168ffd92123
              float friction = blockFriction * airDrag;
              float verticalFriction = this.omnidirectionalAirMover() ? airDrag : computeModifiedFriction(0.98F, entityAirDragModifier);
              this.setDeltaMovement(movement.x * friction, movementY * verticalFriction, movement.z * friction);
+@@ -3343,7 +3514,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+     private void travelRidden(final Player controller, final Vec3 selfInput) {
+         Vec3 riddenInput = this.getRiddenInput(controller, selfInput);
+         this.tickRidden(controller, riddenInput);
+-        if (this.canSimulateMovement() || this.getControllingPassenger() instanceof org.leavesmc.leaves.bot.ServerBot) { // Leaves - Fakeplayer
++        if (this.canSimulateMovement() || this.getControllingPassenger() != null && this.getControllingPassenger().isFakePlayer()) { // Leaves - Fakeplayer
+             this.setSpeed(this.getRiddenSpeed(controller));
+             this.travel(riddenInput);
+         } else {
 @@ -3420,7 +3591,19 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          return delta;
      }
@@ -9078,7 +9231,7 @@ index c4bf3a516d3c2652b50cce41da9ff7ab609606f6..cc5d5c5fad3affde56bbb168ffd92123
                      // CraftBukkit end
                      if (result != this.useItem) {
 -                        this.setItemInHand(hand, result);
-+                        if (this instanceof org.leavesmc.leaves.bot.ServerBot bot
++                        if (this instanceof fun.bm.lophine.carpet.CarpetFakePlayer bot
 +                            && fun.bm.lophine.carpet.OrgFakePlayerInventory.restock(bot, carpetUseBefore, this.getItemInHand(hand), hand)) {
 +                            fun.bm.lophine.carpet.OrgFakePlayerInventory.insert(bot, result);
 +                        } else {
@@ -11199,7 +11352,7 @@ index a830c259baedf90cc4f9d21664d24d838d377cda..0bef19ff5c0e8693fd3340271a86a082
                  boolean isConcrete = this.blockState.getBlock() instanceof ConcretePowderBlock;
                  boolean isStuckInWater = isConcrete && this.level().getFluidState(pos).is(FluidTags.WATER);
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index 608ca58945245ecaff145c8dc7e6ca9ff9a8773a..5e047ad3a713eb51ca7bede299b0ccf1f9168a37 100644
+index 608ca58945245ecaff145c8dc7e6ca9ff9a8773a..95c537bcfa6c6185b1a0dbe50a4e0be02ea70dd1 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
 @@ -66,6 +66,13 @@ public class ItemEntity extends Entity implements TraceableEntity, ChangePublish
@@ -11294,7 +11447,7 @@ index 608ca58945245ecaff145c8dc7e6ca9ff9a8773a..5e047ad3a713eb51ca7bede299b0ccf1
 +    }
 +
 +    private void carpetOrgPlayerTouch(final Player player) {
-+        if (player instanceof org.leavesmc.leaves.bot.ServerBot
++        if (player instanceof fun.bm.lophine.carpet.CarpetFakePlayer
 +            && ("NoPickUp".equals(fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fakePlayerPickUpController)
 +                || ("MainHandOnly".equals(fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fakePlayerPickUpController) && !player.getMainHandItem().isEmpty()))) {
 +            return;
@@ -12746,7 +12899,7 @@ index 282ccfc3b6a422bdccaf65446186db625983e763..e257291b9e28eac9455e26e39ff91af8
      public void setChanged() {
          this.timesChanged++;
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index 1607008fd8bd7c7295248d47f7763c486986c36f..8f6c898288a7b2fa4c657c357353e008497446a3 100644
+index 1607008fd8bd7c7295248d47f7763c486986c36f..70c88ffb1d1f050b7f840eeb0c37db8213edc0ee 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -264,6 +264,10 @@ public abstract class Player extends Avatar implements ContainerUser {
@@ -13271,7 +13424,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..8f6c898288a7b2fa4c657c357353e008
 +            if(amount>0){this.setDeltaMovement(this.getDeltaMovement().multiply(0.6,1,0.6));if(!this.level().paperConfig().misc.disableSprintInterruptionOnAttack)this.setSprinting(false);}
 +            return (Void)null;
 +        }))).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored->carpet.script.external.ScarpetNativeDeathActors.entity(entity,()->{
-+            if(entity instanceof ServerPlayer player&&!(entity instanceof org.leavesmc.leaves.bot.ServerBot)&&entity.syncVelocity){
++            if(entity instanceof ServerPlayer player&&!entity.isFakePlayer()&&entity.syncVelocity){
 +                var api=(org.bukkit.entity.Player)entity.getBukkitEntity();var velocity=org.bukkit.craftbukkit.util.CraftVector.toBukkit(oldMovement);
 +                var event=new org.bukkit.event.player.PlayerVelocityEvent(api,velocity.clone());callerWorld.getCraftServer().getPluginManager().callEvent(event);
 +                if(!event.isCancelled()){
@@ -13298,6 +13451,15 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..8f6c898288a7b2fa4c657c357353e008
      private void playServerSideSound(final SoundEvent sound) {
          sendSoundEffect(this, this.getX(), this.getY(), this.getZ(), sound, this.getSoundSource(), 1.0F, 1.0F); // Paper - send while respecting visibility
      }
+@@ -1275,7 +1663,7 @@ public abstract class Player extends Avatar implements ContainerUser {
+             // Paper end - Configurable sprint interruption on attack
+         }
+ 
+-        if ((entity instanceof ServerPlayer serverPlayer && !(entity instanceof org.leavesmc.leaves.bot.ServerBot)) && entity.syncVelocity) { // Leaves - bot knockback
++        if ((entity instanceof ServerPlayer serverPlayer && !entity.isFakePlayer()) && entity.syncVelocity) { // Leaves - bot knockback
+             // CraftBukkit start - Add Velocity Event
+             boolean cancelled = false;
+             org.bukkit.entity.Player player = (org.bukkit.entity.Player) entity.getBukkitEntity();
 @@ -1304,34 +1692,97 @@ public abstract class Player extends Avatar implements ContainerUser {
          return 1.0F;
      }
@@ -13519,7 +13681,7 @@ index 1607008fd8bd7c7295248d47f7763c486986c36f..8f6c898288a7b2fa4c657c357353e008
      }
  
      public void awardStat(final Stat<?> stat) {
-+        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fakePlayerNoScoreboardCounter && this instanceof org.leavesmc.leaves.bot.ServerBot) {
++        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fakePlayerNoScoreboardCounter && this instanceof fun.bm.lophine.carpet.CarpetFakePlayer) {
 +            return;
 +        }
          this.awardStat(stat, 1);
@@ -14923,9 +15085,27 @@ index 96b0fa2ebab15a939a5162d23b3ad9b92365d818..75981c78229190215618a54d9eda83d8
          }
  
 diff --git a/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java b/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java
-index 94c603a7229ee6ecfc2da8eb522dc65c5630e38d..d8ba230bdf290f35fd4609107f304cab09470a00 100644
+index 94c603a7229ee6ecfc2da8eb522dc65c5630e38d..2e1956ccd6c9f669991339242fea718c04083609 100644
 --- a/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java
 +++ b/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java
+@@ -271,7 +271,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
+             }
+ 
+             this.move(MoverType.SELF, this.getDeltaMovement());
+-        } else if (this.getControllingPassenger() instanceof org.leavesmc.leaves.bot.ServerBot) { // Leaves start - Fakeplayer
++        } else if ((this.getControllingPassenger() != null && this.getControllingPassenger().isFakePlayer())) { // Leaves start - Fakeplayer
+             this.floatBoat();
+             this.controlBoat();
+             this.move(MoverType.SELF, this.getDeltaMovement());
+@@ -412,7 +412,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
+     // Leaves start - Fakeplayer
+     @Override
+     public boolean canSimulateMovement() {
+-        return super.canSimulateMovement() || this.getControllingPassenger() instanceof org.leavesmc.leaves.bot.ServerBot;
++        return super.canSimulateMovement() || (this.getControllingPassenger() != null && this.getControllingPassenger().isFakePlayer());
+     }
+     // Leaves end - Fakeplayer
+ 
 @@ -716,7 +716,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
  
      @Override
@@ -15635,7 +15815,7 @@ index ab0239a9d32bd937fb8eef9696b8b7d32e89406c..8e3a643f4f5041f1182078be0c5f1034
          }
  
 diff --git a/net/minecraft/world/item/FireworkRocketItem.java b/net/minecraft/world/item/FireworkRocketItem.java
-index 2c3d09655a37e4f45630664eee22005b40c98fa9..83738f9d788dd8a11e1ffa275979460c2671d7c2 100644
+index 2c3d09655a37e4f45630664eee22005b40c98fa9..9618a56b7dcb63856482d69d569feafdd4b45b63 100644
 --- a/net/minecraft/world/item/FireworkRocketItem.java
 +++ b/net/minecraft/world/item/FireworkRocketItem.java
 @@ -52,7 +52,15 @@ public class FireworkRocketItem extends Item implements ProjectileItem {
@@ -15646,7 +15826,7 @@ index 2c3d09655a37e4f45630664eee22005b40c98fa9..83738f9d788dd8a11e1ffa275979460c
 +            // Org cooldown belongs to a successful launch; creative and event consumption flags govern only item cost.
 +            if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fireworkRocketUseCooldown
 +                && context.getPlayer() instanceof net.minecraft.server.level.ServerPlayer serverPlayer
-+                && !(serverPlayer instanceof org.leavesmc.leaves.bot.ServerBot)) {
++                && !(serverPlayer instanceof fun.bm.lophine.carpet.CarpetFakePlayer)) {
 +                serverPlayer.getCooldowns().addCooldown(itemStack, 5);
 +            }
 +            if (event.shouldConsume() && !context.getPlayer().hasInfiniteMaterials()) {
@@ -15667,7 +15847,7 @@ index 2c3d09655a37e4f45630664eee22005b40c98fa9..83738f9d788dd8a11e1ffa275979460c
                      }
 +                    if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fireworkRocketUseCooldown
 +                        && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
-+                        && !(serverPlayer instanceof org.leavesmc.leaves.bot.ServerBot)) {
++                        && !(serverPlayer instanceof fun.bm.lophine.carpet.CarpetFakePlayer)) {
 +                        serverPlayer.getCooldowns().addCooldown(itemStack, 5);
 +                    }
                      if (event.shouldConsume() && !player.hasInfiniteMaterials()) {
@@ -20956,7 +21136,7 @@ index a71916d41a6e02106fd73725dfb180170bed00d6..d0dbb3897f906a141a8fcca158873733
          }
  
 diff --git a/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java b/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
-index e36295101d6e667976cfabd31932ecf59fe5996e..b4fa076781ad214ff0a723772fb44a45af06855c 100644
+index e36295101d6e667976cfabd31932ecf59fe5996e..2aea785630227d7380ee462a4442924973f151d4 100644
 --- a/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
 +++ b/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
 @@ -44,6 +44,25 @@ public class PistonMovingBlockEntity extends BlockEntity {
@@ -20993,6 +21173,15 @@ index e36295101d6e667976cfabd31932ecf59fe5996e..b4fa076781ad214ff0a723772fb44a45
      }
      // Folia end - region threading
  
+@@ -138,7 +158,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
+ 
+                 for (Entity entity : entities) {
+                     if (entity.getPistonPushReaction() != PushReaction.IGNORE_ENTITY) {
+-                        if (causeBounce && entity.canSimulateMovement() || (entity instanceof org.leavesmc.leaves.bot.ServerBot)) { // Leaves - bot slime block
++                        if (causeBounce && entity.canSimulateMovement() || (entity.isFakePlayer())) { // Leaves - bot slime block
+                             Vec3 deltaMovement = entity.getDeltaMovement();
+                             double dx = deltaMovement.x;
+                             double dy = deltaMovement.y;
 @@ -288,13 +308,21 @@ public class PistonMovingBlockEntity extends BlockEntity {
                      newState = Block.updateFromNeighbourShapes(this.movedState, this.level, this.worldPosition);
                  }

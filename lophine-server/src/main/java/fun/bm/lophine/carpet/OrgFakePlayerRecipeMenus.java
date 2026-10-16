@@ -18,7 +18,6 @@ import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.inventory.StonecutterMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import org.leavesmc.leaves.bot.ServerBot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +35,7 @@ public final class OrgFakePlayerRecipeMenus {
     }
 
     public static java.util.concurrent.@org.jspecify.annotations.Nullable CompletableFuture<Boolean> interactAsync(ServerPlayer viewer, Entity target, InteractionHand hand) {
-        if (!(target instanceof ServerBot) || viewer.isSpectator() || !TickThread.isTickThreadFor(viewer)) return null;
+        if (!(target instanceof CarpetFakePlayer) || viewer.isSpectator() || !TickThread.isTickThreadFor(viewer)) return null;
         String mode = GeneralCompatConfig.quickSettingFakePlayerCraft;
         if (mode.equals("false") || mode.equals("sneaking") && !viewer.isShiftKeyDown()
                 || !OrgUtilityCommands.permitted(viewer.createCommandSourceStack(), GeneralCompatConfig.commandPlayerAction))
@@ -85,7 +84,7 @@ public final class OrgFakePlayerRecipeMenus {
     private static void set(Player viewer, UUID target, OrgFakePlayerActions.Action action) {
         if (!(viewer instanceof ServerPlayer server)) return;
         ServerPlayer selected = server.level().getServer().getPlayerList().getPlayer(target);
-        if (!(selected instanceof ServerBot)) return;
+        if (!(selected instanceof CarpetFakePlayer)) return;
         OrgMenuNativeEffects.run(selected, () -> {
             if (!selected.isDeadOrDying()) OrgFakePlayerActions.set(selected, action);
             return null;
