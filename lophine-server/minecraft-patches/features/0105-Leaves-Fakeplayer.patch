@@ -46,7 +46,7 @@ index 5d7d944e3aaf6a6cc4b7f7368012e3ddb6473d3c..f85917ed1d6473d72aa2403aeaa5d406
      private final java.util.concurrent.atomic.AtomicBoolean disconnectionHandled = new java.util.concurrent.atomic.AtomicBoolean(false); // Folia - region threading - may be called concurrently during configuration stage
      private int receivedPackets;
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 21b113ffcb083eda0633b26ac916710bf1efaad1..318696b4659b82d532c19ba02004b1bb14b9c604 100644
+index 99c00ece9376b4ca9ca3b77d49fb685e46f5534e..218922c350a549b350e1e4ae35d2cb2737b5be6a 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -291,6 +291,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa

@@ -6,7 +6,7 @@ Subject: [PATCH] Force disable builtin spark plugin
 The spark passed down from paper has some memory leaking issue, so we fully removed it from the code to prevent that memory leaking issue.
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 723bdebfd7ae055e736a09b85869b6f9cef65bf8..9ea7df037564f7a15386ceee5ed9980bcf7fddfa 100644
+index c239d51aba3fa7ad3248d635b4c950d954881d2d..e50f1a27461bf27e5a7af123199b7537182c0687 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -665,8 +665,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa

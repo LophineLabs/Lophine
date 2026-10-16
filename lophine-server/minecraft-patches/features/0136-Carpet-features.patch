@@ -2787,7 +2787,7 @@ index 5eb7d46bf0d84720662125711fa7b544e9299446..3fc3ee73ef31e67f7b6cd6059cd93d28
          i -> i.group(
                  ComponentSerialization.CODEC.lenientOptionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description),
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index cd56cae73a21800b8a8663836b050784e7fb3c79..d56124995659caaedfcc37b0bf2acf6aa8c21dec 100644
+index b4d3ff9f54ab9c52c033d1924fa5ab76bf26b2c8..ccb89748cddd5baf52192e553699afa0a5970472 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -629,7 +629,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa

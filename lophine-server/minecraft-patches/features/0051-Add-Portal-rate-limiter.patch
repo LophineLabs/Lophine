@@ -81,7 +81,7 @@ index 97c514673a454b752ab86b944fd143725ca8090d..805895eb6fca750b603b323a350b0daa
          private final AtomicBoolean hasPackets = new AtomicBoolean(false);
  
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 6c076c3dcb6d6ac7e573a19382609fb8155613fa..178c7b5e0c901ffd3216a15d2b4b455b2c66f668 100644
+index 60125b4570ff1f5b378ad1484747e1f32c4d35b9..56d05957354b55b508710e444b892ef6296877bc 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -1961,6 +1961,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa

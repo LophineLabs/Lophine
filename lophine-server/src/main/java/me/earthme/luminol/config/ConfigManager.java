@@ -58,9 +58,11 @@ public class ConfigManager {
 
     public static void loadConfigFiles() {
         runTaskBeforeFinalLoad();
-        // Loaded callbacks register commands and permissions in shared Paper registries.
-        // Keep that phase on the calling server thread; independent file preloads remain asynchronous.
-        configfiles.values().forEach(ConfigsInstance::finalizeLoadConfig);
+        // Finalize loading
+        CompletableFuture<?>[] futures = configfiles.values().stream()
+                .map(config -> CompletableFuture.runAsync(config::finalizeLoadConfig))
+                .toArray(CompletableFuture[]::new);
+        CompletableFuture.allOf(futures).join();
         CommandRegister.register(); // register command after config loaded to enable some command didn't depend on config files
         initialized = true;
     }
@@ -88,26 +90,15 @@ public class ConfigManager {
         runnableBeforeFinalLoad.clear();
     }
 
-    public static void reApplyStagedConfigs() {
-        CompletableFuture<?>[] futures = configfiles.values().stream()
-                .map(config -> CompletableFuture.runAsync(config::reApplyStagedConfigs))
-                .toArray(CompletableFuture[]::new);
-        CompletableFuture.allOf(futures).join();
-    }
-
     public static void saveConfigs() {
         saveConfigs(true);
     }
 
-    public static void saveConfigs(boolean async) {
-        if (async) {
-            CompletableFuture<?>[] futures = configfiles.values().stream()
-                    .map(config -> CompletableFuture.runAsync(config::saveConfigs))
-                    .toArray(CompletableFuture[]::new);
-            CompletableFuture.allOf(futures).join();
-        } else {
-            configfiles.values().forEach(ConfigsInstance::saveConfigs);
-        }
+    public static void saveConfigs(boolean sync) {
+        CompletableFuture<?>[] futures = configfiles.values().stream()
+                .map(config -> CompletableFuture.runAsync(config::saveConfigs))
+                .toArray(CompletableFuture[]::new);
+        if (sync) CompletableFuture.allOf(futures).join();
     }
 
     public static void acceptTransformedConfigs() {
@@ -151,7 +142,11 @@ public class ConfigManager {
     }
 
     public static void reloadComments() {
-        // Comment reload also invokes loaded callbacks and re-registers each config command.
-        configfiles.values().forEach(config -> config.reload(false, false));
+        CompletableFuture<?>[] futures = configfiles.values().stream()
+                .map(config -> CompletableFuture.runAsync(() -> {
+                    config.reload(false, false);
+                }))
+                .toArray(CompletableFuture[]::new);
+        CompletableFuture.allOf(futures).join();
     }
 }

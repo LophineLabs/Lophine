@@ -8,7 +8,7 @@ As a part of : Leaves (https://github.com/LeavesMC/Leaves)
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java b/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
-index 150e6e61fd7cf5ef219a29cda20e9a2d4acb09ee..8f1977d034fda8716b7d0a4c11f475e4748d456a 100644
+index d65a903c38537843048bcdcc668358b29893a253..4c871ad7893e714018f088dd0baefda1c3089343 100644
 --- a/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
 +++ b/src/main/java/io/papermc/paper/plugin/manager/PaperEventManager.java
 @@ -55,7 +55,7 @@ class PaperEventManager {
