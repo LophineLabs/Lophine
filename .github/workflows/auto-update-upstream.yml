@@ -29,18 +29,14 @@ jobs:
       - name: Check if upstream already up to date
         working-directory: check
         run: |
-          BRANCH=${{ env.REF_COMMIT }}
-          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
-            git fetch origin "$BRANCH"
-            LOCAL_REF=$(git show "origin/$BRANCH:gradle.properties" | grep '^${{ env.REF }}=' | cut -d'=' -f2 | tr -d '[:space:]')
-          else
-            LOCAL_REF=$(grep '^${{ env.REF }}=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
-          fi
-          echo "Local ref: $LOCAL_REF"
+          # 以当前默认分支（更新所基于的提交）为准，不读自动更新分支。
+          # 自动更新分支可能已经记下最新上游提交，但默认分支仍落后，此时仍要完整执行更新。
+          LOCAL_REF=$(grep '^${{ env.REF }}=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
+          echo "Base ref: $LOCAL_REF"
           # UPSTREAM_BRANCH 为空时回退到 HEAD（上游默认分支）
           REF_SPEC="${{ env.UPSTREAM_BRANCH }}"
           REF_SPEC="${REF_SPEC:-HEAD}"
-          # 遍历所有上游仓库，任一有更新则不跳过
+          # 遍历所有上游仓库，任一比默认分支更新则不跳过
           SKIP=true
           while IFS= read -r url; do
             url=$(echo "$url" | tr -d '[:space:]')
@@ -52,9 +48,10 @@ jobs:
             fi
           done <<< "${{ env.UPSTREAM_URLS }}"
           if [ "$SKIP" = "true" ]; then
-            echo "All upstreams are up to date, skipping all steps."
+            echo "Base commit is already the latest upstream, skipping update."
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
+            echo "Base commit is behind upstream, running the full update."
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
         id: uptodate
