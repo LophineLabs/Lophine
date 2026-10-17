@@ -41,6 +41,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.event.entity.EntityRemoveEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 import org.slf4j.Logger;
 
 import java.util.*;
@@ -57,22 +58,35 @@ public final class CarpetFakePlayerManager {
     private volatile java.util.concurrent.CompletableFuture<Void> shutdown;
     private final Map<UUID, java.util.concurrent.CompletableFuture<Boolean>> removing = new java.util.concurrent.ConcurrentHashMap<>();
 
-    public CarpetFakePlayerManager(MinecraftServer server) { this.server = server; }
-    public enum RemoveReason { COMMAND, DEATH, INTERNAL, KICK }
-    public record Removal(CarpetFakePlayer player, RemoveReason reason, boolean save, net.kyori.adventure.text.Component message) {
-        public boolean shouldSave() { return save; }
-        public net.kyori.adventure.text.Component removeMessage() { return message; }
+    public CarpetFakePlayerManager(MinecraftServer server) {
+        this.server = server;
     }
+
+    public enum RemoveReason {COMMAND, DEATH, INTERNAL, KICK}
+
+    public record Removal(CarpetFakePlayer player, RemoveReason reason, boolean save,
+                          net.kyori.adventure.text.Component message) {
+        public boolean shouldSave() {
+            return save;
+        }
+
+        public net.kyori.adventure.text.Component removeMessage() {
+            return message;
+        }
+    }
+
     public static GameProfile createProfile(UUID uuid, String name, String[] skin) {
         GameProfile profile = new GameProfile(uuid, name, new MutablePropertyMap());
         if (skin != null) profile.properties().put("textures", new Property("textures", skin[0], skin[1]));
         return profile;
     }
+
     public java.util.Optional<CompoundTag> saveState(CarpetFakePlayer bot) {
         TickThread.ensureTickThread(bot, "Saving Carpet player off its owning region");
         server.getPlayerList().carpetSaveFakePlayer(bot);
         return server.getPlayerList().loadPlayerData(bot.nameAndId());
     }
+
     public java.nio.file.Path statePath(CarpetFakePlayer bot) {
         return server.getPlayerList().playerIo.getPlayerDir().toPath().resolve(bot.getStringUUID() + ".dat");
     }
@@ -102,7 +116,7 @@ public final class CarpetFakePlayerManager {
     }
 
     private CarpetFakePlayer carpetPlaceNewBot(@NotNull CarpetFakePlayer bot, ServerLevel world, net.minecraft.world.phys.Vec3 location, net.minecraft.world.phys.Vec2 rotation, ValueInput save,
-                                        CarpetBotRegistrations<CarpetFakePlayer>.Reservation reservation) {
+                                               CarpetBotRegistrations<CarpetFakePlayer>.Reservation reservation) {
         Optional<ValueInput> optional = Optional.ofNullable(save);
 
         bot.isRealPlayer = true;
@@ -113,7 +127,7 @@ public final class CarpetFakePlayerManager {
         }
         bot.connection.markClientLoaded();
         // Preserve the established NPC metadata contract with an independent Carpet owner.
-        bot.getBukkitEntity().setMetadata("NPC", new org.bukkit.metadata.FixedMetadataValue(CarpetInternalPlugin.INSTANCE, true));
+        bot.getBukkitEntity().setMetadata("NPC", new org.bukkit.metadata.FixedMetadataValue(MinecraftInternalPlugin.INSTANCE, true));
         bot.setServerLevel(world);
 
         net.minecraft.world.phys.Vec3 spawnLocation = location;
@@ -385,12 +399,16 @@ public final class CarpetFakePlayerManager {
         var message = silence ? null : PaperAdventure.asAdventure(Component.translatable("multiplayer.player.joined", bot.getDisplayName())).color(NamedTextColor.YELLOW);
         var event = new org.bukkit.event.player.PlayerJoinEvent(bot.getBukkitEntity(), message);
         this.server.server.getPluginManager().callEvent(event);
-        if (!silence && event.joinMessage() != null) this.server.getPlayerList().broadcastSystemMessage(PaperAdventure.asVanilla(event.joinMessage()), false);
+        if (!silence && event.joinMessage() != null)
+            this.server.getPlayerList().broadcastSystemMessage(PaperAdventure.asVanilla(event.joinMessage()), false);
     }
+
     private void carpetPublishLeaveMessage(CarpetFakePlayer bot, Removal event) {
         boolean silence = OrgNativePlayerMessages.consumeLeave(event);
-        if (!silence && event.removeMessage() != null) this.server.getPlayerList().broadcastSystemMessage(PaperAdventure.asVanilla(event.removeMessage()), false);
+        if (!silence && event.removeMessage() != null)
+            this.server.getPlayerList().broadcastSystemMessage(PaperAdventure.asVanilla(event.removeMessage()), false);
     }
+
     private java.util.concurrent.CompletableFuture<Boolean> carpetPrepareBotRemoval(CarpetFakePlayer bot, CommandSender remover, RemoveReason reason, boolean save, boolean resume, net.kyori.adventure.text.@Nullable Component message) {
         var actual = new java.util.concurrent.CompletableFuture<Boolean>();
         var existing = removing.putIfAbsent(bot.getUUID(), actual);
@@ -404,7 +422,8 @@ public final class CarpetFakePlayerManager {
                 removing.remove(bot.getUUID(), actual);
                 return java.util.concurrent.CompletableFuture.completedFuture(false);
             }
-            if (bot.containerMenu != bot.inventoryMenu) bot.closeContainer(org.bukkit.event.inventory.InventoryCloseEvent.Reason.DISCONNECT);
+            if (bot.containerMenu != bot.inventoryMenu)
+                bot.closeContainer(org.bukkit.event.inventory.InventoryCloseEvent.Reason.DISCONNECT);
             var quit = new org.bukkit.event.player.PlayerQuitEvent(bot.getBukkitEntity(), message, bot.quitReason);
             this.server.server.getPluginManager().callEvent(quit);
             var event = new Removal(bot, reason, save, quit.quitMessage());
@@ -420,7 +439,8 @@ public final class CarpetFakePlayerManager {
             carpet.script.external.ScarpetNativeWork.aliasDependency(actual, removal);
             removal.whenComplete((removed, failure) -> {
                 removing.remove(bot.getUUID(), actual);
-                if (failure == null) actual.complete(removed); else actual.completeExceptionally(failure);
+                if (failure == null) actual.complete(removed);
+                else actual.completeExceptionally(failure);
             });
         } catch (Throwable failure) {
             removing.remove(bot.getUUID(), actual);
@@ -430,6 +450,7 @@ public final class CarpetFakePlayerManager {
         carpet.script.external.ScarpetNativeWork.aliasDependency(view, actual);
         return view;
     }
+
     public synchronized boolean removeAll() {
         if (shutdown != null) return forceShutdown;
         var removals = new java.util.ArrayList<java.util.concurrent.CompletableFuture<Boolean>>();
@@ -439,20 +460,33 @@ public final class CarpetFakePlayerManager {
             Runnable task = () -> {
                 try {
                     removeAsync(bot, RemoveReason.INTERNAL, null, true, true).whenComplete((removed, failure) -> {
-                        if (failure == null) actual.complete(removed); else actual.completeExceptionally(failure);
+                        if (failure == null) actual.complete(removed);
+                        else actual.completeExceptionally(failure);
                     });
-                } catch (Throwable failure) { actual.completeExceptionally(failure); }
+                } catch (Throwable failure) {
+                    actual.completeExceptionally(failure);
+                }
             };
             if (TickThread.isTickThreadFor(bot) || TickThread.isShutdownThread()) task.run();
-            else if (!bot.getBukkitEntity().getScheduler().execute(CarpetInternalPlugin.INSTANCE, task, () -> actual.complete(false), 1L)) actual.complete(false);
+            else if (!bot.getBukkitEntity().getScheduler().execute(MinecraftInternalPlugin.INSTANCE, task, () -> actual.complete(false), 1L))
+                actual.complete(false);
         }
         shutdown = java.util.concurrent.CompletableFuture.allOf(removals.toArray(java.util.concurrent.CompletableFuture[]::new)).thenRun(() -> {
-            for (var removal : removals) if (!Boolean.TRUE.equals(removal.join())) throw new IllegalStateException("Carpet player removal failed during shutdown");
+            for (var removal : removals)
+                if (!Boolean.TRUE.equals(removal.join()))
+                    throw new IllegalStateException("Carpet player removal failed during shutdown");
         });
-        if (shutdown.isDone()) { shutdown.join(); forceShutdown = true; return true; }
+        if (shutdown.isDone()) {
+            shutdown.join();
+            forceShutdown = true;
+            return true;
+        }
         shutdown.whenComplete((ignored, failure) -> {
             if (failure != null) LOGGER.error("Cannot finish Carpet player shutdown", failure);
-            else { forceShutdown = true; server.stopServer(); }
+            else {
+                forceShutdown = true;
+                server.stopServer();
+            }
         });
         return false;
     }

@@ -1918,7 +1918,9 @@ public class ShapeDispatcher {
         return pcount;
     }
 
-    /** Dispatches each recipient to its current entity owner without blocking a region thread. */
+    /**
+     * Dispatches each recipient to its current entity owner without blocking a region thread.
+     */
     public static java.util.concurrent.CompletableFuture<Integer> drawParticleLineAsync(List<ServerPlayer> players, ParticleOptions particle, Vec3 from, Vec3 to, double density) {
         validateParticleLine(from, to, density);
         var recipients = List.copyOf(players);

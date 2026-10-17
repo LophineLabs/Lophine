@@ -1,7 +1,7 @@
 package fun.bm.lophine.carpet;
 
-import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
+import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Prediction;

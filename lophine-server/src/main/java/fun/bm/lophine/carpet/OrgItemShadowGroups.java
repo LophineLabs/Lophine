@@ -1222,7 +1222,7 @@ public final class OrgItemShadowGroups {
                 return;
             }
             if (!observer.queued.compareAndSet(false, true)) return;
-            org.bukkit.Bukkit.getRegionScheduler().runDelayed(fun.bm.lophine.carpet.CarpetInternalPlugin.INSTANCE, level.getWorld(), observer.pos.getX() >> 4, observer.pos.getZ() >> 4, task -> {
+            org.bukkit.Bukkit.getRegionScheduler().runDelayed(org.leavesmc.leaves.plugin.MinecraftInternalPlugin.INSTANCE, level.getWorld(), observer.pos.getX() >> 4, observer.pos.getZ() >> 4, task -> {
                 observer.queued.set(false);
                 var current = observer.block.get();
                 if (current == null || level.getBlockEntity(observer.pos) != current || !(current instanceof net.minecraft.world.Container container)) {
@@ -1419,7 +1419,7 @@ public final class OrgItemShadowGroups {
             action.run();
             return true;
         }).completed) return;
-        org.bukkit.Bukkit.getRegionScheduler().runDelayed(fun.bm.lophine.carpet.CarpetInternalPlugin.INSTANCE, level.getWorld(), pos.getX() >> 4, pos.getZ() >> 4,
+        org.bukkit.Bukkit.getRegionScheduler().runDelayed(org.leavesmc.leaves.plugin.MinecraftInternalPlugin.INSTANCE, level.getWorld(), pos.getX() >> 4, pos.getZ() >> 4,
                 task -> block(level, pos, stacks, action, valid), 1L);
     }
 

@@ -94,7 +94,10 @@ public class ServerBot extends ServerPlayer {
     private final Map<String, AbstractBotConfig<?>> configs;
 
     final java.util.concurrent.CompletableFuture<ServerBot> actualPlacement = new java.util.concurrent.CompletableFuture<>();
-    public java.util.concurrent.CompletableFuture<ServerBot> placementCompletion() { return actualPlacement.copy(); }
+
+    public java.util.concurrent.CompletableFuture<ServerBot> placementCompletion() {
+        return actualPlacement.copy();
+    }
 
     public boolean resume = false;
     public BotCreateState createState;
@@ -131,7 +134,7 @@ public class ServerBot extends ServerPlayer {
 
         this.notSleepTicks = 0;
         this.fauxSleeping = FakeplayerConfig.canSkipSleep;
-            this.getBukkitEntity().setSimulationDistance(FakeplayerConfig.getSimulationDistance(this));
+        this.getBukkitEntity().setSimulationDistance(FakeplayerConfig.getSimulationDistance(this));
     }
 
     @Override
@@ -257,7 +260,9 @@ public class ServerBot extends ServerPlayer {
     }
 
     @Override
-    public boolean isFakePlayer() { return true; }
+    public boolean isFakePlayer() {
+        return true;
+    }
 
     @Override
     public boolean canSimulateMovement() {
@@ -513,7 +518,9 @@ public class ServerBot extends ServerPlayer {
     }
 
     @Override
-    public void die(@NotNull DamageSource damageSource) { this.performBotDeath(damageSource); }
+    public void die(@NotNull DamageSource damageSource) {
+        this.performBotDeath(damageSource);
+    }
 
     private void performBotDeath(@NotNull DamageSource damageSource) {
         boolean flag = this.level().getGameRules().get(GameRules.SHOW_DEATH_MESSAGES);
@@ -541,7 +548,8 @@ public class ServerBot extends ServerPlayer {
         if (this.level().getGameRules().get(GameRules.FORGIVE_DEAD_PLAYERS)) {
             this.tellNeutralMobsThatIDied();
         }
-        if (!getServer().getBotList().removeBot(this, BotRemoveEvent.RemoveReason.DEATH, null, false, false, false) && this.getHealth() <= 0.0F) this.setHealth(0.1F);
+        if (!getServer().getBotList().removeBot(this, BotRemoveEvent.RemoveReason.DEATH, null, false, false, false) && this.getHealth() <= 0.0F)
+            this.setHealth(0.1F);
     }
 
     @Override

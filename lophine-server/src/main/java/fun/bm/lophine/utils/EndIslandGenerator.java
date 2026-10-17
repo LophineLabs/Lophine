@@ -10,11 +10,24 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 
 public class EndIslandGenerator {
     public static float getDefaultDoffs(float x, float z) {
+        return getDefaultDoffs(x, z, false);
+    }
+
+    public static boolean isInEndIsland(float x, float z) {
+        float doffs = getDefaultDoffs(x, z, true);
+        return doffs != doffs;
+    }
+
+    public static float getDefaultDoffs(float x, float z, boolean onlyCheck) {
         if (OldFeatureConfig.shouldGenerateEndRing) {
             long i = (long) x * (long) x + (long) z * (long) z;
             int j = (int) (i << 32 >> 32);
             if (j < 0) {
                 return Float.NaN;
+            }
+
+            if (onlyCheck) {
+                return -100.0F;
             }
 
             float k = 100.0F - Mth.sqrt(i) * 8;
@@ -36,8 +49,7 @@ public class EndIslandGenerator {
         int maxY = chunk.getMaxY();
         for (int sectionX = sectionXMin; sectionX <= sectionXMax; sectionX++) {
             for (int sectionZ = sectionZMin; sectionZ <= sectionZMax; sectionZ++) {
-                float doffs = fun.bm.lophine.utils.EndIslandGenerator.getDefaultDoffs(sectionX, sectionZ);
-                if (doffs != doffs) {
+                if (isInEndIsland(sectionX, sectionZ)) {
                     int minX = sectionX << 3;
                     int maxX = minX + 7;
                     int minZ = sectionZ << 3;
@@ -58,10 +70,9 @@ public class EndIslandGenerator {
         int width = sectionXMax - sectionXMin + 1;
         for (int sectionX = sectionXMin; sectionX <= sectionXMax; sectionX++) {
             for (int sectionZ = sectionZMin; sectionZ <= sectionZMax; sectionZ++) {
-                float doffs = fun.bm.lophine.utils.EndIslandGenerator.getDefaultDoffs(sectionX, sectionZ);
                 int dSectionX = sectionX - sectionXMin;
                 int dSectionZ = sectionZ - sectionZMin;
-                inRing[dSectionX + dSectionZ * width] = doffs == doffs;
+                inRing[dSectionX + dSectionZ * width] = !isInEndIsland(sectionX, sectionZ);
             }
         }
         return inRing;

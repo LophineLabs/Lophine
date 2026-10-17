@@ -32,6 +32,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -143,7 +144,8 @@ public class CarpetPlayerCommand {
     private static Collection<String> getPlayerSuggestions(CommandSourceStack source) {
         Set<String> players = new LinkedHashSet<>(List.of("Steve", "Alex"));
         source.getServer().getPlayerList().getPlayers().forEach(player -> players.add(player.getScoreboardName()));
-        for (CarpetFakePlayer bot : source.getServer().getCarpetFakePlayers().players) players.add(bot.getGameProfile().name());
+        for (CarpetFakePlayer bot : source.getServer().getCarpetFakePlayers().players)
+            players.add(bot.getGameProfile().name());
         return players;
     }
 
@@ -180,8 +182,10 @@ public class CarpetPlayerCommand {
     private static int manipulate(CommandContext<CommandSourceStack> context, Consumer<CarpetPlayerActionPack> action) {
         ServerPlayer player = getPlayer(context);
         if (!canManipulate(context.getSource(), player)) return 0;
-        if (ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(player)) action.accept(player.carpetActionPack);
-        else player.getBukkitEntity().getScheduler().execute(CarpetInternalPlugin.INSTANCE, () -> action.accept(player.carpetActionPack), null, 1L);
+        if (ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(player))
+            action.accept(player.carpetActionPack);
+        else
+            player.getBukkitEntity().getScheduler().execute(MinecraftInternalPlugin.INSTANCE, () -> action.accept(player.carpetActionPack), null, 1L);
         return 1;
     }
 
@@ -257,8 +261,9 @@ public class CarpetPlayerCommand {
         };
         if (sender != null) {
             if (ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(sender)) begin.accept(sender);
-            else if (!sender.getBukkitEntity().getScheduler().execute(CarpetInternalPlugin.INSTANCE, () -> begin.accept(sender),
-                    () -> SPAWNING.remove(name.toLowerCase(Locale.ROOT)), 1L)) SPAWNING.remove(name.toLowerCase(Locale.ROOT));
+            else if (!sender.getBukkitEntity().getScheduler().execute(MinecraftInternalPlugin.INSTANCE, () -> begin.accept(sender),
+                    () -> SPAWNING.remove(name.toLowerCase(Locale.ROOT)), 1L))
+                SPAWNING.remove(name.toLowerCase(Locale.ROOT));
         } else begin.accept(null);
         return 1;
     }
@@ -324,8 +329,8 @@ public class CarpetPlayerCommand {
      * Restart restoration already owns the saved position and the Carpet online roster.
      */
     public static CarpetFakePlayer respawn(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
-                                    GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, net.minecraft.nbt.CompoundTag actions,
-                                    java.util.concurrent.CompletableFuture<?> fullBirth) {
+                                           GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, net.minecraft.nbt.CompoundTag actions,
+                                           java.util.concurrent.CompletableFuture<?> fullBirth) {
         return create(source, profile, level, position, rotation, mode, flying, saved, false, actions, null, null, fullBirth, true);
     }
 
@@ -333,41 +338,41 @@ public class CarpetPlayerCommand {
      * The Org manager checks its own permission and acquires the destination region before entering this native creation path.
      */
     public static CarpetFakePlayer createOrgManagedPlayer(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
-                                                   GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, net.minecraft.nbt.CompoundTag actions) {
+                                                          GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, net.minecraft.nbt.CompoundTag actions) {
         ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(level, BlockPos.containing(position), "Create managed fake player off owner");
         return createOrgManagedPlayer(source, profile, level, position, rotation, mode, flying, saved, actions, null);
     }
 
     public static CarpetFakePlayer createOrgManagedPlayer(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
-                                                   GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, net.minecraft.nbt.CompoundTag actions,
-                                                   java.util.concurrent.CompletableFuture<?> fullBirth) {
+                                                          GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, net.minecraft.nbt.CompoundTag actions,
+                                                          java.util.concurrent.CompletableFuture<?> fullBirth) {
         return createOrgManagedPlayer(source, profile, level, position, rotation, mode, flying, saved, actions, fullBirth, false);
     }
 
     public static CarpetFakePlayer createOrgManagedPlayer(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
-                                                   GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, net.minecraft.nbt.CompoundTag actions,
-                                                   java.util.concurrent.CompletableFuture<?> fullBirth, boolean silence) {
+                                                          GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, net.minecraft.nbt.CompoundTag actions,
+                                                          java.util.concurrent.CompletableFuture<?> fullBirth, boolean silence) {
         ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(level, BlockPos.containing(position), "Create managed fake player off owner");
         return create(source, profile, level, position, rotation, mode, flying, saved, false, actions, null, null, fullBirth, silence);
     }
 
     private static CarpetFakePlayer create(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
-                                    GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, boolean shadow, net.minecraft.nbt.CompoundTag actions,
-                                    net.minecraft.server.level.ClientInformation information, net.minecraft.network.chat.RemoteChatSession chatSession) {
+                                           GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, boolean shadow, net.minecraft.nbt.CompoundTag actions,
+                                           net.minecraft.server.level.ClientInformation information, net.minecraft.network.chat.RemoteChatSession chatSession) {
         return create(source, profile, level, position, rotation, mode, flying, saved, shadow, actions, information, chatSession, null);
     }
 
     private static CarpetFakePlayer create(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
-                                    GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, boolean shadow, net.minecraft.nbt.CompoundTag actions,
-                                    net.minecraft.server.level.ClientInformation information, net.minecraft.network.chat.RemoteChatSession chatSession,
-                                    java.util.concurrent.CompletableFuture<?> fullBirth) {
+                                           GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, boolean shadow, net.minecraft.nbt.CompoundTag actions,
+                                           net.minecraft.server.level.ClientInformation information, net.minecraft.network.chat.RemoteChatSession chatSession,
+                                           java.util.concurrent.CompletableFuture<?> fullBirth) {
         return create(source, profile, level, position, rotation, mode, flying, saved, shadow, actions, information, chatSession, fullBirth, false);
     }
 
     private static CarpetFakePlayer create(CommandSourceStack source, GameProfile profile, ServerLevel level, Vec3 position, Vec2 rotation,
-                                    GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, boolean shadow, net.minecraft.nbt.CompoundTag actions,
-                                    net.minecraft.server.level.ClientInformation information, net.minecraft.network.chat.RemoteChatSession chatSession,
-                                    java.util.concurrent.CompletableFuture<?> fullBirth, boolean silence) {
+                                           GameType mode, boolean flying, net.minecraft.nbt.CompoundTag saved, boolean shadow, net.minecraft.nbt.CompoundTag actions,
+                                           net.minecraft.server.level.ClientInformation information, net.minecraft.network.chat.RemoteChatSession chatSession,
+                                           java.util.concurrent.CompletableFuture<?> fullBirth, boolean silence) {
         GameProfile botProfile = CarpetFakePlayerManager.createProfile(profile.id(), profile.name(), null);
         botProfile.properties().putAll(profile.properties());
         CarpetFakePlayer bot = new CarpetFakePlayer(source.getServer(), level, botProfile);
@@ -391,7 +396,7 @@ public class CarpetPlayerCommand {
                 CarpetPlayerBirths.admitPlayer(bot, fullBirth);
             }
             bot.stopRiding();
-                bot.carpetShadow = shadow;
+            bot.carpetShadow = shadow;
             if (!shadow) {
                 bot.setHealth(20.0F);
                 bot.deathTime = 0;
@@ -483,7 +488,7 @@ public class CarpetPlayerCommand {
     private static void waitForShadow(CommandSourceStack source, ShadowState state, CarpetPlayerShadowJob job, int remaining) {
         if (job.disconnected.isDone()) return;
         try {
-            org.bukkit.Bukkit.getGlobalRegionScheduler().runDelayed(fun.bm.lophine.carpet.CarpetInternalPlugin.INSTANCE, task -> {
+            org.bukkit.Bukkit.getGlobalRegionScheduler().runDelayed(org.leavesmc.leaves.plugin.MinecraftInternalPlugin.INSTANCE, task -> {
                 try {
                     if (job.disconnected.isDone()) return;
                     if (source.getServer().getPlayerList().getPlayerByName(state.profile().name()) == null)
@@ -507,6 +512,6 @@ public class CarpetPlayerCommand {
         };
         ServerPlayer recipient = source.getPlayer();
         if (recipient == null || ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(recipient)) send.run();
-        else recipient.getBukkitEntity().getScheduler().execute(CarpetInternalPlugin.INSTANCE, send, null, 1L);
+        else recipient.getBukkitEntity().getScheduler().execute(MinecraftInternalPlugin.INSTANCE, send, null, 1L);
     }
 }

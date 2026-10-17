@@ -50,7 +50,8 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.function.Predicate;
 
 import static net.minecraft.server.MinecraftServer.getServer;
@@ -66,14 +67,17 @@ public class CarpetFakePlayer extends ServerPlayer {
     private static final int AUTO_FISH_RECAST_DELAY = 4, AUTO_FISH_ENTITY_DELAY = 20;
     final java.util.concurrent.CompletableFuture<CarpetFakePlayer> carpetActualPlacementFuture = new java.util.concurrent.CompletableFuture<>();
     public final java.util.concurrent.CompletableFuture<CarpetFakePlayer> carpetPlacementFuture = new java.util.concurrent.CompletableFuture<>();
-    public Runnable carpetPlacementInitializer = () -> {};
+    public Runnable carpetPlacementInitializer = () -> {
+    };
 
     public CarpetFakePlayer(MinecraftServer server, ServerLevel world, GameProfile profile) {
         super(server, world, profile, ClientInformation.createDefault());
         this.entityData.set(Player.DATA_PLAYER_MODE_CUSTOMISATION, (byte) 0x7f);
     }
 
-    public boolean isFakePlayer() { return true; }
+    public boolean isFakePlayer() {
+        return true;
+    }
 
     public void tick() {
         if (this.isRemoved() || this.hasDisconnected() || !this.isAlive()) return;
@@ -89,7 +93,10 @@ public class CarpetFakePlayer extends ServerPlayer {
 
     public void doTick() {
         if (this.isRemoved() || this.hasDisconnected()) return;
-        if (!this.isAlive()) { this.die(this.damageSources().generic()); return; }
+        if (!this.isAlive()) {
+            this.die(this.damageSources().generic());
+            return;
+        }
         super.doTick();
         if (this.isRemoved() || this.hasDisconnected()) return;
         this.updateItemInHand(InteractionHand.MAIN_HAND);
@@ -98,7 +105,8 @@ public class CarpetFakePlayer extends ServerPlayer {
     }
 
     public void networkTick() {
-        if (carpet.script.external.ScarpetNativeWork.isDraining(this.level().getServer()) || CarpetPlayerBirths.playerPending(this)) return;
+        if (carpet.script.external.ScarpetNativeWork.isDraining(this.level().getServer()) || CarpetPlayerBirths.playerPending(this))
+            return;
         if (FakePlayerCompatConfig.fakePlayerTicksLikeRealPlayer) {
             this.carpetActionPack.onUpdate();
             if (this.isRemoved() || this.hasDisconnected()) return;
@@ -128,8 +136,10 @@ public class CarpetFakePlayer extends ServerPlayer {
         this.carpetShadow = nbt.getBooleanOr("carpetShadow", this.carpetShadow);
         nbt.read("carpetPlayerActions", CompoundTag.CODEC).ifPresent(this.carpetActionPack::load);
         if (nbt.getBooleanOr("carpetRestoreAfterDeath", false)) {
-            this.setHealth(this.getMaxHealth()); this.deathTime = 0;
-            this.setRemainingFireTicks(0); this.fallDistance = 0.0F;
+            this.setHealth(this.getMaxHealth());
+            this.deathTime = 0;
+            this.setRemainingFireTicks(0);
+            this.fallDistance = 0.0F;
             this.carpetRestoreAfterDeath = false;
         }
     }
@@ -154,9 +164,19 @@ public class CarpetFakePlayer extends ServerPlayer {
         if (!item.isEmpty()) OrgFakePlayerInventory.restock(this, item, item, hand);
         this.detectEquipmentUpdates();
     }
-    public void renderInfo() { this.level().getServer().getPlayerList().getPlayers().forEach(this::sendPlayerInfo); }
-    private void sendPacket(Packet<?> packet) { this.level().getServer().getPlayerList().getPlayers().forEach(p -> p.connection.send(packet)); }
-    public void faceLocation(Vec3 position) { this.look(position.subtract(this.position()), false); }
+
+    public void renderInfo() {
+        this.level().getServer().getPlayerList().getPlayers().forEach(this::sendPlayerInfo);
+    }
+
+    private void sendPacket(Packet<?> packet) {
+        this.level().getServer().getPlayerList().getPlayers().forEach(p -> p.connection.send(packet));
+    }
+
+    public void faceLocation(Vec3 position) {
+        this.look(position.subtract(this.position()), false);
+    }
+
     public void look(Vec3 direction, boolean keepYaw) {
         double horizontal = direction.horizontalDistance();
         float yaw = keepYaw || horizontal == 0.0 ? this.getYHeadRot() : (float) Math.toDegrees(Mth.atan2(-direction.x, direction.z));
@@ -164,6 +184,7 @@ public class CarpetFakePlayer extends ServerPlayer {
         this.setRot(yaw, pitch);
         if (!keepYaw) this.sendPacket(new ClientboundRotateHeadPacket(this, (byte) (yaw * 256 / 360f)));
     }
+
     @Override
     protected int getBaseExperienceReward(ServerLevel level) {
         if (this.isSpectator() || this.keepLevel
@@ -172,7 +193,9 @@ public class CarpetFakePlayer extends ServerPlayer {
         return Math.min(this.experienceLevel * 7, 100);
     }
 
-    public boolean allowsListing() { return fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.allowListingFakePlayers; }
+    public boolean allowsListing() {
+        return fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.allowListingFakePlayers;
+    }
 
     public void carpetSetProfile(GameProfile profile) {
         if (!profile.id().equals(this.getUUID()))

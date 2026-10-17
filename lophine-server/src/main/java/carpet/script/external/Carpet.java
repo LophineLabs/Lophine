@@ -11,6 +11,7 @@ import carpet.script.external.version.api.VersionParsingException;
 import carpet.script.external.version.api.metadata.version.VersionPredicate;
 import carpet.script.value.MapValue;
 import carpet.script.value.StringValue;
+import fun.bm.lophine.carpet.CarpetFakePlayer;
 import fun.bm.lophine.carpet.CarpetRuleRegistry;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import net.minecraft.commands.CommandSourceStack;
@@ -19,7 +20,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import org.jspecify.annotations.Nullable;
-import fun.bm.lophine.carpet.CarpetFakePlayer;
 import org.leavesmc.leaves.protocol.CarpetServerProtocol;
 
 import java.nio.file.Path;

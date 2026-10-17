@@ -395,25 +395,40 @@ public class BotList {
             var removal = new java.util.concurrent.CompletableFuture<Boolean>();
             removals.add(removal);
             bot.actualPlacement.whenComplete((placed, failure) -> {
-                if (failure != null) { removal.completeExceptionally(failure); return; }
+                if (failure != null) {
+                    removal.completeExceptionally(failure);
+                    return;
+                }
                 Runnable work = () -> {
                     try {
                         bot.resume = FakeplayerConfig.resident;
                         removal.complete(this.removeBot(bot, BotRemoveEvent.RemoveReason.INTERNAL, null,
                                 FakeplayerConfig.resident, FakeplayerConfig.resident, false));
-                    } catch (Throwable problem) { removal.completeExceptionally(problem); }
+                    } catch (Throwable problem) {
+                        removal.completeExceptionally(problem);
+                    }
                 };
                 if (TickThread.isTickThreadFor(bot) || TickThread.isShutdownThread()) work.run();
-                else if (!bot.getBukkitEntity().taskScheduler.schedule(owner -> work.run(), retired -> removal.complete(false), 1L)) removal.complete(false);
+                else if (!bot.getBukkitEntity().taskScheduler.schedule(owner -> work.run(), retired -> removal.complete(false), 1L))
+                    removal.complete(false);
             });
         }
         shutdown = java.util.concurrent.CompletableFuture.allOf(removals.toArray(java.util.concurrent.CompletableFuture[]::new)).thenRun(() -> {
-            for (var removal : removals) if (!Boolean.TRUE.equals(removal.join())) throw new IllegalStateException("Leaves player shutdown removal failed");
+            for (var removal : removals)
+                if (!Boolean.TRUE.equals(removal.join()))
+                    throw new IllegalStateException("Leaves player shutdown removal failed");
         });
-        if (shutdown.isDone()) { shutdown.join(); forceShutdown = true; return true; }
+        if (shutdown.isDone()) {
+            shutdown.join();
+            forceShutdown = true;
+            return true;
+        }
         shutdown.whenComplete((ignored, failure) -> {
             if (failure != null) LOGGER.error("Cannot finish Leaves player shutdown", failure);
-            else { forceShutdown = true; server.stopServer(); }
+            else {
+                forceShutdown = true;
+                server.stopServer();
+            }
         });
         return false;
     }
@@ -477,7 +492,9 @@ public class BotList {
     }
 
     public void networkTick() {
-        this.bots.forEach(bot -> { if (TickThread.isTickThreadFor(bot)) bot.networkTick(); });
+        this.bots.forEach(bot -> {
+            if (TickThread.isTickThreadFor(bot)) bot.networkTick();
+        });
     }
 
     @Nullable

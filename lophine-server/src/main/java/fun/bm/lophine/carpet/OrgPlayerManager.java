@@ -32,6 +32,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -97,7 +98,7 @@ public final class OrgPlayerManager {
         synchronized (manager) {
             if (manager.task == null) {
                 manager.reloadSafeThresholds();
-                manager.task = server.server.getGlobalRegionScheduler().runAtFixedRate(CarpetInternalPlugin.INSTANCE, ignored -> manager.tickGlobal(), 1L, 1L);
+                manager.task = server.server.getGlobalRegionScheduler().runAtFixedRate(MinecraftInternalPlugin.INSTANCE, ignored -> manager.tickGlobal(), 1L, 1L);
                 try {
                     List<String> times = manager.residentTimes();
                     manager.previousResidentTime = times.isEmpty() ? null : times.getLast();
@@ -597,7 +598,8 @@ public final class OrgPlayerManager {
                 return feedback(source, translated("schedule.relogin.modify", "Changed %s interval to %s", name, interval), interval);
             }
             ServerPlayer player = server.getPlayerList().getPlayerByName(name);
-            if (!(player instanceof CarpetFakePlayer bot)) return failed("The selected player must be an online fake player");
+            if (!(player instanceof CarpetFakePlayer bot))
+                return failed("The selected player must be an online fake player");
             return TisCommandContinuations.then(captureIdle(bot, true, null), profile -> {
                 if (closed) return failed("The player manager is closing");
                 jobs.put("relogin:" + name, new Job(name, "relogin", source, ticks.get() + interval, interval, profile));
@@ -999,7 +1001,8 @@ public final class OrgPlayerManager {
         return OrgMenuNativeEffects.admit(server, () -> {
             if (!Float.isFinite(threshold)) return failed("SafeAFK threshold must be finite");
             ServerPlayer target = server.getPlayerList().getPlayerByName(name);
-            if (!(target instanceof CarpetFakePlayer bot)) return failed("The selected player must be an online fake player");
+            if (!(target instanceof CarpetFakePlayer bot))
+                return failed("The selected player must be an online fake player");
             final float requested = threshold <= 0 ? -1F : threshold;
             return TisCommandContinuations.then(OrgMenuNativeEffects.run(bot, () -> {
                 if (bot.isRemoved() || requested >= bot.getMaxHealth())
@@ -1044,7 +1047,8 @@ public final class OrgPlayerManager {
     CompletableFuture<Integer> safeQueryAsync(CommandSourceStack source, String name) {
         return OrgMenuNativeEffects.admit(server, () -> {
             ServerPlayer player = server.getPlayerList().getPlayerByName(name);
-            if (!(player instanceof CarpetFakePlayer)) return failed("The selected player must be an online fake player");
+            if (!(player instanceof CarpetFakePlayer))
+                return failed("The selected player must be an online fake player");
             return TisCommandContinuations.then(OrgMenuNativeEffects.run(player, () -> new SafeRow(player.getDisplayName().copy(), safeThreshold(player))), row -> feedback(source, translated("safeafk.list.each", "%s: SafeAFK %s", row.name(), row.value()), (int) row.value()));
         });
     }

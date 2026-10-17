@@ -6,6 +6,7 @@ import ca.spottedleaf.moonrise.patches.chunk_system.ticket.ChunkSystemTicketType
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.TicketType;
+import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -286,7 +287,7 @@ public final class CarpetRegionLease {
         private void enqueue() {
             if (this.lifecycle.isClosed() || this.future.isDone()) return;
             try {
-                this.world.getServer().server.getRegionScheduler().execute(CarpetInternalPlugin.INSTANCE,
+                this.world.getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE,
                         this.world.getWorld(), this.minChunkX, this.minChunkZ, this::pollOwner);
             } catch (Throwable failure) {
                 this.future.completeExceptionally(failure);
@@ -324,7 +325,7 @@ public final class CarpetRegionLease {
         private void retryNextTick() {
             if (this.lifecycle.isClosed() || this.future.isDone()) return;
             try {
-                this.world.getServer().server.getRegionScheduler().runDelayed(CarpetInternalPlugin.INSTANCE,
+                this.world.getServer().server.getRegionScheduler().runDelayed(MinecraftInternalPlugin.INSTANCE,
                         this.world.getWorld(), this.minChunkX, this.minChunkZ, task -> this.pollOwner(), 1L);
             } catch (Throwable failure) {
                 this.future.completeExceptionally(failure);

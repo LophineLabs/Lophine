@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Explosion;
-import fun.bm.lophine.carpet.CarpetInternalPlugin;
+import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -33,7 +33,7 @@ public final class ScarpetExplosionActors {
         try {
             if (TickThread.isTickThreadFor(world, position)) action.run();
             else
-                world.getServer().server.getRegionScheduler().execute(CarpetInternalPlugin.INSTANCE, world.getWorld(), position.getX() >> 4, position.getZ() >> 4, action);
+                world.getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, world.getWorld(), position.getX() >> 4, position.getZ() >> 4, action);
         } catch (Throwable failure) {
             completed.completeExceptionally(failure);
         }
@@ -118,7 +118,7 @@ public final class ScarpetExplosionActors {
                 runEntity(entity, operation, result);
                 return;
             }
-            location.world().getServer().server.getRegionScheduler().execute(CarpetInternalPlugin.INSTANCE, location.world().getWorld(),
+            location.world().getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, location.world().getWorld(),
                     location.position().getX() >> 4, location.position().getZ() >> 4, () -> {
                         if (!ScarpetRetiredActors.matchesLastOwner(entity, location)) {
                             retired(entity, operation, result, attempts + 1);

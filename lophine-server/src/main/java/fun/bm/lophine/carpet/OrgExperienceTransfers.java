@@ -1010,7 +1010,8 @@ public final class OrgExperienceTransfers {
 
         private java.util.concurrent.CompletableFuture<Void> dispatch(UUID playerId) {
             ServerPlayer player = server.getPlayerList().getPlayer(playerId);
-            if (player == null && server.getCarpetFakePlayers() != null) player = server.getCarpetFakePlayers().getBot(playerId);
+            if (player == null && server.getCarpetFakePlayers() != null)
+                player = server.getCarpetFakePlayers().getBot(playerId);
             // A confirmed offline destination has durable custody, not an unfinished native job.
             if (player == null) return java.util.concurrent.CompletableFuture.completedFuture(null);
             ServerPlayer expected = player;

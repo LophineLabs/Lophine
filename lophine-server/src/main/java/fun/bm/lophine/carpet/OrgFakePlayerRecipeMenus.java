@@ -35,7 +35,8 @@ public final class OrgFakePlayerRecipeMenus {
     }
 
     public static java.util.concurrent.@org.jspecify.annotations.Nullable CompletableFuture<Boolean> interactAsync(ServerPlayer viewer, Entity target, InteractionHand hand) {
-        if (!(target instanceof CarpetFakePlayer) || viewer.isSpectator() || !TickThread.isTickThreadFor(viewer)) return null;
+        if (!(target instanceof CarpetFakePlayer) || viewer.isSpectator() || !TickThread.isTickThreadFor(viewer))
+            return null;
         String mode = GeneralCompatConfig.quickSettingFakePlayerCraft;
         if (mode.equals("false") || mode.equals("sneaking") && !viewer.isShiftKeyDown()
                 || !OrgUtilityCommands.permitted(viewer.createCommandSourceStack(), GeneralCompatConfig.commandPlayerAction))

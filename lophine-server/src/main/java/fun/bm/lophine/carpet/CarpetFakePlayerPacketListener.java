@@ -27,6 +27,7 @@ import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 
 public class CarpetFakePlayerPacketListener extends ServerGamePacketListenerImpl {
 
@@ -60,7 +61,7 @@ public class CarpetFakePlayerPacketListener extends ServerGamePacketListenerImpl
             this.server.getCarpetFakePlayers().removeAsync(fake, CarpetFakePlayerManager.RemoveReason.KICK, null, true, false, event.leaveMessage());
         };
         if (ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(fake)) remove.run();
-        else fake.getBukkitEntity().getScheduler().execute(CarpetInternalPlugin.INSTANCE, remove, null, 1L);
+        else fake.getBukkitEntity().getScheduler().execute(MinecraftInternalPlugin.INSTANCE, remove, null, 1L);
     }
 
     @Override
@@ -90,7 +91,8 @@ public class CarpetFakePlayerPacketListener extends ServerGamePacketListenerImpl
 
         @Override
         public void tick() {
-            if (this.isConnected() && this.packetListener instanceof CarpetFakePlayerPacketListener listener) listener.tick();
+            if (this.isConnected() && this.packetListener instanceof CarpetFakePlayerPacketListener listener)
+                listener.tick();
         }
 
         @Override

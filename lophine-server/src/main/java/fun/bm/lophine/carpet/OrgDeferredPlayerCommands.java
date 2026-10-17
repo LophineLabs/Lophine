@@ -18,7 +18,9 @@ final class OrgDeferredPlayerCommands {
         return true;
     }
 
-    /** Starts an external snapshot after the current native callback has released its owner. */
+    /**
+     * Starts an external snapshot after the current native callback has released its owner.
+     */
     static void defer(ServerPlayer player, Runnable command, Consumer<Throwable> failed) {
         var detached = carpet.script.external.ScarpetRuntime.captureDetachedNativeContinuation(() ->
                 CarpetNativeActionContext.with(null, () -> {

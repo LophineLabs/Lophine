@@ -6,7 +6,7 @@ import carpet.script.EntityEventsGroup;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import fun.bm.lophine.carpet.CarpetInternalPlugin;
+import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -187,7 +187,7 @@ public final class ScarpetNativeRemovals {
             return;
         }
         try {
-            location.world().getServer().server.getRegionScheduler().execute(CarpetInternalPlugin.INSTANCE, location.world().getWorld(), location.position().getX() >> 4,
+            location.world().getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, location.world().getWorld(), location.position().getX() >> 4,
                     location.position().getZ() >> 4, () -> {
                         if (!ScarpetRetiredActors.matchesLastOwner(entity, location)) {
                             dispatchCurrentOwner(entity, operation, result);
@@ -220,7 +220,7 @@ public final class ScarpetNativeRemovals {
         }
         // This is mandatory Native cleanup, so Runtime's guest-closing admission must not reject it.
         try {
-            location.world().getServer().server.getRegionScheduler().execute(CarpetInternalPlugin.INSTANCE, location.world().getWorld(),
+            location.world().getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, location.world().getWorld(),
                     location.position().getX() >> 4, location.position().getZ() >> 4, () -> {
                         if (!ScarpetRetiredActors.matchesLastOwner(plan.entity, location)) {
                             dispatchLastOwner(plan);

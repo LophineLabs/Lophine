@@ -17,7 +17,7 @@ import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import fun.bm.lophine.carpet.CarpetInternalPlugin;
+import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 
 import java.util.List;
 import java.util.Map;
@@ -561,7 +561,7 @@ public final class ScarpetRuntime {
         CompletableFuture<T> future = of(world.getServer()).actorFuture();
         if (future.isDone()) return future;
         Supplier<T> inherited = inheritFlags(operation);
-        world.getServer().server.getRegionScheduler().execute(CarpetInternalPlugin.INSTANCE, world.getWorld(), position.getX() >> 4, position.getZ() >> 4,
+        world.getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, world.getWorld(), position.getX() >> 4, position.getZ() >> 4,
                 () -> complete(future, inherited));
         return future;
     }
