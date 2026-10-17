@@ -17,6 +17,7 @@
 
 package fun.bm.lophine.carpet;
 
+import fun.bm.lophine.network.SyntheticPlayerChannel;
 import io.netty.channel.ChannelFutureListener;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
@@ -83,6 +84,7 @@ public class CarpetFakePlayerPacketListener extends ServerGamePacketListenerImpl
 
         public FakePlayerConnection() {
             super(PacketFlow.SERVERBOUND);
+            SyntheticPlayerChannel.bind(this);
         }
 
         private void bind(CarpetFakePlayerPacketListener listener) {

@@ -142,8 +142,8 @@ public final class AmsNativeCommandEffects {
         try {
             var listener = player.connection;
             var connection = listener.connection;
-            // Leaves' synthetic transport intentionally has no Netty channel, and
-            // its no-op listener never acknowledges a physical client packet.
+            // Fake players use a synthetic Netty channel with a no-op send path,
+            // so they never acknowledge a physical client packet.
             if (connection instanceof fun.bm.lophine.carpet.CarpetFakePlayerPacketListener.FakePlayerConnection) {
                 actual.complete(null);
                 return actual;

@@ -22,6 +22,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.logging.LogUtils;
 import fun.bm.lophine.config.modules.function.OldFeatureConfig;
+import fun.bm.lophine.network.SyntheticPlayerChannel;
 import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.profile.MutablePropertyMap;
 import io.papermc.paper.threadedregions.RegionizedServer;
@@ -350,6 +351,7 @@ public final class CarpetFakePlayerManager {
 
     private boolean carpetFinishBotRemoval(CarpetFakePlayer bot, Removal event) {
         bot.level().getCurrentWorldData().connections.remove(bot.connection.connection);
+        SyntheticPlayerChannel.close(bot.connection.connection);
         fun.bm.lophine.carpet.AmsFakePlayers.removed(bot);
         fun.bm.lophine.carpet.OrgPlayerManager.retired(bot);
         fun.bm.lophine.carpet.OrgMailService.retired(bot);
