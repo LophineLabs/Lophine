@@ -20,24 +20,28 @@ public final class ScarpetExplosionActors {
 
     public static <T> CompletableFuture<T> world(ServerLevel world, BlockPos position, Supplier<T> operation) {
         CompletableFuture<T> completed = new CompletableFuture<>();
-        Supplier<T> captured = ScarpetRuntime.captureNativeContinuation(operation);
         ScarpetNativeWork.record(completed);
-        Runnable action = () -> {
-            if (completed.isDone()) return;
-            try {
-                completed.complete(captured.get());
-            } catch (Throwable failure) {
-                completed.completeExceptionally(failure);
-            }
-        };
         try {
-            if (TickThread.isTickThreadFor(world, position)) action.run();
-            else
-                world.getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, world.getWorld(), position.getX() >> 4, position.getZ() >> 4, action);
+            if (TickThread.isTickThreadFor(world, position)) {
+                completeNow(completed, ScarpetRuntime.hasGuestFrame()
+                        ? ScarpetRuntime.captureNativeContinuation(operation) : operation);
+            } else {
+                Supplier<T> captured = ScarpetRuntime.captureNativeContinuation(operation);
+                world.getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, world.getWorld(), position.getX() >> 4, position.getZ() >> 4, () -> completeNow(completed, captured));
+            }
         } catch (Throwable failure) {
             completed.completeExceptionally(failure);
         }
         return completed;
+    }
+
+    private static <T> void completeNow(CompletableFuture<T> completed, Supplier<T> operation) {
+        if (completed.isDone()) return;
+        try {
+            completed.complete(operation.get());
+        } catch (Throwable failure) {
+            completed.completeExceptionally(failure);
+        }
     }
 
     public static <T> CompletableFuture<T> entity(Entity entity, Supplier<T> operation) {

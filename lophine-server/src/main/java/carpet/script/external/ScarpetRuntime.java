@@ -641,6 +641,14 @@ public final class ScarpetRuntime {
     }
 
     /**
+     * A same-thread hop can keep the live native flags. A guest frame still has
+     * to go through captureNativeFunction, which clears CONTEXT for the callback.
+     */
+    public static boolean hasGuestFrame() {
+        return currentFrame() != null;
+    }
+
+    /**
      * A delayed external command retains native flags and has no identity from the callback it outlives.
      */
     public static <T> Supplier<T> captureDetachedNativeContinuation(Supplier<T> operation) {

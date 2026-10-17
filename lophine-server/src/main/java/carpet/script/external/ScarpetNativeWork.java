@@ -61,6 +61,7 @@ public final class ScarpetNativeWork {
      */
     @SuppressWarnings("unchecked")
     public static <T> CompletableFuture<T> recoverGuestValue(CompletableFuture<T> observed) {
+        if (observed.isDone() && !observed.isCompletedExceptionally()) return observed;
         var recovered = observed.handle((value, failure) -> {
             if (failure == null) return value;
             Throwable cause = unwrap(failure);
@@ -208,6 +209,7 @@ public final class ScarpetNativeWork {
 
     public static <T> T without(Supplier<T> operation) {
         Token previous = CURRENT.get();
+        if (previous == null) return operation.get();
         CURRENT.remove();
         try {
             return operation.get();

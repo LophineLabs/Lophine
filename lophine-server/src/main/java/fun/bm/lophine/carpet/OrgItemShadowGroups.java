@@ -78,7 +78,8 @@ public final class OrgItemShadowGroups {
         }
 
         public <T> T call(Supplier<T> operation) {
-            return loan == null ? operation.get() : loan.call(operation);
+            if (loan == null || (!loan.closed && currentNativeLoan() == loan)) return operation.get();
+            return loan.call(operation);
         }
     }
 

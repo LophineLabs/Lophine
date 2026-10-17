@@ -52,14 +52,23 @@ public final class TisCommandContinuations {
     }
 
     static <T> CompletableFuture<T> owned(ServerLevel world, BlockPos position, Supplier<T> body) {
-        var actor = ScarpetExplosionActors.world(world, position, () -> phase(null, body));
-        var actual = actor.thenCompose(value -> value);
-        ScarpetNativeWork.record(actual);
-        return actual;
+        return flattenOwned(ScarpetExplosionActors.world(world, position, () -> phase(null, body)));
     }
 
     static <T> CompletableFuture<T> owned(Entity owner, Supplier<T> body) {
-        var actor = ScarpetExplosionActors.entity(owner, () -> phase(owner, body));
+        return flattenOwned(ScarpetExplosionActors.entity(owner, () -> phase(owner, body)));
+    }
+
+    /**
+     * A same-thread actor already holds the inner observer. Flattening it through
+     * thenCompose only allocates another future for a value that is already ready.
+     */
+    private static <T> CompletableFuture<T> flattenOwned(CompletableFuture<CompletableFuture<T>> actor) {
+        if (actor.isDone() && !actor.isCompletedExceptionally()) {
+            var inner = actor.join();
+            ScarpetNativeWork.record(inner);
+            return inner;
+        }
         var actual = actor.thenCompose(value -> value);
         ScarpetNativeWork.record(actual);
         return actual;
@@ -73,7 +82,21 @@ public final class TisCommandContinuations {
     }
 
     static <T, R> CompletableFuture<R> then(CompletableFuture<T> before, java.util.function.Function<T, CompletableFuture<R>> next) {
-        var actual = before.thenCompose(ScarpetRuntime.captureNativeFunction(next));
+        CompletableFuture<R> actual;
+        if (before.isDone() && before.isCompletedExceptionally()) {
+            actual = before.thenCompose(next);
+        } else if (before.isDone() && !ScarpetRuntime.hasGuestFrame()) {
+            // The predecessor finished on this native owner with no guest frame
+            // to strip. Restoring captured flags through thenCompose would
+            // rebuild ScopedValue carriers for a hop that never left the thread.
+            try {
+                actual = next.apply(before.getNow(null));
+            } catch (Throwable failure) {
+                actual = CompletableFuture.failedFuture(failure);
+            }
+        } else {
+            actual = before.thenCompose(ScarpetRuntime.captureNativeFunction(next));
+        }
         ScarpetNativeWork.record(actual);
         return actual;
     }

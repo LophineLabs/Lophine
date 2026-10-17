@@ -68,8 +68,14 @@ public final class CarpetHopperCounters {
         actual.whenComplete((value, failure) -> PENDING.remove(hopper, actual));
         var flow = new Flow(world, origin, hopper, operations);
         try {
-            var prepared = flow.phase(prepare::getAsBoolean);
-            var finished = TisCommandContinuations.then(prepared, ready -> !ready ? CompletableFuture.completedFuture(false)
+            // The hopper ticker already owns this block. One observer covers the
+            // whole pass; a per-phase thenCompose chain rebuilds inheritFlags
+            // for hops that never leave the region thread.
+            var finished = ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(world, origin)
+                    ? (ScarpetRuntime.hasGuestFrame()
+                    ? TisCommandContinuations.owned(world, origin, () -> flow.complete(prepare, after))
+                    : TisCommandContinuations.phase(null, () -> flow.complete(prepare, after)))
+                    : TisCommandContinuations.then(flow.phase(prepare::getAsBoolean), ready -> !ready ? CompletableFuture.completedFuture(false)
                     : TisCommandContinuations.then(flow.initial(), value -> flow.phase(() -> {
                 after.accept(value);
                 return value;
@@ -98,17 +104,69 @@ public final class CarpetHopperCounters {
             this.operations = operations;
         }
 
-        <T> CompletableFuture<T> phase(Supplier<T> operation) {
-            return TisCommandContinuations.owned(world, position, () -> {
-                ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(world, position, "Native hopper pass must run on its original owner");
-                // A deferred native child does not reserve this block. Piston carrying,
-                // unloads and replacements can retire or move the original instance.
-                // Consult the original actor's table before reading that instance.
-                if (world.getBlockEntity(position) != hopper || hopper.isRemoved()
-                        || hopper.getLevel() != world || !position.equals(hopper.getBlockPos()))
-                    throw new IllegalStateException("Hopper moved or retired before native pass");
-                return operation.get();
+        <T> T guard(Supplier<T> operation) {
+            ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(world, position, "Native hopper pass must run on its original owner");
+            // A deferred native child does not reserve this block. Piston carrying,
+            // unloads and replacements can retire or move the original instance.
+            // Consult the original actor's table before reading that instance.
+            if (world.getBlockEntity(position) != hopper || hopper.isRemoved()
+                    || hopper.getLevel() != world || !position.equals(hopper.getBlockPos()))
+                throw new IllegalStateException("Hopper moved or retired before native pass");
+            return operation.get();
+        }
+
+        boolean complete(BooleanSupplier prepare, Consumer<Boolean> after) {
+            if (!guard(prepare::getAsBoolean)) return false;
+            boolean value = initialNow();
+            guard(() -> {
+                after.accept(value);
+                return null;
             });
+            return value;
+        }
+
+        boolean initialNow() {
+            Integer fullState = guard(operations::begin);
+            if (fullState == null) return false;
+            boolean pushed = fullState != 0 && guard(operations::eject);
+            boolean moved = (pushed || fullState != 2) ? pushed | guard(operations::pull) : false;
+            if (!moved) return false;
+            guard(() -> {
+                operations.cooldown();
+                return null;
+            });
+            if (guard(operations::counter)) drainNow();
+            guard(() -> {
+                operations.finish();
+                return null;
+            });
+            return true;
+        }
+
+        boolean passNow() {
+            if (guard(operations::empty)) return false;
+            boolean pushed = guard(operations::eject);
+            if (guard(operations::full)) return pushed;
+            return pushed | guard(operations::pull);
+        }
+
+        void drainNow() {
+            for (int count = 0; count < Short.MAX_VALUE; count++) {
+                if (!passNow()) break;
+                if (count == Short.MAX_VALUE - 1)
+                    com.mojang.logging.LogUtils.getLogger().warn("Hopper at {} exceeded hopperCountersUnlimitedSpeed operation limit {}", position, Short.MAX_VALUE);
+            }
+            guard(() -> {
+                operations.drained();
+                return null;
+            });
+        }
+
+        <T> CompletableFuture<T> phase(Supplier<T> operation) {
+            Supplier<T> body = () -> guard(operation);
+            return ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(world, position)
+                    ? TisCommandContinuations.phase(null, body)
+                    : TisCommandContinuations.owned(world, position, body);
         }
 
         CompletableFuture<Void> effect(Runnable operation) {

@@ -36,6 +36,12 @@ public final class OrgGameplayHelper {
         }
 
         public <T> T call(Supplier<T> operation) {
+            if (TOOL_NO_BREAK.orElse(false) == toolNoBreak
+                    && (BLOCK_BREAKER.isBound() ? BLOCK_BREAKER.get() : null) == breaker
+                    && SHULKER_STACKING.orElse(true) == shulkerStacking
+                    && GeneralCompatConfig.CHANNELING_TRIDENT.orElse(false) == channelingTrident
+                    && ORG_ACTION.orElse(false) == orgAction)
+                return operation.get();
             return ScopedValue.where(TOOL_NO_BREAK, toolNoBreak).where(BLOCK_BREAKER, breaker)
                     .where(SHULKER_STACKING, shulkerStacking).where(GeneralCompatConfig.CHANNELING_TRIDENT, channelingTrident)
                     .where(ORG_ACTION, orgAction).call(operation::get);
