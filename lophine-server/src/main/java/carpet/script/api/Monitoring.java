@@ -39,12 +39,11 @@ public class Monitoring {
         {
             CarpetContext cc = (CarpetContext) c;
             ServerLevel world = cc.level();
-            var info = fun.bm.lophine.carpet.CarpetMobcaps.dimension(world.dimension().identifier().toString());
+            var info = fun.bm.lophine.carpet.CarpetMobcaps.globalOrElseLocal(world);
             if (info == null) {
                 return Value.NULL;
             }
             Map<MobCategory, Integer> mobcounts = info.counts();
-            int chunks = info.chunks();
             if (lv.isEmpty()) {
                 Map<Value, Value> retDict = new HashMap<>();
                 for (MobCategory category : mobcounts.keySet()) {

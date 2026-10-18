@@ -175,7 +175,7 @@ public class CarpetSpawnCommand {
     }
 
     public static java.util.List<net.minecraft.network.chat.Component> mobcaps(ServerLevel level) {
-        var snapshot = CarpetMobcaps.dimension(level.dimension().identifier().toString());
+        var snapshot = CarpetMobcaps.globalOrElseLocal(level);
         var lines = new java.util.ArrayList<net.minecraft.network.chat.Component>();
         lines.add(net.minecraft.network.chat.Component.literal("Mobcaps for " + level.dimension().identifier() + ":"));
         if (snapshot == null) {
@@ -191,12 +191,16 @@ public class CarpetSpawnCommand {
     }
 
     private static int generalMobcaps(CommandSourceStack source) {
-        ServerLevel level = source.getLevel();
-        return globalReport(source, () -> mobcaps(level));
+        return reportLocalMobcaps(source, source.getLevel(), net.minecraft.core.BlockPos.containing(source.getPosition()));
     }
 
     private static int mobcapsForDimension(CommandSourceStack source, ServerLevel level) {
-        return globalReport(source, () -> mobcaps(level));
+        return reportLocalMobcaps(source, level, level.getLevelData().getRespawnData().pos());
+    }
+
+    private static int reportLocalMobcaps(CommandSourceStack source, ServerLevel level, net.minecraft.core.BlockPos pos) {
+        return reportCommand(source, () -> OrgCommandNativeEffects.area(level, pos.getX() >> 4, pos.getZ() >> 4,
+                pos.getX() >> 4, pos.getZ() >> 4, () -> mobcaps(level)));
     }
 
     private static int resetSpawnRates(CommandSourceStack source) {

@@ -353,15 +353,7 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
     }
 
     private static net.minecraft.network.chat.Component buildMobcapsLine(ServerPlayer player, String option) {
-        String dimension = option == null || option.isBlank() || option.equalsIgnoreCase("dynamic")
-                ? player.level().dimension().identifier().toString()
-                : switch (option.toLowerCase(Locale.ROOT)) {
-            case "overworld" -> "minecraft:overworld";
-            case "nether" -> "minecraft:the_nether";
-            case "end" -> "minecraft:the_end";
-            default -> option.contains(":") ? option : "minecraft:" + option;
-        };
-        var snapshot = fun.bm.lophine.carpet.CarpetMobcaps.dimension(dimension);
+        var snapshot = fun.bm.lophine.carpet.CarpetMobcaps.globalOrElseLocal(player.level());
         if (snapshot == null)
             return net.minecraft.network.chat.Component.literal("Mobcaps: unavailable").withStyle(ChatFormatting.DARK_GRAY);
         var counts = snapshot.counts();
