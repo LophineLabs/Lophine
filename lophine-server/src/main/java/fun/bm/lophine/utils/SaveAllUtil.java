@@ -77,7 +77,7 @@ public class SaveAllUtil {
     public static void checkTimeout() {
         Pair<CommandSourceStack, Boolean> currentSaveAll = SaveAllUtil.currentSaveAll;
         if (!isSaving()) return;
-        if (System.currentTimeMillis() - lastSaveAllTime > CommandConfig.saveAllTimeout) {
+        if (System.currentTimeMillis() - lastSaveAllTime > CommandConfig.saveAllTimeout * 1000) {
             currentSaveAll.getFirst().sendFailure(Component.literal(
                     ServerI18nUtil.getLocalizedText("vanilla.command.save-all.refactor.timeout.line1")
             ));
