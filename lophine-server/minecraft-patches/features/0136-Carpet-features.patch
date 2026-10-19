@@ -461,10 +461,10 @@ index ef896fd3cad9ad8b67f5048fab2cfe28559bdca5..4382a56888e1ddfc8cbfed15dedc8e44
          }
      }
 diff --git a/io/papermc/paper/threadedregions/RegionizedServer.java b/io/papermc/paper/threadedregions/RegionizedServer.java
-index 907ba42af2cc3d9756e247dfa1bec955cb468f98..ee1c37a91f60a6e5401d2ebf0289667ba733f1a1 100644
+index 907ba42af2cc3d9756e247dfa1bec955cb468f98..084366f10a04ad885684355aa208951113a9ec97 100644
 --- a/io/papermc/paper/threadedregions/RegionizedServer.java
 +++ b/io/papermc/paper/threadedregions/RegionizedServer.java
-@@ -238,9 +238,14 @@ public final class RegionizedServer {
+@@ -238,10 +238,19 @@ public final class RegionizedServer {
      private long tickCount;
  
      private void globalTick(final long tickCount) {
@@ -476,11 +476,17 @@ index 907ba42af2cc3d9756e247dfa1bec955cb468f98..ee1c37a91f60a6e5401d2ebf0289667b
 +        fun.bm.lophine.protocol.CarpetLoggerProtocol.onGlobalTick(this.tickCount);
          // Luminol start - Add a config to enable tick command
 -        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandTick) { // Lophine - redirect
+-            MinecraftServer.getServer().tickRateManager().tick();
 +        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.tickCommandEnabled()) { // Lophine - redirect
-             MinecraftServer.getServer().tickRateManager().tick();
++            net.minecraft.server.ServerTickRateManager rateManager = MinecraftServer.getServer().tickRateManager();
++            rateManager.tick();
++            TickRegionScheduler.publishTickInterval(
++                rateManager.isSprinting() ? net.minecraft.server.commands.TickCommand.MAX_TICKRATE : rateManager.tickrate()
++            );
          }
          // Luminol end - Add a config to enable tick command
-@@ -249,13 +254,17 @@ public final class RegionizedServer {
+         // expire invalid click command callbacks
+@@ -249,13 +258,17 @@ public final class RegionizedServer {
          io.papermc.paper.adventure.providers.ClickCallbackProviderImpl.DIALOG_CLICK_MANAGER.handleQueue((int)this.tickCount); // Paper // Folia - region threading - moved to global tick
  
          // scheduler
@@ -500,7 +506,7 @@ index 907ba42af2cc3d9756e247dfa1bec955cb468f98..ee1c37a91f60a6e5401d2ebf0289667b
  
          // needs
          // player ping sample
-@@ -265,7 +274,9 @@ public final class RegionizedServer {
+@@ -265,7 +278,9 @@ public final class RegionizedServer {
          // tick player ping sample
          this.tickPlayerSample();
  
@@ -511,7 +517,7 @@ index 907ba42af2cc3d9756e247dfa1bec955cb468f98..ee1c37a91f60a6e5401d2ebf0289667b
  
          // tick worlds
          for (final ServerLevel world : this.worlds) {
-@@ -273,21 +284,33 @@ public final class RegionizedServer {
+@@ -273,21 +288,37 @@ public final class RegionizedServer {
          }
  
          // Lophine start - Add a config to enable tick command
@@ -520,6 +526,10 @@ index 907ba42af2cc3d9756e247dfa1bec955cb468f98..ee1c37a91f60a6e5401d2ebf0289667b
              net.minecraft.server.ServerTickRateManager rateManager = MinecraftServer.getServer().tickRateManager();
              rateManager.reduceSprintTicks();
              rateManager.endTickWork();
++            rateManager.completeSprintIfFinished();
++            TickRegionScheduler.publishTickInterval(
++                rateManager.isSprinting() ? net.minecraft.server.commands.TickCommand.MAX_TICKRATE : rateManager.tickrate()
++            );
          }
          // Lophine end - Add a config to enable tick command
  
@@ -547,7 +557,7 @@ index 907ba42af2cc3d9756e247dfa1bec955cb468f98..ee1c37a91f60a6e5401d2ebf0289667b
          final MinecraftServer mcServer = MinecraftServer.getServer();
  
          final long currtime = System.nanoTime();
-@@ -300,6 +323,8 @@ public final class RegionizedServer {
+@@ -300,6 +331,8 @@ public final class RegionizedServer {
              this.lastServerStatus = currtime;
              mcServer.rebuildServerStatus();
          }
@@ -556,7 +566,7 @@ index 907ba42af2cc3d9756e247dfa1bec955cb468f98..ee1c37a91f60a6e5401d2ebf0289667b
      }
  
      public static boolean isNotOwnedByGlobalRegion(final Connection conn) {
-@@ -317,6 +342,7 @@ public final class RegionizedServer {
+@@ -317,6 +350,7 @@ public final class RegionizedServer {
      }
  
      private void tickConnections() {
@@ -564,7 +574,7 @@ index 907ba42af2cc3d9756e247dfa1bec955cb468f98..ee1c37a91f60a6e5401d2ebf0289667b
          final List<Connection> connections = new ArrayList<>(this.connections);
          Collections.shuffle(connections); // shuffle to prevent people from "gaming" the server by re-logging
          for (final Connection conn : connections) {
-@@ -353,72 +379,100 @@ public final class RegionizedServer {
+@@ -353,72 +387,100 @@ public final class RegionizedServer {
                  continue;
              }
          }
@@ -693,7 +703,7 @@ index 907ba42af2cc3d9756e247dfa1bec955cb468f98..ee1c37a91f60a6e5401d2ebf0289667b
          // Paper start - per-world time
          if (io.papermc.paper.configuration.GlobalConfiguration.get().time.affectsAllWorlds) {
              MinecraftServer.getServer().clockManager().tick();
-@@ -428,22 +482,30 @@ public final class RegionizedServer {
+@@ -428,22 +490,30 @@ public final class RegionizedServer {
              }
          }
          // Paper end - per-world time
@@ -1111,10 +1121,26 @@ index 73e0aeb5a5e9bdd1f275dd64d1fffa32c389052d..8a4862cf0ece8b4cf3dc6d9dd20e91bc
 \ No newline at end of file
 +}
 diff --git a/io/papermc/paper/threadedregions/TickRegionScheduler.java b/io/papermc/paper/threadedregions/TickRegionScheduler.java
-index ae424c8931a2f82c6c8d4ddd8422a2c142a77a95..70ef6100e8f4e8fa8c1978bbc22c204f3b5327b2 100644
+index ae424c8931a2f82c6c8d4ddd8422a2c142a77a95..467b0b62acaf8f1551cb2b3f0c681d9eb10a3956 100644
 --- a/io/papermc/paper/threadedregions/TickRegionScheduler.java
 +++ b/io/papermc/paper/threadedregions/TickRegionScheduler.java
-@@ -440,11 +440,16 @@ public final class TickRegionScheduler {
+@@ -40,8 +40,13 @@ public final class TickRegionScheduler {
+         }
+     }
+ 
+-    public static float TICK_RATE = 20; // Lophine - Add tick command support
+-    public static long TIME_BETWEEN_TICKS = (long) (1_000_000_000L / TICK_RATE); // ns // Lophine - Add tick command support
++    public static volatile float TICK_RATE = 20; // Lophine - Add tick command support
++    public static volatile long TIME_BETWEEN_TICKS = (long) (1_000_000_000L / TICK_RATE); // ns // Lophine - Add tick command support
++
++    public static void publishTickInterval(final float tickRate) {
++        TICK_RATE = tickRate;
++        TIME_BETWEEN_TICKS = Math.max(1L, (long) (1_000_000_000L / (double) tickRate));
++    }
+     // Folia start - watchdog
+     public static final FoliaWatchdogThread WATCHDOG_THREAD = new FoliaWatchdogThread();
+     static {
+@@ -440,11 +445,16 @@ public final class TickRegionScheduler {
  
          @Override
          public final boolean hasTasks() {
@@ -1132,7 +1158,7 @@ index ae424c8931a2f82c6c8d4ddd8422a2c142a77a95..70ef6100e8f4e8fa8c1978bbc22c204f
              if (this.cancelled.get()) {
                  return false;
              }
-@@ -472,6 +477,7 @@ public final class TickRegionScheduler {
+@@ -472,6 +482,7 @@ public final class TickRegionScheduler {
              final FoliaWatchdogThread.RunningTick runningTick = new FoliaWatchdogThread.RunningTick(tickStart, this, Thread.currentThread()); // Folia - watchdog
              WATCHDOG_THREAD.addTick(runningTick); // Folia - watchdog
              try {
@@ -1140,7 +1166,7 @@ index ae424c8931a2f82c6c8d4ddd8422a2c142a77a95..70ef6100e8f4e8fa8c1978bbc22c204f
                  this.runRegionTasks(() -> {
                      return !RegionScheduleHandle.this.cancelled.get() && canContinue.getAsBoolean();
                  });
-@@ -496,10 +502,20 @@ public final class TickRegionScheduler {
+@@ -496,10 +507,22 @@ public final class TickRegionScheduler {
              }
  
              return this.markNotTicking() && !this.cancelled.get();
@@ -1154,23 +1180,59 @@ index ae424c8931a2f82c6c8d4ddd8422a2c142a77a95..70ef6100e8f4e8fa8c1978bbc22c204f
          public final boolean runTick() {
 +            boolean carpetResourceReader = this.region != null;
 +            if (carpetResourceReader && !fun.bm.lophine.carpet.CarpetResourceReloadCoordinator.tryEnterRegion()) {
-+                this.updateScheduledStart(System.nanoTime() + TIME_BETWEEN_TICKS);
++                final long now = System.nanoTime();
++                this.lastTickStart = now;
++                this.updateScheduledStart(now + TIME_BETWEEN_TICKS);
 +                return !this.cancelled.get();
 +            }
 +            try {
              // Remember, we are supposed use setScheduledStart if we return true here, otherwise
              // the scheduler will try to schedule for the same time.
              if (this.cancelled.get()) {
-@@ -511,7 +527,7 @@ public final class TickRegionScheduler {
+@@ -510,22 +533,17 @@ public final class TickRegionScheduler {
+             final long tickStart = System.nanoTime();
  
              // Lophine start - Add a config to enable tick command
-             final long tickCount;
+-            final long tickCount;
 -            if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandTick) {
-+            if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.tickCommandEnabled()) {
-                 net.minecraft.server.ServerTickRateManager rateManager = MinecraftServer.getServer().tickRateManager();
-                 if (rateManager.isSprinting() && rateManager.checkShouldSprintThisTick()) {
-                     TICK_RATE = net.minecraft.server.commands.TickCommand.MAX_TICKRATE;
-@@ -574,9 +590,10 @@ public final class TickRegionScheduler {
+-                net.minecraft.server.ServerTickRateManager rateManager = MinecraftServer.getServer().tickRateManager();
+-                if (rateManager.isSprinting() && rateManager.checkShouldSprintThisTick()) {
+-                    TICK_RATE = net.minecraft.server.commands.TickCommand.MAX_TICKRATE;
+-                    TIME_BETWEEN_TICKS = (long) (1_000_000_000L / TICK_RATE);
+-                    tickCount = 1;
+-                } else {
+-                    TICK_RATE = rateManager.tickrate();
+-                    TIME_BETWEEN_TICKS = (long) (1_000_000_000L / TICK_RATE);
+-                    tickCount = Math.max(1L, this.tickSchedule.getPeriodsAhead(TIME_BETWEEN_TICKS, tickStart));
+-                }
+-            } else {
+-                // use max(), don't assume that tickStart >= scheduledStart
+-                tickCount = Math.max(1L, this.tickSchedule.getPeriodsAhead(TIME_BETWEEN_TICKS, tickStart));
+-            }
++            // Read the published interval locally. Region ticks never rewrite the
++            // process-wide TIME_BETWEEN_TICKS; sprint/rate changes are applied from
++            // the global tick so every region uses the same period for this cycle.
++            final long tickInterval = TIME_BETWEEN_TICKS;
++            final boolean carpetTickCommand = fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.tickCommandEnabled();
++            net.minecraft.server.ServerTickRateManager carpetRateManager = carpetTickCommand ? MinecraftServer.getServer().tickRateManager() : null;
++            boolean carpetSprintThisTick = carpetRateManager != null && carpetRateManager.markSprintWork();
++            // Catch-up collapses to one world tick when /tick is enabled. Advancing
++            // the schedule by missed periods would skip later ticks and drop TPS
++            // while MSPT stayed low. Region world ticks already ignore tickCount.
++            final long tickCount = carpetTickCommand ? 1L : Math.max(1L, this.tickSchedule.getPeriodsAhead(tickInterval, tickStart));
+             // Lophine end - Add a config to enable tick command
+ 
+             if (!this.tryMarkTicking()) {
+@@ -550,7 +568,7 @@ public final class TickRegionScheduler {
+             this.lastTickStart = tickStart;
+ 
+             final long scheduledStart = this.getScheduledStart();
+-            final long scheduledEnd = scheduledStart + TIME_BETWEEN_TICKS;
++            final long scheduledEnd = scheduledStart + tickInterval;
+ 
+             final long intermediateTaskTime;
+             final long intermediateTaskTimeCPU;
+@@ -574,10 +592,11 @@ public final class TickRegionScheduler {
              WATCHDOG_THREAD.addTick(runningTick); // Folia - region threading
              try {
                  // next start isn't updated until the end of this tick
@@ -1178,11 +1240,24 @@ index ae424c8931a2f82c6c8d4ddd8422a2c142a77a95..70ef6100e8f4e8fa8c1978bbc22c204f
                  this.tickRegion(tickCount, tickStart, scheduledEnd);
                  // Luminol start - Add a config to enable tick command
 -                if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.commandTick) { // Lophine - redirect
-+                if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.tickCommandEnabled()) { // Lophine - redirect
-                     MinecraftServer.getServer().tickRateManager().endTickWork();
+-                    MinecraftServer.getServer().tickRateManager().endTickWork();
++                if (carpetSprintThisTick) { // Lophine - redirect
++                    carpetRateManager.endTickWork();
                  }
                  // Luminol end - Add a config to enable tick command
-@@ -610,6 +627,10 @@ public final class TickRegionScheduler {
+             } catch (final Throwable thr) {
+@@ -592,8 +611,8 @@ public final class TickRegionScheduler {
+                 // in order to ensure all regions get their chance at scheduling, we have to ensure that regions
+                 // that exceed the max tick time are not always prioritised over everything else. Thus, we use the greatest
+                 // of the current time and "ideal" next tick start.
+-                this.tickSchedule.advanceBy(tickCount, TIME_BETWEEN_TICKS);
+-                this.setScheduledStart(TimeUtil.getGreatestTime(tickEnd, this.tickSchedule.getDeadline(TIME_BETWEEN_TICKS)));
++                this.tickSchedule.advanceBy(tickCount, tickInterval);
++                this.setScheduledStart(TimeUtil.getGreatestTime(tickEnd, this.tickSchedule.getDeadline(tickInterval)));
+ 
+                 final TickTime time = new TickTime(
+                     lastTickStart, scheduledStart, tickStart, cpuStart, tickEnd, cpuEnd,
+@@ -610,6 +629,10 @@ public final class TickRegionScheduler {
  
              // Only AFTER updating the tickStart
              return this.markNotTicking() && !this.cancelled.get();
@@ -1193,7 +1268,7 @@ index ae424c8931a2f82c6c8d4ddd8422a2c142a77a95..70ef6100e8f4e8fa8c1978bbc22c204f
          }
  
          /**
-@@ -691,4 +712,4 @@ public final class TickRegionScheduler {
+@@ -691,4 +714,4 @@ public final class TickRegionScheduler {
              this.currentTick = value;
          }
      }
@@ -3296,7 +3371,7 @@ index d4d2947a57ec8ae12b796da9b2ef7f73ec92534f..ba604bca37394ff5ab01b2c7cd416190
  
      public void replaceLibrary(final ServerFunctionLibrary library) {
 diff --git a/net/minecraft/server/ServerTickRateManager.java b/net/minecraft/server/ServerTickRateManager.java
-index 9ec141359c4422c1574dac71a88b7f5043350901..3627d6161749fd7780ff787868dcbe8b84bf3c95 100644
+index 9ec141359c4422c1574dac71a88b7f5043350901..28722a5f1b50e2a91f8791c0d86c34123a344d94 100644
 --- a/net/minecraft/server/ServerTickRateManager.java
 +++ b/net/minecraft/server/ServerTickRateManager.java
 @@ -9,10 +9,15 @@ import net.minecraft.util.TimeUtil;
@@ -3327,7 +3402,7 @@ index 9ec141359c4422c1574dac71a88b7f5043350901..3627d6161749fd7780ff787868dcbe8b
          super.setFrozen(frozen);
          this.updateStateToClients();
      }
-@@ -73,11 +79,13 @@ public class ServerTickRateManager extends TickRateManager {
+@@ -73,27 +79,33 @@ public class ServerTickRateManager extends TickRateManager {
          return requestGameToSprint(time, false);
      }
  
@@ -3343,7 +3418,8 @@ index 9ec141359c4422c1574dac71a88b7f5043350901..3627d6161749fd7780ff787868dcbe8b
          this.scheduledCurrentSprintTicks = time;
          this.remainingSprintTicks = time;
          this.previousIsFrozen = this.isFrozen();
-@@ -85,15 +93,18 @@ public class ServerTickRateManager extends TickRateManager {
+         this.setFrozen(false);
++        io.papermc.paper.threadedregions.TickRegionScheduler.publishTickInterval(net.minecraft.server.commands.TickCommand.MAX_TICKRATE);
          return interrupted;
      }
  
@@ -3365,7 +3441,11 @@ index 9ec141359c4422c1574dac71a88b7f5043350901..3627d6161749fd7780ff787868dcbe8b
          // Paper start - silence feedback when API requests sprint
          if (!this.silent) this.server
              .createCommandSourceStack()
-@@ -105,11 +116,11 @@ public class ServerTickRateManager extends TickRateManager {
+@@ -102,14 +114,15 @@ public class ServerTickRateManager extends TickRateManager {
+         // Paper end - silence feedback when API requests sprint
+         this.remainingSprintTicks = 0L;
+         this.setFrozen(this.previousIsFrozen);
++        io.papermc.paper.threadedregions.TickRegionScheduler.publishTickInterval(this.tickrate());
          this.server.onTickRateChanged();
      }
  
@@ -3379,9 +3459,23 @@ index 9ec141359c4422c1574dac71a88b7f5043350901..3627d6161749fd7780ff787868dcbe8b
              // this.remainingSprintTicks--; // Luminol - Add tick command support
              return true;
          } else {
-@@ -119,13 +130,20 @@ public class ServerTickRateManager extends TickRateManager {
+@@ -118,19 +131,42 @@ public class ServerTickRateManager extends TickRateManager {
+         }
      }
  
++    public boolean markSprintWork() {
++        if (this.carpetSprintTick.get() != null) return true;
++        if (!this.isSprinting() || !this.runGameElements) return false;
++        this.carpetSprintTick.set(new CarpetSprintTick(this.carpetSprintEpoch, System.nanoTime()));
++        return true;
++    }
++
++    public synchronized void completeSprintIfFinished() {
++        if (this.scheduledCurrentSprintTicks > 0L && this.remainingSprintTicks <= 0L) {
++            this.finishTickSprint();
++        }
++    }
++
      // Lophine start - Add tick command support
 -    public void reduceSprintTicks() {
 -        this.remainingSprintTicks--;
@@ -3403,7 +3497,15 @@ index 9ec141359c4422c1574dac71a88b7f5043350901..3627d6161749fd7780ff787868dcbe8b
      }
  
      @Override
-@@ -145,4 +163,34 @@ public class ServerTickRateManager extends TickRateManager {
+     public void setTickRate(final float rate) {
+         super.setTickRate(rate);
++        if (!this.isSprinting()) {
++            io.papermc.paper.threadedregions.TickRegionScheduler.publishTickInterval(this.tickrate());
++        }
+         this.server.onTickRateChanged();
+         this.updateStateToClients();
+     }
+@@ -145,4 +181,34 @@ public class ServerTickRateManager extends TickRateManager {
          return remainingSprintTicks;
      }
      // Leaves end - servux
