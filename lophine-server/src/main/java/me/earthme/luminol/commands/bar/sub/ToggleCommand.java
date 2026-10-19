@@ -6,10 +6,10 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import fun.bm.lophine.command.CommandHolder;
 import fun.bm.lophine.utils.ServerI18nUtil;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import io.papermc.paper.command.brigadier.PaperCommands;
 import me.earthme.luminol.commands.bar.BarCommand;
 import me.earthme.luminol.enums.EnumBarType;
 import me.earthme.luminol.functions.bars.TickableStatusBarList;
@@ -107,16 +107,10 @@ public class ToggleCommand extends LiteralNode {
 
     @SuppressWarnings("unchecked")
     public void register() { // register for old version command
-        PaperCommands.INSTANCE.setValid();
-        PaperCommands.INSTANCE.getDispatcher().register((LiteralArgumentBuilder<CommandSourceStack>) compile0());
-        PaperCommands.INSTANCE.invalidate();
-        Bukkit.getOnlinePlayers().forEach(Player::updateCommands);
+        CommandHolder.registerCommand((LiteralArgumentBuilder<CommandSourceStack>) compile0());
     }
 
     public void unregister() { // unregister for old version command
-        PaperCommands.INSTANCE.setValid();
-        PaperCommands.INSTANCE.getDispatcher().getRoot().removeCommand(this.barType.getCommandName());
-        PaperCommands.INSTANCE.invalidate();
-        Bukkit.getOnlinePlayers().forEach(Player::updateCommands);
+        CommandHolder.unregisterCommand(this.barType.getCommandName());
     }
 }

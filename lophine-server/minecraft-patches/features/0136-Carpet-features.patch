@@ -3229,7 +3229,7 @@ index b4d3ff9f54ab9c52c033d1924fa5ab76bf26b2c8..ccb89748cddd5baf52192e553699afa0
 +    public LevelStorageSource.LevelStorageAccess carpetGetStorageSource() { return this.storageSource; }
  }
 diff --git a/net/minecraft/server/ReloadableServerResources.java b/net/minecraft/server/ReloadableServerResources.java
-index 4b7cb2ba2e1f05d73768e62bb93cd129514166d0..a852bc4ca886e67309812c8b9ab1a4a195736429 100644
+index 4b7cb2ba2e1f05d73768e62bb93cd129514166d0..d5662acca2dcbf45026dfe2ee0af372573343f38 100644
 --- a/net/minecraft/server/ReloadableServerResources.java
 +++ b/net/minecraft/server/ReloadableServerResources.java
 @@ -24,6 +24,7 @@ public class ReloadableServerResources {
@@ -3259,7 +3259,7 @@ index 4b7cb2ba2e1f05d73768e62bb93cd129514166d0..a852bc4ca886e67309812c8b9ab1a4a1
  
 +    public void carpetBindCommands() {
 +        io.papermc.paper.command.brigadier.PaperCommands.INSTANCE.setDispatcher(this.commands, this.carpetCommandContext);
-+        org.leavesmc.leaves.command.RootNode.rebindAll(); // Lophine - replant Leaves commands into the freshly bound dispatcher
++        fun.bm.lophine.command.CommandHolder.onReloadCommands(); // Lophine - replant Leaves commands into the freshly bound dispatcher
 +    }
 +
      public Commands getCommands() {
