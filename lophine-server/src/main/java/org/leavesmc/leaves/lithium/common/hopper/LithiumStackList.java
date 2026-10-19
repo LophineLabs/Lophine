@@ -60,7 +60,7 @@ public class LithiumStackList extends NonNullList<ItemStack> implements LithiumD
             ItemStack stack = this.get(i);
             if (!stack.isEmpty()) {
                 this.occupiedSlots++;
-                if (fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(stack::getMaxStackSize) <= stack.getCount()) {
+                if (fun.bm.lophine.carpet.OrgGameplayHelper.vanillaMaxStackSize(stack) <= stack.getCount()) {
                     this.fullSlots++;
                 }
                 stack.lithium$subscribe(this, i);
@@ -98,7 +98,7 @@ public class LithiumStackList extends NonNullList<ItemStack> implements LithiumD
             ItemStack stack = this.get(i);
             if (!stack.isEmpty()) {
                 this.occupiedSlots++;
-                if (fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(stack::getMaxStackSize) <= stack.getCount()) {
+                if (fun.bm.lophine.carpet.OrgGameplayHelper.vanillaMaxStackSize(stack) <= stack.getCount()) {
                     this.fullSlots++;
                 }
                 stack.lithium$unsubscribe(this);
@@ -153,8 +153,8 @@ public class LithiumStackList extends NonNullList<ItemStack> implements LithiumD
             }
 
             this.occupiedSlots += (previous.isEmpty() ? 1 : 0) - (element.isEmpty() ? 1 : 0);
-            this.fullSlots += (element.getCount() >= fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(element::getMaxStackSize) ? 1 : 0)
-                    - (previous.getCount() >= fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(previous::getMaxStackSize) ? 1 : 0);
+            this.fullSlots += (element.getCount() >= fun.bm.lophine.carpet.OrgGameplayHelper.vanillaMaxStackSize(element) ? 1 : 0)
+                    - (previous.getCount() >= fun.bm.lophine.carpet.OrgGameplayHelper.vanillaMaxStackSize(previous) ? 1 : 0);
             this.changed();
         }
 
@@ -272,7 +272,7 @@ public class LithiumStackList extends NonNullList<ItemStack> implements LithiumD
         if (this.carpetOrgHasShadows()) {
             int full = 0;
             for (ItemStack stack : this)
-                if (!stack.isEmpty() && stack.getCount() >= fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(stack::getMaxStackSize))
+                if (!stack.isEmpty() && stack.getCount() >= fun.bm.lophine.carpet.OrgGameplayHelper.vanillaMaxStackSize(stack))
                     full++;
             return full;
         }
@@ -320,7 +320,7 @@ public class LithiumStackList extends NonNullList<ItemStack> implements LithiumD
         if (newCount <= 0) {
             stack.lithium$unsubscribeWithData(this, index);
         }
-        int maxCount = fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(stack::getMaxStackSize);
+        int maxCount = fun.bm.lophine.carpet.OrgGameplayHelper.vanillaMaxStackSize(stack);
         this.occupiedSlots -= newCount <= 0 ? 1 : 0;
         this.fullSlots += (newCount >= maxCount ? 1 : 0) - (count >= maxCount ? 1 : 0);
 

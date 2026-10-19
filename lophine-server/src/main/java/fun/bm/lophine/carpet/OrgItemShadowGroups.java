@@ -227,6 +227,21 @@ public final class OrgItemShadowGroups {
         return false;
     }
 
+    public static boolean any(net.minecraft.world.Container... containers) {
+        for (var container : containers) {
+            if (container == null) continue;
+            int size = container.getContainerSize();
+            for (int slot = 0; slot < size; slot++) {
+                if (managed(container.getItem(slot))) return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean any(ItemStack extra, net.minecraft.world.Container... containers) {
+        return extra != null && managed(extra) || any(containers);
+    }
+
     private static void requireWritable(Group group) {
         if (group.transaction != null || group.journalHeld)
             throw new IllegalStateException("An item shadow transaction or unknown durable receipt holds this group; retry the operation on its owner");

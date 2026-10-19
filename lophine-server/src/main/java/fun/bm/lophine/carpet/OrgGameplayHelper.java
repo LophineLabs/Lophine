@@ -116,11 +116,34 @@ public final class OrgGameplayHelper {
     }
 
     public static <T> T withoutShulkerStacking(Supplier<T> action) {
+        if (!shulkerStackingGuardActive()) return action.get();
         return ScopedValue.where(SHULKER_STACKING, false).call(action::get);
     }
 
     public static void withoutShulkerStacking(Runnable action) {
+        if (!shulkerStackingGuardActive()) {
+            action.run();
+            return;
+        }
         ScopedValue.where(SHULKER_STACKING, false).run(action);
+    }
+
+    public static boolean shulkerStackingGuardActive() {
+        return SHULKER_STACKING.orElse(true)
+                && (GeneralCompatConfig.shulkerBoxStackable || GeneralCompatConfig.shulkerBoxStackSize() > 1);
+    }
+
+    public static int vanillaMaxStackSize(ItemStack stack) {
+        return stack.getOrDefault(DataComponents.MAX_STACK_SIZE, 1);
+    }
+
+    public static boolean emptyContainer(ItemContainerContents contents) {
+        if (contents == null || contents == ItemContainerContents.EMPTY) return true;
+        var items = contents.items;
+        for (int i = 0, size = items.size(); i < size; i++) {
+            if (items.get(i).isPresent()) return false;
+        }
+        return true;
     }
 
     public static boolean isShulkerBox(ItemStack stack) {
@@ -129,7 +152,7 @@ public final class OrgGameplayHelper {
 
     public static boolean stackableShulker(ItemStack stack) {
         return GeneralCompatConfig.shulkerBoxStackable && isShulkerBox(stack)
-                && stack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).nonEmptyItemCopyStream().findAny().isEmpty();
+                && emptyContainer(stack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY));
     }
 
     /**

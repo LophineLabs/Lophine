@@ -16041,7 +16041,7 @@ index 9f1285c172b4c3a19587da287c3336d0f49d0172..6a5e709059e0e14b055757a86f14ea2c
      }
  
 diff --git a/net/minecraft/world/item/ItemInstance.java b/net/minecraft/world/item/ItemInstance.java
-index 9ca967093bc4b355ce5cec3f43798bb8bbcd194f..a8796933814b8962c93438725eb0218d71a9b97f 100644
+index 9ca967093bc4b355ce5cec3f43798bb8bbcd194f..d165c1fb59bba0fb5ba2e80f37da764798ab1759 100644
 --- a/net/minecraft/world/item/ItemInstance.java
 +++ b/net/minecraft/world/item/ItemInstance.java
 @@ -12,6 +12,19 @@ public interface ItemInstance extends TypedInstance<Item>, DataComponentGetter {
@@ -16053,8 +16053,8 @@ index 9ca967093bc4b355ce5cec3f43798bb8bbcd194f..a8796933814b8962c93438725eb0218d
 +            && itemStack.getItem() instanceof BlockItem blockItem
 +            && blockItem.getBlock() instanceof net.minecraft.world.level.block.ShulkerBoxBlock) {
 +            int carpetStackSize = fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.shulkerBoxStackSize();
-+            if (carpetStackSize > 1 && itemStack.getOrDefault(DataComponents.CONTAINER,
-+                net.minecraft.world.item.component.ItemContainerContents.EMPTY).itemCopies().findAny().isEmpty()) {
++            if (carpetStackSize > 1 && fun.bm.lophine.carpet.OrgGameplayHelper.emptyContainer(itemStack.getOrDefault(DataComponents.CONTAINER,
++                net.minecraft.world.item.component.ItemContainerContents.EMPTY))) {
 +                return carpetStackSize;
 +            }
 +        }
@@ -20523,50 +20523,85 @@ index eab53d1b4573529db6ebb5e16c0b6a4b1d0ac204..b5dd1ac0113e112d630495e17e0f37f7
  
          if (!Objects.equals(newDestroyTarget, entity.destroyTarget)) {
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c81b3c5588 100644
+index de04d8393a1ef857711baeed086b213aa99a0dff..6158e91b13ed7d2ef6af8e63ae392c50fa61eb1b 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-@@ -171,6 +171,23 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -171,17 +171,33 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public static void pushItemsTick(final Level level, final BlockPos pos, final BlockState state, final HopperBlockEntity entity) {
-+        fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> carpetPushItemsTick(level, pos, state, entity));
++        if (fun.bm.lophine.carpet.OrgGameplayHelper.shulkerStackingGuardActive()) {
++            fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> carpetPushItemsTick(level, pos, state, entity));
++            return;
++        }
++        carpetPushItemsTick(level, pos, state, entity);
 +    }
 +
 +    private static void carpetPushItemsTick(final Level level, final BlockPos pos, final BlockState state, final HopperBlockEntity entity) {
-+        if (carpetNativeMove(level)) {
-+            if (fun.bm.lophine.carpet.CarpetHopperCounters.pending(entity)) return;
-+            fun.bm.lophine.carpet.CarpetHopperCounters.move((ServerLevel)level,pos,entity,()->{
-+                entity.cooldownTime--;
-+                entity.tickedGameTime=level.getRedstoneGameTime();
-+                if(entity.isOnCooldown())return false;
-+                entity.setCooldown(0);return true;
-+            },carpetUnlimitedOperations(level,pos,state,entity,()->suckInItems(level,entity)),result->{
-+                if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) entity.checkSleepingConditions();
-+                if (!result && entity.level.spigotConfig.hopperCheck > 1) entity.setCooldown(entity.level.spigotConfig.hopperCheck);
-+            });
-+            return;
-+        }
++        if (fun.bm.lophine.carpet.CarpetHopperCounters.pending(entity)) return;
          entity.cooldownTime--;
          entity.tickedGameTime = level.getRedstoneGameTime(); // Folia - region threading
-         if (!entity.isOnCooldown()) {
-@@ -225,11 +242,58 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+-        if (!entity.isOnCooldown()) {
+-            entity.setCooldown(0);
+-            // Spigot start
+-            boolean result = tryMoveItems(level, pos, state, entity, () -> suckInItems(level, entity));
+-            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) entity.checkSleepingConditions(); // Leaves - Lithium Sleeping Block Entity
+-            if (!result && entity.level.spigotConfig.hopperCheck > 1) {
+-                entity.setCooldown(entity.level.spigotConfig.hopperCheck);
+-            }
+-            // Spigot end
++        if (entity.isOnCooldown()) return;
++        entity.setCooldown(0);
++        boolean result;
++        if (carpetNativeMove(level, pos)) {
++            var actual = fun.bm.lophine.carpet.CarpetHopperCounters.move((ServerLevel) level, pos, entity, () -> true,
++                carpetUnlimitedOperations(level, pos, state, entity, () -> suckInItems(level, entity)), ignored -> {});
++            result = actual.isDone() && actual.join();
++        } else if (level instanceof ServerLevel) {
++            result = fun.bm.lophine.carpet.CarpetHopperCounters.moveNow((ServerLevel) level, pos, entity, () -> true,
++                carpetUnlimitedOperations(level, pos, state, entity, () -> suckInItems(level, entity)), ignored -> {});
++        } else {
++            result = tryMoveItems(level, pos, state, entity, () -> suckInItems(level, entity));
++        }
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) entity.checkSleepingConditions(); // Leaves - Lithium Sleeping Block Entity
++        if (!result && entity.level.spigotConfig.hopperCheck > 1) {
++            entity.setCooldown(entity.level.spigotConfig.hopperCheck);
+         }
+     }
+ 
+@@ -212,7 +228,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+ 
+             empty = false;
+ 
+-            if (stack.getCount() != stack.getMaxStackSize()) {
++            if (stack.getCount() != fun.bm.lophine.carpet.OrgGameplayHelper.vanillaMaxStackSize(stack)) {
+                 // can't be full or empty
+                 return HOPPER_HAS_ITEMS;
+             }
+@@ -225,11 +241,65 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      private static boolean tryMoveItems(
          final Level level, final BlockPos pos, final BlockState state, final HopperBlockEntity entity, final BooleanSupplier action
      ) {
 -        if (level.isClientSide()) {
-+        if(carpetNativeMove(level)) {
-+            if(fun.bm.lophine.carpet.CarpetHopperCounters.pending(entity))return false;
-+            var actual=fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(()->fun.bm.lophine.carpet.CarpetHopperCounters.move(
-+                (ServerLevel)level,pos,entity,()->true,carpetUnlimitedOperations(level,pos,state,entity,action),ignored->{}));
-+            return actual.isDone()?actual.join():false;
++        if (fun.bm.lophine.carpet.CarpetHopperCounters.pending(entity)) return false;
++        if (carpetNativeMove(level, pos)) {
++            var actual = fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> fun.bm.lophine.carpet.CarpetHopperCounters.move(
++                (ServerLevel) level, pos, entity, () -> true, carpetUnlimitedOperations(level, pos, state, entity, action), ignored -> {}));
++            return actual.isDone() ? actual.join() : false;
++        }
++        if (level instanceof ServerLevel) {
++            return fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> fun.bm.lophine.carpet.CarpetHopperCounters.moveNow(
++                (ServerLevel) level, pos, entity, () -> true, carpetUnlimitedOperations(level, pos, state, entity, action), ignored -> {}));
 +        }
 +        return fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> carpetTryMoveItems(level, pos, state, entity, action));
 +    }
 +
-+    private static boolean carpetNativeMove(Level level) {
-+        // The rule is read at its original late hook, after the initial native transfer and cooldown.
-+        return level instanceof ServerLevel;
++    private static boolean carpetNativeMove(Level level, BlockPos pos) {
++        // Guest frames and foreign region hops still need the original native observer chain.
++        return level instanceof ServerLevel
++            && (carpet.script.external.ScarpetRuntime.hasGuestFrame()
++                || carpet.script.external.ScarpetNativeWork.capture() != null
++                || !ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(level, pos));
 +    }
 +
 +    private static fun.bm.lophine.carpet.CarpetHopperCounters.Operations carpetUnlimitedOperations(
@@ -20610,7 +20645,7 @@ index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c8
              boolean changed = false;
              final int fullState = getFullState(entity); // Paper - Perf: Optimize Hoppers
              if (fullState != HOPPER_EMPTY) { // Paper - Perf: Optimize Hoppers
-@@ -240,30 +304,8 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -240,30 +310,8 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
                  changed |= action.getAsBoolean();
              }
  
@@ -20641,16 +20676,25 @@ index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c8
                  setChanged(level, pos, state);
                  // Leaves start - Lithium Sleeping Block Entity
                  if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled
-@@ -294,8 +336,21 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -282,7 +330,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+ 
+     private boolean inventoryFull() {
+         for (ItemStack itemStack : this.items) {
+-            if (itemStack.isEmpty() || itemStack.getCount() != itemStack.getMaxStackSize()) {
++            if (itemStack.isEmpty() || itemStack.getCount() != fun.bm.lophine.carpet.OrgGameplayHelper.vanillaMaxStackSize(itemStack)) {
+                 return false;
+             }
+         }
+@@ -294,8 +342,21 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      // Folia - region threading - moved to RegionizedWorldData
  
      private static boolean hopperPush(final Level level, final Container destination, final Direction direction, final HopperBlockEntity hopper) {
-+        var shadowStacks = fun.bm.lophine.carpet.OrgItemShadowGroups.container(hopper, destination);
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.any(shadowStacks)) {
-+            var result = fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(shadowStacks, () -> carpetOrgHopperPush(level, destination, direction, hopper));
-+            return result.completed() && result.value();
++        if (!fun.bm.lophine.carpet.OrgItemShadowGroups.any(hopper, destination)) {
++            return carpetOrgHopperPush(level, destination, direction, hopper);
 +        }
-+        return carpetOrgHopperPush(level, destination, direction, hopper);
++        var shadowStacks = fun.bm.lophine.carpet.OrgItemShadowGroups.container(hopper, destination);
++        var result = fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(shadowStacks, () -> carpetOrgHopperPush(level, destination, direction, hopper));
++        return result.completed() && result.value();
 +    }
 +
 +    private static boolean carpetOrgHopperPush(final Level level, final Container destination, final Direction direction, final HopperBlockEntity hopper) {
@@ -20663,7 +20707,7 @@ index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c8
          boolean foundItem = false;
          for (int i = 0; i < hopper.getContainerSize(); ++i) {
              final ItemStack item = hopper.getItem(i);
-@@ -321,6 +376,15 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -321,6 +382,15 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
                  final ItemStack remainingItem = addItem(hopper, destination, movedItem, direction);
                  final int remainingItemCount = remainingItem.getCount();
                  if (remainingItemCount != movedItemCount) {
@@ -20679,23 +20723,24 @@ index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c8
                      origItemStack = origItemStack.copy(true);
                      origItemStack.setCount(originalItemCount);
                      if (!origItemStack.isEmpty()) {
-@@ -340,6 +404,15 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -340,6 +410,16 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      private static boolean hopperPull(final Level level, final Hopper hopper, final Container container, ItemStack origItemStack, final int i) {
-+        var shadowStacks = fun.bm.lophine.carpet.OrgItemShadowGroups.container(hopper, container);
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.any(shadowStacks)) {
-+            var result = fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(shadowStacks, () -> carpetOrgHopperPull(level, hopper, container, origItemStack, i));
-+            return result.completed() && result.value();
++        if (!fun.bm.lophine.carpet.OrgItemShadowGroups.any(origItemStack, hopper, container)) {
++            return carpetOrgHopperPull(level, hopper, container, origItemStack, i);
 +        }
-+        return carpetOrgHopperPull(level, hopper, container, origItemStack, i);
++        var shadowStacks = fun.bm.lophine.carpet.OrgItemShadowGroups.container(hopper, container);
++        shadowStacks.add(origItemStack);
++        var result = fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(shadowStacks, () -> carpetOrgHopperPull(level, hopper, container, origItemStack, i));
++        return result.completed() && result.value();
 +    }
 +
 +    private static boolean carpetOrgHopperPull(final Level level, final Hopper hopper, final Container container, ItemStack origItemStack, final int i) {
          io.papermc.paper.threadedregions.RegionizedWorldData worldData = level.getCurrentWorldData(); // Folia - region threading
          ItemStack movedItem = origItemStack;
          final int originalItemCount = origItemStack.getCount();
-@@ -499,6 +572,10 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -499,6 +579,10 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      // Paper end - Perf: Optimize Hoppers
  
      private static boolean ejectItems(final Level level, final BlockPos blockPos, final HopperBlockEntity self) {
@@ -20706,7 +20751,7 @@ index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c8
          // Leaves start - hopper counter
          if (org.leavesmc.leaves.util.HopperCounter.isEnabled()) {
              if (woolHopperCounter(level, blockPos, level.getBlockState(blockPos), HopperBlockEntity.getContainerAt(level, blockPos))) {
-@@ -592,6 +669,10 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -592,6 +676,10 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public static boolean suckInItems(final Level level, final Hopper hopper) {
@@ -20717,12 +20762,15 @@ index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c8
          io.papermc.paper.threadedregions.RegionizedWorldData worldData = io.papermc.paper.threadedregions.TickRegionScheduler.getCurrentRegionizedWorldData(); // Folia - region threading
          BlockPos blockPos = BlockPos.containing(hopper.getLevelX(), hopper.getLevelY() + 1.0, hopper.getLevelZ());
          BlockState blockState = level.getBlockState(blockPos);
-@@ -641,7 +722,14 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -641,7 +729,17 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public static boolean addItem(final Container container, final ItemEntity entity) {
 -        if (fun.bm.lophine.carpet.config.modules.WoolHopperCounterConfig.hopperCountersUnlimitedSpeed && org.leavesmc.leaves.util.HopperCounter.isEnabled() && entity.isRemoved()) return false; // Leaves - Wool hopper counter
 +        if(fun.bm.lophine.carpet.config.modules.WoolHopperCounterConfig.hopperCountersUnlimitedSpeed&&entity.isRemoved())return false;
++        if (!fun.bm.lophine.carpet.OrgItemShadowGroups.any(entity.getItem(), container)) {
++            return fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> carpetAddItem(container, entity));
++        }
 +        var shadowStacks = fun.bm.lophine.carpet.OrgItemShadowGroups.container(container);
 +        shadowStacks.add(entity.getItem());
 +        var result = fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(shadowStacks, () -> fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> carpetAddItem(container, entity)));
@@ -20733,7 +20781,7 @@ index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c8
          boolean changed = false;
          // CraftBukkit start
          if (org.bukkit.event.inventory.InventoryPickupItemEvent.getHandlerList().getRegisteredListeners().length > 0) { // Paper - optimize hoppers
-@@ -654,9 +742,20 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -654,9 +752,20 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
          // CraftBukkit end
          } // Paper - Perf: Optimize Hoppers
          ItemStack copy = entity.getItem().copy();
@@ -20755,11 +20803,14 @@ index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c8
              entity.setItem(ItemStack.EMPTY);
              entity.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.PICKUP); // CraftBukkit - add Bukkit remove cause
          } else {
-@@ -667,6 +766,14 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -667,6 +776,17 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public static ItemStack addItem(final @Nullable Container from, final Container container, ItemStack itemStack, final @Nullable Direction direction) {
 +        final ItemStack transferred = itemStack;
++        if (!fun.bm.lophine.carpet.OrgItemShadowGroups.any(transferred, from, container)) {
++            return fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> carpetAddItem(from, container, transferred, direction));
++        }
 +        var shadowStacks = fun.bm.lophine.carpet.OrgItemShadowGroups.container(from, container);
 +        shadowStacks.add(transferred);
 +        var result = fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(shadowStacks, () -> fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> carpetAddItem(from, container, transferred, direction)));
@@ -20770,7 +20821,7 @@ index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c8
          if (container instanceof WorldlyContainer worldly && direction != null) {
              int[] slots = worldly.getSlotsForFace(direction);
  
-@@ -824,6 +931,9 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -824,6 +944,9 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      private static @Nullable Container getBlockContainer(final Level level, final BlockPos pos, final BlockState state) {
          if (!level.spigotConfig.hopperCanLoadChunks && !level.hasChunkAt(pos)) return null; // Spigot
          Block block = state.getBlock();
@@ -20780,7 +20831,7 @@ index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c8
          if (block instanceof WorldlyContainerHolder worldlyContainerHolder) {
              return worldlyContainerHolder.getContainer(state, level, pos);
          } else if (state.hasBlockEntity() && level.getBlockEntity(pos) instanceof Container container) {
-@@ -960,6 +1070,12 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -960,6 +1083,12 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      private boolean shouldCheckSleep;
  
      private void checkSleepingConditions() {
@@ -20793,7 +20844,7 @@ index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c8
          if (this.cooldownTime > 0 || this.getLevel() == null || skipNextSleepCheckAfterCooldown) {
              return;
          }
-@@ -1072,6 +1188,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -1072,6 +1201,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
  
      @Override
      public boolean lithium$startSleeping() {
@@ -20801,7 +20852,7 @@ index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c8
          if (this.isSleeping()) {
              return false;
          }
-@@ -1175,6 +1292,11 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -1175,6 +1305,11 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
          wakeUpNow();
      }
  
@@ -20813,7 +20864,7 @@ index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c8
      private void invalidateCachedData() {
          this.shouldCheckSleep = false;
          this.invalidateInsertionData();
-@@ -1248,6 +1370,10 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -1248,6 +1383,10 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public @Nullable Container lithium$getExtractBlockInventory(Level world, BlockPos extractBlockPos, BlockState extractBlockState) {
@@ -20824,7 +20875,7 @@ index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c8
          Container blockInventory = this.extractBlockInventory;
          if (this.extractionMode == HopperCachingState.BlockInventory.NO_BLOCK_INVENTORY) {
              return null;
-@@ -1283,6 +1409,14 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -1283,6 +1422,14 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public @Nullable Container lithium$getInsertBlockInventory(Level world) {
@@ -20839,7 +20890,7 @@ index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c8
          Container blockInventory = this.insertBlockInventory;
          if (this.insertionMode == HopperCachingState.BlockInventory.NO_BLOCK_INVENTORY) {
              return null;
-@@ -1544,6 +1678,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -1544,6 +1691,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      private static @Nullable Boolean lithiumInsert(Level world, BlockPos pos, HopperBlockEntity hopperBlockEntity, @Nullable Container insertInventory) {
@@ -20847,7 +20898,7 @@ index de04d8393a1ef857711baeed086b213aa99a0dff..860678f62c59f3eaae69c458df6fb8c8
          if (insertInventory == null || hopperBlockEntity instanceof net.minecraft.world.WorldlyContainer) {
              //call the vanilla code to allow other mods inject features
              //e.g. carpet mod allows hoppers to insert items into wool blocks
-@@ -1610,6 +1745,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -1610,6 +1758,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      private static @Nullable Boolean lithiumExtract(Level world, Hopper to, Container from) {

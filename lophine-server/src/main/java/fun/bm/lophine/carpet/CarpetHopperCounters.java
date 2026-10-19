@@ -21,6 +21,7 @@ import java.util.function.Supplier;
  */
 public final class CarpetHopperCounters {
     private static final Map<HopperBlockEntity, CompletableFuture<Boolean>> PENDING = Collections.synchronizedMap(new WeakHashMap<>());
+    private static final AtomicInteger PENDING_COUNT = new AtomicInteger();
 
     private CarpetHopperCounters() {
     }
@@ -46,8 +47,18 @@ public final class CarpetHopperCounters {
     }
 
     public static boolean pending(HopperBlockEntity hopper) {
+        if (PENDING_COUNT.get() == 0) return false;
         var actual = PENDING.get(hopper);
         return actual != null && !actual.isDone();
+    }
+
+    /**
+     * Same-thread hopper work keeps the original transfer and unlimited-speed drain
+     * without building native observer futures for every cooldown tick.
+     */
+    public static boolean moveNow(ServerLevel world, BlockPos position, HopperBlockEntity hopper,
+                                  BooleanSupplier prepare, Operations operations, Consumer<Boolean> after) {
+        return new Flow(world, position, hopper, operations).complete(prepare, after);
     }
 
     public static CompletableFuture<Boolean> move(ServerLevel world, BlockPos position, HopperBlockEntity hopper,
@@ -62,10 +73,13 @@ public final class CarpetHopperCounters {
         synchronized (PENDING) {
             if (pending(hopper)) throw new IllegalStateException("A native hopper pass is already pending");
             PENDING.put(hopper, actual);
+            PENDING_COUNT.incrementAndGet();
         }
         ScarpetNativeWork.record(actual);
         ScarpetNativeWork.trackNative(world.getServer(), actual);
-        actual.whenComplete((value, failure) -> PENDING.remove(hopper, actual));
+        actual.whenComplete((value, failure) -> {
+            if (PENDING.remove(hopper, actual)) PENDING_COUNT.decrementAndGet();
+        });
         var flow = new Flow(world, origin, hopper, operations);
         try {
             // The hopper ticker already owns this block. One observer covers the
