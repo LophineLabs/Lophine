@@ -35,9 +35,7 @@ public class CommandHolder {
     public static void onReloadCommands() {
         try {
             PaperCommands.INSTANCE.setValid();
-            commands.forEach((name, command) -> {
-                PaperCommands.INSTANCE.getDispatcher().register(command);
-            });
+            commands.forEach((name, command) -> PaperCommands.INSTANCE.getDispatcher().register(command));
             PaperCommands.INSTANCE.invalidate();
         } catch (Exception e) {
             LogUtils.getClassLogger().error("Failed to reload commands", e);
