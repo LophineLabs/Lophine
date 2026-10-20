@@ -7,6 +7,9 @@ on:
       - 'lophine-api/**'
       - 'lophine-checkstyle/**'
       - '.github/workflows/**'
+      - 'gradle.properties'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
   workflow_dispatch:
     inputs:
       force-release:

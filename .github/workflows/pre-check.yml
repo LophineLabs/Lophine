@@ -7,6 +7,9 @@ on:
       - 'lophine-api/**'
       - 'lophine-checkstyle/**'
       - '.github/workflows/**'
+      - 'gradle.properties'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
 
 permissions: write-all
 
