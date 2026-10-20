@@ -5,10 +5,10 @@ Subject: [PATCH] Fix entity portal-teleport speed
 
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 3d352bb9b0606236d789a70897d7bec12bcf6846..944287a3267824c25ab3be67fb7b0ddf06e5f681 100644
+index 3d352bb9b0606236d789a70897d7bec12bcf6846..5b32d8bf487dbef424e7bd936e556f10b429a69b 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -1498,7 +1498,42 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1498,7 +1498,43 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          foliaProfiler.startTimer(timerId);
          try {
          // Folia end - profiler
@@ -18,6 +18,7 @@ index 3d352bb9b0606236d789a70897d7bec12bcf6846..944287a3267824c25ab3be67fb7b0ddf
 +                do { // tick losingTicks + 1 times
 +                    entity.tick();
 +                } while (entity.losingTicks-- > 0);
++                entity.losingTicks = 0; // reset losingTicks
 +                entity.teleportTickType = fun.bm.lophine.enums.EnumTeleportStage.NORMAL;
 +                if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(entity)) {
 +                    return;
@@ -51,7 +52,7 @@ index 3d352bb9b0606236d789a70897d7bec12bcf6846..944287a3267824c25ab3be67fb7b0ddf
          entity.tick();
          // Folia start - region threading
          if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(entity)) {
-@@ -1509,6 +1544,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1509,6 +1545,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              // portalled
              return;
          }

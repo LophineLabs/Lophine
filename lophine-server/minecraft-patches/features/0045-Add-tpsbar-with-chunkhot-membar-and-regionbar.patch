@@ -68,7 +68,7 @@ index 2e24459f3502d0d38d4fa0b206b7ea47948fee1f..60125b4570ff1f5b378ad1484747e1f3
              this.lastServerStatus = nano;
              this.status = this.buildServerStatus();
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index b08e07618c440134b747afcf133e14efc105de62..d9642c53577932eb06639509251c35aaac86c4ec 100644
+index bd92605eaeb18cd7d5b4f6e35a57bf7da5a2197b..36353a8178fffa14e065b8accf19dae5fd77161e 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -1499,6 +1499,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -80,7 +80,7 @@ index b08e07618c440134b747afcf133e14efc105de62..d9642c53577932eb06639509251c35aa
          try {
              // Folia - region threading
              // Paper end - log detailed entity tick information
-@@ -1573,6 +1575,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1574,6 +1576,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          } finally {
              // Folia - region threading
          }
@@ -88,7 +88,7 @@ index b08e07618c440134b747afcf133e14efc105de62..d9642c53577932eb06639509251c35aa
          // Paper end - log detailed entity tick information
      }
  
-@@ -1584,6 +1587,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1585,6 +1588,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              final int timerId = isActive ? entity.getType().tickTimerId : entity.getType().inactiveTickTimerId;
              final ca.spottedleaf.leafprofiler.RegionizedProfiler.Handle foliaProfiler = io.papermc.paper.threadedregions.TickRegionScheduler.getProfiler();
              foliaProfiler.startTimer(timerId);
@@ -97,7 +97,7 @@ index b08e07618c440134b747afcf133e14efc105de62..d9642c53577932eb06639509251c35aa
              try {
                  // Folia end - profiler
              ProfilerFiller profiler = Profiler.get();
-@@ -1616,6 +1621,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1617,6 +1622,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
                  this.tickPassenger(entity, passenger, isActive); // Paper - EAR 2
              }
              } finally { foliaProfiler.stopTimer(timerId); } // Folia - profiler
