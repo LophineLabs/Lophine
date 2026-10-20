@@ -2,6 +2,11 @@ name: Pre Check For Push
 
 on:
   push:
+    paths:
+      - 'lophine-server/**'
+      - 'lophine-api/**'
+      - 'lophine-checkstyle/**'
+      - '.github/workflows/**'
 
 permissions: write-all
 
