@@ -14,7 +14,7 @@
  * along with this file. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package fun.bm.lophine.network;
+package fun.bm.lophine.carpet;
 
 import io.netty.channel.*;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -27,11 +27,11 @@ import java.net.SocketAddress;
 import java.util.NoSuchElementException;
 
 /**
- * Dummy Netty transport for Carpet and Leaves fake players.
+ * Dummy Netty transport for Carpet fake players.
  * Plugins such as TAB, GSit, and AuthMe read {@code connection.channel} and
  * {@link org.bukkit.entity.Player#getAddress()} during join and quit.
  */
-public final class SyntheticPlayerChannel {
+public final class CarpetSyntheticPlayerChannel {
     public static final String SINK_HANDLER = "lophine_synthetic_sink";
     public static final InetSocketAddress LOCAL_ADDRESS = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
 
@@ -48,7 +48,7 @@ public final class SyntheticPlayerChannel {
         }
     };
 
-    private SyntheticPlayerChannel() {
+    private CarpetSyntheticPlayerChannel() {
     }
 
     public static EmbeddedChannel open() {
