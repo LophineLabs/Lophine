@@ -13,7 +13,7 @@ public class EndIslandGenerator {
         return getDefaultDoffs(x, z, false);
     }
 
-    public static boolean isInEndIsland(float x, float z) {
+    public static boolean isInEndRing(float x, float z) {
         float doffs = getDefaultDoffs(x, z, true);
         return doffs != doffs;
     }
@@ -49,7 +49,7 @@ public class EndIslandGenerator {
         int maxY = chunk.getMaxY();
         for (int sectionX = sectionXMin; sectionX <= sectionXMax; sectionX++) {
             for (int sectionZ = sectionZMin; sectionZ <= sectionZMax; sectionZ++) {
-                if (isInEndIsland(sectionX, sectionZ)) {
+                if (isInEndRing(sectionX, sectionZ)) {
                     int minX = sectionX << 3;
                     int maxX = minX + 7;
                     int minZ = sectionZ << 3;
@@ -72,7 +72,7 @@ public class EndIslandGenerator {
             for (int sectionZ = sectionZMin; sectionZ <= sectionZMax; sectionZ++) {
                 int dSectionX = sectionX - sectionXMin;
                 int dSectionZ = sectionZ - sectionZMin;
-                inRing[dSectionX + dSectionZ * width] = !isInEndIsland(sectionX, sectionZ);
+                inRing[dSectionX + dSectionZ * width] = !isInEndRing(sectionX, sectionZ);
             }
         }
         return inRing;
