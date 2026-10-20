@@ -17,10 +17,10 @@ index aa53138b3670a8337b639472a6ab5ce46702ff76..ed27b73e787782f328906b2a061feeca
      }
  
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index d05fa3bd263d20056d6c6821bee77801cdae9027..a1c29920b1c56e724a53c54c77ed246a39bf00fd 100644
+index a43bc0c9d46ae3e32c024d81cacfd9065152cfae..eb474eb0fa31c32b58fe764cd32f5fe8934de914 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -4575,6 +4575,7 @@ public abstract class Entity
+@@ -4576,6 +4576,7 @@ public abstract class Entity
          Entity copy = this.getType().create(destination, EntitySpawnReason.DIMENSION_TRAVEL);
          copy.restoreFrom(this);
          copy.transform(pos, yaw, pitch, velocity);

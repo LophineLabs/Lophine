@@ -315,7 +315,7 @@ index ef8c1e81327dd3dd3535bb86920f2522f00b0b35..8e7029b560a99003858f09319f89a04f
              }
          }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 410cedcae3e24c298d15666cf426710f5d977e08..beeeef9ad00fe8243aac0bfc023260d801db1586 100644
+index 784d9cb984152c2a1424457e485b9751bc3d790d..25de60c6eeccaf58208a9ff4b6746249bb82d7d1 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -245,6 +245,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -334,7 +334,7 @@ index 410cedcae3e24c298d15666cf426710f5d977e08..beeeef9ad00fe8243aac0bfc023260d8
          this.updateTickData(); // Folia - region threading - make sure it is initialised before ticked
      }
  
-@@ -2877,6 +2879,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2879,6 +2881,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          return this.players;
      }
  
@@ -347,7 +347,7 @@ index 410cedcae3e24c298d15666cf426710f5d977e08..beeeef9ad00fe8243aac0bfc023260d8
      @Override
      public void updatePOIOnBlockStateChange(final BlockPos pos, final BlockState oldState, final BlockState newState) {
          Optional<Holder<PoiType>> oldType = PoiTypes.forState(oldState);
-@@ -3340,6 +3348,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3342,6 +3350,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              // ServerLevel.this.getChunkSource().addEntity(entity); // Paper - ignore and warn about illegal addEntity calls instead of crashing server; moved down below valid=true
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.add(player);
@@ -359,7 +359,7 @@ index 410cedcae3e24c298d15666cf426710f5d977e08..beeeef9ad00fe8243aac0bfc023260d8
                  if (player.isReceivingWaypoints()) {
                      ServerLevel.this.getWaypointManager().addPlayer(player);
                  }
-@@ -3420,6 +3433,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3422,6 +3435,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              ServerLevel.this.getChunkSource().removeEntity(entity);
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.remove(player);
@@ -583,7 +583,7 @@ index ff8938fc79be73849e3713c3298eeb45986360bb..22d38d5f78fb8c279b5e7894bbc61dba
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index fe3b6113c09fe2553ab02ae12851afcb21cec9fc..3385ead4c29bb1c950bcaac7f5b71cd1080501a1 100644
+index 9f2fdce0e6a1558a7dc019198dd773fc3545a643..504f36c17d5cd2f635445dda9dc59824ce92799a 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1294,7 +1294,7 @@ public abstract class Entity
@@ -604,7 +604,7 @@ index fe3b6113c09fe2553ab02ae12851afcb21cec9fc..3385ead4c29bb1c950bcaac7f5b71cd1
          // Paper start - optimise collisions
          final boolean xZero = movement.x == 0.0;
          final boolean yZero = movement.y == 0.0;
-@@ -6028,7 +6028,7 @@ public abstract class Entity
+@@ -6029,7 +6029,7 @@ public abstract class Entity
          return MoveSimulationType.AUTHORITATIVE_SIDE;
      }
  
