@@ -21,7 +21,7 @@ public class EndIslandGenerator {
     public static float getDefaultDoffs(float x, float z, boolean onlyCheck) {
         if (OldFeatureConfig.shouldGenerateEndRing) {
             long i = (long) x * (long) x + (long) z * (long) z;
-            int j = (int) (i << 32 >> 32);
+            int j = (int) i;
             if (j < 0) {
                 return Float.NaN;
             }
