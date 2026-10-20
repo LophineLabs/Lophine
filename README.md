@@ -3,7 +3,8 @@
 
 # Lophine
 
-*Lophine 是一个基于Folia的分支，具有许多有用的优化和可配置的原版特性，目标是在Folia上实现更多生电的内容（请注意，完整生电请使用Fabric）*
+*Lophine
+是一个基于Folia的分支，具有许多有用的优化和可配置的原版特性，目标是在Folia上实现更多生电的内容（请注意，完整生电请使用Fabric）*
 
 ![Created At](https://img.shields.io/github/created-at/LophineLabs/Lophine?style=for-the-badge&color=blue)
 [![License](https://img.shields.io/github/license/LophineLabs/Lophine?style=for-the-badge&color=green)](LICENSE.md)
@@ -20,7 +21,8 @@
 
 ---
 
-> **仓库与镜像说明：** GitHub 是 Lophine 的官方上游与唯一权威来源。[CNB](https://cnb.cool/LophineLabs/Lophine) 从 GitHub 自动同步，并针对对应提交独立构建和发布 CNB Releases，服务中国大陆用户。Issue、Pull Request 与 Discussions 统一在 GitHub 进行。
+> **仓库与镜像说明：** GitHub 是 Lophine 的官方上游与唯一权威来源。[CNB](https://cnb.cool/LophineLabs/Lophine) 从 GitHub
+> 自动同步，并针对对应提交独立构建和发布 CNB Releases，服务中国大陆用户。Issue、Pull Request 与 Discussions 统一在 GitHub 进行。
 
 ## ✨ 核心特性
 
@@ -40,12 +42,15 @@
 
 ### 稳定版本
 
-- 中国大陆（CNB 镜像）：[CNB Releases](https://cnb.cool/LophineLabs/Lophine/-/releases) · [CNB 镜像仓库](https://cnb.cool/LophineLabs/Lophine)
-- 全球 / 官方（GitHub）：[GitHub Releases](https://github.com/LophineLabs/Lophine/releases) · [GitHub 官方仓库](https://github.com/LophineLabs/Lophine)
+- 中国大陆（CNB
+  镜像）：[CNB Releases](https://cnb.cool/LophineLabs/Lophine/-/releases) · [CNB 镜像仓库](https://cnb.cool/LophineLabs/Lophine)
+- 全球 /
+  官方（GitHub）：[GitHub Releases](https://github.com/LophineLabs/Lophine/releases) · [GitHub 官方仓库](https://github.com/LophineLabs/Lophine)
 
 CNB 与 GitHub 的对应版本基于相同的 Git Commit。中国大陆用户可优先通过 CNB 下载或克隆；代码贡献与问题反馈请前往 GitHub。
 
 ### 开发版本
+
 如果您想体验最新功能，可以通过以下步骤自行构建。
 
 ### 构建步骤
@@ -67,35 +72,36 @@ cd Lophine
 
 ```kotlin
 repositories {
-  maven {
-    url = "https://repo.bacteriawa.com/repository/maven-public/"
-  }
+    maven {
+        url = "https://repo.bacteriawa.com/repository/maven-public/"
+    }
 }
 
 dependencies {
-  compileOnly("fun.bm.lophine:lophine-api:26.3.build.+")
+    compileOnly("fun.bm.lophine:lophine-api:26.3.build.+")
 }
 
 java {
-  toolchain.languageVersion.set(JavaLanguageVersion.of(25))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(25))
 }
 ```
 
 ### Maven 配置
 
 ```xml
+
 <repositories>
-  <repository>
-    <id>repository</id>
-    <url>https://repo.bacteriawa.com/repository/maven-public/</url>
-  </repository>
+    <repository>
+        <id>repository</id>
+        <url>https://repo.bacteriawa.com/repository/maven-public/</url>
+    </repository>
 </repositories>
 
 <dependencies>
 <dependency>
-  <groupId>fun.bm.lophine</groupId>
-  <artifactId>lophine-api</artifactId>
-  <version>[26.3.build,)</version>
+    <groupId>fun.bm.lophine</groupId>
+    <artifactId>lophine-api</artifactId>
+    <version>[26.3.build,)</version>
 </dependency>
 </dependencies>
 ```
@@ -106,7 +112,8 @@ java {
 
 ### 加入我们的社区
 
-- **QQ群**: [1020403749](https://qm.qq.com/cgi-bin/qm/qr?k=y_MA9UaN7PM9e9J1LIs9Eea3LK8C0h6J&jump_from=webapi&authKey=ap5f8MlbeezXYtnmpnT5ZOFljDuOyV6OAb2PIcViQ+Ilr60Ycq63FDDTsJOZDYtj)
+-
+**QQ群**: [1020403749](https://qm.qq.com/cgi-bin/qm/qr?k=y_MA9UaN7PM9e9J1LIs9Eea3LK8C0h6J&jump_from=webapi&authKey=ap5f8MlbeezXYtnmpnT5ZOFljDuOyV6OAb2PIcViQ+Ilr60Ycq63FDDTsJOZDYtj)
 - **Discord**: [点击加入](https://discord.gg/UXSgPZczcy)
 
 ### 获取帮助
@@ -142,3 +149,17 @@ java {
 ## ⭐ 请给我们一个 Star！
 
 > 你的每一个免费的 ⭐Star 就是我们每一个前进的动力。
+
+### Star 历史
+
+<a href="https://www.star-history.com/?repos=lophinelabs%2Flophine%2Clophinelabs%2Flecithin&type=date&legend=bottom-right">
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=lophinelabs/lophine%2Clophinelabs/lecithin&type=date&theme=dark&legend=bottom-right" />
+        <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=lophinelabs/lophine%2Clophinelabs/lecithin&type=date&legend=bottom-right" />
+        <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=lophinelabs/lophine%2Clophinelabs/lecithin&type=date&legend=bottom-right" />
+    </picture>
+</a>
+
+<div align="center">
+  <b>如果这个项目对您有帮助，请不要忘记给我们一个 ⭐Star ！</b>
+</div>

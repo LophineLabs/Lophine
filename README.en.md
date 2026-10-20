@@ -143,3 +143,17 @@ We welcome community contributions! For detailed contribution guidelines, please
 ## ⭐ Give Us a Star!
 
 > Every free ⭐Star you give is the motivation for our every step forward.
+
+### Star History
+
+<a href="https://www.star-history.com/?repos=lophinelabs%2Flophine%2Clophinelabs%2Flecithin&type=timeline&legend=bottom-right">
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=lophinelabs/lophine%2Clophinelabs/lecithin&type=date&theme=dark&legend=bottom-right" />
+        <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=lophinelabs/lophine%2Clophinelabs/lecithin&type=date&legend=bottom-right" />
+        <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=lophinelabs/lophine%2Clophinelabs/lecithin&type=date&legend=bottom-right" />
+    </picture>
+</a>
+
+<div align="center">
+  <b>If this project helps you, please don't forget to give us a ⭐Star!</b>
+</div>

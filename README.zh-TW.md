@@ -143,3 +143,17 @@ java {
 ## ⭐ 給我們一個 Star 吧！
 
 > 你給的每一個免費 ⭐Star，都是我們前進的動力。
+
+### Star 歷史
+
+<a href="https://www.star-history.com/?repos=lophinelabs%2Flophine%2Clophinelabs%2Flecithin&type=timeline&legend=bottom-right">
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=lophinelabs/lophine%2Clophinelabs/lecithin&type=date&theme=dark&legend=bottom-right" />
+        <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=lophinelabs/lophine%2Clophinelabs/lecithin&type=date&legend=bottom-right" />
+        <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=lophinelabs/lophine%2Clophinelabs/lecithin&type=date&legend=bottom-right" />
+    </picture>
+</a>
+
+<div align="center">
+  <b>如果這個專案對你有幫助，別忘了給我們一個 ⭐Star ！</b>
+</div>
