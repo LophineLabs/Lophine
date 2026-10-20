@@ -12,7 +12,7 @@ Also honor the requested chunk status in Moonrise's async area loader instead
 of forcing every request to FULL. Portal searches request EMPTY explicitly.
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index d15d17a9d86f5e662fe3dd8a2323566388479a36..40d8f7933926c19f9b9ff5555d211fd01c2b52ec 100644
+index 64ca93c40e157c7e2350782ec2d2763c0efd86f9..4bdbe24af4b1138444caf9caa65b60d5a6527260 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -223,6 +223,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet

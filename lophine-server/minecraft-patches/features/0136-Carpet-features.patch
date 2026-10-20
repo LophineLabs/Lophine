@@ -4320,7 +4320,7 @@ index b0679b3c931cb3564ac04fa2929710412fc7b013..4bff9116668a6956ea90f9c3f3314ddd
  
      private void getFullChunk(final long chunkKey, final Consumer<LevelChunk> output) {
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 0e72896d0225331d608f2fbe0c238288a69cf0ab..ea0d888640f5a9fdcac5ac002828b1e8f49831d5 100644
+index 97bf278d5a00d86fbf0e36d14cbc5d1d1e0616c4..2e500f078debc5055f5bc284fe5567612680789e 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -193,6 +193,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -4498,7 +4498,7 @@ index 0e72896d0225331d608f2fbe0c238288a69cf0ab..ea0d888640f5a9fdcac5ac002828b1e8
          // Paper start - log detailed entity tick information
          ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread("Cannot tick an entity off-main");
          LevelChunk levelChunk = entity.shouldTickHot() ? this.getChunkIfLoaded(entity.moonrise$getSectionX(),entity.moonrise$getSectionZ()) : null; // KioCG
-@@ -1612,9 +1662,17 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1632,9 +1682,17 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          }
          } finally { if (levelChunk != null) levelChunk.getChunkHot().stopTickingAndCount(); } // KioCG
          // Paper end - log detailed entity tick information
@@ -4517,7 +4517,7 @@ index 0e72896d0225331d608f2fbe0c238288a69cf0ab..ea0d888640f5a9fdcac5ac002828b1e8
          if (entity.isRemoved() || entity.getVehicle() != vehicle) {
              entity.stopRiding();
          } else if (entity instanceof Player || this.getCurrentWorldData().hasEntityTickingEntity(entity)) { // Folia - region threading
-@@ -1665,9 +1723,14 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1685,9 +1743,14 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              } finally { foliaProfiler.stopTimer(timerId); } // Folia - profiler
              } finally { if (levelChunk != null) levelChunk.getChunkHot().stopTickingAndCount(); } // KioCG
          }
@@ -4532,7 +4532,7 @@ index 0e72896d0225331d608f2fbe0c238288a69cf0ab..ea0d888640f5a9fdcac5ac002828b1e8
          BlockState blockState = this.getBlockState(pos);
          Block newBlock = blockState.getBlock();
          boolean blockChanged = !oldState.is(newBlock);
-@@ -1889,10 +1952,39 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1909,10 +1972,39 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              }
              // CraftBukkit end
  
@@ -4573,7 +4573,7 @@ index 0e72896d0225331d608f2fbe0c238288a69cf0ab..ea0d888640f5a9fdcac5ac002828b1e8
      public boolean tryAddFreshEntityWithPassengers(final Entity entity) {
          // CraftBukkit start
          return this.tryAddFreshEntityWithPassengers(entity, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.DEFAULT);
-@@ -1909,6 +2001,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1929,6 +2021,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      }
  
      public void unload(final LevelChunk levelChunk) {
@@ -4581,7 +4581,7 @@ index 0e72896d0225331d608f2fbe0c238288a69cf0ab..ea0d888640f5a9fdcac5ac002828b1e8
          // Spigot start
          for (net.minecraft.world.level.block.entity.BlockEntity blockEntity : levelChunk.getBlockEntities().values()) {
              if (blockEntity instanceof net.minecraft.world.Container) {
-@@ -2197,8 +2290,9 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2217,8 +2310,9 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          final WeightedList<ExplosionParticleInfo> blockParticles,
          final Holder<SoundEvent> explosionSound
      ) {
@@ -4593,7 +4593,7 @@ index 0e72896d0225331d608f2fbe0c238288a69cf0ab..ea0d888640f5a9fdcac5ac002828b1e8
      }
  
      public ServerExplosion explode0(
-@@ -2234,6 +2328,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2254,6 +2348,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          final Holder<SoundEvent> explosionSound,
          java.util.function.@Nullable Consumer<ServerExplosion> configurator
      ) {
@@ -4602,7 +4602,7 @@ index 0e72896d0225331d608f2fbe0c238288a69cf0ab..ea0d888640f5a9fdcac5ac002828b1e8
          // CraftBukkit end
          Explosion.BlockInteraction blockInteraction = switch (interactionType) {
              case NONE -> Explosion.BlockInteraction.KEEP;
-@@ -2256,6 +2352,27 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2276,6 +2372,27 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          // CraftBukkit end
          ParticleOptions explosionParticle = explosion.isSmall() ? smallExplosionParticles : largeExplosionParticles;
  
@@ -4630,7 +4630,7 @@ index 0e72896d0225331d608f2fbe0c238288a69cf0ab..ea0d888640f5a9fdcac5ac002828b1e8
          for (ServerPlayer player : this.getLocalPlayers()) { // Folia - region thraeding
              if (player.distanceToSqr(center) < 4096.0) {
                  Optional<Vec3> playerKnockback = Optional.ofNullable(explosion.getHitPlayers().get(player));
-@@ -2267,8 +2384,62 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2287,8 +2404,62 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
                      );
              }
          }
@@ -4693,7 +4693,7 @@ index 0e72896d0225331d608f2fbe0c238288a69cf0ab..ea0d888640f5a9fdcac5ac002828b1e8
      }
  
      private Explosion.BlockInteraction getDestroyType(final GameRule<Boolean> gameRule) {
-@@ -2288,6 +2459,10 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2308,6 +2479,10 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          BlockEventData eventData;
          while ((eventData = worldRegionData.removeFirstBlockEvent()) != null) {
              // Folia end - regionised ticking
@@ -4704,7 +4704,7 @@ index 0e72896d0225331d608f2fbe0c238288a69cf0ab..ea0d888640f5a9fdcac5ac002828b1e8
              if (this.shouldTickBlocksAt(eventData.pos())) {
                  if (this.doBlockEvent(eventData)) {
                      this.server
-@@ -2297,7 +2472,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2317,7 +2492,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
                              eventData.pos().getX(),
                              eventData.pos().getY(),
                              eventData.pos().getZ(),
@@ -4713,7 +4713,7 @@ index 0e72896d0225331d608f2fbe0c238288a69cf0ab..ea0d888640f5a9fdcac5ac002828b1e8
                              this.dimension(),
                              new ClientboundBlockEventPacket(eventData.pos(), eventData.block(), eventData.paramA(), eventData.paramB())
                          );
-@@ -2311,8 +2486,14 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2331,8 +2506,14 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      }
  
      private boolean doBlockEvent(final BlockEventData eventData) {
@@ -4729,7 +4729,7 @@ index 0e72896d0225331d608f2fbe0c238288a69cf0ab..ea0d888640f5a9fdcac5ac002828b1e8
      }
  
      @Override
-@@ -2911,6 +3092,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2931,6 +3112,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
  
      @Override
      public void updatePOIOnBlockStateChange(final BlockPos pos, final BlockState oldState, final BlockState newState) {

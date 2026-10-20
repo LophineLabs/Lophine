@@ -315,7 +315,7 @@ index ef8c1e81327dd3dd3535bb86920f2522f00b0b35..8e7029b560a99003858f09319f89a04f
              }
          }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 784d9cb984152c2a1424457e485b9751bc3d790d..25de60c6eeccaf58208a9ff4b6746249bb82d7d1 100644
+index feab4be5dad82d22d09fc231d9876725c18032f2..5ca86157d3115ec1e75072296f1a0e364c31b81a 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -245,6 +245,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -334,7 +334,7 @@ index 784d9cb984152c2a1424457e485b9751bc3d790d..25de60c6eeccaf58208a9ff4b6746249
          this.updateTickData(); // Folia - region threading - make sure it is initialised before ticked
      }
  
-@@ -2879,6 +2881,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2899,6 +2901,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          return this.players;
      }
  
@@ -347,7 +347,7 @@ index 784d9cb984152c2a1424457e485b9751bc3d790d..25de60c6eeccaf58208a9ff4b6746249
      @Override
      public void updatePOIOnBlockStateChange(final BlockPos pos, final BlockState oldState, final BlockState newState) {
          Optional<Holder<PoiType>> oldType = PoiTypes.forState(oldState);
-@@ -3342,6 +3350,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3362,6 +3370,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              // ServerLevel.this.getChunkSource().addEntity(entity); // Paper - ignore and warn about illegal addEntity calls instead of crashing server; moved down below valid=true
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.add(player);
@@ -359,7 +359,7 @@ index 784d9cb984152c2a1424457e485b9751bc3d790d..25de60c6eeccaf58208a9ff4b6746249
                  if (player.isReceivingWaypoints()) {
                      ServerLevel.this.getWaypointManager().addPlayer(player);
                  }
-@@ -3422,6 +3435,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3442,6 +3455,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              ServerLevel.this.getChunkSource().removeEntity(entity);
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.remove(player);

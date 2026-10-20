@@ -99,7 +99,7 @@ index 5661daf3c6213d52b2af39bba4cf002b113fb925..b0679b3c931cb3564ac04fa292971041
                  NaturalSpawner.spawnForChunk(this.level, chunk, spawnCookie, spawningCategories);
              }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index f7a1e3f472a3faf7a4798d4049f00d903d929a93..0e72896d0225331d608f2fbe0c238288a69cf0ab 100644
+index 97bd0bb6422809543b9b5b24de1c4f1d01da4498..97bf278d5a00d86fbf0e36d14cbc5d1d1e0616c4 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -830,6 +830,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -114,7 +114,7 @@ index f7a1e3f472a3faf7a4798d4049f00d903d929a93..0e72896d0225331d608f2fbe0c238288
          final io.papermc.paper.threadedregions.RegionizedWorldData regionizedWorldData = this.getCurrentWorldData(); // Folia - regionised ticking
          final ca.spottedleaf.leafprofiler.RegionizedProfiler.Handle foliaProfiler = io.papermc.paper.threadedregions.TickRegionScheduler.getProfiler(); // Folia - profiler
          ProfilerFiller profiler = Profiler.get();
-@@ -3185,6 +3190,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3205,6 +3210,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      public void close() throws IOException {
          super.close();
          //this.entityManager.close(); // Paper - rewrite chunk system
@@ -126,7 +126,7 @@ index f7a1e3f472a3faf7a4798d4049f00d903d929a93..0e72896d0225331d608f2fbe0c238288
      }
  
      @Override
-@@ -3404,6 +3414,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3424,6 +3434,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              entity.inWorld = true; // CraftBukkit - Mark entity as in world
              entity.valid = true; // CraftBukkit
              ServerLevel.this.getChunkSource().addEntity(entity); // Paper - ignore and warn about illegal addEntity calls instead of crashing server
@@ -138,7 +138,7 @@ index f7a1e3f472a3faf7a4798d4049f00d903d929a93..0e72896d0225331d608f2fbe0c238288
              // Paper start - Entity origin API
              if (entity.origin == null) {
                  entity.origin = entity.position();
-@@ -3419,6 +3434,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3439,6 +3454,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          @Override
          public void onTrackingEnd(final Entity entity) {
              org.spigotmc.AsyncCatcher.catchOp("entity unregister"); // Spigot

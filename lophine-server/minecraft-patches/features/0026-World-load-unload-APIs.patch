@@ -258,7 +258,7 @@ index e50f1a27461bf27e5a7af123199b7537182c0687..ea083abeda7fc055c3299f51f5c8fc54
          Map<ResourceKey<Level>, ServerLevel> newLevels = Maps.newLinkedHashMap(oldLevels);
          newLevels.remove(level.dimension());
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index dbd56dd35947776ea38c788d816e96609616fefd..2833f9a26203c72727d7577ee63a7a2de526e693 100644
+index a8b6d300d175b8f4f0cd66b4deabb680791551bf..4825fbbd48e0f6d4bfcc0df7cca8b420e6c29686 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -223,6 +223,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
