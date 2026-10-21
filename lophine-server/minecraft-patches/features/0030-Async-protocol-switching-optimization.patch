@@ -5,7 +5,7 @@ Subject: [PATCH] Async protocol switching optimization
 
 
 diff --git a/net/minecraft/network/Connection.java b/net/minecraft/network/Connection.java
-index 245ad3e4c30c5d9946fa9ca1c9a6489b15d6dc65..1e16e7c068404a413f0edfa579fd9b3c5b38205a 100644
+index 2cd70b595e828db9b03ec038dba76007c938b98e..c0462e5952467504b8a079737a1e7a13b71e57b1 100644
 --- a/net/minecraft/network/Connection.java
 +++ b/net/minecraft/network/Connection.java
 @@ -1111,4 +1111,127 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
@@ -216,7 +216,7 @@ index bb6d0fc49c3fec15a36881128c23f7cee89923ce..4fa12dddbd3ae35656580f154d5ebc82
  
      @Override
 diff --git a/net/minecraft/server/network/ServerLoginPacketListenerImpl.java b/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
-index 7a8a41c9d82327cf8c2230bba215d9a8d986eb48..c8c488dd996c29c7c4e61b2c8991380e8daf6a97 100644
+index eae5096f5ce28aa4bbe1cde689cb6de93fe53038..ea0282b3bc72200a394a5681f191914e3b55d859 100644
 --- a/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 @@ -436,12 +436,30 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,

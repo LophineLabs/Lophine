@@ -33,7 +33,7 @@ index b938e10fe5b5f3aae1d18ee769827535ed543a9c..7f2ff55dbcc2f8e259590d9a4d1c7eea
          Map<PlayerAdvancements.TriggerInstanceKey, T> listenersForType = advancements.getTriggerMapForType(this);
          if (listenersForType != null && !listenersForType.isEmpty()) {
 diff --git a/net/minecraft/network/Connection.java b/net/minecraft/network/Connection.java
-index 5d7d944e3aaf6a6cc4b7f7368012e3ddb6473d3c..f85917ed1d6473d72aa2403aeaa5d4062f00e1d0 100644
+index 38dc1c6cf8011ae26b54cdb6a0c1a59cc7eb909a..75d3623705dfc5f68984966fba87fe452b2f6afa 100644
 --- a/net/minecraft/network/Connection.java
 +++ b/net/minecraft/network/Connection.java
 @@ -73,7 +73,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
@@ -46,10 +46,10 @@ index 5d7d944e3aaf6a6cc4b7f7368012e3ddb6473d3c..f85917ed1d6473d72aa2403aeaa5d406
      private final java.util.concurrent.atomic.AtomicBoolean disconnectionHandled = new java.util.concurrent.atomic.AtomicBoolean(false); // Folia - region threading - may be called concurrently during configuration stage
      private int receivedPackets;
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 99c00ece9376b4ca9ca3b77d49fb685e46f5534e..218922c350a549b350e1e4ae35d2cb2737b5be6a 100644
+index fa0c0521d7e60a4016a506c167c541f15abee1ea..fd1381a28a0fa909fdaa729e08774f739b45b315 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -291,6 +291,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -292,6 +292,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      // Paper - per-level scheduledEvents
      private final ServerClockManager clockManager;
  
@@ -58,7 +58,7 @@ index 99c00ece9376b4ca9ca3b77d49fb685e46f5534e..218922c350a549b350e1e4ae35d2cb27
      public static <S extends MinecraftServer> S spin(final Function<Thread, S> factory) {
          ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry.init(); // Paper - rewrite data converter system
          AtomicReference<S> serverReference = new AtomicReference<>();
-@@ -1177,6 +1179,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1178,6 +1180,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.halt(wait, false);
      }
      public void halt(final boolean wait, final boolean isRestarting) {
@@ -75,7 +75,7 @@ index 99c00ece9376b4ca9ca3b77d49fb685e46f5534e..218922c350a549b350e1e4ae35d2cb27
          this.isRestarting = isRestarting;
          this.hasLoggedStop = true; // Paper - Debugging
          if (this.isDebugging()) io.papermc.paper.util.TraceUtil.dumpTraceForThread("Server stopped"); // Paper - Debugging
-@@ -1646,7 +1658,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1648,7 +1660,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          int emptyTickThreshold = this.pauseWhenEmptySeconds() * 20;
          this.removeDisabledPluginsBlockingSleep(); // Paper - API to allow/disallow tick sleeping
          if (false && emptyTickThreshold > 0) { // Folia - region threading - this is complicated to implement, and even if done correctly is messy
@@ -84,7 +84,7 @@ index 99c00ece9376b4ca9ca3b77d49fb685e46f5534e..218922c350a549b350e1e4ae35d2cb27
                  this.emptyTicks++;
              } else {
                  this.emptyTicks = 0;
-@@ -1788,6 +1800,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1790,6 +1802,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              this.isSaving = true;
              if (playerSaveInterval > 0) {
                  this.playerList.saveAll(playerSaveInterval);
@@ -92,7 +92,7 @@ index 99c00ece9376b4ca9ca3b77d49fb685e46f5534e..218922c350a549b350e1e4ae35d2cb27
              }
              if (region == null && fullSave) { // Folia - region threading - don't auto save level data
                  this.saveGlobalData(false);
-@@ -2041,6 +2054,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -2043,6 +2056,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
  
      protected void tickConnection() {
          this.getConnection().tick();
@@ -100,7 +100,7 @@ index 99c00ece9376b4ca9ca3b77d49fb685e46f5534e..218922c350a549b350e1e4ae35d2cb27
      }
  
      public void forceGameTimeSynchronization() {
-@@ -3236,6 +3250,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -3238,6 +3252,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          return this.debugSubscribers;
      }
  
@@ -583,7 +583,7 @@ index ff8938fc79be73849e3713c3298eeb45986360bb..22d38d5f78fb8c279b5e7894bbc61dba
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 9f2fdce0e6a1558a7dc019198dd773fc3545a643..504f36c17d5cd2f635445dda9dc59824ce92799a 100644
+index ea25ba15b3ec94c7438a3cca0627c652ad4b3d0a..c053663506162327bd94d79a682251269af02efc 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1294,7 +1294,7 @@ public abstract class Entity
@@ -669,7 +669,7 @@ index 3a3bdc14239ac5066bfd8c036d06351006e523f3..ce681b3318add1e607115faf845aacbc
          if (!this.level().isClientSide()) {
              boolean wasUsingItem = this.isUsingItem();
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index d747a8c5d30bca18e235a3fc13aecac356663620..a7c5b1f7629b0b120458bcee738c3c81e76b96f3 100644
+index 4ba68bad8bcd3773cff30a0fb52e0ba592742dd3..7cf4fe3910f463e311ca8171d4a4113441a97f91 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -155,7 +155,7 @@ public abstract class Player extends Avatar implements ContainerUser {

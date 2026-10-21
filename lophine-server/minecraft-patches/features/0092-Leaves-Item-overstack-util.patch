@@ -415,10 +415,10 @@ index 35aafd51eb16a317c0fda06a7186d59cb263de30..d95ae36d4924bfb78142749d0e3bd73b
              org.bukkit.inventory.ItemStack oitemstack = org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitMirror(remaining);
  
 diff --git a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
-index 08b2956fb59238cf3974b75b48d3ec421715235f..56ad8964d4d244604f9f2df27cb69a11c24111d4 100644
+index bffe8e94c3b0ac172c4654cac834566c69c9e50d..107193a58e2deb1b4de2903eed17760938081e2d 100644
 --- a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
-@@ -422,7 +422,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
+@@ -427,7 +427,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
          ItemStack oldStack = this.items.get(slot);
          boolean same = !itemStack.isEmpty() && ItemStack.isSameItemSameComponents(oldStack, itemStack);
          this.items.set(slot, itemStack);
@@ -441,7 +441,7 @@ index 191a43ce6c98583b4cc1ed2b5d5f0897224be41f..2e6c28c05ba97aa9a29c2e035ceec548
      }
  
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index 7e7f1d6f14d6de2fad5cda7f1f7d070ed67cd0cb..e9d729d242fcaf892d8c2e7dfe2900978ee7abac 100644
+index b2c6c2e2380be11306bea5dcc5cc41c34502ee8b..75777ef41189e3f9bed6e1679538ddcd4089d7d4 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -155,7 +155,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
@@ -453,7 +453,7 @@ index 7e7f1d6f14d6de2fad5cda7f1f7d070ed67cd0cb..e9d729d242fcaf892d8c2e7dfe290097
      }
  
      @Override
-@@ -656,9 +656,9 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -677,9 +677,9 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
              if (current.isEmpty()) {
                  // Spigot start - SPIGOT-6693, SimpleContainer#setItem
                  ItemStack leftover = ItemStack.EMPTY; // Paper - Make hoppers respect inventory max stack size

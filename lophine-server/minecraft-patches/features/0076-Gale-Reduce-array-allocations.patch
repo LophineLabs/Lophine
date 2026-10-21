@@ -57,10 +57,10 @@ index 5b7ed8e5067683143c99473a126e17baa531903c..ece13c12b793ede92ec67850ab6d5a88
              } else {
                  this.storage = Arrays.copyOf(this.storage, this.storage.length * 2);
 diff --git a/net/minecraft/nbt/ByteArrayTag.java b/net/minecraft/nbt/ByteArrayTag.java
-index 4fc0cfeabf60d4bd0dcfd9814d13858454bc39da..0e4dbc0c736ec2ce4826a81ef561a4cd7a8b974d 100644
+index 47fb1762fa95cce3e2024bba6485ff91990e26c8..ad1c21f1642e6bf4fb4bb5b4657ac4965f7eaab8 100644
 --- a/net/minecraft/nbt/ByteArrayTag.java
 +++ b/net/minecraft/nbt/ByteArrayTag.java
-@@ -144,7 +144,7 @@ public final class ByteArrayTag implements CollectionTag {
+@@ -166,7 +166,7 @@ public final class ByteArrayTag implements CollectionTag {
  
      @Override
      public void clear() {
@@ -70,10 +70,10 @@ index 4fc0cfeabf60d4bd0dcfd9814d13858454bc39da..0e4dbc0c736ec2ce4826a81ef561a4cd
  
      @Override
 diff --git a/net/minecraft/nbt/IntArrayTag.java b/net/minecraft/nbt/IntArrayTag.java
-index 8ed91b84eb90cfe31993fa32b35263e7adea918e..bf4fe7956ceb8c79427e4d89d458ed30ee1dcb54 100644
+index ab00ff3a05c2f1430b7b7fb7d7b816cedc2b318d..45a90ea9348ecba985e78d0007527a39e6cdf680 100644
 --- a/net/minecraft/nbt/IntArrayTag.java
 +++ b/net/minecraft/nbt/IntArrayTag.java
-@@ -151,7 +151,7 @@ public final class IntArrayTag implements CollectionTag {
+@@ -173,7 +173,7 @@ public final class IntArrayTag implements CollectionTag {
  
      @Override
      public void clear() {
@@ -83,10 +83,10 @@ index 8ed91b84eb90cfe31993fa32b35263e7adea918e..bf4fe7956ceb8c79427e4d89d458ed30
  
      @Override
 diff --git a/net/minecraft/nbt/LongArrayTag.java b/net/minecraft/nbt/LongArrayTag.java
-index fdc315d7877b3fbd6aa470ab7b17a38dfdeddf22..fd766cd5633d660f84f5401d576afd6658d0daae 100644
+index 202ce0d0465517e51207a33b86c24c030bedd64a..dae37d0ca76da5c17e2f784cf006dfd62eadaa84 100644
 --- a/net/minecraft/nbt/LongArrayTag.java
 +++ b/net/minecraft/nbt/LongArrayTag.java
-@@ -151,7 +151,7 @@ public final class LongArrayTag implements CollectionTag {
+@@ -173,7 +173,7 @@ public final class LongArrayTag implements CollectionTag {
  
      @Override
      public void clear() {
@@ -274,7 +274,7 @@ index a66f01754046bd9e3946552cac794b2f624214f9..c9a449041ced1bc4ba2f3dde0ab41fba
                      return true;
                  }
 diff --git a/net/minecraft/world/entity/decoration/ArmorStand.java b/net/minecraft/world/entity/decoration/ArmorStand.java
-index 1bb456abad2e36fc415e2ab9ef60d8ce3b0c63d9..9fd30fd2dfb78b1c6c7233d610b65c59e966728b 100644
+index 0ffcf91694269568ae5e63cbd325e622323e220e..dde48b8d92d70fc895d95fb0a125fbe278175749 100644
 --- a/net/minecraft/world/entity/decoration/ArmorStand.java
 +++ b/net/minecraft/world/entity/decoration/ArmorStand.java
 @@ -484,7 +484,7 @@ public class ArmorStand extends LivingEntity {
@@ -287,7 +287,7 @@ index 1bb456abad2e36fc415e2ab9ef60d8ce3b0c63d9..9fd30fd2dfb78b1c6c7233d610b65c59
              ItemStack itemStack = this.equipment.get(slot); // Paper
              if (!itemStack.isEmpty() && !EnchantmentHelper.has(itemStack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index a7be57e72bdef66a1d77d1110c573435d3b89e03..95113078efc3581c2cd15932cce67b4c46dca4e3 100644
+index a6cf8928440c5abdc1c17e638056dcade3e79157..d5157b0448dfd030806c39f1ea68df6999aa465a 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -347,7 +347,7 @@ public abstract class Player extends Avatar implements ContainerUser {
@@ -361,7 +361,7 @@ index 9c667a09fcea23b4072c0616837b685e256e0462..d170ee3c74d0352fed4044cad9a87c8b
              if (predicate.test(item)) {
                  ItemEnchantments enchantments = item.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index bd7a43bd2b6b3981312e40fbb9ea518ec42c7fdc..cd48831f828e0f4ff3943aecb54d54ccd2e1a6da 100644
+index 729ee46ca819a5c11dcbefb7567c5f1d699e0785..6a89778f693485b69854fe631457610d6ca7431a 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -1967,7 +1967,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
@@ -414,7 +414,7 @@ index efc2c315340d76cfc6959e6710b64108b03902d1..b0bd25131ab2215d9c4583a357e348e8
  
          @Override
 diff --git a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
-index f523a0f08b6cf4328a65698f41d7674c9efb70df..08b2956fb59238cf3974b75b48d3ec421715235f 100644
+index df081b40c088c3cce18f40fb2bdb549eaa2cd028..bffe8e94c3b0ac172c4654cac834566c69c9e50d 100644
 --- a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
 @@ -49,7 +49,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit

@@ -9,22 +9,24 @@ Original patch: https://github.com/pufferfish-gg/Pufferfish/blob/ver/1.21/puffer
 Original license(GPL-3.0): https://github.com/pufferfish-gg/Pufferfish/blob/ver/1.21/PATCH-LICENSE
 
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
-index 7d6220ebbfe5669751ed1f8057f3f9308283dc34..9658bdcb36abd8c3acbf91cacdee097675b71482 100644
+index 37d38fb5ad9f9a268ec83f6fd5316046f60be0d6..7d046a2ffbd8dafce8757dd462953227ecd90514 100644
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
-@@ -217,12 +217,14 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
+@@ -217,6 +217,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
          return this.lookControl;
      }
  
 +    int _pufferfish_inactiveTickDisableCounter = 0; // Pufferfish - throttle inactive goal selector ticking
      // Paper start
-     @Override
+     private int inactiveTickDisableCounter;
+ 
+@@ -224,7 +225,8 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
      public void inactiveTick() {
          super.inactiveTick();
          if (!this.aware) return; // Paper - Do not tick AI for inactive unaware mobs
--        if (this.goalSelector.inactiveTick()) {
-+        boolean isThrottled = me.earthme.luminol.config.modules.optimizations.EntityGoalSelectorInactiveTickConfig.enabled && _pufferfish_inactiveTickDisableCounter++ % 20 != 0; // Pufferfish - throttle inactive goal selector ticking
-+        if (this.goalSelector.inactiveTick() && !isThrottled) { // Pufferfish
+-        final boolean isThrottled = this.level().paperConfig().entities.behavior.inactiveMobGoalSelectorThrottleRate.enabled() && inactiveTickDisableCounter++ % this.level().paperConfig().entities.behavior.inactiveMobGoalSelectorThrottleRate.intValue() != 0; // Paper - Throttle inactive goal selector ticking
++        final boolean isThrottled = (this.level().paperConfig().entities.behavior.inactiveMobGoalSelectorThrottleRate.enabled() && inactiveTickDisableCounter++ % this.level().paperConfig().entities.behavior.inactiveMobGoalSelectorThrottleRate.intValue() != 0) // Paper - Throttle inactive goal selector ticking
++                || (me.earthme.luminol.config.modules.optimizations.EntityGoalSelectorInactiveTickConfig.enabled && _pufferfish_inactiveTickDisableCounter++ % 20 != 0); // Pufferfish - throttle inactive goal selector ticking
+         if (this.goalSelector.inactiveTick() && !isThrottled) {
              this.goalSelector.tick();
          }
-         if (this.targetSelector.inactiveTick()) {

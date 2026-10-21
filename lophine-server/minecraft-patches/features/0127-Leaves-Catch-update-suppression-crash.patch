@@ -36,10 +36,10 @@ index 20fa23988efbfb50c664fa48cc823adbe8e6ce58..1a95ccd745f4789225d711ab6fe497c6
                          throw PacketUtils.makeReportedException(e, this.packet, this.listener);
                      }
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 33cfc481c54c2c8bfe35965d14a3904f2c7e666b..b4d3ff9f54ab9c52c033d1924fa5ab76bf26b2c8 100644
+index ef763a95a3e71858dec53f8afde6329b0204ef32..65da48fda47173fe05ead0a88080ae6e34ff40a9 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1988,11 +1988,30 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1990,11 +1990,30 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              try {
                  foliaProfiler.startTimer(level.tickTimerId); try { // Folia - profiler
                  level.tick(haveTime, region); // Folia - region threading
@@ -115,7 +115,7 @@ index 86756033b7b14857171a6c7a664d9fa54ff79bee..383c2159e753ddd74f7c949b45c6fa60
              CrashReport report = CrashReport.forThrowable(t, "Ticking player");
              CrashReportCategory category = report.addCategory("Player being ticked");
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 6f2020eb9f808f0fa903eb48d3b0dcd38c15c679..2db1a14f5762ff34277a26f557a2b4918ab84d32 100644
+index 7823f4673021e2de6136496f5679fb4693c7ec6f..ba39efc8d0a0fb8b977911fc1bc6fd70fa83babf 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1562,8 +1562,18 @@ public abstract class Entity

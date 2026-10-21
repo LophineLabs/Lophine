@@ -848,6 +848,21 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
     // MCC end
 
     @Override
+    public int moonrise$getRecalculateCount() {
+        return 0;
+    }
+
+    @Override
+    public boolean moonrise$recalculateHeader() {
+        return false;
+    }
+
+    @Override
+    public Boolean moonrise$tryRecalcHeader(final int expectedRecalcCount) {
+        return Boolean.FALSE;
+    }
+
+    @Override
     public MoonriseRegionFileIO.RegionDataController.WriteData moonrise$startWrite(CompoundTag data, ChunkPos pos) {
         final ChunkBufferHelper internalBuffer = new ChunkBufferHelper(pos);
         internalBuffer.moonrise$setWriteOnClose(false);

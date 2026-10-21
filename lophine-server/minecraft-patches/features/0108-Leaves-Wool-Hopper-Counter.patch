@@ -10,7 +10,7 @@ Licensed under: MIT
 This patch is Powered by fabric-carpet(https://github.com/gnembon/fabric-carpet)
 
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index e9d729d242fcaf892d8c2e7dfe2900978ee7abac..de04d8393a1ef857711baeed086b213aa99a0dff 100644
+index 75777ef41189e3f9bed6e1679538ddcd4089d7d4..1b340f32b06237b320df4a97c6cca165959d2eb2 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -240,8 +240,30 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
@@ -44,7 +44,7 @@ index e9d729d242fcaf892d8c2e7dfe2900978ee7abac..de04d8393a1ef857711baeed086b213a
                  setChanged(level, pos, state);
                  // Leaves start - Lithium Sleeping Block Entity
                  if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled
-@@ -477,6 +499,13 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -464,6 +486,13 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      // Paper end - Perf: Optimize Hoppers
  
      private static boolean ejectItems(final Level level, final BlockPos blockPos, final HopperBlockEntity self) {
@@ -58,9 +58,9 @@ index e9d729d242fcaf892d8c2e7dfe2900978ee7abac..de04d8393a1ef857711baeed086b213a
          Container container = me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled ? self.getInsertInventory(level) : getAttachedContainer(level, blockPos, self); // Leaves - Lithium Sleeping Block Entity
          if (container == null) {
              return false;
-@@ -498,6 +527,26 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
-         return hopperPush(level, container, direction, self); // Paper - Perf: Optimize Hoppers
+@@ -517,6 +546,25 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
+     // Paper end - Add PrepareHopperTransferEvent
  
 +    // Leaves start - hopper counter
 +    private static boolean woolHopperCounter(Level level, BlockPos blockPos, BlockState state, @Nullable Container container) {
@@ -81,11 +81,10 @@ index e9d729d242fcaf892d8c2e7dfe2900978ee7abac..de04d8393a1ef857711baeed086b213a
 +        return false;
 +    }
 +    // Leaves end - hopper counter
-+
      private static int[] getSlots(final Container container, final Direction direction) {
          if (container instanceof WorldlyContainer worldlyContainer) {
              return worldlyContainer.getSlotsForFace(direction);
-@@ -592,6 +641,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -613,6 +661,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public static boolean addItem(final Container container, final ItemEntity entity) {

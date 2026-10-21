@@ -17,10 +17,10 @@ index 52dcbcf64c3a510d4a4524b7d0ee226d9a73511d..051d601e7e809518e8d82ae4ae325905
      }
  
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 2e24459f3502d0d38d4fa0b206b7ea47948fee1f..60125b4570ff1f5b378ad1484747e1f32c4d35b9 100644
+index 2c2f5c7a70564462dfdcfa7f515e19d0b97cf098..3f87d8a6c9990b89bfafc96f64c07b3ca173dd41 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1725,7 +1725,46 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1727,7 +1727,46 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          // Folia end - region threading
          //this.tickCount++; // Folia - region threading
          //this.tickRateManager.tick(); // Folia - region threading
@@ -183,7 +183,7 @@ index c5a212e73c2efeb1f440778cb3f1fa6ee8165e63..52f0b0ad01d852f5bd17202eeaccd9a5
 +    // KioCG end
  }
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 619ed97a76741db523110ea99e9e4f8eb301d812..d6941a8b17845a54b9eebb54aff8c570faa7b7d2 100644
+index 46d97b8a4e0ab10821ea7fb2bd576f7dbae38b41..cf494b3a28776ff974b4eb327d518d4d8c56b42c 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -6644,4 +6644,6 @@ public abstract class Entity
@@ -210,10 +210,10 @@ index c756d28b396520264336832f17527981248556f3..90630d3528cb6c07b5242fe868a6b610
 +    // KioCG end
  }
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
-index e8ce301801452e6b22506bf5648c76497e708802..7d6220ebbfe5669751ed1f8057f3f9308283dc34 100644
+index 53e394361574ef10a6affef8de59969984e8b623..37d38fb5ad9f9a268ec83f6fd5316046f60be0d6 100644
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
-@@ -1749,4 +1749,11 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
+@@ -1752,4 +1752,11 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
      public void swing(final InteractionHand hand, final SwingAnimation animation) {
          this.swing(hand, animation, false);
      }
@@ -258,7 +258,7 @@ index 7af7514a204914957de02d8a775fb8ad9ea6d010..a27820b9b2b65ebd6ebfed4b2db5ced6
 +    // KioCG end
  }
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index 071b026572c140b02d219f94477d94f3f843ef0c..a7be57e72bdef66a1d77d1110c573435d3b89e03 100644
+index 978d6f657f4ff84b773e5c320b3e08fce5ba168e..a6cf8928440c5abdc1c17e638056dcade3e79157 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -170,6 +170,7 @@ public abstract class Player extends Avatar implements ContainerUser {

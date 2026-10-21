@@ -19,7 +19,7 @@ index 2f7d926353b57421a40bbd641369cee1cc48fd34..2500a3cf1cdd99b6941378b9a4b004fe
              );
          });
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index d6941a8b17845a54b9eebb54aff8c570faa7b7d2..60798ba18dc26dc5b1f73a0f8b1d22cfa288f322 100644
+index cf494b3a28776ff974b4eb327d518d4d8c56b42c..5e3b07cd072ebab4b860d4e0fe43293b5bca6fd2 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -4669,6 +4669,31 @@ public abstract class Entity

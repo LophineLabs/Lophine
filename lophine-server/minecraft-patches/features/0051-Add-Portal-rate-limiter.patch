@@ -81,10 +81,10 @@ index 97c514673a454b752ab86b944fd143725ca8090d..805895eb6fca750b603b323a350b0daa
          private final AtomicBoolean hasPackets = new AtomicBoolean(false);
  
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 60125b4570ff1f5b378ad1484747e1f32c4d35b9..56d05957354b55b508710e444b892ef6296877bc 100644
+index 3f87d8a6c9990b89bfafc96f64c07b3ca173dd41..f9df38061525700fa5dc9da0d08cd80e56a1d019 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1961,6 +1961,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1963,6 +1963,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              //net.minecraft.world.level.block.entity.HopperBlockEntity.skipHopperEvents = level.paperConfig().hopper.disableMoveEvent || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0; // Paper - Perf: Optimize Hoppers // Folia - region threading
              profiler.push(() -> level + " " + level.dimension().identifier());
              profiler.push("tick");
@@ -95,7 +95,7 @@ index 60125b4570ff1f5b378ad1484747e1f32c4d35b9..56d05957354b55b508710e444b892ef6
  
              try {
                  foliaProfiler.startTimer(level.tickTimerId); try { // Folia - profiler
-@@ -1975,6 +1979,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1977,6 +1981,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              profiler.pop();
              profiler.pop();
              regionizedWorldData.explosionDensityCache.clear(); // Paper - Optimize explosions // Folia - region threading
@@ -142,7 +142,7 @@ index f07658e3fc26f0438e1f4cb56adb7f730550f2c3..66bfe32707f80e7932ce232dced9473c
              }
              // Folia end - region threading
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 60798ba18dc26dc5b1f73a0f8b1d22cfa288f322..9d29a7c4ace887b54c1f970558829cabad6b8033 100644
+index 5e3b07cd072ebab4b860d4e0fe43293b5bca6fd2..288a602c0fa6f7f48eb2108ea97cd5efe6b28d84 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -5076,6 +5076,31 @@ public abstract class Entity

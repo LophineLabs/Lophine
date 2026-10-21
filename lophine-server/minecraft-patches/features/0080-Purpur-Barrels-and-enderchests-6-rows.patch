@@ -23,7 +23,7 @@ index b9ddcbdb393d1d0aec3c894c4ffa69dcb8266390..d11d9ac4225c7db59be9f27c0d3c4647
  
      // Paper start - whitelist verify event / login event
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index 95113078efc3581c2cd15932cce67b4c46dca4e3..603b7c1f12293fc47c368a37fe70bcd2604096ed 100644
+index d5157b0448dfd030806c39f1ea68df6999aa465a..bb1e4f82b6fe974276ff9faf296a26c568fd619a 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -175,6 +175,7 @@ public abstract class Player extends Avatar implements ContainerUser {
@@ -115,7 +115,7 @@ index 34e6bb7d246f065698def3b1f7a0d237f304f2aa..c38dbe2b9379723f74be3b5dbe045d58
              // Paper end - Fix InventoryOpenEvent cancellation - moved up;
                  player.awardStat(Stats.OPEN_ENDERCHEST);
 diff --git a/net/minecraft/world/level/block/entity/BarrelBlockEntity.java b/net/minecraft/world/level/block/entity/BarrelBlockEntity.java
-index a9e1dc98cbcbb4295d223d3a768a4f35eb37f6db..92a5fd04a421e811665f17d451c7959ad0c3d1a5 100644
+index cb255428e2b4219edab25de629139ae24ebdd275..93685e21c43113259b3076f24520ed91370739fe 100644
 --- a/net/minecraft/world/level/block/entity/BarrelBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BarrelBlockEntity.java
 @@ -58,7 +58,17 @@ public class BarrelBlockEntity extends RandomizableContainerBlockEntity implemen
@@ -135,7 +135,7 @@ index a9e1dc98cbcbb4295d223d3a768a4f35eb37f6db..92a5fd04a421e811665f17d451c7959a
 +    // Purpur end - Barrels and enderchests 6 rows
 +
      public final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
-         // Paper start - delay open/close callbacks
+         // Paper start - delay close callbacks
          @Override
 @@ -117,7 +127,16 @@ public class BarrelBlockEntity extends RandomizableContainerBlockEntity implemen
  

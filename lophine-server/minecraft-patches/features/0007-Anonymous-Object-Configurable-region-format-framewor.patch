@@ -24,7 +24,7 @@ index a814512fcfb85312474ae2c2c21443843bf57831..04f91629c8762f00e180d4aaa42d64bb
      public MoonriseRegionFileIO.RegionDataController.WriteData moonrise$startWrite(
              final int chunkX, final int chunkZ, final CompoundTag compound
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java b/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java
-index 775d93d35855e394e5eccf0ad80eca43b1ed9562..60c5df183fae4c04220baef6b8567db5304efd29 100644
+index e9dc38d934ede23f17e18893ee207d9fbbd26449..f7ee3e9ad44888a34297d44c984fdce9afe409ca 100644
 --- a/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java
 @@ -1311,7 +1311,7 @@ public final class MoonriseRegionFileIO {
@@ -36,7 +36,7 @@ index 775d93d35855e394e5eccf0ad80eca43b1ed9562..60c5df183fae4c04220baef6b8567db5
                      if (regionFile != null) {
                          regionFile.flush();
                      } // else: evicted from cache, which should have called flush
-@@ -1562,7 +1562,7 @@ public final class MoonriseRegionFileIO {
+@@ -1564,7 +1564,7 @@ public final class MoonriseRegionFileIO {
  
          public static interface IORunnable {
  
@@ -56,11 +56,24 @@ index 51c126735ace8fdde89ad97b5cab62f244212db0..ea2f45964fb8c617f90938597c230b50
 -    public void moonrise$write(final RegionFile regionFile) throws IOException;
 +    public void moonrise$write(final io.anonymous.anonymous.data.RegionFile regionFile) throws IOException; // Anonymous - Configurable region file format
  }
+diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/storage/RegionFileRecovery.java b/ca/spottedleaf/moonrise/patches/chunk_system/storage/RegionFileRecovery.java
+index 9fb82b2e917a32c29da72b87bb0fbf730c0682f8..f3259a55429f22981ee18df2c50c71d984bf85e7 100644
+--- a/ca/spottedleaf/moonrise/patches/chunk_system/storage/RegionFileRecovery.java
++++ b/ca/spottedleaf/moonrise/patches/chunk_system/storage/RegionFileRecovery.java
+@@ -42,7 +42,7 @@ public final class RegionFileRecovery {
+     // returns the lowest chunk coordinate contained in the regionfile
+     public static ChunkPos getRegionFileCoordinates(final Path file) {
+         final String fileName = file.getFileName().toString();
+-        if (!fileName.startsWith("r.") || !fileName.endsWith(".mca")) {
++        if (!fileName.startsWith("r.") || !fileName.endsWith(net.minecraft.world.level.chunk.storage.RegionFileStorage.getExtensionName())) { // Anonymous - Configurable region file format
+             return null;
+         }
+ 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 81332b9835b1c1e6170431289e0d1b8466fab995..c239d51aba3fa7ad3248d635b4c950d954881d2d 100644
+index 1130bf3718bc03e43cc7e77ce50217b5aca313d3..ad695d4c56439a0f5f059d165767b7dbd03af1c3 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1124,6 +1124,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1125,6 +1125,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      }
      public void stopPart2() {
          // Folia end - region threading
@@ -124,7 +137,7 @@ index b228cd6c54e8c8998923ab332882d99092769c67..344faf37b04bf90c46c0235c20d68f35
              if (this.previousWriteFuture != null) {
                  this.previousWriteFuture.join();
 diff --git a/net/minecraft/world/level/chunk/storage/RegionFile.java b/net/minecraft/world/level/chunk/storage/RegionFile.java
-index 3de7fd2b084c38e72d7a6bc416880a881f514ad3..821924f85a507589a039832be8657e1dc3c0ce0c 100644
+index bd4b488cdf7a386bc458fad2ae659b77e60962ad..72b780fd5c1718846f8ed57f13dd08de3e6e11a9 100644
 --- a/net/minecraft/world/level/chunk/storage/RegionFile.java
 +++ b/net/minecraft/world/level/chunk/storage/RegionFile.java
 @@ -22,7 +22,7 @@ import net.minecraft.world.level.ChunkPos;
@@ -136,16 +149,7 @@ index 3de7fd2b084c38e72d7a6bc416880a881f514ad3..821924f85a507589a039832be8657e1d
      private static final Logger LOGGER = LogUtils.getLogger();
      public static final int MAX_CHUNK_SIZE = 500 * 1024 * 1024; // Paper - don't write garbage data to disk if writing serialization fails
      private static final int SECTOR_BYTES = 4096;
-@@ -130,7 +130,7 @@ public class RegionFile implements AutoCloseable, ca.spottedleaf.moonrise.patche
-         return this.recalculateCount.get();
-     }
- 
--    boolean recalculateHeader() throws IOException {
-+    public boolean recalculateHeader() throws IOException { // Anonymous - Configurable region file format
-         if (!this.canRecalcHeader) {
-             return false;
-         }
-@@ -789,7 +789,7 @@ public class RegionFile implements AutoCloseable, ca.spottedleaf.moonrise.patche
+@@ -776,7 +776,7 @@ public class RegionFile implements AutoCloseable, ca.spottedleaf.moonrise.patche
          }
      }
  
@@ -154,7 +158,7 @@ index 3de7fd2b084c38e72d7a6bc416880a881f514ad3..821924f85a507589a039832be8657e1d
          int offsetIndex = getOffsetIndex(pos);
          int offset = this.offsets.get(offsetIndex);
          int sectorNumber = getSectorNumber(offset);
-@@ -907,7 +907,7 @@ public class RegionFile implements AutoCloseable, ca.spottedleaf.moonrise.patche
+@@ -889,7 +889,7 @@ public class RegionFile implements AutoCloseable, ca.spottedleaf.moonrise.patche
          }
  
          @Override
@@ -163,35 +167,12 @@ index 3de7fd2b084c38e72d7a6bc416880a881f514ad3..821924f85a507589a039832be8657e1d
              regionFile.write(this.pos, ByteBuffer.wrap(this.buf, 0, this.count));
          }
          // Paper end - rewrite chunk system
-@@ -973,11 +973,11 @@ public class RegionFile implements AutoCloseable, ca.spottedleaf.moonrise.patche
-         return (x & 31) + (z & 31) * 32;
-     }
- 
--    synchronized boolean isOversized(int x, int z) {
-+    public synchronized boolean isOversized(int x, int z) { // Anonymous - Configurable region file format
-         return this.oversized[getChunkIndex(x, z)] == 1;
-     }
- 
--    synchronized void setOversized(int x, int z, boolean oversized) throws IOException {
-+    public synchronized void setOversized(int x, int z, boolean oversized) throws IOException { // Anonymous - Configurable region file format
-         final int offset = getChunkIndex(x, z);
-         boolean previous = this.oversized[offset] == 1;
-         this.oversized[offset] = (byte) (oversized ? 1 : 0);
-@@ -1016,7 +1016,7 @@ public class RegionFile implements AutoCloseable, ca.spottedleaf.moonrise.patche
-         return this.path.getParent().resolve(this.path.getFileName().toString().replaceAll("\\.mca$", "") + "_oversized_" + x + "_" + z + ".nbt");
-     }
- 
--    synchronized net.minecraft.nbt.CompoundTag getOversizedData(int x, int z) throws IOException {
-+    public synchronized net.minecraft.nbt.CompoundTag getOversizedData(int x, int z) throws IOException { // Anonymous - Configurable region file format
-         Path file = getOversizedFile(x, z);
-         try (DataInputStream out = new DataInputStream(new java.io.BufferedInputStream(new java.util.zip.InflaterInputStream(Files.newInputStream(file))))) {
-             return net.minecraft.nbt.NbtIo.read((java.io.DataInput) out);
 diff --git a/net/minecraft/world/level/chunk/storage/RegionFileStorage.java b/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
-index 154b571b33c868c6520ab563d8cd5482f1c288c3..b71ce39934ea729140a1af12b4061091fa2653c7 100644
+index 7e815fee19ab2c283bf1fdc3d6a530d4101de3de..2f02d57849d5bc5d9ce4468a5b584ab6ca102d4b 100644
 --- a/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 +++ b/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
-@@ -22,10 +22,34 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
-     private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger(); // Paper
+@@ -22,17 +22,41 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+     private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger(); // Paper - rewrite chunk system
      public static final String ANVIL_EXTENSION = ".mca";
      private static final int MAX_CACHE_SIZE = 256;
 -    private final Long2ObjectLinkedOpenHashMap<Optional<RegionFile>> regionCache = new Long2ObjectLinkedOpenHashMap<>();
@@ -224,18 +205,8 @@ index 154b571b33c868c6520ab563d8cd5482f1c288c3..b71ce39934ea729140a1af12b4061091
 +    }
 +    // Anonymous end
  
-     // Paper start - recalculate region file headers
-     private final boolean isChunkData;
-@@ -33,7 +57,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
-     @Nullable
-     public static ChunkPos getRegionFileCoordinates(Path file) {
-         String fileName = file.getFileName().toString();
--        if (!fileName.startsWith("r.") || !fileName.endsWith(".mca")) {
-+        if (!fileName.startsWith("r.") || !fileName.endsWith(getExtensionName())) { // Anonymous - Configurable region file format
-             return null;
-         }
- 
-@@ -58,7 +82,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+     // Paper start - rewrite chunk system
+     private static final int REGION_SHIFT = 5;
      private static final int MAX_NON_EXISTING_CACHE = 1024 * 4;
      private final it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet nonExistingRegionFiles = new it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet();
      private static String getRegionFileName(final int chunkX, final int chunkZ) {
@@ -244,7 +215,7 @@ index 154b571b33c868c6520ab563d8cd5482f1c288c3..b71ce39934ea729140a1af12b4061091
      }
  
      private boolean doesRegionFilePossiblyExist(final long position) {
-@@ -93,13 +117,13 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+@@ -67,13 +91,13 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
      }
  
      @Override
@@ -261,7 +232,7 @@ index 154b571b33c868c6520ab563d8cd5482f1c288c3..b71ce39934ea729140a1af12b4061091
          return this.getRegionFile(new ChunkPos(chunkX, chunkZ), false);
      }
  
-@@ -115,7 +139,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+@@ -89,7 +113,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
          }
  
          final ChunkPos pos = new ChunkPos(chunkX, chunkZ);
@@ -270,7 +241,7 @@ index 154b571b33c868c6520ab563d8cd5482f1c288c3..b71ce39934ea729140a1af12b4061091
  
          // note: not required to keep regionfile loaded after this call, as the write param takes a regionfile as input
          // (and, the regionfile parameter is unused for writing until the write call)
-@@ -149,7 +173,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+@@ -123,7 +147,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
      ) throws IOException {
          final ChunkPos pos = new ChunkPos(chunkX, chunkZ);
          if (writeData.result() == ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO.RegionDataController.WriteData.WriteResult.DELETE) {
@@ -279,30 +250,30 @@ index 154b571b33c868c6520ab563d8cd5482f1c288c3..b71ce39934ea729140a1af12b4061091
              if (regionFile != null) {
                  regionFile.clear(pos);
              } // else: didn't exist
-@@ -164,7 +188,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+@@ -138,7 +162,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
      public final ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO.RegionDataController.ReadData moonrise$readData(
          final int chunkX, final int chunkZ
      ) throws IOException {
 -        final RegionFile regionFile = this.moonrise$getRegionFileIfExists(chunkX, chunkZ);
 +        final io.anonymous.anonymous.data.RegionFile regionFile = this.moonrise$getRegionFileIfExists(chunkX, chunkZ); // Anonymous - Configurable region file format
  
-         final DataInputStream input = regionFile == null ? null : regionFile.getChunkDataInputStream(new ChunkPos(chunkX, chunkZ));
+         // retrieve the count after reading under the regionfile lock, so that it matches the header the data was read with
+         final int recalculateCount;
+@@ -196,7 +220,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+             return ret;
+         }
  
-@@ -209,7 +233,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
- 
-             final ChunkPos pos = new ChunkPos(chunkX, chunkZ);
-             final ChunkPos headerChunkPos = SerializableChunkData.getChunkCoordinate(ret);
--            final RegionFile regionFile = this.getRegionFile(pos, true);
-+            final io.anonymous.anonymous.data.RegionFile regionFile = this.getRegionFile(pos, true); // Anonymous - Configurable region file format
- 
-             if (regionFile.getRecalculateCount() != readData.recalculateCount()) {
-                 return null;
-@@ -240,12 +264,12 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
-         this.isChunkData = info.dfuType()[0] == net.minecraft.util.datafix.DataFixTypes.CHUNK; // Paper - recalculate region file headers
+-        final RegionFile regionFile = this.moonrise$getRegionFileIfExists(chunkX, chunkZ);
++        final io.anonymous.anonymous.data.RegionFile regionFile = this.moonrise$getRegionFileIfExists(chunkX, chunkZ); // Anonymous - Configurable region file format
+         if (regionFile == null || ((ca.spottedleaf.moonrise.patches.chunk_system.storage.ChunkSystemRegionFile)regionFile).moonrise$getRecalculateCount() != readData.recalculateCount()) {
+             // header was recalculated (or the regionfile was removed), so the data may be stale
+             return null;
+@@ -226,12 +250,12 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+         this.info = info;
      }
  
 -    private @Nullable RegionFile getRegionFile(final ChunkPos pos, final boolean create) throws IOException {
-+    private io.anonymous.anonymous.data.RegionFile getRegionFile(final ChunkPos pos, final boolean create) throws IOException { // Anonymous - Configurable region file format
++    private io.anonymous.anonymous.data.@Nullable RegionFile getRegionFile(final ChunkPos pos, final boolean create) throws IOException { // Anonymous - Configurable region file format
          // Paper start - rewrite chunk system
          synchronized (this) {
              final long key = ChunkPos.pack(pos.x() >> REGION_SHIFT, pos.z() >> REGION_SHIFT);
@@ -312,7 +283,7 @@ index 154b571b33c868c6520ab563d8cd5482f1c288c3..b71ce39934ea729140a1af12b4061091
              if (cached != null) {
                  if (cached.isPresent()) {
                      return cached.get();
-@@ -272,7 +296,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+@@ -258,7 +282,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
              final int cacheSize = io.papermc.paper.configuration.GlobalConfiguration.get() == null ? 256 : io.papermc.paper.configuration.GlobalConfiguration.get().misc.regionFileCacheSize; // Paper - Sanitise RegionFileCache and make configurable - Config not available during initial FileFixerUpper run
  
              if (this.regionCache.size() >= cacheSize) {
@@ -321,7 +292,7 @@ index 154b571b33c868c6520ab563d8cd5482f1c288c3..b71ce39934ea729140a1af12b4061091
                  if (evicted.isPresent()) {
                      evicted.get().close();
                  }
-@@ -282,7 +306,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+@@ -268,7 +292,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
  
              FileUtil.createDirectoriesSafe(this.folder);
  
@@ -330,7 +301,7 @@ index 154b571b33c868c6520ab563d8cd5482f1c288c3..b71ce39934ea729140a1af12b4061091
  
              this.regionCache.putAndMoveToFirst(key, Optional.of(ret));
  
-@@ -291,7 +315,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+@@ -277,12 +301,12 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
          // Paper end - rewrite chunk system
      }
  
@@ -339,25 +310,22 @@ index 154b571b33c868c6520ab563d8cd5482f1c288c3..b71ce39934ea729140a1af12b4061091
          return Objects.requireNonNull(this.getRegionFile(pos, true));
      }
  
-@@ -300,7 +324,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
-         LOGGER.error("{} ({} - {},{}) Go clean it up to remove this message. /minecraft:tp {} 128 {} - DO NOT REPORT THIS TO PAPER - You may ask for help on Discord, but do not file an issue. These error messages can not be removed.", msg, file.toString().replaceAll(".+[\\\\/]", ""), x, z, x << 4, z << 4);
-     }
- 
--    private static CompoundTag readOversizedChunk(RegionFile regionfile, ChunkPos chunkCoordinate) throws IOException {
-+    private static CompoundTag readOversizedChunk(io.anonymous.anonymous.data.RegionFile regionfile, ChunkPos chunkCoordinate) throws IOException { // Anonymous - Configurable region file format
-         synchronized (regionfile) {
-             try (DataInputStream datainputstream = regionfile.getChunkDataInputStream(chunkCoordinate)) {
-                 CompoundTag oversizedData = regionfile.getOversizedData(chunkCoordinate.x(), chunkCoordinate.z());
-@@ -333,7 +357,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
-     // Paper end
- 
      public @Nullable CompoundTag read(final ChunkPos pos) throws IOException {
 -        RegionFile region = this.getRegionFile(pos, false);
 +        io.anonymous.anonymous.data.RegionFile region = this.getRegionFile(pos, false); // Anonymous - Configurable region file format
          if (region == null) {
              return null;
          }
-@@ -368,7 +392,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+@@ -302,7 +326,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+             return serialisedChunkData;
+         }
+ 
+-        final RegionFile regionFile = this.getRegionFile(pos, false);
++        final io.anonymous.anonymous.data.RegionFile regionFile = this.getRegionFile(pos, false); // Anonymous - Configurable region file format
+         if (regionFile == null) {
+             return serialisedChunkData;
+         }
+@@ -321,7 +345,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
      }
  
      public void scanChunk(final ChunkPos pos, final StreamTagVisitor scanner) throws IOException {
@@ -366,7 +334,7 @@ index 154b571b33c868c6520ab563d8cd5482f1c288c3..b71ce39934ea729140a1af12b4061091
          if (region != null) {
              try (DataInputStream regionChunkInputStream = region.getChunkDataInputStream(pos)) {
                  if (regionChunkInputStream != null) {
-@@ -386,7 +410,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+@@ -339,7 +363,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
          }
          // Paper end - rewrite chunk system
          if (!SharedConstants.DEBUG_DONT_SAVE_WORLD) {
@@ -375,7 +343,7 @@ index 154b571b33c868c6520ab563d8cd5482f1c288c3..b71ce39934ea729140a1af12b4061091
              if (value == null) {
                  region.clear(pos);
              } else {
-@@ -412,7 +436,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+@@ -364,7 +388,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
          // Paper start - rewrite chunk system
          synchronized (this) {
              final ExceptionCollector<IOException> exceptionCollector = new ExceptionCollector<>();
@@ -384,7 +352,7 @@ index 154b571b33c868c6520ab563d8cd5482f1c288c3..b71ce39934ea729140a1af12b4061091
                  if (entry.isEmpty()) {
                      continue;
                  }
-@@ -431,7 +455,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
+@@ -383,7 +407,7 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
          // Paper start - rewrite chunk system
          synchronized (this) {
              final ExceptionCollector<IOException> exceptionCollector = new ExceptionCollector<>();

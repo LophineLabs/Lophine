@@ -18,7 +18,7 @@ index f5601ee683c9daef74ab34c96b70d990ac6cf534..ef8c1e81327dd3dd3535bb86920f2522
                      double rangeY = level.paperConfig().entities.trackingRangeY.get(this.entity, -1);
                      if (rangeY != -1) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 5721bc548636dbf94ae6bcae5758fa5929d012d6..9f2fdce0e6a1558a7dc019198dd773fc3545a643 100644
+index bd8ee8a6e10176f9435050347c3908d929ec89f4..ea25ba15b3ec94c7438a3cca0627c652ad4b3d0a 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -166,7 +166,7 @@ public abstract class Entity
@@ -96,7 +96,7 @@ index 996679150fbd51ce8fdef4ec72ea2c9b6daec208..f287eb4022a1c75ad4c0157c3e1929f9
      public EntityType(
          final EntityType.EntityFactory<T> factory,
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index 603b7c1f12293fc47c368a37fe70bcd2604096ed..d747a8c5d30bca18e235a3fc13aecac356663620 100644
+index bb1e4f82b6fe974276ff9faf296a26c568fd619a..4ba68bad8bcd3773cff30a0fb52e0ba592742dd3 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -186,6 +186,25 @@ public abstract class Player extends Avatar implements ContainerUser {
