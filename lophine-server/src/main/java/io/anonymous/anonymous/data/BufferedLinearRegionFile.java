@@ -82,7 +82,7 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
     private static final int SECTOR_META_SIZE = Integer.BYTES + Long.BYTES + Integer.BYTES;
 
     // all three are stateless and thread-safe
-    private static final LZ4Compressor LZ4_COMPRESSOR = LZ4Factory.fastestInstance().highCompressor();
+    private static final LZ4Compressor LZ4_COMPRESSOR = LZ4Factory.fastestInstance().fastCompressor();
     private static final LZ4FastDecompressor LZ4_DECOMPRESSOR = LZ4Factory.fastestInstance().fastDecompressor();
     private static final XXHash32 XX_HASH_32 = XXHashFactory.fastestInstance().hash32();
 
@@ -825,43 +825,6 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
         this.flushInternal(); // align the mca's implementation and requirements of moonrise
     }
 
-    // MCC 的玩意,这东西也用不上给Linear了()
-    @Override
-    public CompoundTag getOversizedData(int x, int z) {
-        return null;
-    }
-
-    @Override
-    public boolean isOversized(int x, int z) {
-        return false;
-    }
-
-    @Override
-    public boolean recalculateHeader() {
-        return false;
-    }
-
-    @Override
-    public void setOversized(int x, int z, boolean oversized) {
-
-    }
-    // MCC end
-
-    @Override
-    public int moonrise$getRecalculateCount() {
-        return 0;
-    }
-
-    @Override
-    public boolean moonrise$recalculateHeader() {
-        return false;
-    }
-
-    @Override
-    public Boolean moonrise$tryRecalcHeader(final int expectedRecalcCount) {
-        return Boolean.FALSE;
-    }
-
     @Override
     public MoonriseRegionFileIO.RegionDataController.WriteData moonrise$startWrite(CompoundTag data, ChunkPos pos) {
         final ChunkBufferHelper internalBuffer = new ChunkBufferHelper(pos);
@@ -873,6 +836,22 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
                 data, MoonriseRegionFileIO.RegionDataController.WriteData.WriteResult.WRITE,
                 out, internalBuffer::moonrise$write
         );
+    }
+
+    @Override
+    public int moonrise$getRecalculateCount() {
+        throw new UnsupportedOperationException("stub");
+    }
+
+    @Override
+    public boolean moonrise$recalculateHeader() throws IOException {
+        throw new UnsupportedOperationException("stub");
+    }
+
+    @Override
+    public Boolean moonrise$tryRecalcHeader(int expectedRecalcCount) throws IOException {
+        // we do not need use this to recalac as the swap file is fail-fast
+        throw new UnsupportedOperationException("stub");
     }
 
     @Override

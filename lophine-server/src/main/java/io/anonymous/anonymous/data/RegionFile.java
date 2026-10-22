@@ -2,7 +2,6 @@ package io.anonymous.anonymous.data;
 
 
 import ca.spottedleaf.moonrise.patches.chunk_system.storage.ChunkSystemRegionFile;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.ChunkPos;
 
 import java.io.DataInputStream;
@@ -29,23 +28,4 @@ public interface RegionFile extends ChunkSystemRegionFile, AutoCloseable {
     void close() throws IOException;
 
     void write(ChunkPos pos, ByteBuffer buf) throws IOException;
-
-    default CompoundTag getOversizedData(int x, int z) throws IOException {
-        return null;
-    }
-
-    default boolean isOversized(int x, int z) {
-        return false;
-    }
-
-    default boolean recalculateHeader() throws IOException {
-        return this.moonrise$recalculateHeader();
-    }
-
-    default void setOversized(int x, int z, boolean oversized) throws IOException {
-    }
-
-    default int getRecalculateCount() {
-        return 0;
-    } // Anonymous - Configurable region file format
 }

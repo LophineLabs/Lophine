@@ -8,7 +8,7 @@ This patch is used with permission from the original author.
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/io/ChunkSystemRegionFileStorage.java b/ca/spottedleaf/moonrise/patches/chunk_system/io/ChunkSystemRegionFileStorage.java
-index a814512fcfb85312474ae2c2c21443843bf57831..04f91629c8762f00e180d4aaa42d64bb816f6361 100644
+index a814512fcfb85312474ae2c2c21443843bf57831..9d69a022872e06b320bee46329cd8889f74fbbaa 100644
 --- a/ca/spottedleaf/moonrise/patches/chunk_system/io/ChunkSystemRegionFileStorage.java
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/io/ChunkSystemRegionFileStorage.java
 @@ -8,9 +8,9 @@ public interface ChunkSystemRegionFileStorage {
@@ -19,7 +19,7 @@ index a814512fcfb85312474ae2c2c21443843bf57831..04f91629c8762f00e180d4aaa42d64bb
 +    public io.anonymous.anonymous.data.RegionFile moonrise$getRegionFileIfLoaded(final int chunkX, final int chunkZ); // Anonymous - Configurable region file format
  
 -    public RegionFile moonrise$getRegionFileIfExists(final int chunkX, final int chunkZ) throws IOException;
-+    public  io.anonymous.anonymous.data.RegionFile moonrise$getRegionFileIfExists(final int chunkX, final int chunkZ) throws IOException; // Anonymous - Configurable region file format
++    public io.anonymous.anonymous.data.RegionFile moonrise$getRegionFileIfExists(final int chunkX, final int chunkZ) throws IOException; // Anonymous - Configurable region file format
  
      public MoonriseRegionFileIO.RegionDataController.WriteData moonrise$startWrite(
              final int chunkX, final int chunkZ, final CompoundTag compound
@@ -56,19 +56,6 @@ index 51c126735ace8fdde89ad97b5cab62f244212db0..ea2f45964fb8c617f90938597c230b50
 -    public void moonrise$write(final RegionFile regionFile) throws IOException;
 +    public void moonrise$write(final io.anonymous.anonymous.data.RegionFile regionFile) throws IOException; // Anonymous - Configurable region file format
  }
-diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/storage/RegionFileRecovery.java b/ca/spottedleaf/moonrise/patches/chunk_system/storage/RegionFileRecovery.java
-index 9fb82b2e917a32c29da72b87bb0fbf730c0682f8..f3259a55429f22981ee18df2c50c71d984bf85e7 100644
---- a/ca/spottedleaf/moonrise/patches/chunk_system/storage/RegionFileRecovery.java
-+++ b/ca/spottedleaf/moonrise/patches/chunk_system/storage/RegionFileRecovery.java
-@@ -42,7 +42,7 @@ public final class RegionFileRecovery {
-     // returns the lowest chunk coordinate contained in the regionfile
-     public static ChunkPos getRegionFileCoordinates(final Path file) {
-         final String fileName = file.getFileName().toString();
--        if (!fileName.startsWith("r.") || !fileName.endsWith(".mca")) {
-+        if (!fileName.startsWith("r.") || !fileName.endsWith(net.minecraft.world.level.chunk.storage.RegionFileStorage.getExtensionName())) { // Anonymous - Configurable region file format
-             return null;
-         }
- 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
 index 1130bf3718bc03e43cc7e77ce50217b5aca313d3..ad695d4c56439a0f5f059d165767b7dbd03af1c3 100644
 --- a/net/minecraft/server/MinecraftServer.java
@@ -168,7 +155,7 @@ index bd4b488cdf7a386bc458fad2ae659b77e60962ad..72b780fd5c1718846f8ed57f13dd08de
          }
          // Paper end - rewrite chunk system
 diff --git a/net/minecraft/world/level/chunk/storage/RegionFileStorage.java b/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
-index 7e815fee19ab2c283bf1fdc3d6a530d4101de3de..2f02d57849d5bc5d9ce4468a5b584ab6ca102d4b 100644
+index 7e815fee19ab2c283bf1fdc3d6a530d4101de3de..0745dbf80ee4370de16cf730b918be889f94c3b6 100644
 --- a/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 +++ b/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 @@ -22,17 +22,41 @@ public class RegionFileStorage implements AutoCloseable, ca.spottedleaf.moonrise
@@ -181,7 +168,7 @@ index 7e815fee19ab2c283bf1fdc3d6a530d4101de3de..2f02d57849d5bc5d9ce4468a5b584ab6
      private final Path folder;
      private final boolean sync;
 +    // Anonymous start - Configurable region file format
-+    public static io.anonymous.anonymous.data.RegionFile createNew(RegionStorageInfo info, Path filePath, Path folder, boolean sync) throws IOException{
++    public static io.anonymous.anonymous.data.RegionFile createNew(RegionStorageInfo info, Path filePath, Path folder, boolean sync) throws IOException {
 +        final io.anonymous.anonymous.enums.EnumRegionFormat regionFormat = me.earthme.luminol.config.modules.function.RegionFormatConfig.regionFormat;
 +        final String fullFileName = filePath.getFileName().toString();
 +        final String[] fullNameSplit = fullFileName.split("\\.");
@@ -264,7 +251,7 @@ index 7e815fee19ab2c283bf1fdc3d6a530d4101de3de..2f02d57849d5bc5d9ce4468a5b584ab6
          }
  
 -        final RegionFile regionFile = this.moonrise$getRegionFileIfExists(chunkX, chunkZ);
-+        final io.anonymous.anonymous.data.RegionFile regionFile = this.moonrise$getRegionFileIfExists(chunkX, chunkZ); // Anonymous - Configurable region file format
++        final io.anonymous.anonymous.data.RegionFile regionFile = this.moonrise$getRegionFileIfExists(chunkX, chunkZ);
          if (regionFile == null || ((ca.spottedleaf.moonrise.patches.chunk_system.storage.ChunkSystemRegionFile)regionFile).moonrise$getRecalculateCount() != readData.recalculateCount()) {
              // header was recalculated (or the regionfile was removed), so the data may be stale
              return null;
@@ -273,7 +260,7 @@ index 7e815fee19ab2c283bf1fdc3d6a530d4101de3de..2f02d57849d5bc5d9ce4468a5b584ab6
      }
  
 -    private @Nullable RegionFile getRegionFile(final ChunkPos pos, final boolean create) throws IOException {
-+    private io.anonymous.anonymous.data.@Nullable RegionFile getRegionFile(final ChunkPos pos, final boolean create) throws IOException { // Anonymous - Configurable region file format
++    private io.anonymous.anonymous.data.RegionFile getRegionFile(final ChunkPos pos, final boolean create) throws IOException { // Anonymous - Configurable region file format
          // Paper start - rewrite chunk system
          synchronized (this) {
              final long key = ChunkPos.pack(pos.x() >> REGION_SHIFT, pos.z() >> REGION_SHIFT);
@@ -321,7 +308,7 @@ index 7e815fee19ab2c283bf1fdc3d6a530d4101de3de..2f02d57849d5bc5d9ce4468a5b584ab6
          }
  
 -        final RegionFile regionFile = this.getRegionFile(pos, false);
-+        final io.anonymous.anonymous.data.RegionFile regionFile = this.getRegionFile(pos, false); // Anonymous - Configurable region file format
++        final io.anonymous.anonymous.data.RegionFile regionFile = this.getRegionFile(pos, false);
          if (regionFile == null) {
              return serialisedChunkData;
          }
