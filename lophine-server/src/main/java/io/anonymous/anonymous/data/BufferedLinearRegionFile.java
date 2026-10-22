@@ -840,18 +840,17 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
 
     @Override
     public int moonrise$getRecalculateCount() {
-        throw new UnsupportedOperationException("stub");
+        return 0;
     }
 
     @Override
-    public boolean moonrise$recalculateHeader() throws IOException {
-        throw new UnsupportedOperationException("stub");
+    public boolean moonrise$recalculateHeader() {
+        return false;
     }
 
     @Override
-    public Boolean moonrise$tryRecalcHeader(int expectedRecalcCount) throws IOException {
-        // we do not need use this to recalac as the swap file is fail-fast
-        throw new UnsupportedOperationException("stub");
+    public Boolean moonrise$tryRecalcHeader(final int expectedRecalcCount) {
+        return null;
     }
 
     @Override
