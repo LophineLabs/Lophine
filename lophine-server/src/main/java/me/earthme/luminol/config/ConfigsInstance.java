@@ -603,9 +603,6 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     }
 
     /**
-     * Get the actual configuration value, handling staged values
-     */
-    /**
      * Read the complete requested file without consuming staged values during cross-rule validation.
      */
     private Object peekCarpetConfigValue(String fullConfigKeyName) {
@@ -638,6 +635,9 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         }
     }
 
+    /**
+     * Get the actual configuration value, handling staged values
+     */
     private Object getActualConfigValue(String fullConfigKeyName) {
         Object actuallyValue;
         if (stagedConfigMap.containsKey(fullConfigKeyName)) {
