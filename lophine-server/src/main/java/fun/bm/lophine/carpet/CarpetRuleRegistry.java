@@ -3,11 +3,11 @@ package fun.bm.lophine.carpet;
 import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import fun.bm.lophine.carpet.config.modules.WoolHopperCounterConfig;
+import me.earthme.luminol.api.config.annotation.ConfigClassInfo;
+import me.earthme.luminol.api.config.annotation.ConfigInfo;
 import me.earthme.luminol.config.ConfigManager;
 import me.earthme.luminol.config.ConfigPaths;
 import me.earthme.luminol.config.ConfigsInstance;
-import me.earthme.luminol.config.flags.ConfigClassInfo;
-import me.earthme.luminol.config.flags.ConfigInfo;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

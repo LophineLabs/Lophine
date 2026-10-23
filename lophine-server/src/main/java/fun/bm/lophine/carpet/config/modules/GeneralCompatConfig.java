@@ -1,11 +1,13 @@
 package fun.bm.lophine.carpet.config.modules;
 
 import fun.bm.lophine.carpet.CarpetProtocalDataBase;
-import me.earthme.luminol.config.flags.ConfigClassInfo;
-import me.earthme.luminol.config.flags.ConfigInfo;
-import me.earthme.luminol.config.flags.NeedRun;
-import me.earthme.luminol.enums.EnumConfigCategory;
-import me.earthme.luminol.enums.EnumRunnableType;
+import me.earthme.luminol.api.config.annotation.ConfigClassInfo;
+import me.earthme.luminol.api.config.annotation.ConfigInfo;
+import me.earthme.luminol.api.config.annotation.DoNotLoad;
+import me.earthme.luminol.api.config.annotation.NeedRun;
+import me.earthme.luminol.api.config.enums.EnumConfigCategory;
+import me.earthme.luminol.api.config.enums.EnumLoadType;
+import me.earthme.luminol.api.config.enums.EnumRunnableType;
 
 import java.util.List;
 
@@ -572,7 +574,7 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "experimentalMinecartSpeed", section = "ams")
     public static volatile int experimentalMinecartSpeed = -1;
 
-    @me.earthme.luminol.config.flags.DoNotLoad(when = me.earthme.luminol.enums.EnumLoadType.RELOAD)
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "experimentalMinecartEnabled", section = "ams")
     public static volatile boolean experimentalMinecartEnabled = false;
 
@@ -1385,7 +1387,7 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "carpetCommandPermissionLevel")
     public static volatile String carpetCommandPermissionLevel = "ops";
 
-    @me.earthme.luminol.config.flags.DoNotLoad(when = me.earthme.luminol.enums.EnumLoadType.RELOAD)
+    @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "largeShulkerBox", section = "ams")
     public static volatile boolean largeShulkerBox = false;
 

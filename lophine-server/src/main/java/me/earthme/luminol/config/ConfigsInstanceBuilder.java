@@ -1,5 +1,6 @@
 package me.earthme.luminol.config;
 
+import me.earthme.luminol.api.config.ConfigsInstanceHooks;
 import me.earthme.luminol.api.config.LuminolConfigBuilder;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.NotNull;
@@ -67,7 +68,7 @@ public class ConfigsInstanceBuilder implements LuminolConfigBuilder {
             @NotNull String command_name,
             @NotNull String pack
     ) {
-        return new ConfigsInstance(loader, base, name, file_name, command_name, pack);
+        return this.of(loader, base, name, file_name, command_name, pack, ConfigsInstanceHooks.NONE);
     }
 
     public ConfigsInstance of(
@@ -77,6 +78,29 @@ public class ConfigsInstanceBuilder implements LuminolConfigBuilder {
             @NotNull String command_name,
             @NotNull String pack
     ) {
-        return new ConfigsInstance(MinecraftServer.class.getClassLoader(), base, name, file_name, command_name, pack);
+        return this.of(MinecraftServer.class.getClassLoader(), base, name, file_name, command_name, pack);
+    }
+
+    public ConfigsInstance of(
+            @NotNull File base,
+            @NotNull String name,
+            @NotNull String file_name,
+            @NotNull String command_name,
+            @NotNull String pack,
+            @NotNull ConfigsInstanceHooks hooks
+    ) {
+        return this.of(MinecraftServer.class.getClassLoader(), base, name, file_name, command_name, pack, hooks);
+    }
+
+    public ConfigsInstance of(
+            @NotNull ClassLoader loader,
+            @NotNull File base,
+            @NotNull String name,
+            @NotNull String file_name,
+            @NotNull String command_name,
+            @NotNull String pack,
+            @NotNull ConfigsInstanceHooks hooks
+    ) {
+        return new ConfigsInstance(loader, base, name, file_name, command_name, pack, hooks);
     }
 }

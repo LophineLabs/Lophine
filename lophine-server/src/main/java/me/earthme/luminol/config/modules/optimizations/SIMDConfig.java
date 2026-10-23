@@ -2,12 +2,12 @@ package me.earthme.luminol.config.modules.optimizations;
 
 import com.mojang.logging.LogUtils;
 import gg.pufferfish.pufferfish.simd.SIMDDetection;
-import me.earthme.luminol.config.flags.ConfigClassInfo;
-import me.earthme.luminol.config.flags.ConfigInfo;
-import me.earthme.luminol.config.flags.DoNotLoad;
-import me.earthme.luminol.config.flags.NeedRun;
-import me.earthme.luminol.enums.EnumConfigCategory;
-import me.earthme.luminol.enums.EnumRunnableType;
+import me.earthme.luminol.api.config.annotation.ConfigClassInfo;
+import me.earthme.luminol.api.config.annotation.ConfigInfo;
+import me.earthme.luminol.api.config.annotation.DoNotLoad;
+import me.earthme.luminol.api.config.annotation.NeedRun;
+import me.earthme.luminol.api.config.enums.EnumConfigCategory;
+import me.earthme.luminol.api.config.enums.EnumRunnableType;
 import org.slf4j.Logger;
 
 @ConfigClassInfo(category = EnumConfigCategory.OPTIMIZATIONS, name = "use_simd")

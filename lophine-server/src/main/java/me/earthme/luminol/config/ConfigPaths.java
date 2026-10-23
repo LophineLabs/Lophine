@@ -1,7 +1,7 @@
 package me.earthme.luminol.config;
 
-import me.earthme.luminol.config.flags.ConfigClassInfo;
-import me.earthme.luminol.config.flags.ConfigInfo;
+import me.earthme.luminol.api.config.annotation.ConfigClassInfo;
+import me.earthme.luminol.api.config.annotation.ConfigInfo;
 
 import java.util.ArrayList;
 import java.util.List;

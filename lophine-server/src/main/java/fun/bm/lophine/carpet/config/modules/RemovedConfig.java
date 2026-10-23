@@ -1,8 +1,8 @@
 package fun.bm.lophine.carpet.config.modules;
 
-import me.earthme.luminol.config.flags.ConfigClassInfo;
-import me.earthme.luminol.config.flags.ConfigInfo;
-import me.earthme.luminol.enums.EnumConfigCategory;
+import me.earthme.luminol.api.config.annotation.ConfigClassInfo;
+import me.earthme.luminol.api.config.annotation.ConfigInfo;
+import me.earthme.luminol.api.config.enums.EnumConfigCategory;
 
 @ConfigClassInfo(category = EnumConfigCategory.REMOVED, name = "removed_config")
 public class RemovedConfig {

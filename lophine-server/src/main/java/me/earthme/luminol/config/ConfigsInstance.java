@@ -6,13 +6,15 @@ import com.mojang.logging.LogUtils;
 import fun.bm.lophine.utils.ServerI18nUtil;
 import io.papermc.paper.threadedregions.RegionizedServer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import me.earthme.luminol.api.config.ConfigsInstanceHooks;
 import me.earthme.luminol.api.config.EnumConfigData;
 import me.earthme.luminol.api.config.LuminolConfigsInstance;
+import me.earthme.luminol.api.config.TransformLogic;
+import me.earthme.luminol.api.config.annotation.*;
+import me.earthme.luminol.api.config.enums.EnumConfigCategory;
+import me.earthme.luminol.api.config.enums.EnumLoadType;
+import me.earthme.luminol.api.config.enums.EnumRunnableType;
 import me.earthme.luminol.commands.config.ConfigCommand;
-import me.earthme.luminol.config.flags.*;
-import me.earthme.luminol.enums.EnumConfigCategory;
-import me.earthme.luminol.enums.EnumLoadType;
-import me.earthme.luminol.enums.EnumRunnableType;
 import me.earthme.luminol.utils.ClassLoadUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,6 +43,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     private final String name;          // Used to transform config to another config system
     private final String commandName;   // Used to register command
     private final String pack;          // Used to find all classes
+    private final ConfigsInstanceHooks hooks;
 
     // Storage collections
     private final Map<Object, Set<Exception>> allInstanced = new HashMap<>(); // add exception to map to store exceptions
@@ -58,12 +61,18 @@ public class ConfigsInstance implements LuminolConfigsInstance {
      */
     protected ConfigsInstance(@NotNull ClassLoader loader, @NotNull File base, @NotNull String name, @NotNull String file_name,
                               @NotNull String command_name, @NotNull String pack) {
+        this(loader, base, name, file_name, command_name, pack, ConfigsInstanceHooks.NONE);
+    }
+
+    protected ConfigsInstance(@NotNull ClassLoader loader, @NotNull File base, @NotNull String name, @NotNull String file_name,
+                              @NotNull String command_name, @NotNull String pack, @NotNull ConfigsInstanceHooks hooks) {
         this.loader = loader;
         this.baseConfigFolder = base;
         this.name = name;
         this.pack = pack;
         this.commandName = command_name;
         this.baseConfigFile = new File(base, file_name);
+        this.hooks = hooks;
     }
 
     // Lifecycle management methods
@@ -96,14 +105,13 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         if (needGlobal) {
             RegionizedServer.ensureGlobalTickThread("Reload " + baseConfigFile.getName() + " off global region thread!");
         }
-        Map<String, Object> previousCarpet = this.name.equals("lophine_carpet")
-                ? fun.bm.lophine.carpet.CarpetConfigLifecycle.snapshot() : null;
+        Object snapshot = hooks.beforeReload(this);
         runUnloadTasks();
         dropAllInstanced();
         try {
             preLoadConfig(keepComments);
             finalizeLoadConfig();
-            if (previousCarpet != null) fun.bm.lophine.carpet.CarpetConfigLifecycle.reloaded(previousCarpet);
+            hooks.afterReload(this, snapshot);
         } catch (Exception e) {
             logger.error("Fail to load config file of {}.", name, e);
         }
@@ -235,19 +243,15 @@ public class ConfigsInstance implements LuminolConfigsInstance {
             configFileInstance.close();
         }
 
-        // Carpet setDefault completes only after the real write or its exception.
-        configFileInstance = this.name.equals("lophine_carpet")
-                ? CommentedFileConfig.builder(baseConfigFile).sync().build() : CommentedFileConfig.of(baseConfigFile);
+        configFileInstance = hooks.synchronousFileWrites()
+                ? CommentedFileConfig.builder(baseConfigFile).sync().build()
+                : CommentedFileConfig.of(baseConfigFile);
         configFileInstance.load();
 
         try {
             instanceAllModule();
             migrateConfigSections();
-            if (this.name.equals("lophine_carpet")) {
-                try (var view = fun.bm.lophine.carpet.CarpetRuleRegistry.configurationView(this::peekCarpetConfigValue)) {
-                    loadAllModules(keepComments);
-                }
-            } else loadAllModules(keepComments);
+            hooks.aroundLoadModules(this, () -> loadAllModules(keepComments));
         } catch (Exception e) {
             logger.error("Failed to load config modules!", e);
             throw new RuntimeException(e);
@@ -257,7 +261,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     }
 
     /**
-     * Move old section keys before Carpet validates the complete requested rule set.
+     * Move old section keys onto their current paths before modules read the file.
      */
     private void migrateConfigSections() {
         for (Object module : allInstanced.keySet()) {
@@ -293,7 +297,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
      * Load all configuration modules
      */
     private void loadAllModules(boolean keepComments) {
-        if (alreadyInit && this.name.equals("lophine_carpet")) restoreCarpetDefaults();
+        hooks.beforeLoadModules(this, alreadyInit);
         Map<Object, Set<Exception>> stagedMap = new HashMap<>();
         for (Object instanced : allInstanced.keySet()) {
             Set<Exception> exceptions = loadForSingle(instanced, keepComments);
@@ -303,13 +307,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         }
 
         allInstanced.putAll(stagedMap);
-        if (this.name.equals("lophine_carpet")) {
-            for (Object module : allInstanced.keySet()) {
-                Runnable before = () -> invokeNeedRunMethods(module, EnumRunnableType.BEFORE_FINAL_LOAD, null);
-                if (alreadyInit) before.run();
-                else ConfigManager.registerRunnableBeforeFinalLoad(before);
-            }
-        }
+        hooks.afterLoadModules(this, alreadyInit);
     }
 
     /**
@@ -440,7 +438,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         }
 
         // handle tasks need processed before config finalized
-        if (!alreadyInit && !this.name.equals("lophine_carpet")) {
+        if (!alreadyInit && hooks.registerFieldBeforeFinalLoad()) {
             for (Method method : singleConfigModule.getClass().getDeclaredMethods()) {
                 NeedRun needRun = method.getAnnotation(NeedRun.class);
                 if (needRun != null && needRun.when() == EnumRunnableType.BEFORE_FINAL_LOAD) {
@@ -474,7 +472,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
 
         // Validate default value
         Object currentValue = field.get(null);
-        if (alreadyInit && this.name.equals("lophine_carpet") && defaultvalueMap.containsKey(fullConfigKeyName)) {
+        if (alreadyInit && hooks.restoreMissingToDefault() && defaultvalueMap.containsKey(fullConfigKeyName)) {
             currentValue = tryTransform(field, defaultvalueMap.get(fullConfigKeyName));
             if (!doNotReload) field.set(null, currentValue);
         }
@@ -523,7 +521,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
 
                     if (transformedConfig.transform() && !removed) {
                         try {
-                            for (Class<? extends DefaultTransformLogic> logic : transformedConfig.transformLogic()) {
+                            for (Class<? extends TransformLogic> logic : transformedConfig.transformLogic()) {
                                 oldValue = logic.getDeclaredConstructor().newInstance().transform(oldValue);
                             }
                             configFileInstance.set(fullConfigKeyName, oldValue);
@@ -605,17 +603,16 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     /**
      * Read the complete requested file without consuming staged values during cross-rule validation.
      */
-    private Object peekCarpetConfigValue(String fullConfigKeyName) {
-        Object value = stagedConfigMap.containsKey(fullConfigKeyName)
-                ? stagedConfigMap.get(fullConfigKeyName) : configFileInstance.get(fullConfigKeyName);
-        if (value == null) value = defaultvalueMap.get(fullConfigKeyName);
+    @Override
+    public Object peekConfigValue(String key) {
+        Object value = stagedConfigMap.containsKey(key)
+                ? stagedConfigMap.get(key) : configFileInstance.get(key);
+        if (value == null) value = defaultvalueMap.get(key);
         return value instanceof String text ? parseListFromString(text) : value;
     }
 
-    /**
-     * Runtime overrides are cleared before reading a new Carpet file, including invalid or missing entries.
-     */
-    private void restoreCarpetDefaults() {
+    @Override
+    public void restoreDefaultFields() {
         for (Object module : allInstanced.keySet()) {
             ConfigClassInfo classInfo = getConfigClassInfo(module);
             for (Field field : module.getClass().getDeclaredFields()) {
@@ -629,10 +626,25 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                     field.setAccessible(true);
                     field.set(null, tryTransform(field, defaultvalueMap.get(key)));
                 } catch (IllegalAccessException failure) {
-                    throw new IllegalStateException("Cannot restore Carpet rule " + key, failure);
+                    throw new IllegalStateException("Cannot restore default for " + key, failure);
                 }
             }
         }
+    }
+
+    @Override
+    public @NotNull Set<Object> getInstancedModules() {
+        return Collections.unmodifiableSet(allInstanced.keySet());
+    }
+
+    @Override
+    public void runBeforeFinalLoad(@NotNull Object module) {
+        invokeNeedRunMethods(module, EnumRunnableType.BEFORE_FINAL_LOAD, null);
+    }
+
+    @Override
+    public void registerBeforeFinalLoad(@NotNull Runnable runnable) {
+        ConfigManager.registerRunnableBeforeFinalLoad(runnable);
     }
 
     /**
@@ -868,18 +880,9 @@ public class ConfigsInstance implements LuminolConfigsInstance {
      * Attempt to transform a value to target type
      */
     private Object tryTransform(Field field, Object value) throws IllegalAccessException {
-        if (field.getDeclaringClass().getPackageName().equals("fun.bm.lophine.carpet.config.modules")) {
-            try {
-                String text = value instanceof List<?> list ? String.join(",", list.stream().map(Object::toString).toList()) : value.toString();
-                ConfigInfo info = field.getAnnotation(ConfigInfo.class);
-                String upstreamType = fun.bm.lophine.carpet.CarpetRuleMetadata.get(info.name()).type();
-                if (field.getType() == String.class && !Set.of("", "String", "boolean", "int", "long", "double", "float").contains(upstreamType))
-                    text = text.toLowerCase(Locale.ROOT);
-                return fun.bm.lophine.carpet.CarpetRuleRegistry.get(info.name()).parse(text);
-            } catch (RuntimeException failure) {
-                logger.error("Invalid Carpet rule {}: {}", field.getName(), failure.getMessage());
-                throw new IllegalFormatConversionExceptionWithOrigin((char) 0, field.getType(), value);
-            }
+        Optional<Object> customized = hooks.tryTransform(this, field, value);
+        if (customized.isPresent()) {
+            return customized.get();
         }
         Class<?> targetType = field.get(null).getClass();
         if (!targetType.isAssignableFrom(value.getClass())) {

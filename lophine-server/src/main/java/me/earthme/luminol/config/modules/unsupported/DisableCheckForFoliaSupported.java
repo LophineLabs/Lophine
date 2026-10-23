@@ -1,8 +1,8 @@
 package me.earthme.luminol.config.modules.unsupported;
 
-import me.earthme.luminol.config.flags.ConfigClassInfo;
-import me.earthme.luminol.config.flags.ConfigInfo;
-import me.earthme.luminol.enums.EnumConfigCategory;
+import me.earthme.luminol.api.config.annotation.ConfigClassInfo;
+import me.earthme.luminol.api.config.annotation.ConfigInfo;
+import me.earthme.luminol.api.config.enums.EnumConfigCategory;
 
 @ConfigClassInfo(category = EnumConfigCategory.UNSUPPORTED, name = "disable_check_for_folia_supported")
 public class DisableCheckForFoliaSupported {

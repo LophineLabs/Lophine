@@ -1,10 +1,10 @@
 package me.earthme.luminol.config.modules.experiment;
 
-import me.earthme.luminol.config.flags.ConfigClassInfo;
-import me.earthme.luminol.config.flags.ConfigInfo;
-import me.earthme.luminol.config.flags.DoNotLoad;
-import me.earthme.luminol.enums.EnumConfigCategory;
-import me.earthme.luminol.enums.EnumLoadType;
+import me.earthme.luminol.api.config.annotation.ConfigClassInfo;
+import me.earthme.luminol.api.config.annotation.ConfigInfo;
+import me.earthme.luminol.api.config.annotation.DoNotLoad;
+import me.earthme.luminol.api.config.enums.EnumConfigCategory;
+import me.earthme.luminol.api.config.enums.EnumLoadType;
 
 @ConfigClassInfo(category = EnumConfigCategory.EXPERIMENT, name = "command")
 public class CommandConfig {

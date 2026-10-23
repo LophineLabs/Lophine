@@ -1,10 +1,13 @@
 package me.earthme.luminol.config;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import fun.bm.lophine.carpet.CarpetConfigHooks;
+import me.earthme.luminol.api.config.TransformLogic;
+import me.earthme.luminol.api.config.annotation.TransformedConfig;
 import me.earthme.luminol.commands.CommandRegister;
-import me.earthme.luminol.config.flags.TransformedConfig;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -18,16 +21,21 @@ public class ConfigManager {
     private static final Collection<Runnable> runnableBeforeFinalLoad = new ConcurrentLinkedQueue<>();
     private static final Set<TransformingConfig> needTransformedConfigs = ConcurrentHashMap.newKeySet();
 
+    /**
+     * Register extra {@link ConfigsInstance}s with {@link #registerConfig} before calling this,
+     * then they are included in the same preload.
+     */
     public static void initConfigs() {
         registerConfig(builder.of("luminol", "me.earthme.luminol.config.modules"));
         registerConfig(builder.of("lophine", "fun.bm.lophine.config.modules")); // add lophine global config
         // Lophine start - add carpet config
         registerConfig(builder.of(
-                new java.io.File("lophine_config"),
+                new File("lophine_config"),
                 "lophine_carpet",
                 "lophine_carpet_config.toml",
                 "lophinecarpetconfig",
-                "fun.bm.lophine.carpet.config.modules"
+                "fun.bm.lophine.carpet.config.modules",
+                CarpetConfigHooks.INSTANCE
         ));
         // Lophine end - add carpet config
         preLoad();
@@ -113,10 +121,9 @@ public class ConfigManager {
                 boolean success = true;
                 if (transformedConfig.transform()) {
                     try {
-                        for (Class<? extends DefaultTransformLogic> logic : transformedConfig.transformLogic()) {
+                        for (Class<? extends TransformLogic> logic : transformedConfig.transformLogic()) {
                             oldValue = logic.getDeclaredConstructor().newInstance().transform(oldValue);
                         }
-                        oldValue = new DefaultTransformLogic().transform(oldValue);
                         targetConfig.set(newConfigKeyName, oldValue);
                         if (transformedConfig.transformComments()) {
                             targetConfig.setComment(newConfigKeyName, originConfig.getComment(oldConfigKeyName));

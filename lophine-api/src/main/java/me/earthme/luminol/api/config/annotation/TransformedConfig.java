@@ -1,6 +1,6 @@
-package me.earthme.luminol.config.flags;
+package me.earthme.luminol.api.config.annotation;
 
-import me.earthme.luminol.config.DefaultTransformLogic;
+import me.earthme.luminol.api.config.TransformLogic;
 
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -19,7 +19,7 @@ public @interface TransformedConfig {
 
     boolean transformComments() default true;
 
-    Class<? extends DefaultTransformLogic>[] transformLogic() default {};
+    Class<? extends TransformLogic>[] transformLogic() default {};
 
     @Retention(RetentionPolicy.RUNTIME)
     @interface List {

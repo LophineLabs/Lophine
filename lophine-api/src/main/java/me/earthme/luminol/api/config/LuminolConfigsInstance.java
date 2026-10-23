@@ -1,11 +1,13 @@
 package me.earthme.luminol.api.config;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -118,4 +120,41 @@ public interface LuminolConfigsInstance {
      * @return map of configuration data
      */
     Map<String, Map<EnumConfigData, Object>> getData(Collection<String> list, Collection<EnumConfigData> features);
+
+    /**
+     * Reads a value without consuming staged entries. Used while validators inspect
+     * the complete requested file.
+     *
+     * @param key the configuration key (dot-separated path)
+     * @return the staged, file, or default value, or {@code null} if none exist
+     */
+    @Nullable
+    Object peekConfigValue(String key);
+
+    /**
+     * Restores module fields to captured defaults before reading a new file.
+     */
+    void restoreDefaultFields();
+
+    /**
+     * Currently instantiated configuration modules.
+     *
+     * @return an unmodifiable view of module instances
+     */
+    @NotNull
+    Set<Object> getInstancedModules();
+
+    /**
+     * Invokes {@code @NeedRun(BEFORE_FINAL_LOAD)} on a module.
+     *
+     * @param module the configuration module instance
+     */
+    void runBeforeFinalLoad(@NotNull Object module);
+
+    /**
+     * Queues work that must run after preload and before finalize.
+     *
+     * @param runnable the task to run before the final load pass
+     */
+    void registerBeforeFinalLoad(@NotNull Runnable runnable);
 }

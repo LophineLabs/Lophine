@@ -1,10 +1,10 @@
 package me.earthme.luminol.config.modules.fixes;
 
-import me.earthme.luminol.config.flags.CommandSuggestions;
-import me.earthme.luminol.config.flags.ConfigClassInfo;
-import me.earthme.luminol.config.flags.ConfigInfo;
+import me.earthme.luminol.api.config.annotation.CommandSuggestions;
+import me.earthme.luminol.api.config.annotation.ConfigClassInfo;
+import me.earthme.luminol.api.config.annotation.ConfigInfo;
+import me.earthme.luminol.api.config.enums.EnumConfigCategory;
 import me.earthme.luminol.enums.EnumCollisionBehaviorMode;
-import me.earthme.luminol.enums.EnumConfigCategory;
 
 @ConfigClassInfo(category = EnumConfigCategory.FIXES, name = "collision_behavior")
 public class CollisionBehaviorConfig {

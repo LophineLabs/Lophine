@@ -1,4 +1,4 @@
-package me.earthme.luminol.enums;
+package me.earthme.luminol.api.config.enums;
 
 public enum EnumConfigCategory {
     OPTIMIZATIONS("optimizations"),   // optimize performance feature

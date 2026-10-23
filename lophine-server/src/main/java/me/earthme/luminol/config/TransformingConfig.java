@@ -1,6 +1,6 @@
 package me.earthme.luminol.config;
 
-import me.earthme.luminol.config.flags.TransformedConfig;
+import me.earthme.luminol.api.config.annotation.TransformedConfig;
 
 public record TransformingConfig(
         TransformedConfig info,

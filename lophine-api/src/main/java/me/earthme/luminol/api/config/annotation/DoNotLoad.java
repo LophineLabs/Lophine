@@ -1,6 +1,6 @@
-package me.earthme.luminol.config.flags;
+package me.earthme.luminol.api.config.annotation;
 
-import me.earthme.luminol.enums.EnumLoadType;
+import me.earthme.luminol.api.config.enums.EnumLoadType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
