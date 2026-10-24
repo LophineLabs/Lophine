@@ -3,7 +3,7 @@ package me.earthme.luminol.utils.dialog;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import fun.bm.lophine.utils.ServerI18nUtil;
-import me.earthme.luminol.api.config.EnumConfigData;
+import me.earthme.luminol.api.config.enums.EnumConfigData;
 import me.earthme.luminol.config.ConfigsInstance;
 import net.kyori.adventure.text.format.TextColor;
 import net.minecraft.commands.functions.StringTemplate;
@@ -25,7 +25,8 @@ public class ConfigCommandDialog {
             EnumConfigData.COMMENT,
             EnumConfigData.SUGGESTIONS,
             EnumConfigData.LOCALIZED_NAME,
-            EnumConfigData.UNIQUE_ID
+            EnumConfigData.UNIQUE_ID,
+            EnumConfigData.CAN_DEFINED_BY_WORLD
     );
 
     public static void openGui(Player player, String name, ConfigsInstance config) {

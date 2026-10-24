@@ -289,10 +289,10 @@ index 37c9f983ae89c497f44a1b7967d741abf909e0a0..d7fb2505f2a86ca0d81f144624ef2e1a
  
              this.setListData(players);
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 5ca86157d3115ec1e75072296f1a0e364c31b81a..64ca93c40e157c7e2350782ec2d2763c0efd86f9 100644
+index b8c699ab0f1a942c24bbd21dd620e774061deb10..ed754c77459718de01c5616f6d2e21c2bef72736 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -3371,7 +3371,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3378,7 +3378,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.add(player);
                  // Leaves start - skip
@@ -301,7 +301,7 @@ index 5ca86157d3115ec1e75072296f1a0e364c31b81a..64ca93c40e157c7e2350782ec2d2763c
                      ServerLevel.this.realPlayers.add(player);
                  }
                  // Leaves end - skip
-@@ -3456,7 +3456,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3463,7 +3463,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.remove(player);
                  // Leaves start - skip
@@ -311,7 +311,7 @@ index 5ca86157d3115ec1e75072296f1a0e364c31b81a..64ca93c40e157c7e2350782ec2d2763c
                  }
                  // Leaves end - skip
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 22d38d5f78fb8c279b5e7894bbc61dba7c28e343..2b328796a3c31f744b6c5785cdb7a9b11faf338e 100644
+index 8220cb1042856e48ed9f80272040793d113fb604..6eb83753bf7b3355fe69d0dbcba7534867b69349 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -131,6 +131,7 @@ public abstract class PlayerList {

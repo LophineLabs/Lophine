@@ -42,3 +42,48 @@ index 762822ce2ccf98952dc92be4824c48fe6bc1bacb..dcbdffd521fd37fe7de222023ed3b933
          this.server.spark.enableEarlyIfRequested(); // Paper - spark
          // Paper start - fix converting txt to json file; convert old users earlier after PlayerList creation but before file load/save
          if (this.convertOldUsers()) {
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index 3d352bb9b0606236d789a70897d7bec12bcf6846..10a162d3429499424c162c2d455cea4c78ce81a8 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -608,6 +608,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+         // CraftBukkit end
+         this.tickTime = tickTime;
+         this.server = server;
++        // Luminol start - per-world config
++        this.luminolWorldConfig(me.earthme.luminol.config.ConfigManager.loadWorldConfigs(
++            loadedWorldData.bukkitName(),
++            server.storageSource.getDimensionPath(dimension).toFile()
++        ));
++        // Luminol end - per-world config
+         this.customSpawners = customSpawners;
+         this.serverLevelData = levelData;
+         ChunkGenerator generator = levelStem.generator();
+@@ -1630,6 +1636,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+     public void saveLevelData(final boolean sync) { // Folia - public
+         SavedDataStorage savedDataStorage = this.getChunkSource().getDataStorage();
+         savedDataStorage.computeIfAbsent(io.papermc.paper.world.saveddata.PaperWorldPDC.TYPE).setFrom(this.persistentDataContainer); // Paper
++        this.luminolWorldConfig().save(); // Luminol - per-world config
+         if (sync) {
+             savedDataStorage.saveAndJoin();
+         } else {
+diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
+index 7c61b018508c24ae1e338763393dd6a9c5db60d9..29d18d19f9a123b2d2601142d6744aca456d1a23 100644
+--- a/net/minecraft/world/level/Level.java
++++ b/net/minecraft/world/level/Level.java
+@@ -159,6 +159,15 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+         return this.paperConfig;
+     }
+     // Paper end - add paper world config
++    // Luminol start - per-world config
++    private me.earthme.luminol.config.WorldConfigHolder luminolWorldConfig = me.earthme.luminol.config.WorldConfigHolder.empty();
++    public me.earthme.luminol.config.WorldConfigHolder luminolWorldConfig() {
++        return this.luminolWorldConfig;
++    }
++    public void luminolWorldConfig(me.earthme.luminol.config.WorldConfigHolder holder) {
++        this.luminolWorldConfig = java.util.Objects.requireNonNull(holder);
++    }
++    // Luminol end - per-world config
+ 
+     public static @Nullable BlockPos lastPhysicsProblem; // Spigot
+     //public final Map<ServerExplosion.CacheKey, Float> explosionDensityCache = new java.util.HashMap<>(); // Paper - Optimize explosions // Folia - region threading

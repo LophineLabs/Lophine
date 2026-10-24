@@ -5,7 +5,7 @@ Subject: [PATCH] Old zombie reinforcement
 
 
 diff --git a/net/minecraft/world/entity/monster/zombie/Zombie.java b/net/minecraft/world/entity/monster/zombie/Zombie.java
-index 071c1fba954486634599eab7843f7ae751ee5be6..0a44c8bfb94dbe0dfd462cb2430d6e9efebd0410 100644
+index 071c1fba954486634599eab7843f7ae751ee5be6..8c5763d9cba6469a8529e41008927110f996a5e4 100644
 --- a/net/minecraft/world/entity/monster/zombie/Zombie.java
 +++ b/net/minecraft/world/entity/monster/zombie/Zombie.java
 @@ -302,7 +302,7 @@ public class Zombie extends Monster {
@@ -13,7 +13,7 @@ index 071c1fba954486634599eab7843f7ae751ee5be6..0a44c8bfb94dbe0dfd462cb2430d6e9e
              int y = Mth.floor(this.getY());
              int z = Mth.floor(this.getZ());
 -            EntityType<? extends Zombie> type = this.getType();
-+            EntityType<? extends Zombie> type = fun.bm.lophine.config.modules.function.OldFeatureConfig.oldZombieReinforcement ? EntityTypes.ZOMBIE : this.getType(); // Lophine - old zombie reinforcement
++            EntityType<? extends Zombie> type = fun.bm.lophine.config.modules.function.OldFeatureConfig.oldZombieReinforcement() ? EntityTypes.ZOMBIE : this.getType(); // Lophine - old zombie reinforcement
              Zombie reinforcement = type.create(level, EntitySpawnReason.REINFORCEMENT);
              if (reinforcement == null) {
                  return true;

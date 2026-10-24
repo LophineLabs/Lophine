@@ -9,7 +9,7 @@ Original patch: https://github.com/pufferfish-gg/Pufferfish/blob/ver/1.21/puffer
 Original license(GPL-3.0): https://github.com/pufferfish-gg/Pufferfish/blob/ver/1.21/PATCH-LICENSE
 
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
-index 37d38fb5ad9f9a268ec83f6fd5316046f60be0d6..7d046a2ffbd8dafce8757dd462953227ecd90514 100644
+index 37d38fb5ad9f9a268ec83f6fd5316046f60be0d6..a28e62e9a17ea4ff0ddd676e287f7e5f2f36fdab 100644
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
 @@ -217,6 +217,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
@@ -26,7 +26,7 @@ index 37d38fb5ad9f9a268ec83f6fd5316046f60be0d6..7d046a2ffbd8dafce8757dd462953227
          if (!this.aware) return; // Paper - Do not tick AI for inactive unaware mobs
 -        final boolean isThrottled = this.level().paperConfig().entities.behavior.inactiveMobGoalSelectorThrottleRate.enabled() && inactiveTickDisableCounter++ % this.level().paperConfig().entities.behavior.inactiveMobGoalSelectorThrottleRate.intValue() != 0; // Paper - Throttle inactive goal selector ticking
 +        final boolean isThrottled = (this.level().paperConfig().entities.behavior.inactiveMobGoalSelectorThrottleRate.enabled() && inactiveTickDisableCounter++ % this.level().paperConfig().entities.behavior.inactiveMobGoalSelectorThrottleRate.intValue() != 0) // Paper - Throttle inactive goal selector ticking
-+                || (me.earthme.luminol.config.modules.optimizations.EntityGoalSelectorInactiveTickConfig.enabled && _pufferfish_inactiveTickDisableCounter++ % 20 != 0); // Pufferfish - throttle inactive goal selector ticking
++                || (me.earthme.luminol.config.modules.optimizations.EntityGoalSelectorInactiveTickConfig.enabled() && _pufferfish_inactiveTickDisableCounter++ % 20 != 0); // Pufferfish - throttle inactive goal selector ticking
          if (this.goalSelector.inactiveTick() && !isThrottled) {
              this.goalSelector.tick();
          }

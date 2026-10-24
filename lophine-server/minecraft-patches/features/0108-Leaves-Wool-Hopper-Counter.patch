@@ -10,7 +10,7 @@ Licensed under: MIT
 This patch is Powered by fabric-carpet(https://github.com/gnembon/fabric-carpet)
 
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index 75777ef41189e3f9bed6e1679538ddcd4089d7d4..1b340f32b06237b320df4a97c6cca165959d2eb2 100644
+index 9ff6bcd36978df86f546a8391d46fe36a580dc5d..9193d1d7ecb5a73908cea4bf3faa8b37bae399a5 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -240,8 +240,30 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
@@ -43,7 +43,7 @@ index 75777ef41189e3f9bed6e1679538ddcd4089d7d4..1b340f32b06237b320df4a97c6cca165
 +                // Leaves end - Wool hopper counter
                  setChanged(level, pos, state);
                  // Leaves start - Lithium Sleeping Block Entity
-                 if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled
+                 if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()
 @@ -464,6 +486,13 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      // Paper end - Perf: Optimize Hoppers
  
@@ -55,7 +55,7 @@ index 75777ef41189e3f9bed6e1679538ddcd4089d7d4..1b340f32b06237b320df4a97c6cca165
 +            }
 +        }
 +        // Leaves end - hopper counter
-         Container container = me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled ? self.getInsertInventory(level) : getAttachedContainer(level, blockPos, self); // Leaves - Lithium Sleeping Block Entity
+         Container container = me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() ? self.getInsertInventory(level) : getAttachedContainer(level, blockPos, self); // Leaves - Lithium Sleeping Block Entity
          if (container == null) {
              return false;
 @@ -517,6 +546,25 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen

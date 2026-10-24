@@ -5,7 +5,7 @@ Subject: [PATCH] Global Entities Counter
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 3a9cb8efc98332d4f1344a4bd5db225ca3a7195a..8e75cd913565841ce4bbe6b3a5832027f14216da 100644
+index e90bb7efd6e9e1dc60e7f0a0572979ded54c2cf0..0f83100387227001b7295c1178df4d6c668a0bca 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -558,6 +558,9 @@ public final class RegionizedWorldData {
@@ -99,10 +99,10 @@ index c1ba9f45837a718099461d8e1a84c3dfc2468489..021ff2785ddd8a88376ee2f9e47f79d9
                  NaturalSpawner.spawnForChunk(this.level, chunk, spawnCookie, spawningCategories);
              }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 97bd0bb6422809543b9b5b24de1c4f1d01da4498..97bf278d5a00d86fbf0e36d14cbc5d1d1e0616c4 100644
+index 50fda0fa012a35038d16c353092e4f8b40697c20..2cfe797d5a06aa530a24248a89b2233bfc16e4a0 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -830,6 +830,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -836,6 +836,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      }
  
      public void tick(BooleanSupplier haveTime, final io.papermc.paper.threadedregions.TickRegions.TickRegionData region) { // Folia - regionised ticking
@@ -114,7 +114,7 @@ index 97bd0bb6422809543b9b5b24de1c4f1d01da4498..97bf278d5a00d86fbf0e36d14cbc5d1d
          final io.papermc.paper.threadedregions.RegionizedWorldData regionizedWorldData = this.getCurrentWorldData(); // Folia - regionised ticking
          final ca.spottedleaf.leafprofiler.RegionizedProfiler.Handle foliaProfiler = io.papermc.paper.threadedregions.TickRegionScheduler.getProfiler(); // Folia - profiler
          ProfilerFiller profiler = Profiler.get();
-@@ -3205,6 +3210,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3212,6 +3217,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      public void close() throws IOException {
          super.close();
          //this.entityManager.close(); // Paper - rewrite chunk system
@@ -126,7 +126,7 @@ index 97bd0bb6422809543b9b5b24de1c4f1d01da4498..97bf278d5a00d86fbf0e36d14cbc5d1d
      }
  
      @Override
-@@ -3424,6 +3434,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3431,6 +3441,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              entity.inWorld = true; // CraftBukkit - Mark entity as in world
              entity.valid = true; // CraftBukkit
              ServerLevel.this.getChunkSource().addEntity(entity); // Paper - ignore and warn about illegal addEntity calls instead of crashing server
@@ -138,7 +138,7 @@ index 97bd0bb6422809543b9b5b24de1c4f1d01da4498..97bf278d5a00d86fbf0e36d14cbc5d1d
              // Paper start - Entity origin API
              if (entity.origin == null) {
                  entity.origin = entity.position();
-@@ -3439,6 +3454,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3446,6 +3461,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          @Override
          public void onTrackingEnd(final Entity entity) {
              org.spigotmc.AsyncCatcher.catchOp("entity unregister"); // Spigot
@@ -151,7 +151,7 @@ index 97bd0bb6422809543b9b5b24de1c4f1d01da4498..97bf278d5a00d86fbf0e36d14cbc5d1d
              // Spigot start
              if (entity instanceof Player player) {
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
-index dbecf7e12d510b26d3e942cbe5a5a3b3294e06ec..064a75e8ccb2d18ddde6da72b6ba105bed599abe 100644
+index df800452cef1391441c88e0eb2673ec123cab796..ab68f7ed969c99a0c8fee80f1045cb90bd5b731c 100644
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
 @@ -835,6 +835,41 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs

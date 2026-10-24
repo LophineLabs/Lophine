@@ -20,10 +20,10 @@ index bc3f8874d102e7f89105865522b252353a67db8e..88014b8c75cf4a804f11f6089ba0dbc5
      // block ticking
      private final ObjectLinkedOpenHashSet<BlockEventData> blockEvents = new ObjectLinkedOpenHashSet<>();
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 4825fbbd48e0f6d4bfcc0df7cca8b420e6c29686..0ae7ec9664f7ea4883f85f6f7286dbb34caf547b 100644
+index 17bf3afe8d1a6c9e72fd7fdb2591c991a0786a6f..3f9c325937a9a586bd2f61ea1814a15c9cf2e7ee 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -923,6 +923,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -929,6 +929,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              }
  
              foliaProfiler.startTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.ACTIVATE_ENTITIES); try { // Folia - profiler
@@ -31,7 +31,7 @@ index 4825fbbd48e0f6d4bfcc0df7cca8b420e6c29686..0ae7ec9664f7ea4883f85f6f7286dbb3
              io.papermc.paper.entity.activation.ActivationRange.activateEntities(this); // Paper - EAR
              } finally { foliaProfiler.stopTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.ACTIVATE_ENTITIES); } // Folia - profiler
              foliaProfiler.startTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.ENTITY_TICK); try { // Folia - profiler
-@@ -944,6 +945,13 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -950,6 +951,13 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
  
                                          entity.stopRiding();
                                      }
@@ -45,7 +45,7 @@ index 4825fbbd48e0f6d4bfcc0df7cca8b420e6c29686..0ae7ec9664f7ea4883f85f6f7286dbb3
  
                                      profiler.push("tick");
                                      this.guardEntityTick(this::tickNonPassenger, entity);
-@@ -953,6 +961,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -959,6 +967,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
                          }
                      }
                  );

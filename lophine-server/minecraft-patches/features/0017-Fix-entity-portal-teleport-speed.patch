@@ -5,10 +5,10 @@ Subject: [PATCH] Fix entity portal-teleport speed
 
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 3d352bb9b0606236d789a70897d7bec12bcf6846..a8b6d300d175b8f4f0cd66b4deabb680791551bf 100644
+index 10a162d3429499424c162c2d455cea4c78ce81a8..4091db337e5330eb6e357dd8fc0e6cc8059100df 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -1498,7 +1498,65 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1504,7 +1504,65 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          foliaProfiler.startTimer(timerId);
          try {
          // Folia end - profiler
@@ -38,7 +38,7 @@ index 3d352bb9b0606236d789a70897d7bec12bcf6846..a8b6d300d175b8f4f0cd66b4deabb680
 +                entity.losingTicks = 0; // reset losingTicks
 +                if (entity.teleportTickType == fun.bm.lophine.enums.EnumTeleportStage.SYNCING) entity.teleportTickType = fun.bm.lophine.enums.EnumTeleportStage.NORMAL;
 +            } else if (!(entity instanceof Player) && entity.teleportTickType == fun.bm.lophine.enums.EnumTeleportStage.STOP_TICKING) { // Luminol - portal teleport only
-+                if (fun.bm.lophine.config.modules.fixes.TeleportConfig.enableDelayCompensation && entity.losingTicks < fun.bm.lophine.config.modules.fixes.TeleportConfig.maxDelayCompensationTicks) {
++                if (fun.bm.lophine.config.modules.fixes.TeleportConfig.enableDelayCompensation() && entity.losingTicks < fun.bm.lophine.config.modules.fixes.TeleportConfig.maxDelayCompensationTicks()) {
 +                    entity.losingTicks++;
 +                }
 +                if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(entity)) {
@@ -74,7 +74,7 @@ index 3d352bb9b0606236d789a70897d7bec12bcf6846..a8b6d300d175b8f4f0cd66b4deabb680
          entity.tick();
          // Folia start - region threading
          if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(entity)) {
-@@ -1509,6 +1567,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1515,6 +1573,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              // portalled
              return;
          }

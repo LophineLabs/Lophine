@@ -321,11 +321,11 @@ index e75f19a84ff3e21f93edea2ae1cdb4458c46bddd..d2a82815fee183479c94afa610c88e8a
      protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
          Containers.updateNeighboursAfterDestroy(state, level, pos);
 diff --git a/net/minecraft/world/level/block/DiodeBlock.java b/net/minecraft/world/level/block/DiodeBlock.java
-index c343e1c54951fd82a74d97e196af162743049033..d0956d191c9d3548765fd99b80c4a87e2535dc97 100644
+index fadfa0b80215c75253a6acdff5b84a50933e9e81..81830dee91ca4a7b6016fef7577193126668a904 100644
 --- a/net/minecraft/world/level/block/DiodeBlock.java
 +++ b/net/minecraft/world/level/block/DiodeBlock.java
 @@ -178,6 +178,17 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
-         if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && this instanceof ComparatorBlock && !oldState.is(Blocks.COMPARATOR)) org.leavesmc.leaves.lithium.common.block.entity.inventory_comparator_tracking.ComparatorTracking.notifyNearbyBlockEntitiesAboutNewComparator(level, pos); // Leaves - Lithium Sleeping Block Entity
+         if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this instanceof ComparatorBlock && !oldState.is(Blocks.COMPARATOR)) org.leavesmc.leaves.lithium.common.block.entity.inventory_comparator_tracking.ComparatorTracking.notifyNearbyBlockEntitiesAboutNewComparator(level, pos); // Leaves - Lithium Sleeping Block Entity
      }
  
 +    // Leaves start - behaviour 1.21.1-
@@ -363,7 +363,7 @@ index f777b67e0d90c1bb25c3aeef8e5b1710ab8ac96e..152d037d7717e1364dcb8b3dfb518cd9
      protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
          Containers.updateNeighboursAfterDestroy(state, level, pos);
 diff --git a/net/minecraft/world/level/block/HopperBlock.java b/net/minecraft/world/level/block/HopperBlock.java
-index b830c0524901a4d728af2709b27afc5dcd4d8f3e..2832a0e71ec0a43dc58c2ace0c910e78bedd7aa4 100644
+index 2068d22c14aa42635c63a9e3e2e8788a9983ad0b..8c34dc9208d7a724c2085a011d37d55d6052b514 100644
 --- a/net/minecraft/world/level/block/HopperBlock.java
 +++ b/net/minecraft/world/level/block/HopperBlock.java
 @@ -133,6 +133,15 @@ public class HopperBlock extends BaseEntityBlock  implements org.leavesmc.leaves
@@ -669,7 +669,7 @@ index c900efadb938e6d19d1d5c03b73adac82081c347..595163be1a1d15238ee2a01fc8a5d1ce
      protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
          if (io.papermc.paper.configuration.GlobalConfiguration.get().blockUpdates.disableTripwireUpdates) return; // Paper - prevent adjacent tripwires from updating
 diff --git a/net/minecraft/world/level/block/TripWireHookBlock.java b/net/minecraft/world/level/block/TripWireHookBlock.java
-index d30e0de64f33e592ed65b05cbf2feec45da9bd3e..8e939d37d72da337f535b7987c756baae868b47f 100644
+index 4360b65eb46321bb123826038370a1b1319c878f..ea0dec735b0e44e4f337a7c591e8a74f6f7cf1b6 100644
 --- a/net/minecraft/world/level/block/TripWireHookBlock.java
 +++ b/net/minecraft/world/level/block/TripWireHookBlock.java
 @@ -241,6 +241,26 @@ public class TripWireHookBlock extends Block {
@@ -700,7 +700,7 @@ index d30e0de64f33e592ed65b05cbf2feec45da9bd3e..8e939d37d72da337f535b7987c756baa
      protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
          if (!movedByPiston) {
 diff --git a/net/minecraft/world/level/block/entity/BlockEntityType.java b/net/minecraft/world/level/block/entity/BlockEntityType.java
-index cda0d6d01035570844f03e523db7721cc6cc3e6d..b88b1b123563f06ce00f20ce775a3dfcd5df79de 100644
+index cda0d6d01035570844f03e523db7721cc6cc3e6d..131587ad681f72f5eec18555e17ad1129c3d8878 100644
 --- a/net/minecraft/world/level/block/entity/BlockEntityType.java
 +++ b/net/minecraft/world/level/block/entity/BlockEntityType.java
 @@ -28,7 +28,7 @@ public class BlockEntityType<T extends BlockEntity> {
@@ -708,7 +708,7 @@ index cda0d6d01035570844f03e523db7721cc6cc3e6d..b88b1b123563f06ce00f20ce775a3dfc
  
      public boolean isValid(final BlockState state) {
 -        return this.validBlocks.contains(state.getBlock());
-+        return fun.bm.lophine.config.modules.experiment.RedStoneConfig.oldBlockRemoveBehaviour || this.validBlocks.contains(state.getBlock()); // Leaves - behaviour 1.21.1-
++        return fun.bm.lophine.config.modules.experiment.RedStoneConfig.oldBlockRemoveBehaviour() || this.validBlocks.contains(state.getBlock()); // Leaves - behaviour 1.21.1-
      }
  
      @Deprecated
@@ -762,7 +762,7 @@ index c00cbfa4d0238ae42a91023a29d674ae98de6400..851419cdccdee98ceab22c01fb696260
      protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
          BlockPos basePos = pos.relative(state.getValue(FACING).getOpposite());
 diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
-index 0282d2e88698e1c9db194b5bfe4846a120ee9160..4711709f0bbbc37b487c753ceb9a5bca8d02ec14 100644
+index 10ddf77c088088a9b30aff0706e74afca958957e..9f7c8f6b7b594c86d96c6e40ebf2d9dc4156c62f 100644
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
 @@ -163,6 +163,16 @@ public abstract class BlockBehaviour implements FeatureElement, org.leavesmc.lea
@@ -797,7 +797,7 @@ index 0282d2e88698e1c9db194b5bfe4846a120ee9160..4711709f0bbbc37b487c753ceb9a5bca
              this.getBlock().affectNeighborsAfterRemoval(this.asState(), level, pos, movedByPiston);
          }
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index ea956de9e80194a4fc1de2a8b6177fa44213ba2a..0a4c99969f4ed14c8852802df80f98eabf07cc38 100644
+index 984a963d7cc85c0d1f6c408d9657498feb9eb909..2da2034f8b34e73ea26948c254c7c484fb55592e 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -429,6 +429,8 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
@@ -805,7 +805,7 @@ index ea956de9e80194a4fc1de2a8b6177fa44213ba2a..0a4c99969f4ed14c8852802df80f98ea
          boolean movedByPiston = (flags & Block.UPDATE_MOVE_BY_PISTON) != 0;
          boolean sideEffects = (flags & Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS) == 0;
 +        // Leaves start - behaviour 1.21.1-
-+        if (!fun.bm.lophine.config.modules.experiment.RedStoneConfig.oldBlockRemoveBehaviour) {
++        if (!fun.bm.lophine.config.modules.experiment.RedStoneConfig.oldBlockRemoveBehaviour()) {
          if (blockChanged && oldState.hasBlockEntity() && !state.shouldChangedStateKeepBlockEntity(oldState)) {
              if (!this.level.isClientSide() && sideEffects) {
                  BlockEntity blockEntity = this.level.getBlockEntity(pos);

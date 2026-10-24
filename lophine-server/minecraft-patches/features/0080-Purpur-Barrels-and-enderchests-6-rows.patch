@@ -115,7 +115,7 @@ index 34e6bb7d246f065698def3b1f7a0d237f304f2aa..c38dbe2b9379723f74be3b5dbe045d58
              // Paper end - Fix InventoryOpenEvent cancellation - moved up;
                  player.awardStat(Stats.OPEN_ENDERCHEST);
 diff --git a/net/minecraft/world/level/block/entity/BarrelBlockEntity.java b/net/minecraft/world/level/block/entity/BarrelBlockEntity.java
-index cb255428e2b4219edab25de629139ae24ebdd275..93685e21c43113259b3076f24520ed91370739fe 100644
+index 21e1ad1b0015fa7b8715e7f936e6c818493cafc4..08f3b64ffbd8fe51aceb13feed5eec1aff5eb800 100644
 --- a/net/minecraft/world/level/block/entity/BarrelBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BarrelBlockEntity.java
 @@ -58,7 +58,17 @@ public class BarrelBlockEntity extends RandomizableContainerBlockEntity implemen

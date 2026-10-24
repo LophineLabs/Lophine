@@ -8,7 +8,7 @@ As part of: Petal (https://github.com/Bloom-host/Petal/blob/cc691540fb48240f38b3
 Licensed under: GPL-3.0 (https://github.com/Bloom-host/Petal/blob/cc691540fb48240f38b376f3d94c8b0db2b60d99/LICENSE)
 
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
-index 7d046a2ffbd8dafce8757dd462953227ecd90514..dbecf7e12d510b26d3e942cbe5a5a3b3294e06ec 100644
+index a28e62e9a17ea4ff0ddd676e287f7e5f2f36fdab..df800452cef1391441c88e0eb2673ec123cab796 100644
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
 @@ -850,11 +850,12 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
@@ -19,7 +19,7 @@ index 7d046a2ffbd8dafce8757dd462953227ecd90514..dbecf7e12d510b26d3e942cbe5a5a3b3
          ProfilerFiller profiler = Profiler.get();
          profiler.push("sensing");
 -        this.sensing.tick();
-+        if (idBasedTickCount % me.earthme.luminol.config.modules.optimizations.PetalReduceSensorWorkConfig.delayTicks == 0 || !me.earthme.luminol.config.modules.optimizations.PetalReduceSensorWorkConfig.enabled) this.sensing.tick(); // Luminol - Petal - Reduce sensor work
++        if (idBasedTickCount % me.earthme.luminol.config.modules.optimizations.PetalReduceSensorWorkConfig.delayTicks() == 0 || !me.earthme.luminol.config.modules.optimizations.PetalReduceSensorWorkConfig.enabled()) this.sensing.tick(); // Luminol - Petal - Reduce sensor work
          profiler.pop();
 -        int idBasedTickCount = this.tickCount + this.getId();
 +        //int idBasedTickCount = this.tickCount + this.getId(); // Luminol - Petal - Move up
