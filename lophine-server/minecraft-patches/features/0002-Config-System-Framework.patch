@@ -17,16 +17,14 @@ index aa7f2ba4d931f98ce15c52dc2b99f07504149582..f72f7044b4110e2a5a185b1012a31819
              Bootstrap.bootStrap();
              Bootstrap.validate();
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 7336ed6fce34e0aae96893b18cd142d448e2fcfa..1130bf3718bc03e43cc7e77ce50217b5aca313d3 100644
+index 7336ed6fce34e0aae96893b18cd142d448e2fcfa..8dd8644745a7b18471bff7da3849024a782b278b 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1151,6 +1151,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1151,6 +1151,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              ca.spottedleaf.moonrise.common.util.MoonriseCommon.haltExecutors();
          }
          // Paper end - rewrite chunk system
-+        // Luminol start - Config Systems
-+        me.earthme.luminol.config.ConfigManager.saveConfigs();
-+        // Luminol end
++        me.earthme.luminol.config.ConfigManager.saveConfigs(); // Luminol - Config Systems
          // Paper start - Improved watchdog support - move final shutdown items here
          Util.shutdownExecutors();
          this.onServerExit();
