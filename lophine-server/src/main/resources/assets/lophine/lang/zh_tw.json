@@ -1016,7 +1016,7 @@
   "lophine_carpet.carpet.tis.chunkUpdatePacketThreshold": "區塊更新資料包閾值",
   "lophine_carpet.carpet.tis.chunkUpdatePacketThreshold.comment": "如果方塊變化的數量大於這個閾值，則遊戲將僅傳送區塊更新資料包而非若干個方塊變更資料包\n增加該數值或許可以減小網路頻寬用量，並在子區段同時存在不少方塊實體與方塊變化時提升客戶端的幀數\n將其設為非常高以模擬1.16+的表現，也就是不存在區塊更新資料包，僅有多個方塊變更資料包\n該規則僅於1.16前的版本有效",
   "lophine_carpet.carpet.tis.clientSettingsLostOnRespawnFix": "重生後客戶端設定丟失修復",
-  "lophine_carpet.carpet.tis.clientSettingsLostOnRespawnFix.comment": "在重��後重新套用玩家上一次已知的客戶端設定。",
+  "lophine_carpet.carpet.tis.clientSettingsLostOnRespawnFix.comment": "在重生後重新套用玩家上一次已知的客戶端設定。",
   "lophine_carpet.carpet.tis.commandLifeTime": "存活時間追蹤器",
   "lophine_carpet.carpet.tis.commandLifeTime.comment": "啟用/lifetime命令用於追蹤生物存活時間等資訊\n可助於除錯刷怪塔等\n可選值：true, false, ops, 0, 1, 2, 3, 4",
   "lophine_carpet.carpet.tis.commandManipulate": "世界控制命令開關",
