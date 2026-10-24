@@ -250,6 +250,7 @@ public class LevelSubRegionShutdownThread extends RegionShutdownThread {
         LOGGER.info("Saving level data...");
         this.saveLevelData(this.toUnload);
         LOGGER.info("Saved level data");
+        me.earthme.luminol.config.ConfigManager.unloadWorldConfigs(this.toUnload.getWorld().getName(), this.doSaving); // Luminol - per-world config
 
         LOGGER.info("Closing other misc resources...");
         this.closeOtherMiscResources();

@@ -120,7 +120,7 @@ public class CullTask implements Runnable {
                     continue;
                 }
 
-                if (!entity.position().closerThan(cameraMC, RayTrackingEntityTrackerConfig.tracingDistance)) {
+                if (!entity.position().closerThan(cameraMC, RayTrackingEntityTrackerConfig.tracingDistance())) {
                     cullable.setCulled(false); // If your entity view distance is larger than tracingDistance just
                     // render it
                     continue;
@@ -144,7 +144,7 @@ public class CullTask implements Runnable {
     }
 
     private boolean isSkippableArmorstand(Entity entity) {
-        if (!RayTrackingEntityTrackerConfig.skipMarkerArmorStands)
+        if (!RayTrackingEntityTrackerConfig.skipMarkerArmorStands())
             return false;
         return entity instanceof ArmorStand && entity.isInvisible();
     }

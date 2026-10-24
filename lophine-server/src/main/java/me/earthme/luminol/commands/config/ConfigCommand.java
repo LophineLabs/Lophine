@@ -25,6 +25,7 @@ public class ConfigCommand extends RootNode {
                 new CleanCommand(this),
                 new ResetCommentsCommand(this)
         );
+        if (config.usesWorldConfig()) children(new DimensionCommand(this));
     }
 
     public boolean hasPermission(@NotNull CommandSender sender, String... subcommand) {

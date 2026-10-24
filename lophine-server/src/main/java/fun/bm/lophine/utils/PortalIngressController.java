@@ -17,8 +17,8 @@ public final class PortalIngressController {
             Math.max(
                     1,
                     Math.max(
-                            PortalRateLimiterConfig.portalIngressTokensPerTick,
-                            PortalRateLimiterConfig.portalIngressBurstCapacity
+                            PortalRateLimiterConfig.portalIngressTokensPerTick(),
+                            PortalRateLimiterConfig.portalIngressBurstCapacity()
                     )
             )
     );
@@ -26,17 +26,17 @@ public final class PortalIngressController {
     private final LongAdder deferredEntities = new LongAdder();
 
     public void refillForDestinationTick() {
-        if (!PortalRateLimiterConfig.destinationBackpressureEnabled) {
+        if (!PortalRateLimiterConfig.destinationBackpressureEnabled()) {
             return;
         }
 
-        final int refill = Math.max(1, PortalRateLimiterConfig.portalIngressTokensPerTick);
-        final int capacity = Math.max(refill, PortalRateLimiterConfig.portalIngressBurstCapacity);
+        final int refill = Math.max(1, PortalRateLimiterConfig.portalIngressTokensPerTick());
+        final int capacity = Math.max(refill, PortalRateLimiterConfig.portalIngressBurstCapacity());
         this.availableTokens.getAndUpdate(current -> Math.min(capacity, current + refill));
     }
 
     public boolean tryAcquire(final int entityCount) {
-        if (!PortalRateLimiterConfig.destinationBackpressureEnabled) {
+        if (!PortalRateLimiterConfig.destinationBackpressureEnabled()) {
             return true;
         }
 

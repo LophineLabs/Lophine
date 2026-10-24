@@ -1,5 +1,6 @@
 package me.earthme.luminol.api.config;
 
+import me.earthme.luminol.api.config.enums.EnumConfigData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

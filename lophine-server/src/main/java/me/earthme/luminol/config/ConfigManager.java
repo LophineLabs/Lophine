@@ -5,7 +5,9 @@ import fun.bm.lophine.carpet.CarpetConfigHooks;
 import me.earthme.luminol.api.config.TransformLogic;
 import me.earthme.luminol.api.config.annotation.TransformedConfig;
 import me.earthme.luminol.commands.CommandRegister;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +20,7 @@ public class ConfigManager {
     private static boolean initialized = false;
     private static final ConfigsInstanceBuilder builder = new ConfigsInstanceBuilder();
     private static final Map<String, ConfigsInstance> configfiles = new HashMap<>();
+    private static final Map<String, WorldConfigHolder> worldHolders = new ConcurrentHashMap<>();
     private static final Collection<Runnable> runnableBeforeFinalLoad = new ConcurrentLinkedQueue<>();
     private static final Set<TransformingConfig> needTransformedConfigs = ConcurrentHashMap.newKeySet();
 
@@ -35,7 +38,8 @@ public class ConfigManager {
                 "lophine_carpet_config.toml",
                 "lophinecarpetconfig",
                 "fun.bm.lophine.carpet.config.modules",
-                CarpetConfigHooks.INSTANCE
+                CarpetConfigHooks.INSTANCE,
+                false
         ));
         // Lophine end - add carpet config
         preLoad();
@@ -102,6 +106,58 @@ public class ConfigManager {
                 .map(config -> CompletableFuture.runAsync(config::saveConfigs))
                 .toArray(CompletableFuture[]::new);
         if (sync) CompletableFuture.allOf(futures).join();
+        saveWorldConfigs();
+    }
+
+    public static WorldConfigHolder loadWorldConfigs(@NotNull String worldName, @NotNull File worldFolder) {
+        Map<String, WorldConfigInstance> instances = new LinkedHashMap<>();
+        for (ConfigsInstance config : configfiles.values()) {
+            if (!config.usesWorldConfig()) {
+                continue;
+            }
+            WorldConfigInstance instance = WorldConfigInstance.load(config, worldName, worldFolder);
+            if (instance != null) {
+                instances.put(config.getName(), instance);
+            }
+        }
+        WorldConfigHolder holder = new WorldConfigHolder(worldName, Map.copyOf(instances));
+        WorldConfigHolder previous = worldHolders.put(worldName, holder);
+        if (previous != null && previous != holder) {
+            previous.close();
+        }
+        return holder;
+    }
+
+    public static WorldConfigHolder loadWorldConfigs(@NotNull Level level) {
+        return loadWorldConfigs(level.getWorld().getName(), level.getWorld().getWorldFolder());
+    }
+
+    public static @Nullable WorldConfigHolder getWorldConfigs(String worldName) {
+        return worldHolders.get(worldName);
+    }
+
+    public static void saveWorldConfigs() {
+        worldHolders.values().forEach(WorldConfigHolder::save);
+    }
+
+    public static void unloadWorldConfigs(String worldName, boolean save) {
+        WorldConfigHolder holder = worldHolders.remove(worldName);
+        if (holder == null) {
+            return;
+        }
+        if (save) {
+            holder.save();
+        }
+        holder.close();
+    }
+
+    static void reloadWorldOverlays(ConfigsInstance parent) {
+        if (!parent.usesWorldConfig()) {
+            return;
+        }
+        for (WorldConfigHolder holder : worldHolders.values()) {
+            holder.reload(parent.getName());
+        }
     }
 
     public static void acceptTransformedConfigs() {

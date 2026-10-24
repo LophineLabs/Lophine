@@ -5,7 +5,7 @@ Subject: [PATCH] Instant Block Updater
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 7808af7ab885ca37f9e4e7dd3cc2167661021a8c..3a9cb8efc98332d4f1344a4bd5db225ca3a7195a 100644
+index 54acfe4587cbb084b51d50dc86858cc09ac75a79..e90bb7efd6e9e1dc60e7f0a0572979ded54c2cf0 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -504,7 +504,7 @@ public final class RegionizedWorldData {
@@ -38,10 +38,10 @@ index 7808af7ab885ca37f9e4e7dd3cc2167661021a8c..3a9cb8efc98332d4f1344a4bd5db225c
 \ No newline at end of file
 +}
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index cb9c9df140f1ad9653daec5c382217e05e3db0a6..97bd0bb6422809543b9b5b24de1c4f1d01da4498 100644
+index 841e425e5d791aba605542e115feba1a735269bb..c4d74bbc41e0a02072a7d14f9bb516602c34c5b1 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -993,11 +993,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -999,11 +999,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          // Paper - rewrite chunk system
          profiler.pop();
          profiler.push("debugSynchronizers");

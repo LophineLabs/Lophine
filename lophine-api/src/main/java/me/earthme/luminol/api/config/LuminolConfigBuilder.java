@@ -1,8 +1,11 @@
 package me.earthme.luminol.api.config;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.util.Map;
 
 /**
  * Builder interface for creating {@link LuminolConfigsInstance} instances.
@@ -101,4 +104,27 @@ public interface LuminolConfigBuilder {
             @NotNull String pack,
             @NotNull ConfigsInstanceHooks hooks
     );
+
+    /**
+     * Creates a configuration instance with full customization options and load hooks.
+     *
+     * @param loader        the class loader used to load configuration resources
+     * @param base          the base directory where the configuration file is stored
+     * @param name          the configuration name identifier
+     * @param file_name     the configuration file name (without extension)
+     * @param command_name  the command name associated with this configuration
+     * @param pack          the package path where configuration classes are located
+     * @param hooks         per-instance load and transform customization
+     * @param isWorldConfig indicates whether this config is world-specific
+     * @return a new {@link LuminolConfigsInstance}
+     */
+    LuminolConfigsInstance of(
+            @NotNull ClassLoader loader,
+            @NotNull File base,
+            @NotNull String name,
+            @NotNull String file_name,
+            @NotNull String command_name,
+            @NotNull String pack,
+            @NotNull ConfigsInstanceHooks hooks,
+            boolean isWorldConfig);
 }

@@ -38,7 +38,7 @@ index 465268835e2fb91204b16e2d859628050022b403..8055657581041124a5ab0130f9d3b90f
          if (count > maxAllowedCount) {
              throw TOO_MANY_ITEMS.create(maxAllowedCount, prototypeItemStack.getDisplayName());
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index eacc28f4361838dfb8eec9857ea7601f3ce36eb7..b3ea039dd1f4945ffc4bf2cb06e65c3d0719010e 100644
+index f5d81c1304238f16e5837d63f3ae28cdf61e8a11..1576be25c03fcb2103e640ed2a37f19ea3917e49 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -3293,7 +3293,7 @@ public class ServerGamePacketListenerImpl
@@ -124,7 +124,7 @@ index 073a3bbf1b1db7eac83cf35412543f370fa089ee..0f412551685a8ea76be3b389e0782e57
          if (diff > 0) {
              targetStack.grow(diff);
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index 994fb499b4dc47be3a872b15b6c1f21033be5634..608ca58945245ecaff145c8dc7e6ca9ff9a8773a 100644
+index b4cfd52d15ef14d57d665329d77ac605f53ade5c..657baedb04b180b6d2d5ff2cc4d3133933d083b4 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
 @@ -275,10 +275,15 @@ public class ItemEntity extends Entity implements TraceableEntity, ChangePublish
@@ -226,7 +226,7 @@ index c80a44dbc54e0bf00daa525bef20422b15ce8a85..d9daef9b2ccf0f0bbe61ff3d7a20f251
  
      default @Nullable SlotAccess getChestVehicleSlot(final int slot) {
 diff --git a/net/minecraft/world/inventory/AbstractContainerMenu.java b/net/minecraft/world/inventory/AbstractContainerMenu.java
-index 0b5c0fa8e49673bdf8a952c51b98c3dbdaab3797..5dc4cd5154de5b5a410131b42a14858cf20bb300 100644
+index 2c92454cf413e3d23ff1e32411325635b9251c4e..040331ba1ffc61c669599c5f58dbd7bdbfbe5abc 100644
 --- a/net/minecraft/world/inventory/AbstractContainerMenu.java
 +++ b/net/minecraft/world/inventory/AbstractContainerMenu.java
 @@ -296,6 +296,14 @@ public abstract class AbstractContainerMenu {
@@ -354,7 +354,7 @@ index 0e86b025bad2c336cc360c2ce764dad0a75de1b6..1873b9376df57ff73d2a1583b60a512c
  
      public @Nullable Identifier getNoItemIcon() {
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index dddbdac72ba703403a9c30408f96dc36845c7f66..de2efb9cff5c61c7c5849692fc46cd1b54ea0835 100644
+index 44b8dcd62f674472d86b234d754e55a629e16415..873780b2b7437a83a08cdf82f240c39a058ca945 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
 @@ -160,7 +160,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, Chang
@@ -415,7 +415,7 @@ index 35aafd51eb16a317c0fda06a7186d59cb263de30..d95ae36d4924bfb78142749d0e3bd73b
              org.bukkit.inventory.ItemStack oitemstack = org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitMirror(remaining);
  
 diff --git a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
-index bffe8e94c3b0ac172c4654cac834566c69c9e50d..107193a58e2deb1b4de2903eed17760938081e2d 100644
+index 3573feefabeaca3f01037db36080ba069e77828b..87bb61472efb2fadf80d4346d00ec6239c6e2889 100644
 --- a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
 @@ -427,7 +427,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
@@ -428,7 +428,7 @@ index bffe8e94c3b0ac172c4654cac834566c69c9e50d..107193a58e2deb1b4de2903eed177609
              this.cookingTotalTime = getTotalCookTime(serverLevel, this);
              this.cookingTimer = 0;
 diff --git a/net/minecraft/world/level/block/entity/BaseContainerBlockEntity.java b/net/minecraft/world/level/block/entity/BaseContainerBlockEntity.java
-index 191a43ce6c98583b4cc1ed2b5d5f0897224be41f..2e6c28c05ba97aa9a29c2e035ceec548f27ca1ee 100644
+index 9a59b5a1f7385e7205b34fe0d90a6764eb9858f3..101d31cceb9ec787d96dbf694ad32060df0d8d8c 100644
 --- a/net/minecraft/world/level/block/entity/BaseContainerBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BaseContainerBlockEntity.java
 @@ -140,7 +140,7 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
@@ -441,7 +441,7 @@ index 191a43ce6c98583b4cc1ed2b5d5f0897224be41f..2e6c28c05ba97aa9a29c2e035ceec548
      }
  
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index b2c6c2e2380be11306bea5dcc5cc41c34502ee8b..75777ef41189e3f9bed6e1679538ddcd4089d7d4 100644
+index 9e9e5d139791a71d3a1b96a9a8955390146c3742..9ff6bcd36978df86f546a8391d46fe36a580dc5d 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -155,7 +155,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen

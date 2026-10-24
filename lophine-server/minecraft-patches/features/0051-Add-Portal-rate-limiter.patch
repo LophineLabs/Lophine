@@ -5,7 +5,7 @@ Subject: [PATCH] Add Portal rate limiter
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 88014b8c75cf4a804f11f6089ba0dbc5ad67db80..710944588a3e100ed305e59c0d4b0d252b7ca693 100644
+index 88014b8c75cf4a804f11f6089ba0dbc5ad67db80..b41c27840bad8b11cc6fa5d2e907e673319ee592 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -154,6 +154,10 @@ public final class RegionizedWorldData {
@@ -43,7 +43,7 @@ index 88014b8c75cf4a804f11f6089ba0dbc5ad67db80..710944588a3e100ed305e59c0d4b0d25
 +    private int computePortalRateCap() {
 +        // expression mode is disabled
 +        if (this.portalRateCapExpression == null) {
-+            return me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.maxPortalTeleportsPerTick;
++            return me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.maxPortalTeleportsPerTick();
 +        }
 +
 +        final int tickingEntityCount = this.entityTickList.size();
@@ -58,7 +58,7 @@ index 88014b8c75cf4a804f11f6089ba0dbc5ad67db80..710944588a3e100ed305e59c0d4b0d25
 +        );
 +    }
 +    public boolean isPortalTeleportationOutOfRate() {
-+        if (!me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.enabled) {
++        if (!me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.enabled()) {
 +            return false;
 +        }
 +
@@ -81,10 +81,10 @@ index 97c514673a454b752ab86b944fd143725ca8090d..805895eb6fca750b603b323a350b0daa
          private final AtomicBoolean hasPackets = new AtomicBoolean(false);
  
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 3f87d8a6c9990b89bfafc96f64c07b3ca173dd41..f9df38061525700fa5dc9da0d08cd80e56a1d019 100644
+index e14f4b776a3a83b9829bd06d825450b995ca1082..6d50ec90c09548df28abd71a336bd60702f92fc7 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1963,6 +1963,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1961,6 +1961,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              //net.minecraft.world.level.block.entity.HopperBlockEntity.skipHopperEvents = level.paperConfig().hopper.disableMoveEvent || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0; // Paper - Perf: Optimize Hoppers // Folia - region threading
              profiler.push(() -> level + " " + level.dimension().identifier());
              profiler.push("tick");
@@ -95,7 +95,7 @@ index 3f87d8a6c9990b89bfafc96f64c07b3ca173dd41..f9df38061525700fa5dc9da0d08cd80e
  
              try {
                  foliaProfiler.startTimer(level.tickTimerId); try { // Folia - profiler
-@@ -1977,6 +1981,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1975,6 +1979,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              profiler.pop();
              profiler.pop();
              regionizedWorldData.explosionDensityCache.clear(); // Paper - Optimize explosions // Folia - region threading
@@ -106,10 +106,10 @@ index 3f87d8a6c9990b89bfafc96f64c07b3ca173dd41..f9df38061525700fa5dc9da0d08cd80e
          //this.isIteratingOverLevels = false; // Paper - Throw exception on world create while being ticked // Folia - region threading
  
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index f07658e3fc26f0438e1f4cb56adb7f730550f2c3..66bfe32707f80e7932ce232dced9473cd362fab6 100644
+index 7c239344d8c5b55cbccb620c37f654f8caaf12aa..f810d6f4b4c97544209d5f2a657073d28d3016ed 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -1580,8 +1580,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1586,8 +1586,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              // removed from region while ticking
              return;
          }
@@ -125,7 +125,7 @@ index f07658e3fc26f0438e1f4cb56adb7f730550f2c3..66bfe32707f80e7932ce232dced9473c
              return;
          }
          }
-@@ -1626,8 +1633,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1632,8 +1639,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
                  // removed from region while ticking
                  return;
              }
@@ -142,7 +142,7 @@ index f07658e3fc26f0438e1f4cb56adb7f730550f2c3..66bfe32707f80e7932ce232dced9473c
              }
              // Folia end - region threading
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 5e3b07cd072ebab4b860d4e0fe43293b5bca6fd2..288a602c0fa6f7f48eb2108ea97cd5efe6b28d84 100644
+index 4806f0e8aecd9d675993915145ba8a4e12328c0d..32a3cb4bf34bb548452f7a79a292055ba215094e 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -5076,6 +5076,31 @@ public abstract class Entity
@@ -150,7 +150,7 @@ index 5e3b07cd072ebab4b860d4e0fe43293b5bca6fd2..288a602c0fa6f7f48eb2108ea97cd5ef
          }
          // Luminol end
 +        // Lophine start - destination-driven portal backpressure
-+        if (type == PortalType.NETHER && me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.destinationBackpressureEnabled) {
++        if (type == PortalType.NETHER && me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.destinationBackpressureEnabled()) {
 +            final double dimensionScale = net.minecraft.world.level.dimension.DimensionType.getTeleportationScale(this.level().dimensionType(), destination.dimensionType());
 +            final BlockPos approximateTarget = destination.getWorldBorder().clampToBounds(
 +                    this.getX() * dimensionScale, this.getY(), this.getZ() * dimensionScale

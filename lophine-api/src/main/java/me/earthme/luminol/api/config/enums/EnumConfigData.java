@@ -1,4 +1,4 @@
-package me.earthme.luminol.api.config;
+package me.earthme.luminol.api.config.enums;
 
 public enum EnumConfigData {
     REAL_VALUE,
@@ -7,5 +7,6 @@ public enum EnumConfigData {
     COMMENT,
     SUGGESTIONS,
     LOCALIZED_NAME,
-    UNIQUE_ID
+    UNIQUE_ID,
+    CAN_DEFINED_BY_WORLD
 }
