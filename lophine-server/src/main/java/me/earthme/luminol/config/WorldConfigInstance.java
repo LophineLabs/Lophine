@@ -10,11 +10,14 @@ import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Per-world overlay for keys marked {@code @ConfigInfo(isWorldConfig = true)}.
  * Missing world values fall back to the parent instance's live global default.
+ * GUI submit does not add keys that still match that global default.
+ * Keys already stored for a world stay in the overlay, including after they are set back to the default.
  */
 public class WorldConfigInstance {
     private final ConfigsInstance parent;
@@ -33,9 +36,7 @@ public class WorldConfigInstance {
         if (!parent.usesWorldConfig()) {
             return null;
         }
-        File configFile = resolveFile(parent, worldFolder);
-        createIfAbsent(configFile);
-        WorldConfigInstance instance = new WorldConfigInstance(parent, worldName, configFile);
+        WorldConfigInstance instance = new WorldConfigInstance(parent, worldName, resolveFile(parent, worldFolder));
         instance.reload();
         return instance;
     }
@@ -79,12 +80,8 @@ public class WorldConfigInstance {
             return false;
         }
         try {
-            Object converted = parent.convertValue(key, value);
-            putOverride(key, converted);
-            ensureFile();
-            file.set(key, serialize(converted));
-            copyComment(key);
-            file.save();
+            stage(key, value, true);
+            persistOverrides();
             return true;
         } catch (Exception e) {
             parent.logger.error("Failed to set world config {} for {}", key, worldName, e);
@@ -92,16 +89,31 @@ public class WorldConfigInstance {
         }
     }
 
-    public void reset(String key) {
-        Map<String, Object> map = overrides;
-        if (map != null) {
-            map.remove(key);
-        }
-        if (file == null) {
+    /**
+     * Apply a batch of submitted values, then write the overlay once.
+     * New keys that still match the live global default are skipped.
+     * Keys already present in this world's overlay are kept even when set back to that default.
+     */
+    public void applySubmitted(@NotNull Map<String, ?> values) {
+        if (values.isEmpty()) {
             return;
         }
-        file.remove(key);
-        file.save();
+        for (Map.Entry<String, ?> entry : values.entrySet()) {
+            if (!parent.isWorldConfigKey(entry.getKey())) {
+                continue;
+            }
+            try {
+                stage(entry.getKey(), entry.getValue(), false);
+            } catch (Exception e) {
+                parent.logger.error("Failed to set world config {} for {}", entry.getKey(), worldName, e);
+            }
+        }
+        persistOverrides();
+    }
+
+    public void reset(String key) {
+        dropOverride(key);
+        persistOverrides();
     }
 
     public void save() {
@@ -114,7 +126,11 @@ public class WorldConfigInstance {
     public void reload() {
         overrides = null;
         closeFile();
-        if (!configFile.exists() || configFile.length() == 0) {
+        if (!configFile.exists()) {
+            return;
+        }
+        if (configFile.length() == 0) {
+            deleteFileIfPresent();
             return;
         }
         ensureFile();
@@ -126,6 +142,18 @@ public class WorldConfigInstance {
         closeFile();
     }
 
+    private void stage(String key, Object value, boolean explicit) throws Exception {
+        Object converted = parent.convertValue(key, value);
+        if (converted == null) {
+            dropOverride(key);
+            return;
+        }
+        if (!explicit && !hasOverride(key) && sameValue(converted, parent.getLiveFallback(key))) {
+            return;
+        }
+        putOverride(key, converted);
+    }
+
     private void putOverride(String key, Object value) {
         Map<String, Object> map = overrides;
         if (map == null) {
@@ -133,6 +161,42 @@ public class WorldConfigInstance {
             overrides = map;
         }
         map.put(key, value);
+    }
+
+    private void dropOverride(String key) {
+        Map<String, Object> map = overrides;
+        if (map == null) {
+            return;
+        }
+        map.remove(key);
+        if (map.isEmpty()) {
+            overrides = null;
+        }
+    }
+
+    private void persistOverrides() {
+        Map<String, Object> map = overrides;
+        if (map == null || map.isEmpty()) {
+            closeFile();
+            deleteFileIfPresent();
+            return;
+        }
+        ensureFile();
+        file.clear();
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            file.set(entry.getKey(), serialize(entry.getValue()));
+            copyComment(entry.getKey());
+        }
+        file.save();
+    }
+
+    private void deleteFileIfPresent() {
+        if (!configFile.exists()) {
+            return;
+        }
+        if (!configFile.delete()) {
+            parent.logger.warn("Failed to delete unmodified world config {}", configFile.getPath());
+        }
     }
 
     private void loadOverrides() {
@@ -150,6 +214,31 @@ public class WorldConfigInstance {
                 parent.logger.error("Invalid world config {} in {} for {}, using default", key, configFile.getPath(), worldName, e);
             }
         }
+    }
+
+    private static boolean sameValue(Object left, Object right) {
+        if (Objects.equals(left, right)) {
+            return true;
+        }
+        if (left == null || right == null) {
+            return false;
+        }
+        if (left instanceof Number leftNumber && right instanceof Number rightNumber) {
+            return Double.compare(leftNumber.doubleValue(), rightNumber.doubleValue()) == 0;
+        }
+        if (left instanceof List<?> leftList && right instanceof List<?> rightList) {
+            if (leftList.size() != rightList.size()) {
+                return false;
+            }
+            for (int i = 0; i < leftList.size(); i++) {
+                if (!sameValue(leftList.get(i), rightList.get(i))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return Objects.equals(serialize(left), serialize(right))
+                || Objects.equals(String.valueOf(left), String.valueOf(right));
     }
 
     private static void createIfAbsent(@NotNull File configFile) {

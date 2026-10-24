@@ -4,20 +4,21 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import fun.bm.lophine.utils.ServerI18nUtil;
 import me.earthme.luminol.api.config.enums.EnumConfigData;
+import me.earthme.luminol.config.ConfigManager;
 import me.earthme.luminol.config.ConfigsInstance;
+import me.earthme.luminol.config.WorldConfigHolder;
+import me.earthme.luminol.config.WorldConfigInstance;
 import net.kyori.adventure.text.format.TextColor;
 import net.minecraft.commands.functions.StringTemplate;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.dialog.action.CommandTemplate;
 import net.minecraft.server.dialog.action.ParsedTemplate;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import org.bukkit.command.CommandSender;
 
 import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class ConfigCommandDialog {
     private static final Set<EnumConfigData> allNeedFeatures = Set.of(
@@ -38,35 +39,75 @@ public class ConfigCommandDialog {
     }
 
     public static void openGui(Player player, String name, ConfigsInstance config, String prefix) {
+        open(player, name, config, prefix, null, name + " open-gui ", name + " submit ");
+    }
+
+    public static void openWorldGui(Player player, String commandName, ConfigsInstance config, ServerLevel level, String prefix) {
+        WorldConfigInstance world = resolveWorldConfig(player, config, level);
+        if (world == null) {
+            return;
+        }
+        String worldId = level.dimension().identifier().toString();
+        open(
+                player,
+                commandName + " [" + worldId + "]",
+                config,
+                prefix,
+                world,
+                commandName + " dimension " + worldId + " open-gui ",
+                commandName + " dimension " + worldId + " submit "
+        );
+    }
+
+    private static WorldConfigInstance resolveWorldConfig(Player player, ConfigsInstance config, ServerLevel level) {
+        if (!config.usesWorldConfig()) {
+            player.sendSystemMessage(Component.literal(ServerI18nUtil.getLocalizedText("general.command.config.dimension.unsupported")));
+            return null;
+        }
+        WorldConfigHolder holder = level.luminolWorldConfig();
+        WorldConfigInstance world = holder == null ? null : holder.get(config.getName());
+        if (world == null) {
+            holder = ConfigManager.loadWorldConfigs(level);
+            level.luminolWorldConfig(holder);
+            world = holder.get(config.getName());
+        }
+        if (world == null) {
+            player.sendSystemMessage(Component.literal(ServerI18nUtil.getLocalizedText("general.command.config.dimension.unsupported")));
+        }
+        return world;
+    }
+
+    private static void open(Player player, String title, ConfigsInstance config, String prefix, WorldConfigInstance world, String navPrefix, String submitPrefix) {
+        boolean worldGui = world != null;
         if (prefix.equals("full")) {
             player.openDialog(
                     ConfigDialogUtil.createHolder(
-                            name,
-                            config.getData(config.getAllConfigPaths(""), allNeedFeatures),
-                            name + " submit "
+                            title,
+                            worldGui
+                                    ? config.getWorldData(world, config.getAllWorldConfigPaths(""), allNeedFeatures)
+                                    : config.getData(config.getAllConfigPaths(""), allNeedFeatures),
+                            submitPrefix
                     ));
             return;
         }
 
-        // Get all possible paths at current level
-        List<String> keyList = config.completeConfigPath(prefix.isEmpty() ? prefix : prefix + ".");
-        List<String> keySingleConfigs = config.getSingleConfig(prefix);
+        List<String> keyList = worldGui
+                ? config.completeWorldConfigPath(prefix.isEmpty() ? prefix : prefix + ".")
+                : config.completeConfigPath(prefix.isEmpty() ? prefix : prefix + ".");
+        List<String> keySingleConfigs = worldGui ? config.getSingleWorldConfig(prefix) : config.getSingleConfig(prefix);
         keyList.removeAll(keySingleConfigs);
         DialogUtil.DialogBuilder builder = new DialogUtil.DialogBuilder();
 
-        // Add navigation buttons for each sub-path
         for (String key : keyList) {
-            // Check if this key has children or is a valid config node
-            List<String> childPaths = config.completeConfigPath(key + ".");
-            List<String> childKeySingleConfigs = config.getSingleConfig(key);
+            List<String> childPaths = worldGui ? config.completeWorldConfigPath(key + ".") : config.completeConfigPath(key + ".");
+            List<String> childKeySingleConfigs = worldGui ? config.getSingleWorldConfig(key) : config.getSingleConfig(key);
 
-            // Always create button if there are child paths or if it's a valid config node
             if (!childPaths.isEmpty() || !childKeySingleConfigs.isEmpty()) {
                 String vName = ServerI18nUtil.getLocalizedText(config.getName() + "." + key);
                 if (vName.isEmpty()) {
                     vName = ServerI18nUtil.getFormatedLocalizedTextOrDefault("general." + key, key);
                 }
-                String raw = name + " open-gui " + key + "$(missing)";
+                String raw = navPrefix + key + "$(missing)";
                 StringTemplate template = StringTemplate.fromString(raw);
                 CommandTemplate commandTemplate = new CommandTemplate(new ParsedTemplate(raw, template));
                 builder.addButton(
@@ -79,14 +120,15 @@ public class ConfigCommandDialog {
         }
 
         ConfigDialogUtil.addInputs(
-                config.getData(keySingleConfigs, allNeedFeatures),
-                name + " submit ",
+                worldGui
+                        ? config.getWorldData(world, keySingleConfigs, allNeedFeatures)
+                        : config.getData(keySingleConfigs, allNeedFeatures),
+                submitPrefix,
                 builder
         );
 
-        // Add "Show all configs" button at root level
         if (prefix.isEmpty()) {
-            String raw = name + " open-gui full$(missing)";
+            String raw = navPrefix + "full$(missing)";
             StringTemplate template = StringTemplate.fromString(raw);
             CommandTemplate commandTemplate = new CommandTemplate(new ParsedTemplate(raw, template));
             builder.addButton(
@@ -106,7 +148,7 @@ public class ConfigCommandDialog {
                     ));
         }
 
-        builder.setTitle(name)
+        builder.setTitle(title)
                 .setPause(false)
                 .setColumns(1);
         player.openDialog(
@@ -133,5 +175,47 @@ public class ConfigCommandDialog {
                         .text(ServerI18nUtil.getLocalizedText("general.config.apply.success"))
                         .color(TextColor.color(0, 255, 0))
         ));
+    }
+
+    public static void processSubmitWorld(CommandSender sender, ConfigsInstance config, ServerLevel level, String json) {
+        if (level == null) {
+            sender.sendMessage(
+                    net.kyori.adventure.text.Component
+                            .text(ServerI18nUtil.getLocalizedText("general.command.config.dimension.missing"))
+                            .color(TextColor.color(255, 0, 0))
+            );
+            return;
+        }
+        WorldConfigHolder holder = level.luminolWorldConfig();
+        WorldConfigInstance world = holder == null ? null : holder.get(config.getName());
+        if (world == null) {
+            sender.sendMessage(
+                    net.kyori.adventure.text.Component
+                            .text(ServerI18nUtil.getLocalizedText("general.command.config.dimension.unsupported"))
+                            .color(TextColor.color(255, 0, 0))
+            );
+            return;
+        }
+        Gson gson = new Gson();
+        Type type = new TypeToken<Map<String, String>>() {
+        }.getType();
+        Map<String, String> map = gson.fromJson(json, type);
+        Map<String, Object> updates = new LinkedHashMap<>();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            try {
+                int id = Integer.parseInt(entry.getKey());
+                String path = config.getConfigPathById(id);
+                if (path != null && config.isWorldConfigKey(path)) {
+                    updates.put(path, entry.getValue());
+                }
+            } catch (Exception _) {
+            }
+        }
+        world.applySubmitted(updates);
+        sender.sendMessage(
+                net.kyori.adventure.text.Component
+                        .text(ServerI18nUtil.getLocalizedText("general.config.apply.success"))
+                        .color(TextColor.color(0, 255, 0))
+        );
     }
 }

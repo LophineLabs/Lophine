@@ -7,11 +7,11 @@ import fun.bm.lophine.utils.ServerI18nUtil;
 import io.papermc.paper.threadedregions.RegionizedServer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import me.earthme.luminol.api.config.ConfigsInstanceHooks;
-import me.earthme.luminol.api.config.enums.EnumConfigData;
 import me.earthme.luminol.api.config.LuminolConfigsInstance;
 import me.earthme.luminol.api.config.TransformLogic;
 import me.earthme.luminol.api.config.annotation.*;
 import me.earthme.luminol.api.config.enums.EnumConfigCategory;
+import me.earthme.luminol.api.config.enums.EnumConfigData;
 import me.earthme.luminol.api.config.enums.EnumLoadType;
 import me.earthme.luminol.api.config.enums.EnumRunnableType;
 import me.earthme.luminol.commands.config.ConfigCommand;
@@ -1013,6 +1013,37 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         return worldConfigFields != null ? Collections.unmodifiableSet(worldConfigFields.keySet()) : Collections.emptySet();
     }
 
+    public List<String> completeWorldConfigPath(String partialPath) {
+        Set<String> worldKeys = getWorldConfigKeys();
+        List<String> result = new ArrayList<>();
+        for (String suggestion : completeConfigPath(partialPath)) {
+            for (String worldKey : worldKeys) {
+                if (worldKey.equals(suggestion) || worldKey.startsWith(suggestion + ".")) {
+                    result.add(suggestion);
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    public List<String> getSingleWorldConfig(String key) {
+        List<String> list = new ArrayList<>();
+        for (String check : getSingleConfig(key)) {
+            if (isWorldConfigKey(check)) {
+                list.add(check);
+            }
+        }
+        return list;
+    }
+
+    public List<String> getAllWorldConfigPaths(String currentPath) {
+        return getWorldConfigKeys().stream()
+                .filter(k -> k.startsWith(currentPath))
+                .sorted()
+                .toList();
+    }
+
     /**
      * Resolve a world-config key for {@code level}. Missing world values fall back to the global default.
      * Keys without {@code isWorldConfig} always use the global value.
@@ -1200,6 +1231,28 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                 }
             }
             map.put(key, dataMap);
+        }
+        return map;
+    }
+
+    public Map<String, Map<EnumConfigData, Object>> getWorldData(WorldConfigInstance world, Collection<String> list, Collection<EnumConfigData> features) {
+        Map<String, Map<EnumConfigData, Object>> map = getData(list, features);
+        for (String key : list) {
+            Map<EnumConfigData, Object> dataMap = map.get(key);
+            if (dataMap == null) {
+                continue;
+            }
+            Object value = world.get(key);
+            if (dataMap.containsKey(EnumConfigData.VALUE)) {
+                dataMap.put(EnumConfigData.VALUE, parseDataToReadable(value));
+            }
+            if (dataMap.containsKey(EnumConfigData.REAL_VALUE)) {
+                dataMap.put(EnumConfigData.REAL_VALUE, value);
+            }
+            if (dataMap.containsKey(EnumConfigData.STRING_VALUE)) {
+                Object readable = parseDataToReadable(value);
+                dataMap.put(EnumConfigData.STRING_VALUE, readable == null ? null : readable.toString());
+            }
         }
         return map;
     }

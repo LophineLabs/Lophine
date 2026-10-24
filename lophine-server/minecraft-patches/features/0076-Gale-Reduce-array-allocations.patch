@@ -361,7 +361,7 @@ index 9c667a09fcea23b4072c0616837b685e256e0462..d170ee3c74d0352fed4044cad9a87c8b
              if (predicate.test(item)) {
                  ItemEnchantments enchantments = item.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index 2d3b89dfc8830422479dca7b2ee65bc2fa5a7fe3..6491bbffb021d60cbef2762c15bc2fa15b77354c 100644
+index f291099cc946c24587f8cbbcf9192b141449c4c1..84d1c4bc1a08fd736a13fd41091e3949b9ba3526 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -1976,7 +1976,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl

@@ -2,6 +2,8 @@
   "general.command.config.clean.confirm.hint": "Please use /{0} clean confirm to confirm!",
   "general.command.config.clean.confirm.success": "Clean up in the configuration file successfully!",
   "general.command.config.clean.help": "If you want to clean up useless items in the configuration file, please use /{0} clean confirm",
+  "general.command.config.dimension.missing": "World {0} is not loaded.",
+  "general.command.config.dimension.unsupported": "This configuration does not support per-world values.",
   "general.command.config.reload": "Reloaded config file!",
   "general.command.config.reset.comments": "Reset comments to default in the configuration file!",
   "general.command.config.reset.comments.hint": "Please use /{0} reset-comments confirm to confirm!",

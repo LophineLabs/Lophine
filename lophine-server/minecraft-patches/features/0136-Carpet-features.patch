@@ -4320,7 +4320,7 @@ index 021ff2785ddd8a88376ee2f9e47f79d974b226e7..a98b0cd7a024eb3c7cdd5198aca0e247
  
      private void getFullChunk(final long chunkKey, final Consumer<LevelChunk> output) {
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 2cfe797d5a06aa530a24248a89b2233bfc16e4a0..9453c96b125468551fc7ff06b95c8ad5f6551566 100644
+index fd8cf3306141e9add55e526f676969e94a500559..f4dad64e3cf7af8c91f56e1a0c2690a8dcf1b839 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -193,6 +193,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -17597,7 +17597,7 @@ index 9c6ad3bfb1a467ae52c09e9c9aaf96d913a9dc46..4508f410859a6305aa6a49069233d3a0
      }
  }
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index 6491bbffb021d60cbef2762c15bc2fa15b77354c..5134f8aa5c2c7217a6e4cb9a214c3acaa965f6ee 100644
+index 84d1c4bc1a08fd736a13fd41091e3949b9ba3526..95b80d1993a0d865f6e987e836cd81ba40d9d5ba 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -1078,13 +1078,15 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
