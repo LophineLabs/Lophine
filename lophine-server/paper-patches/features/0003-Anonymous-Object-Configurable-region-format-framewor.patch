@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Mon, 26 Oct 2026 20:19:26 +0800
+Subject: [PATCH] Anonymous Object: Configurable region format framework
+
+As requested by the original author, this patch will be anonymous and hide the original commit address.
+This patch is used with permission from the original author.
+Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
+
+diff --git a/src/main/java/ca/spottedleaf/moonrise/common/util/MoonriseCommon.java b/src/main/java/ca/spottedleaf/moonrise/common/util/MoonriseCommon.java
+index b9f788693b0c4be48e8a923a3dec50555d135e7e..c1d36e83c99b9db633241c3a1b89aef1cd3481bd 100644
+--- a/src/main/java/ca/spottedleaf/moonrise/common/util/MoonriseCommon.java
++++ b/src/main/java/ca/spottedleaf/moonrise/common/util/MoonriseCommon.java
+@@ -101,6 +101,7 @@ public final class MoonriseCommon {
+             LOGGER.error("I/O pool did not shut down in time!");
+             MoonriseCommon.IO_POOL.halt(false);
+         }
++        me.earthme.luminol.config.modules.function.RegionFormatConfig.closeFlusherIfEnabled(); // Anonymous - Configurable region file format
+     }
+ 
+     private MoonriseCommon() {}

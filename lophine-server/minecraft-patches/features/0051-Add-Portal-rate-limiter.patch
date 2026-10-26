@@ -81,10 +81,10 @@ index 97c514673a454b752ab86b944fd143725ca8090d..805895eb6fca750b603b323a350b0daa
          private final AtomicBoolean hasPackets = new AtomicBoolean(false);
  
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index e14f4b776a3a83b9829bd06d825450b995ca1082..6d50ec90c09548df28abd71a336bd60702f92fc7 100644
+index 13961a5f94651cef262ab71bac635eeb9e6edf90..8ec2b23af03c257c5c00fc9dd064a7a0b8b584b6 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1961,6 +1961,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1960,6 +1960,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              //net.minecraft.world.level.block.entity.HopperBlockEntity.skipHopperEvents = level.paperConfig().hopper.disableMoveEvent || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0; // Paper - Perf: Optimize Hoppers // Folia - region threading
              profiler.push(() -> level + " " + level.dimension().identifier());
              profiler.push("tick");
@@ -95,7 +95,7 @@ index e14f4b776a3a83b9829bd06d825450b995ca1082..6d50ec90c09548df28abd71a336bd607
  
              try {
                  foliaProfiler.startTimer(level.tickTimerId); try { // Folia - profiler
-@@ -1975,6 +1979,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1974,6 +1978,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              profiler.pop();
              profiler.pop();
              regionizedWorldData.explosionDensityCache.clear(); // Paper - Optimize explosions // Folia - region threading

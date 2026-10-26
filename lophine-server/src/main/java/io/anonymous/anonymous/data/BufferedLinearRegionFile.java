@@ -464,9 +464,6 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
                         return;
                     }
 
-                    // remove from flusher
-                    this.markClosed();
-
                     IOException failure = null;
 
                     // final sync so no buffered data is lost; holding syncLock also guarantees no
@@ -479,6 +476,9 @@ public class BufferedLinearRegionFile implements io.anonymous.anonymous.data.Reg
                     } catch (IOException ex) {
                         failure = ex;
                     }
+
+                    // remove from flusher
+                    this.markClosed();
 
                     try {
                         this.swapFileChannel.close();

@@ -5,7 +5,7 @@ Subject: [PATCH] Add config for cpu affinity
 
 
 diff --git a/src/main/java/ca/spottedleaf/moonrise/common/util/MoonriseCommon.java b/src/main/java/ca/spottedleaf/moonrise/common/util/MoonriseCommon.java
-index b9f788693b0c4be48e8a923a3dec50555d135e7e..dc69f5ae1f405bc385b7c6cec4e23faeeda182eb 100644
+index c1d36e83c99b9db633241c3a1b89aef1cd3481bd..24274fd397ff3b59b922b1fa9bc41cc1f7638901 100644
 --- a/src/main/java/ca/spottedleaf/moonrise/common/util/MoonriseCommon.java
 +++ b/src/main/java/ca/spottedleaf/moonrise/common/util/MoonriseCommon.java
 @@ -22,7 +22,7 @@ public final class MoonriseCommon {

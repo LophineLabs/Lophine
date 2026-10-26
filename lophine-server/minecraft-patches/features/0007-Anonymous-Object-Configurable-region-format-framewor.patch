@@ -56,18 +56,6 @@ index 51c126735ace8fdde89ad97b5cab62f244212db0..ea2f45964fb8c617f90938597c230b50
 -    public void moonrise$write(final RegionFile regionFile) throws IOException;
 +    public void moonrise$write(final io.anonymous.anonymous.data.RegionFile regionFile) throws IOException; // Anonymous - Configurable region file format
  }
-diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 8dd8644745a7b18471bff7da3849024a782b278b..a81178d7f142030174eeeb0f35906d688a79eb18 100644
---- a/net/minecraft/server/MinecraftServer.java
-+++ b/net/minecraft/server/MinecraftServer.java
-@@ -1125,6 +1125,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
-     }
-     public void stopPart2() {
-         // Folia end - region threading
-+        me.earthme.luminol.config.modules.function.RegionFormatConfig.closeFlusherIfEnabled(); // Anonymous - Configurable region file format
-         this.savedDataStorage.close();
-         this.resources.close();
- 
 diff --git a/net/minecraft/util/worldupdate/FileToUpgrade.java b/net/minecraft/util/worldupdate/FileToUpgrade.java
 index a7f2cfa9277c898038f6b9e0a3401db51012b64c..7b96f3ec2738875a3ed7aa34347c0f174b6579c5 100644
 --- a/net/minecraft/util/worldupdate/FileToUpgrade.java

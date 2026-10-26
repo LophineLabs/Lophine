@@ -6,7 +6,7 @@ Subject: [PATCH] Force disable builtin spark plugin
 The spark passed down from paper has some memory leaking issue, so we fully removed it from the code to prevent that memory leaking issue.
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index a81178d7f142030174eeeb0f35906d688a79eb18..750c583b07650d8f7c930a2a201fe74fabb9d333 100644
+index 8dd8644745a7b18471bff7da3849024a782b278b..c63247848c5250412f3fdc32496901d5ae35c95a 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -666,8 +666,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -29,7 +29,7 @@ index a81178d7f142030174eeeb0f35906d688a79eb18..750c583b07650d8f7c930a2a201fe74f
              this.server.disablePlugins();
              this.server.waitForAsyncTasksShutdown(); // Paper - Wait for Async Tasks during shutdown
          }
-@@ -1333,7 +1333,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1332,7 +1332,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              this.statusIcon = this.loadStatusIcon().orElse(null);
              this.status = this.buildServerStatus();
  
@@ -38,7 +38,7 @@ index a81178d7f142030174eeeb0f35906d688a79eb18..750c583b07650d8f7c930a2a201fe74f
              // Folia start - region threading
              if (true) {
                  io.papermc.paper.threadedregions.RegionizedServer.getInstance().init(); // Folia - region threading - only after loading worlds
-@@ -1648,7 +1648,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1647,7 +1647,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              }
  
              if (this.emptyTicks >= emptyTickThreshold) {
@@ -47,7 +47,7 @@ index a81178d7f142030174eeeb0f35906d688a79eb18..750c583b07650d8f7c930a2a201fe74f
                  if (this.emptyTicks == emptyTickThreshold) {
                      LOGGER.info("Server empty for {} seconds, pausing", this.pauseWhenEmptySeconds());
                      this.autoSave();
-@@ -1667,7 +1667,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1666,7 +1666,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                  // Paper end - avoid issues with certain tasks not processing during sleep
                  //this.server.spark.executeMainThreadTasks(); // Paper - spark // Folia - region threading
                  this.tickConnection();
@@ -56,7 +56,7 @@ index a81178d7f142030174eeeb0f35906d688a79eb18..750c583b07650d8f7c930a2a201fe74f
                  return;
              }
          }
-@@ -1680,7 +1680,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1679,7 +1679,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          };
          // Folia end - region threading
  
@@ -65,7 +65,7 @@ index a81178d7f142030174eeeb0f35906d688a79eb18..750c583b07650d8f7c930a2a201fe74f
          new com.destroystokyo.paper.event.server.ServerTickStartEvent((int)region.getCurrentTick()).callEvent(); // Paper - Server Tick Events // Folia - region threading
          // Folia start - region threading
          if (region != null) {
-@@ -1767,7 +1767,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1766,7 +1766,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          long remaining = scheduledEnd - endTime; // Folia - region ticking
          new com.destroystokyo.paper.event.server.ServerTickEndEvent((int)io.papermc.paper.threadedregions.RegionizedServer.getCurrentTick(), ((double)(endTime - startTime) / 1000000D), remaining).callEvent(); // Folia - region ticking
          // Paper end - Server Tick Events
