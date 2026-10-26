@@ -5,7 +5,7 @@ Subject: [PATCH] Restore vanilla ender pearl loading
 
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 6a66d0a90663d9c691b09d5e9572db2938e7bae6..b79a397bee9e7a7b817e3cd4c8b4f84973eaf2f7 100644
+index 5528ee1783faacff49e651a3e3b12b791d1aaa4b..ea924890de500545ce9ab298db6807f6e38637e8 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -281,7 +281,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc

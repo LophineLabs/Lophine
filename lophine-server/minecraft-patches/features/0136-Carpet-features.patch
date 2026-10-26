@@ -4742,7 +4742,7 @@ index fd8cf3306141e9add55e526f676969e94a500559..f4dad64e3cf7af8c91f56e1a0c2690a8
          Optional<Holder<PoiType>> newType = PoiTypes.forState(newState);
          if (!Objects.equals(oldType, newType)) {
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 7d15d39fed47c3663110027b6444ce4d26048147..6a66d0a90663d9c691b09d5e9572db2938e7bae6 100644
+index 7d15d39fed47c3663110027b6444ce4d26048147..5528ee1783faacff49e651a3e3b12b791d1aaa4b 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -264,6 +264,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -5835,7 +5835,7 @@ index 279b5072596c062a7c800510ed914a9df8ce0698..56cb4738c5d7bf2545ff841dc4ac34bc
          // Paper start - Implement click callbacks with custom click action
          final io.papermc.paper.event.player.PaperPlayerCustomClickEvent event = new io.papermc.paper.event.player.PaperPlayerCustomClickEvent(io.papermc.paper.adventure.PaperAdventure.asAdventure(packet.id()), this.getApiConnection(), packet.payload().orElse(null));
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 042e19c594869e0d59dadae15b9a90dc7fb97b2e..fa9f7aa535d686004544cc0ae3e385dee5e6bd75 100644
+index 042e19c594869e0d59dadae15b9a90dc7fb97b2e..f064182d18f29d2cc158ea2151ccdfee1f95f280 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -275,6 +275,7 @@ public class ServerGamePacketListenerImpl
@@ -6046,7 +6046,7 @@ index 042e19c594869e0d59dadae15b9a90dc7fb97b2e..fa9f7aa535d686004544cc0ae3e385de
 +        }
 +        // Lophine end - Carpet features
      }
-
+ 
      @Override
      public void handlePlayerAction(final ServerboundPlayerActionPacket packet) {
          PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());
