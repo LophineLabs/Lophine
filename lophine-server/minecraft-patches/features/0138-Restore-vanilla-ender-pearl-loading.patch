@@ -5,7 +5,7 @@ Subject: [PATCH] Restore vanilla ender pearl loading
 
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index de29c9dab796e1488d2b2d65102de45b3da0f400..e1a09ea420d9863a47c682ba40e846f9d67816f0 100644
+index 76467b79e8225a27ba2250e5b312f04a0ed3ffad..557e53b8c95ee709368ffc05fe34acb9c54122c2 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -281,7 +281,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -51,16 +51,16 @@ index de29c9dab796e1488d2b2d65102de45b3da0f400..e1a09ea420d9863a47c682ba40e846f9
          }
      }
  
-@@ -2553,7 +2555,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
-         }
-         // Paper start - disable player cramming
-         return (super.isInvulnerableTo(level, source) || this.isChangingDimension() && !source.is(DamageTypes.ENDER_PEARL) || !this.connection.hasClientLoaded())
+@@ -2555,7 +2557,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+         // Lophine - Carpet features: fake players never send teleport ACKs, so isChangingDimension
+         // would otherwise remain true after respawn / End return and make them permanently invulnerable.
+         return (super.isInvulnerableTo(level, source) || this.isChangingDimension() && !this.isFakePlayer() && !source.is(DamageTypes.ENDER_PEARL) || !this.connection.hasClientLoaded())
 -            || (!this.level().paperConfig().collisions.allowPlayerCrammingDamage && source.is(DamageTypes.CRAMMING));
 +            || (!fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled && !this.level().paperConfig().collisions.allowPlayerCrammingDamage && source.is(DamageTypes.CRAMMING)); // Lophine - Vanilla-like experience
          // Paper end - disable player cramming
      }
  
-@@ -3782,11 +3784,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3784,11 +3786,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      }
  
      public void registerEnderPearl(final ThrownEnderpearl enderPearl) {
