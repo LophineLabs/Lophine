@@ -51,16 +51,16 @@ index 6a66d0a90663d9c691b09d5e9572db2938e7bae6..b79a397bee9e7a7b817e3cd4c8b4f849
          }
      }
  
-@@ -2553,7 +2555,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
-         }
-         // Paper start - disable player cramming
-         return (super.isInvulnerableTo(level, source) || this.isChangingDimension() && !source.is(DamageTypes.ENDER_PEARL) || !this.connection.hasClientLoaded())
+@@ -2555,7 +2557,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+         // Lophine - Carpet features: fake players never send teleport ACKs, so isChangingDimension
+         // would otherwise remain true after respawn / End return and make them permanently invulnerable.
+         return (super.isInvulnerableTo(level, source) || this.isChangingDimension() && !this.isFakePlayer() && !source.is(DamageTypes.ENDER_PEARL) || !this.connection.hasClientLoaded())
 -            || (!this.level().paperConfig().collisions.allowPlayerCrammingDamage && source.is(DamageTypes.CRAMMING));
 +            || (!fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled() && !this.level().paperConfig().collisions.allowPlayerCrammingDamage && source.is(DamageTypes.CRAMMING)); // Lophine - Vanilla-like experience
          // Paper end - disable player cramming
      }
  
-@@ -3782,11 +3784,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3784,11 +3786,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      }
  
      public void registerEnderPearl(final ThrownEnderpearl enderPearl) {
