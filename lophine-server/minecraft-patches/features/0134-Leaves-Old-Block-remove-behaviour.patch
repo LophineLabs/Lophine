@@ -321,11 +321,11 @@ index e75f19a84ff3e21f93edea2ae1cdb4458c46bddd..d2a82815fee183479c94afa610c88e8a
      protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
          Containers.updateNeighboursAfterDestroy(state, level, pos);
 diff --git a/net/minecraft/world/level/block/DiodeBlock.java b/net/minecraft/world/level/block/DiodeBlock.java
-index fadfa0b80215c75253a6acdff5b84a50933e9e81..81830dee91ca4a7b6016fef7577193126668a904 100644
+index d8d12e995b8bcd57e06d8f8b841c52fa07b2dd6f..7de9909dc718128ad1cea83b2ae2c6eb96d9c1aa 100644
 --- a/net/minecraft/world/level/block/DiodeBlock.java
 +++ b/net/minecraft/world/level/block/DiodeBlock.java
 @@ -178,6 +178,17 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
-         if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this instanceof ComparatorBlock && !oldState.is(Blocks.COMPARATOR)) org.leavesmc.leaves.lithium.common.block.entity.inventory_comparator_tracking.ComparatorTracking.notifyNearbyBlockEntitiesAboutNewComparator(level, pos); // Leaves - Lithium Sleeping Block Entity
+         if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this instanceof ComparatorBlock && !oldState.is(Blocks.COMPARATOR)) net.caffeinemc.mods.lithium.common.block.entity.inventory_comparator_tracking.ComparatorTracking.notifyNearbyBlockEntitiesAboutNewComparator(level, pos); // Leaves - Lithium Sleeping Block Entity
      }
  
 +    // Leaves start - behaviour 1.21.1-
@@ -363,10 +363,10 @@ index f777b67e0d90c1bb25c3aeef8e5b1710ab8ac96e..152d037d7717e1364dcb8b3dfb518cd9
      protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
          Containers.updateNeighboursAfterDestroy(state, level, pos);
 diff --git a/net/minecraft/world/level/block/HopperBlock.java b/net/minecraft/world/level/block/HopperBlock.java
-index 2068d22c14aa42635c63a9e3e2e8788a9983ad0b..8c34dc9208d7a724c2085a011d37d55d6052b514 100644
+index 6db25c7b8bf5d81272130236bac042daa0f7265a..e51318444273612e80f75f5f801e1001a4f36e54 100644
 --- a/net/minecraft/world/level/block/HopperBlock.java
 +++ b/net/minecraft/world/level/block/HopperBlock.java
-@@ -133,6 +133,15 @@ public class HopperBlock extends BaseEntityBlock  implements org.leavesmc.leaves
+@@ -133,6 +133,15 @@ public class HopperBlock extends BaseEntityBlock implements net.caffeinemc.mods.
          }
      }
  
@@ -576,7 +576,7 @@ index c3f0ac5ceb37d6b4cf58c00150b4efc5a493bbf9..c8b48caa61d1310346fc40a5c2e63883
      protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
          if (!movedByPiston) {
 diff --git a/net/minecraft/world/level/block/SculkSensorBlock.java b/net/minecraft/world/level/block/SculkSensorBlock.java
-index 6e217dea06365d2125b51b8222f49e186fcf6c08..c7810733a5a5e8a25669c1f04e546f47f79e59d4 100644
+index 4bcac45a33989f6a997897751c3adaeaddf9c162..6848e4b71efb96f424979f45e717c25fe1394534 100644
 --- a/net/minecraft/world/level/block/SculkSensorBlock.java
 +++ b/net/minecraft/world/level/block/SculkSensorBlock.java
 @@ -123,6 +123,19 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
@@ -600,7 +600,7 @@ index 6e217dea06365d2125b51b8222f49e186fcf6c08..c7810733a5a5e8a25669c1f04e546f47
      protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
          if (getPhase(state) == SculkSensorPhase.ACTIVE) {
 diff --git a/net/minecraft/world/level/block/SculkShriekerBlock.java b/net/minecraft/world/level/block/SculkShriekerBlock.java
-index fc3fcb07cec78126c1bf7ae37065db7a5cfa232f..3643a679b12e8e3a6daaa2a3295e7259307c348d 100644
+index 043bf90b940552cbc6deeb2c038476dd27b0a83b..709e8a90a29669d91a74b61b45301f7459f2dc91 100644
 --- a/net/minecraft/world/level/block/SculkShriekerBlock.java
 +++ b/net/minecraft/world/level/block/SculkShriekerBlock.java
 @@ -62,6 +62,17 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
@@ -762,10 +762,10 @@ index c00cbfa4d0238ae42a91023a29d674ae98de6400..851419cdccdee98ceab22c01fb696260
      protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
          BlockPos basePos = pos.relative(state.getValue(FACING).getOpposite());
 diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
-index 10ddf77c088088a9b30aff0706e74afca958957e..9f7c8f6b7b594c86d96c6e40ebf2d9dc4156c62f 100644
+index 124f77f1c92331b0493e62d0d4ed0d4186d9a621..8ca486488e6e3e32f4805b09f08078d6bcd2f0c9 100644
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
-@@ -163,6 +163,16 @@ public abstract class BlockBehaviour implements FeatureElement, org.leavesmc.lea
+@@ -163,6 +163,16 @@ public abstract class BlockBehaviour implements FeatureElement, net.caffeinemc.m
          org.spigotmc.AsyncCatcher.catchOp("block onPlace"); // Spigot
      }
  
@@ -782,7 +782,7 @@ index 10ddf77c088088a9b30aff0706e74afca958957e..9f7c8f6b7b594c86d96c6e40ebf2d9dc
      protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
      }
  
-@@ -952,6 +962,13 @@ public abstract class BlockBehaviour implements FeatureElement, org.leavesmc.lea
+@@ -952,6 +962,13 @@ public abstract class BlockBehaviour implements FeatureElement, net.caffeinemc.m
              // CraftBukkit end
          }
  
@@ -797,7 +797,7 @@ index 10ddf77c088088a9b30aff0706e74afca958957e..9f7c8f6b7b594c86d96c6e40ebf2d9dc
              this.getBlock().affectNeighborsAfterRemoval(this.asState(), level, pos, movedByPiston);
          }
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index 984a963d7cc85c0d1f6c408d9657498feb9eb909..2da2034f8b34e73ea26948c254c7c484fb55592e 100644
+index 4da758cd68ff434af8ad730865e6207da6e38bdb..4f5092b2b0cade45b574a867308d1466299e1ed1 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -429,6 +429,8 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot

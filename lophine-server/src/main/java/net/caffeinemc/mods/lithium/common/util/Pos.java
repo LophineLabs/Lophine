@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Lithium. If not, see <https://www.gnu.org/licenses/>.
  */
+
 package net.caffeinemc.mods.lithium.common.util;
 
 import net.minecraft.core.SectionPos;
@@ -25,15 +26,12 @@ public class Pos {
         public static int getYSize(LevelHeightAccessor view) {
             return view.getHeight();
         }
-
         public static int getMinY(LevelHeightAccessor view) {
             return view.getMinY();
         }
-
         public static int getMaxYInclusive(LevelHeightAccessor view) {
             return view.getMaxY();
         }
-
         public static int getMaxYExclusive(LevelHeightAccessor view) {
             return view.getMaxY() + 1;
         }
@@ -42,7 +40,7 @@ public class Pos {
             return 15 + getMinInSectionCoord(sectionCoord);
         }
 
-        public static int getMaxYInSectionIndex(LevelHeightAccessor view, int sectionIndex) {
+        public static int getMaxYInSectionIndex(LevelHeightAccessor view, int sectionIndex){
             return getMaxInSectionCoord(SectionYCoord.fromSectionIndex(view, sectionIndex));
         }
 
@@ -69,15 +67,12 @@ public class Pos {
         public static int getNumYSections(LevelHeightAccessor view) {
             return view.getSectionsCount();
         }
-
         public static int getMinYSection(LevelHeightAccessor view) {
             return view.getMinSectionY();
         }
-
         public static int getMaxYSectionInclusive(LevelHeightAccessor view) {
             return view.getMaxSectionY();
         }
-
         public static int getMaxYSectionExclusive(LevelHeightAccessor view) {
             return view.getMaxSectionY() + 1;
         }
@@ -85,7 +80,6 @@ public class Pos {
         public static int fromSectionIndex(LevelHeightAccessor view, int sectionCoord) {
             return sectionCoord + SectionYCoord.getMinYSection(view);
         }
-
         public static int fromBlockCoord(int blockCoord) {
             return SectionPos.blockToSectionCoord(blockCoord);
         }
@@ -95,15 +89,12 @@ public class Pos {
         public static int getNumYSections(LevelHeightAccessor view) {
             return view.getSectionsCount();
         }
-
         public static int getMinYSectionIndex(LevelHeightAccessor view) {
             return 0;
         }
-
         public static int getMaxYSectionIndexInclusive(LevelHeightAccessor view) {
             return view.getSectionsCount() - 1;
         }
-
         public static int getMaxYSectionIndexExclusive(LevelHeightAccessor view) {
             return view.getSectionsCount();
         }
@@ -112,7 +103,6 @@ public class Pos {
         public static int fromSectionCoord(LevelHeightAccessor view, int sectionCoord) {
             return sectionCoord - SectionYCoord.getMinYSection(view);
         }
-
         public static int fromBlockCoord(LevelHeightAccessor view, int blockCoord) {
             return fromSectionCoord(view, SectionPos.blockToSectionCoord(blockCoord));
         }

@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Lithium. If not, see <https://www.gnu.org/licenses/>.
  */
+
 package net.caffeinemc.mods.lithium.common.util.collections;
 
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;

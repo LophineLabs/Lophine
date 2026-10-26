@@ -8,10 +8,10 @@ As a part of : Leaves (https://github.com/LeavesMC/Leaves)
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index d3f4143c97f49ab04aa5ddb1b11f761281192f02..96625085722fa639afe13571d8cbce4d0391bbbf 100644
+index 6124e59fc69575f49a94da4e16abcd83e988a1cc..f13902e1c8891e27afb9aa5aca11052ac019bb21 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-@@ -408,7 +408,7 @@ public final class RegionizedWorldData {
+@@ -352,7 +352,7 @@ public final class RegionizedWorldData {
      // Luminol end
      // connections
      private static final Connection[] EMPTY_CONNECTION_ARRAY = new Connection[0];
@@ -315,7 +315,7 @@ index ef8c1e81327dd3dd3535bb86920f2522f00b0b35..8e7029b560a99003858f09319f89a04f
              }
          }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index b35b0f3ab7d3c13e07c550e9babdd9eab2ea03dd..d90882a4ab784407fe53e54e2675e86c9c0bc46a 100644
+index c4fa512afa42d14b582d25d37d74e66e1a34f229..764eef5c839977904a20fc8aa0e3fd8c5036f434 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -245,6 +245,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -347,7 +347,7 @@ index b35b0f3ab7d3c13e07c550e9babdd9eab2ea03dd..d90882a4ab784407fe53e54e2675e86c
      @Override
      public void updatePOIOnBlockStateChange(final BlockPos pos, final BlockState oldState, final BlockState newState) {
          Optional<Holder<PoiType>> oldType = PoiTypes.forState(oldState);
-@@ -3369,6 +3377,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3370,6 +3378,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              // ServerLevel.this.getChunkSource().addEntity(entity); // Paper - ignore and warn about illegal addEntity calls instead of crashing server; moved down below valid=true
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.add(player);
@@ -359,7 +359,7 @@ index b35b0f3ab7d3c13e07c550e9babdd9eab2ea03dd..d90882a4ab784407fe53e54e2675e86c
                  if (player.isReceivingWaypoints()) {
                      ServerLevel.this.getWaypointManager().addPlayer(player);
                  }
-@@ -3449,6 +3462,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3450,6 +3463,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              ServerLevel.this.getChunkSource().removeEntity(entity);
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.remove(player);
@@ -583,7 +583,7 @@ index 42a6775ab61347652c8b69d7987739240a9d466c..8220cb1042856e48ed9f80272040793d
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 300689494d5c8f78f7b45965b644acb88fcf4fa6..51b15c6eabe6dba689907fd94f8c58c22b4f8042 100644
+index 679d7e2dcac87ccaf6e3b2d0072e2ee9a8ab9909..a8d058ab287276b13d4108722e705b834751067a 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1294,7 +1294,7 @@ public abstract class Entity
@@ -604,7 +604,7 @@ index 300689494d5c8f78f7b45965b644acb88fcf4fa6..51b15c6eabe6dba689907fd94f8c58c2
          // Paper start - optimise collisions
          final boolean xZero = movement.x == 0.0;
          final boolean yZero = movement.y == 0.0;
-@@ -6029,7 +6029,7 @@ public abstract class Entity
+@@ -6027,7 +6027,7 @@ public abstract class Entity
          return MoveSimulationType.AUTHORITATIVE_SIDE;
      }
  
@@ -614,7 +614,7 @@ index 300689494d5c8f78f7b45965b644acb88fcf4fa6..51b15c6eabe6dba689907fd94f8c58c2
              case SERVER_AND_CLIENT -> true;
              case AUTHORITATIVE_SIDE -> this.isLocalInstanceAuthoritative();
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 3a3bdc14239ac5066bfd8c036d06351006e523f3..ce681b3318add1e607115faf845aacbcb36e7530 100644
+index 8c66dc24c3a67bfd5c89b96fe2dc9db8520af847..c08ba60216f7898c2b567ce6a6eabbeb5661c1c8 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -2009,7 +2009,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -635,7 +635,7 @@ index 3a3bdc14239ac5066bfd8c036d06351006e523f3..ce681b3318add1e607115faf845aacbc
              this.setSpeed(this.getRiddenSpeed(controller));
              this.travel(riddenInput);
          } else {
-@@ -4284,7 +4284,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4289,7 +4289,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          // Paper start - lag compensate eating
          // we add 1 to the expected time to avoid lag compensating when we should not
          final boolean shouldLagCompensate = this.useItem.has(DataComponents.FOOD) && this.eatStartTime != -1 && (System.nanoTime() - this.eatStartTime) > ((1L + this.totalEatTimeTicks) * 50L * (1000L * 1000L));
@@ -644,7 +644,7 @@ index 3a3bdc14239ac5066bfd8c036d06351006e523f3..ce681b3318add1e607115faf845aacbc
              this.useItemRemaining = 0;
              // Paper end - lag compensate eating
              this.completeUsingItem();
-@@ -4474,6 +4474,23 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4479,6 +4479,23 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.stopUsingItem();
      }
  
@@ -765,7 +765,7 @@ index 9260aa8a6ce61819c6c4eeaef5624344e72de5e0..94c603a7229ee6ecfc2da8eb522dc65c
          return switch (this.getStatus()) {
              case IN_WATER, UNDER_WATER, UNDER_FLOWING_WATER -> SoundEvents.BOAT_PADDLE_WATER;
 diff --git a/net/minecraft/world/inventory/AbstractContainerMenu.java b/net/minecraft/world/inventory/AbstractContainerMenu.java
-index 040331ba1ffc61c669599c5f58dbd7bdbfbe5abc..c35d97c16cc8464a4b5515722e01050ea120f5b4 100644
+index b111d643b454327b5d57930a7cdf84a791a05f5f..52b0f94dec50051cef2bfd6cfa6f0544d02ceaa0 100644
 --- a/net/minecraft/world/inventory/AbstractContainerMenu.java
 +++ b/net/minecraft/world/inventory/AbstractContainerMenu.java
 @@ -409,6 +409,7 @@ public abstract class AbstractContainerMenu {
@@ -800,10 +800,10 @@ index 040331ba1ffc61c669599c5f58dbd7bdbfbe5abc..c35d97c16cc8464a4b5515722e01050e
          final Player player, final ClickAction clickAction, final Slot slot, final ItemStack clicked, final ItemStack carried
      ) {
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index 873780b2b7437a83a08cdf82f240c39a058ca945..af88cec3344bc15fe4fcae14ef6338ae9227728a 100644
+index 11a20cfc114d3bb3e34da66b2fa5e4cf4c59ccc8..857e1ba7c8a8819f4b5ed4a86d1c932f359b64c2 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
-@@ -459,7 +459,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, Chang
+@@ -459,7 +459,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
                      placeEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callBlockPlaceEvent(level, player, hand, capturedBlockStates.getFirst(), pos);
                  }
  
@@ -812,7 +812,7 @@ index 873780b2b7437a83a08cdf82f240c39a058ca945..af88cec3344bc15fe4fcae14ef6338ae
                      result = InteractionResult.FAIL; // cancel placement
                      // PAIL: Remove this when MC-99075 fixed
                      player.containerMenu.forceHeldSlot(hand);
-@@ -968,6 +968,20 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, Chang
+@@ -968,6 +968,20 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
          }
      }
  

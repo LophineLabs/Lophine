@@ -289,10 +289,10 @@ index 37c9f983ae89c497f44a1b7967d741abf909e0a0..d7fb2505f2a86ca0d81f144624ef2e1a
  
              this.setListData(players);
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index d90882a4ab784407fe53e54e2675e86c9c0bc46a..90ef71922982434d1e1e1895cb08f528d7aa5222 100644
+index 764eef5c839977904a20fc8aa0e3fd8c5036f434..fc95e095c6742748d2477cec7375ac1fe7f8a6c0 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -3378,7 +3378,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3379,7 +3379,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.add(player);
                  // Leaves start - skip
@@ -301,7 +301,7 @@ index d90882a4ab784407fe53e54e2675e86c9c0bc46a..90ef71922982434d1e1e1895cb08f528
                      ServerLevel.this.realPlayers.add(player);
                  }
                  // Leaves end - skip
-@@ -3463,7 +3463,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3464,7 +3464,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.remove(player);
                  // Leaves start - skip
@@ -551,7 +551,7 @@ index 8220cb1042856e48ed9f80272040793d113fb604..6eb83753bf7b3355fe69d0dbcba75348
          // Leaves end - fakeplayer support
  
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index ce681b3318add1e607115faf845aacbcb36e7530..c4bf3a516d3c2652b50cce41da9ff7ab609606f6 100644
+index c08ba60216f7898c2b567ce6a6eabbeb5661c1c8..6332abea5b2bb41f42de6de2f0e9849e9d01d684 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -276,7 +276,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin

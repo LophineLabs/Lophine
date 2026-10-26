@@ -18,20 +18,20 @@ index f5601ee683c9daef74ab34c96b70d990ac6cf534..ef8c1e81327dd3dd3535bb86920f2522
                      double rangeY = level.paperConfig().entities.trackingRangeY.get(this.entity, -1);
                      if (rangeY != -1) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 77b3213ca9b58e337ba49a4d7e83884530b44804..300689494d5c8f78f7b45965b644acb88fcf4fa6 100644
+index 90e26843ba67ee6a68c81cb22c7968df8a9e00cf..679d7e2dcac87ccaf6e3b2d0072e2ee9a8ab9909 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -166,7 +166,7 @@ public abstract class Entity
      ItemOwner,
      SlotProvider,
      DebugValueSource,
--    TypedInstance<EntityType<?>>, ca.spottedleaf.moonrise.patches.chunk_system.entity.ChunkSystemEntity, ca.spottedleaf.moonrise.patches.entity_tracker.EntityTrackerEntity { // Paper - rewrite chunk system // Paper - optimise entity tracker
-+    TypedInstance<EntityType<?>>, ca.spottedleaf.moonrise.patches.chunk_system.entity.ChunkSystemEntity, ca.spottedleaf.moonrise.patches.entity_tracker.EntityTrackerEntity, dev.tr7zw.entityculling.versionless.access.Cullable { // Paper - rewrite chunk system // Paper - optimise entity tracker // Luminol - Ray tracing entity tracker
+-    TypedInstance<EntityType<?>>, ca.spottedleaf.moonrise.patches.chunk_system.entity.ChunkSystemEntity, ca.spottedleaf.moonrise.patches.entity_tracker.EntityTrackerEntity, net.caffeinemc.mods.lithium.common.world.in_world_tracking.MaybeInLevelObject { // Paper - rewrite chunk system // Paper - optimise entity tracker // Leaf - Lithium - equipment tracking
++    TypedInstance<EntityType<?>>, ca.spottedleaf.moonrise.patches.chunk_system.entity.ChunkSystemEntity, ca.spottedleaf.moonrise.patches.entity_tracker.EntityTrackerEntity, net.caffeinemc.mods.lithium.common.world.in_world_tracking.MaybeInLevelObject, dev.tr7zw.entityculling.versionless.access.Cullable { // Paper - rewrite chunk system // Paper - optimise entity tracker // Leaf - Lithium - equipment tracking // Luminol - Ray tracing entity tracker
      // CraftBukkit start
      private static final int CURRENT_LEVEL = 2;
      static boolean isLevelAtLeast(ValueInput input, int level) {
-@@ -6781,4 +6781,48 @@ public abstract class Entity
-     // Paper end
+@@ -6772,4 +6772,48 @@ public abstract class Entity
+     // Leaf end - Lithium - equipment tracking
  
      public boolean shouldTickHot() { return this.tickCount > 20 * 10 && this.isAlive(); } // KioCG
 +    // Lophine start - Add config to enable raytracing tracker

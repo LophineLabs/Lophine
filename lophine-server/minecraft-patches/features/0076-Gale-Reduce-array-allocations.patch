@@ -27,10 +27,10 @@ As part of: JettPack (https://gitlab.com/Titaniumtown/JettPack)
 Licensed under: GPL-3.0-only (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java
-index 5b7ed8e5067683143c99473a126e17baa531903c..ece13c12b793ede92ec67850ab6d5a88fddb8afa 100644
+index 2b29b3593ae8f355803122381b9e42ed0cf1914b..0680414d9d891bc413e5ff946ecdd2a0f04e64cc 100644
 --- a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java
-@@ -400,7 +400,6 @@ public final class ChunkEntitySlices {
+@@ -401,7 +401,6 @@ public final class ChunkEntitySlices {
  
      private static final class BasicEntityList<E extends Entity> {
  
@@ -38,7 +38,7 @@ index 5b7ed8e5067683143c99473a126e17baa531903c..ece13c12b793ede92ec67850ab6d5a88
          private static final int DEFAULT_CAPACITY = 4;
  
          private E[] storage;
-@@ -411,7 +410,7 @@ public final class ChunkEntitySlices {
+@@ -412,7 +411,7 @@ public final class ChunkEntitySlices {
          }
  
          public BasicEntityList(final int cap) {
@@ -47,7 +47,7 @@ index 5b7ed8e5067683143c99473a126e17baa531903c..ece13c12b793ede92ec67850ab6d5a88
          }
  
          public boolean isEmpty() {
-@@ -423,7 +422,7 @@ public final class ChunkEntitySlices {
+@@ -424,7 +423,7 @@ public final class ChunkEntitySlices {
          }
  
          private void resize() {
@@ -252,10 +252,10 @@ index 4b018c64d3123bb7a0687491d2ac3a535302890c..0e4d6c9a35d29c240a0cf30694211ea3
  
      private static Map<EquipmentSlot, Float> createForAllSlots(final List<EquipmentSlot> slots, final float dropChance) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index a66f01754046bd9e3946552cac794b2f624214f9..c9a449041ced1bc4ba2f3dde0ab41fba8a1f5510 100644
+index 1b753b9fc59c56e6db9f4a5e1beba1a5ca0ae012..7150a56a3d553d41f04e3f0f9030827ac2b87d84 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -3604,7 +3604,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3609,7 +3609,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          Map<org.bukkit.inventory.EquipmentSlot, io.papermc.paper.event.entity.EntityEquipmentChangedEvent.EquipmentChange> equipmentChanges = null;
          // Paper end - EntityEquipmentChangedEvent
  
@@ -264,7 +264,7 @@ index a66f01754046bd9e3946552cac794b2f624214f9..c9a449041ced1bc4ba2f3dde0ab41fba
              ItemStack previous = lastEquipmentItems.get(slot);
              ItemStack current = this.getItemBySlot(slot);
              if (this.equipmentHasChanged(previous, current)) {
-@@ -3889,7 +3889,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3894,7 +3894,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
  
      protected boolean canGlide() {
          if (!this.onGround() && !this.isPassenger() && !this.hasEffect(MobEffects.LEVITATION)) {
@@ -274,7 +274,7 @@ index a66f01754046bd9e3946552cac794b2f624214f9..c9a449041ced1bc4ba2f3dde0ab41fba
                      return true;
                  }
 diff --git a/net/minecraft/world/entity/decoration/ArmorStand.java b/net/minecraft/world/entity/decoration/ArmorStand.java
-index 0ffcf91694269568ae5e63cbd325e622323e220e..dde48b8d92d70fc895d95fb0a125fbe278175749 100644
+index fa537a96eb787cb63730379ef69bae117adef8cd..0649b22b99dc1271c723855cc9d49d41d6d01626 100644
 --- a/net/minecraft/world/entity/decoration/ArmorStand.java
 +++ b/net/minecraft/world/entity/decoration/ArmorStand.java
 @@ -484,7 +484,7 @@ public class ArmorStand extends LivingEntity {
@@ -300,10 +300,10 @@ index a6cf8928440c5abdc1c17e638056dcade3e79157..d5157b0448dfd030806c39f1ea68df69
              Equippable equippable = itemStack.get(DataComponents.EQUIPPABLE);
              if (itemStack.is(item) && equippable != null && equippable.slot() == slot) {
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index 984dc9229c2ffd79132f796b6df4ba6fea5a2c2a..44b8dcd62f674472d86b234d754e55a629e16415 100644
+index e60453c26887ccd9334b759fe12b85ec637f32cd..5038cd23d3a1d7566a676831ab180ed1f42175b5 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
-@@ -1179,7 +1179,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, Chang
+@@ -1178,7 +1178,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
  
      private void addAttributeTooltips(final Consumer<Component> consumer, final TooltipDisplay display, final @Nullable Player player) {
          if (display.shows(DataComponents.ATTRIBUTE_MODIFIERS)) {
@@ -361,10 +361,10 @@ index 9c667a09fcea23b4072c0616837b685e256e0462..d170ee3c74d0352fed4044cad9a87c8b
              if (predicate.test(item)) {
                  ItemEnchantments enchantments = item.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index f291099cc946c24587f8cbbcf9192b141449c4c1..84d1c4bc1a08fd736a13fd41091e3949b9ba3526 100644
+index 059a27a2891c8a047fe043b5c4a270d28d6efc31..3935be37d30c21df449cc7950549f812afe490b4 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
-@@ -1976,7 +1976,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+@@ -1955,7 +1955,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
      public org.bukkit.entity.Entity[] getChunkEntities(int chunkX, int chunkZ) {
          ca.spottedleaf.moonrise.patches.chunk_system.level.entity.ChunkEntitySlices slices = ((ServerLevel)this).moonrise$getEntityLookup().getChunk(chunkX, chunkZ);
          if (slices == null) {
@@ -373,7 +373,7 @@ index f291099cc946c24587f8cbbcf9192b141449c4c1..84d1c4bc1a08fd736a13fd41091e3949
          }
  
          List<org.bukkit.entity.Entity> ret = new java.util.ArrayList<>();
-@@ -1987,7 +1987,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+@@ -1966,7 +1966,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
              }
          }
  
@@ -383,7 +383,7 @@ index f291099cc946c24587f8cbbcf9192b141449c4c1..84d1c4bc1a08fd736a13fd41091e3949
      // Paper end - rewrite chunk system
  
 diff --git a/net/minecraft/world/level/block/ComposterBlock.java b/net/minecraft/world/level/block/ComposterBlock.java
-index 539f7aacd4023bf9c211034e0ff7dfdeb59729d6..89dc75ca53c69ff76af1efd2526e46b5fbca14f4 100644
+index 4b84851d27bfd709f95feef492d8d4970ceb5687..18faa2fbd2db7c6d9fe6acf53b3807826111a096 100644
 --- a/net/minecraft/world/level/block/ComposterBlock.java
 +++ b/net/minecraft/world/level/block/ComposterBlock.java
 @@ -293,7 +293,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
@@ -414,7 +414,7 @@ index 539f7aacd4023bf9c211034e0ff7dfdeb59729d6..89dc75ca53c69ff76af1efd2526e46b5
  
          @Override
 diff --git a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
-index c21253264e4a2d9e37fe8a78bd45c90ff2693d60..3573feefabeaca3f01037db36080ba069e77828b 100644
+index 30969fc40d976ad12660bf1b2829f5b6145fdd0c..2c1ae85955503e921ca0836d7cdacc3fa19d72ba 100644
 --- a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
 @@ -49,7 +49,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit

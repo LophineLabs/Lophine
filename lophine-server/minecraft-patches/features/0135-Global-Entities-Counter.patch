@@ -5,12 +5,12 @@ Subject: [PATCH] Global Entities Counter
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index e90bb7efd6e9e1dc60e7f0a0572979ded54c2cf0..0f83100387227001b7295c1178df4d6c668a0bca 100644
+index 1431b930a1f20617dc037a6999af69fd1598fced..891cbe2a4d6b2a9d6f927fd8409cb72320c5931e 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-@@ -558,6 +558,9 @@ public final class RegionizedWorldData {
-     public final Map<Long, ChunkSectionItemEntityMovementTracker> itemEntityMovementTrackerMap = new it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap<>();
-     // Anonymous end
+@@ -503,6 +503,9 @@ public final class RegionizedWorldData {
+     // Environment attribute system
+     public Reference2ObjectOpenHashMap<EnvironmentAttribute<?>, EnvironmentAttributeSystem.ValueSampler<?>> attributeSamplers;
  
 +    public int uniqueId = -1; // Lophine - Global Entities Counter
 +    public boolean underGlobalEntitiesCounter = false; // Lophine - Global Entities Counter
@@ -18,7 +18,7 @@ index e90bb7efd6e9e1dc60e7f0a0572979ded54c2cf0..0f83100387227001b7295c1178df4d6c
      public final TickRegions.TickRegionData regionData;
  
      public RegionizedWorldData(final ServerLevel world, final TickRegions.TickRegionData regionData) {
-@@ -574,6 +577,15 @@ public final class RegionizedWorldData {
+@@ -519,6 +522,15 @@ public final class RegionizedWorldData {
          this.turbo = new io.papermc.paper.redstone.RedstoneWireTurbo((RedstoneWireBlock)Blocks.REDSTONE_WIRE);
          this.regionData = regionData;
  
@@ -99,7 +99,7 @@ index c1ba9f45837a718099461d8e1a84c3dfc2468489..021ff2785ddd8a88376ee2f9e47f79d9
                  NaturalSpawner.spawnForChunk(this.level, chunk, spawnCookie, spawningCategories);
              }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index c4d74bbc41e0a02072a7d14f9bb516602c34c5b1..fd8cf3306141e9add55e526f676969e94a500559 100644
+index 02d093eafbbf4d6a63d9c452b09cfb0b2c192d5d..19b69aeb3692c36c683fdbe42c1598698b46638d 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -836,6 +836,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -114,7 +114,7 @@ index c4d74bbc41e0a02072a7d14f9bb516602c34c5b1..fd8cf3306141e9add55e526f676969e9
          final io.papermc.paper.threadedregions.RegionizedWorldData regionizedWorldData = this.getCurrentWorldData(); // Folia - regionised ticking
          final ca.spottedleaf.leafprofiler.RegionizedProfiler.Handle foliaProfiler = io.papermc.paper.threadedregions.TickRegionScheduler.getProfiler(); // Folia - profiler
          ProfilerFiller profiler = Profiler.get();
-@@ -3212,6 +3217,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3213,6 +3218,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      public void close() throws IOException {
          super.close();
          //this.entityManager.close(); // Paper - rewrite chunk system
@@ -126,7 +126,7 @@ index c4d74bbc41e0a02072a7d14f9bb516602c34c5b1..fd8cf3306141e9add55e526f676969e9
      }
  
      @Override
-@@ -3431,6 +3441,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3432,6 +3442,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              entity.inWorld = true; // CraftBukkit - Mark entity as in world
              entity.valid = true; // CraftBukkit
              ServerLevel.this.getChunkSource().addEntity(entity); // Paper - ignore and warn about illegal addEntity calls instead of crashing server
@@ -138,7 +138,7 @@ index c4d74bbc41e0a02072a7d14f9bb516602c34c5b1..fd8cf3306141e9add55e526f676969e9
              // Paper start - Entity origin API
              if (entity.origin == null) {
                  entity.origin = entity.position();
-@@ -3446,6 +3461,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3447,6 +3462,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          @Override
          public void onTrackingEnd(final Entity entity) {
              org.spigotmc.AsyncCatcher.catchOp("entity unregister"); // Spigot

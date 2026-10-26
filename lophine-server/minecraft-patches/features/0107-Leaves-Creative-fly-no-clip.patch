@@ -109,7 +109,7 @@ index 1f17f966882320b3a2ced50b3f73925cd0dfa14c..5a75df997c9026bcc740823d7039c8e4
  
              org.bukkit.event.block.BlockCanBuildEvent event = new org.bukkit.event.block.BlockCanBuildEvent(org.bukkit.craftbukkit.block.CraftBlock.at(context.getLevel(), pos), player, stateForPlacement.asBlockData(), defaultReturn, org.bukkit.craftbukkit.CraftEquipmentSlot.getHand(context.getHand())); // Paper - Expose hand in BlockCanBuildEvent
 diff --git a/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java b/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
-index 2354b64a715de2151f153a729aa528569ad94b5f..3cf436776f8c656038220f1a26e9eafdd0018ce9 100644
+index 8037d4644e81fb79c84f6c980a93ce80647d47ab..b45d4f8e39900d39b743c4a724624153287ac2ab 100644
 --- a/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
 @@ -153,7 +153,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl

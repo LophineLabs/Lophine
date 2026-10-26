@@ -10,10 +10,10 @@ Licensed under: MIT
 This patch is Powered by fabric-carpet(https://github.com/gnembon/fabric-carpet)
 
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index 9ff6bcd36978df86f546a8391d46fe36a580dc5d..9193d1d7ecb5a73908cea4bf3faa8b37bae399a5 100644
+index 1a49d2857111c38b07a6af0406ba49f32fe8b339..282630d0e78b8137a9d8c4f72e669359867cc109 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-@@ -240,8 +240,30 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -219,8 +219,30 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
                  changed |= action.getAsBoolean();
              }
  
@@ -42,9 +42,9 @@ index 9ff6bcd36978df86f546a8391d46fe36a580dc5d..9193d1d7ecb5a73908cea4bf3faa8b37
 +                }
 +                // Leaves end - Wool hopper counter
                  setChanged(level, pos, state);
-                 // Leaves start - Lithium Sleeping Block Entity
-                 if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()
-@@ -464,6 +486,13 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+                 return true;
+             }
+@@ -443,6 +465,13 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      // Paper end - Perf: Optimize Hoppers
  
      private static boolean ejectItems(final Level level, final BlockPos blockPos, final HopperBlockEntity self) {
@@ -58,7 +58,7 @@ index 9ff6bcd36978df86f546a8391d46fe36a580dc5d..9193d1d7ecb5a73908cea4bf3faa8b37
          Container container = me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() ? self.getInsertInventory(level) : getAttachedContainer(level, blockPos, self); // Leaves - Lithium Sleeping Block Entity
          if (container == null) {
              return false;
-@@ -517,6 +546,25 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -496,6 +525,25 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
      // Paper end - Add PrepareHopperTransferEvent
  
@@ -84,7 +84,7 @@ index 9ff6bcd36978df86f546a8391d46fe36a580dc5d..9193d1d7ecb5a73908cea4bf3faa8b37
      private static int[] getSlots(final Container container, final Direction direction) {
          if (container instanceof WorldlyContainer worldlyContainer) {
              return worldlyContainer.getSlotsForFace(direction);
-@@ -613,6 +661,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -592,6 +640,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public static boolean addItem(final Container container, final ItemEntity entity) {

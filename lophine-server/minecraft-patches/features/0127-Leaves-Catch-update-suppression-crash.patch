@@ -74,7 +74,7 @@ index 9744d00666e2999370de3bc9082efea37a5fb345..19fb7c0cbc88889df66c9f38117ae0a0
  
              profiler.pop();
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 8c6b24569bb62a1ce397a33738ddacf14c536069..841e425e5d791aba605542e115feba1a735269bb 100644
+index 8cdf59d8af67c8eb7b40a917b67bc0a0e2c69869..0515d79dcc6840b5c09849fd002e88a4d6f80bb5 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -965,7 +965,18 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -115,7 +115,7 @@ index dd952d3caaa9002a3eb241e9f7df7a7b07d0fd88..7d15d39fed47c3663110027b6444ce4d
              CrashReport report = CrashReport.forThrowable(t, "Ticking player");
              CrashReportCategory category = report.addCategory("Player being ticked");
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index baa4084f7653c37fcd65db42049ba940f510a9aa..e1dadc0972f9176d6f80f182787a2950ce862094 100644
+index 4ffac34ba50218cfc032a1a6b2358eb4ac518410..dc7e5b857af6974ab32d2a9a8f15a709b5e6b5a9 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1562,8 +1562,18 @@ public abstract class Entity
@@ -184,7 +184,7 @@ index cbdef9d6325a3f9ace1e739d85b747b55f728ee4..76ad6035d02982568adf049bb053d2a6
      }
  
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index 4d51f83620f729e6d14c47e9af517b00b27a1651..03624b7ebd41273e06d1cbbaf1b08f5171ff270e 100644
+index d7555d72688834f7cd2d8d23dd055a0f4d7d73f6..1e0baaa9aa2ff33dd79023d162d2a426db4a6e5d 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -405,6 +405,8 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot

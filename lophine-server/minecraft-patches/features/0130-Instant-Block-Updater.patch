@@ -5,10 +5,10 @@ Subject: [PATCH] Instant Block Updater
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 54acfe4587cbb084b51d50dc86858cc09ac75a79..e90bb7efd6e9e1dc60e7f0a0572979ded54c2cf0 100644
+index 0f198fdea35b8fa128565be5e4ead179cb97100a..1431b930a1f20617dc037a6999af69fd1598fced 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-@@ -504,7 +504,7 @@ public final class RegionizedWorldData {
+@@ -454,7 +454,7 @@ public final class RegionizedWorldData {
      public long lastMidTickExecuteFailure;
      // From Level
      public boolean populating;
@@ -17,7 +17,7 @@ index 54acfe4587cbb084b51d50dc86858cc09ac75a79..e90bb7efd6e9e1dc60e7f0a0572979de
      public boolean captureBlockStates = false;
      public boolean captureTreeGeneration = false;
      public final Map<BlockPos, CraftBlockState> capturedBlockStates = new java.util.LinkedHashMap<>(); // Paper
-@@ -564,7 +564,11 @@ public final class RegionizedWorldData {
+@@ -509,7 +509,11 @@ public final class RegionizedWorldData {
          this.world = world;
          this.blockLevelTicks = new LevelTicks<>(world::isPositionTickingWithEntitiesLoaded, world, true);
          this.fluidLevelTicks = new LevelTicks<>(world::isPositionTickingWithEntitiesLoaded, world, false);
@@ -30,7 +30,7 @@ index 54acfe4587cbb084b51d50dc86858cc09ac75a79..e90bb7efd6e9e1dc60e7f0a0572979de
          this.nearbyPlayers = new NearbyPlayers(world);
          this.wireHandler = new alternate.current.wire.WireHandler(world);
          this.turbo = new io.papermc.paper.redstone.RedstoneWireTurbo((RedstoneWireBlock)Blocks.REDSTONE_WIRE);
-@@ -903,4 +907,4 @@ public final class RegionizedWorldData {
+@@ -848,4 +852,4 @@ public final class RegionizedWorldData {
      public int getChunkCount() {
          return this.chunks.size();
      }
@@ -38,7 +38,7 @@ index 54acfe4587cbb084b51d50dc86858cc09ac75a79..e90bb7efd6e9e1dc60e7f0a0572979de
 \ No newline at end of file
 +}
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 841e425e5d791aba605542e115feba1a735269bb..c4d74bbc41e0a02072a7d14f9bb516602c34c5b1 100644
+index 0515d79dcc6840b5c09849fd002e88a4d6f80bb5..02d093eafbbf4d6a63d9c452b09cfb0b2c192d5d 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -999,11 +999,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
