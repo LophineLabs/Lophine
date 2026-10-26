@@ -21,7 +21,7 @@ index 3a594416e711fc6fdbf0ac7c3484a9830324d4d8..f6b0505f3c53196967dcf264c5e929e3
              } else {
                  this.followingPlayer = null;
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index 7cf4fe3910f463e311ca8171d4a4113441a97f91..e80fc69a0e115280831aea259e85d9695d809d37 100644
+index 338cf872c49ab0bc40fae54ddbf7b38d3659950a..ec438f4b7c8f6eae230aa00ec2e6ee91695fa42c 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -284,8 +284,8 @@ public abstract class Player extends Avatar implements ContainerUser {
@@ -109,7 +109,7 @@ index 1f17f966882320b3a2ced50b3f73925cd0dfa14c..5a75df997c9026bcc740823d7039c8e4
  
              org.bukkit.event.block.BlockCanBuildEvent event = new org.bukkit.event.block.BlockCanBuildEvent(org.bukkit.craftbukkit.block.CraftBlock.at(context.getLevel(), pos), player, stateForPlacement.asBlockData(), defaultReturn, org.bukkit.craftbukkit.CraftEquipmentSlot.getHand(context.getHand())); // Paper - Expose hand in BlockCanBuildEvent
 diff --git a/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java b/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
-index 3948b7a0beccb35d55cf3915e2ae431f884bdaa0..5abd613616aac5c9d152f432159db0c0369c93b6 100644
+index 2354b64a715de2151f153a729aa528569ad94b5f..3cf436776f8c656038220f1a26e9eafdd0018ce9 100644
 --- a/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
 @@ -153,7 +153,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl

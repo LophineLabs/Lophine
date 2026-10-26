@@ -1,7 +1,7 @@
 package me.earthme.luminol.utils.dialog;
 
 import fun.bm.lophine.utils.ServerI18nUtil;
-import me.earthme.luminol.api.config.EnumConfigData;
+import me.earthme.luminol.api.config.enums.EnumConfigData;
 import me.earthme.luminol.enums.EnumDialogDataType;
 import net.minecraft.core.Holder;
 import net.minecraft.server.dialog.Dialog;
@@ -40,12 +40,17 @@ public class ConfigDialogUtil {
     }
 
     private static String parseAllAdditional(Map<EnumConfigData, Object> values) {
+        boolean isWorldConfig = (boolean) values.get(EnumConfigData.CAN_DEFINED_BY_WORLD);
         String[] suggestions = (String[]) values.get(EnumConfigData.SUGGESTIONS);
         String comment = (String) values.get(EnumConfigData.COMMENT);
+        String worldConfigInfo = isWorldConfig ? ServerI18nUtil.getLocalizedText("luminol.config.dialog.is_world_config") : "";
+
         String addition1 = "";
         if (comment != null && !comment.isEmpty()) {
             addition1 = ServerI18nUtil.getLocalizedText("luminol.config.dialog.comments") + comment;
         }
+
+        addition1 = worldConfigInfo.isEmpty() ? addition1 : worldConfigInfo + "\n" + addition1;
 
         String addition2 = "";
 

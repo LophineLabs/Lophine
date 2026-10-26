@@ -9,7 +9,7 @@ individual items may never reach their destination.
 This configuration option is added to fix this behavior.
 
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index ba1224d890a909ce34a2c1ae9c26d2de5ab47962..994fb499b4dc47be3a872b15b6c1f21033be5634 100644
+index 47da215a3df10040ba9d9a7c7a5574524cdacd88..b4cfd52d15ef14d57d665329d77ac605f53ade5c 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
 @@ -282,7 +282,7 @@ public class ItemEntity extends Entity implements TraceableEntity, ChangePublish
@@ -17,7 +17,7 @@ index ba1224d890a909ce34a2c1ae9c26d2de5ab47962..994fb499b4dc47be3a872b15b6c1f210
          ItemStack otherItemStack = other.getItem();
          if (Objects.equals(this.target, other.target) && areMergable(thisItemStack, otherItemStack)) {
 -            if (otherItemStack.getCount() < thisItemStack.getCount()) {
-+            if (fun.bm.lophine.config.modules.misc.ItemEntityConfig.followTickSequenceMerge || otherItemStack.getCount() < thisItemStack.getCount()) { // Lophine - add follow Tick Sequence Merge, see Paper#13073
++            if (fun.bm.lophine.config.modules.misc.ItemEntityConfig.followTickSequenceMerge() || otherItemStack.getCount() < thisItemStack.getCount()) { // Lophine - add follow Tick Sequence Merge, see Paper#13073
                  merge(this, thisItemStack, other, otherItemStack);
              } else {
                  merge(other, otherItemStack, this, thisItemStack);

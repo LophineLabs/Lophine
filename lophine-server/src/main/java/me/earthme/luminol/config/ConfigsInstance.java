@@ -7,11 +7,11 @@ import fun.bm.lophine.utils.ServerI18nUtil;
 import io.papermc.paper.threadedregions.RegionizedServer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import me.earthme.luminol.api.config.ConfigsInstanceHooks;
-import me.earthme.luminol.api.config.EnumConfigData;
 import me.earthme.luminol.api.config.LuminolConfigsInstance;
 import me.earthme.luminol.api.config.TransformLogic;
 import me.earthme.luminol.api.config.annotation.*;
 import me.earthme.luminol.api.config.enums.EnumConfigCategory;
+import me.earthme.luminol.api.config.enums.EnumConfigData;
 import me.earthme.luminol.api.config.enums.EnumLoadType;
 import me.earthme.luminol.api.config.enums.EnumRunnableType;
 import me.earthme.luminol.commands.config.ConfigCommand;
@@ -44,6 +44,11 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     private final String commandName;   // Used to register command
     private final String pack;          // Used to find all classes
     private final ConfigsInstanceHooks hooks;
+    /**
+     * Fields marked {@code isWorldConfig}. {@code null} means this instance does not
+     * use per-world overlays.
+     */
+    private final Map<String, Field> worldConfigFields;
 
     // Storage collections
     private final Map<Object, Set<Exception>> allInstanced = new HashMap<>(); // add exception to map to store exceptions
@@ -59,13 +64,16 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     /**
      * Private constructor to create a configuration instance
      */
-    protected ConfigsInstance(@NotNull ClassLoader loader, @NotNull File base, @NotNull String name, @NotNull String file_name,
-                              @NotNull String command_name, @NotNull String pack) {
-        this(loader, base, name, file_name, command_name, pack, ConfigsInstanceHooks.NONE);
-    }
-
-    protected ConfigsInstance(@NotNull ClassLoader loader, @NotNull File base, @NotNull String name, @NotNull String file_name,
-                              @NotNull String command_name, @NotNull String pack, @NotNull ConfigsInstanceHooks hooks) {
+    protected ConfigsInstance(
+            @NotNull ClassLoader loader,
+            @NotNull File base,
+            @NotNull String name,
+            @NotNull String file_name,
+            @NotNull String command_name,
+            @NotNull String pack,
+            @NotNull ConfigsInstanceHooks hooks,
+            @Nullable Map<String, Field> worldConfigFields
+    ) {
         this.loader = loader;
         this.baseConfigFolder = base;
         this.name = name;
@@ -73,6 +81,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         this.commandName = command_name;
         this.baseConfigFile = new File(base, file_name);
         this.hooks = hooks;
+        this.worldConfigFields = worldConfigFields;
     }
 
     // Lifecycle management methods
@@ -112,6 +121,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
             preLoadConfig(keepComments);
             finalizeLoadConfig();
             hooks.afterReload(this, snapshot);
+            ConfigManager.reloadWorldOverlays(this);
         } catch (Exception e) {
             logger.error("Fail to load config file of {}.", name, e);
         }
@@ -297,6 +307,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
      * Load all configuration modules
      */
     private void loadAllModules(boolean keepComments) {
+        if (worldConfigFields != null) worldConfigFields.clear();
         hooks.beforeLoadModules(this, alreadyInit);
         Map<Object, Set<Exception>> stagedMap = new HashMap<>();
         for (Object instanced : allInstanced.keySet()) {
@@ -367,6 +378,19 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         return category;
     }
 
+    private void applyFieldComment(String fullConfigKeyName, ConfigInfo configInfo) {
+        String comments = ServerI18nUtil.getLocalizedText(name + "." + fullConfigKeyName + ".comment");
+        if (configInfo != null && configInfo.isWorldConfig()) {
+            String worldHint = ServerI18nUtil.getLocalizedText("luminol.config.file.is_world_config");
+            if (!worldHint.isBlank()) {
+                comments = comments.isBlank() ? worldHint : comments + "\n" + worldHint;
+            }
+        }
+        if (!comments.isBlank()) {
+            configFileInstance.setComment(fullConfigKeyName, comments);
+        }
+    }
+
     /**
      * Handle class-level comments for configuration
      */
@@ -423,6 +447,11 @@ public class ConfigsInstance implements LuminolConfigsInstance {
             currentValue = ((Enum<?>) currentValue).name();
         }
         boolean removed = getConfigClassInfo(singleConfigModule).category() == EnumConfigCategory.REMOVED;
+
+        if (worldConfigFields != null && configInfo.isWorldConfig() && !removed && !skipLoad) {
+            worldConfigFields.put(fullConfigKeyName, field);
+            WorldValues.register(field.getDeclaringClass(), field.getName(), this.name, fullConfigKeyName);
+        }
 
         // Store default value if not initialized
         if (!alreadyInit && !removed) {
@@ -495,11 +524,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
             throw new UnsupportedOperationException("Config " + configInfo.name() + "tried to add an null default value!");
         }
 
-        // Add default value with comments
-        final String comments = ServerI18nUtil.getLocalizedText(name + "." + fullConfigKeyName + ".comment");
-        if (!comments.isBlank()) {
-            configFileInstance.setComment(fullConfigKeyName, comments);
-        }
+        applyFieldComment(fullConfigKeyName, configInfo);
 
         configFileInstance.add(fullConfigKeyName, currentValue);
     }
@@ -540,10 +565,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                         removeConfig(oldConfigKeyName, transformedConfig.directory());
                     }
 
-                    final String comments = ServerI18nUtil.getLocalizedText(name + "." + fullConfigKeyName + ".comment");
-                    if (!comments.isBlank()) {
-                        configFileInstance.setComment(fullConfigKeyName, comments);
-                    }
+                    applyFieldComment(fullConfigKeyName, field.getAnnotation(ConfigInfo.class));
 
                     if (!removed && configFileInstance.get(fullConfigKeyName) != null) {
                         break;
@@ -584,10 +606,8 @@ public class ConfigsInstance implements LuminolConfigsInstance {
             field.set(null, actuallyValue);
         }
 
-        // Handle comments
         if (!keepComments) {
-            final String comments = ServerI18nUtil.getLocalizedText(name + "." + fullConfigKeyName + ".comment");
-            configFileInstance.setComment(fullConfigKeyName, comments);
+            applyFieldComment(fullConfigKeyName, configInfo);
         }
 
         // Store suggestions for command completion
@@ -981,6 +1001,100 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         return configFileInstance.get(key);
     }
 
+    public boolean usesWorldConfig() {
+        return worldConfigFields != null;
+    }
+
+    public boolean isWorldConfigKey(String key) {
+        return worldConfigFields != null && worldConfigFields.containsKey(key);
+    }
+
+    public Set<String> getWorldConfigKeys() {
+        return worldConfigFields != null ? Collections.unmodifiableSet(worldConfigFields.keySet()) : Collections.emptySet();
+    }
+
+    public List<String> completeWorldConfigPath(String partialPath) {
+        Set<String> worldKeys = getWorldConfigKeys();
+        List<String> result = new ArrayList<>();
+        for (String suggestion : completeConfigPath(partialPath)) {
+            for (String worldKey : worldKeys) {
+                if (worldKey.equals(suggestion) || worldKey.startsWith(suggestion + ".")) {
+                    result.add(suggestion);
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    public List<String> getSingleWorldConfig(String key) {
+        List<String> list = new ArrayList<>();
+        for (String check : getSingleConfig(key)) {
+            if (isWorldConfigKey(check)) {
+                list.add(check);
+            }
+        }
+        return list;
+    }
+
+    public List<String> getAllWorldConfigPaths(String currentPath) {
+        return getWorldConfigKeys().stream()
+                .filter(k -> k.startsWith(currentPath))
+                .sorted()
+                .toList();
+    }
+
+    /**
+     * Resolve a world-config key for {@code level}. Missing world values fall back to the global default.
+     * Keys without {@code isWorldConfig} always use the global value.
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getForWorld(@Nullable net.minecraft.world.level.Level level, String key) {
+        if (level != null && isWorldConfigKey(key)) {
+            WorldConfigHolder holder = level.luminolWorldConfig();
+            if (holder != null) {
+                return holder.get(this.name, key);
+            }
+        }
+        return (T) getLiveFallback(key);
+    }
+
+    @SuppressWarnings("unchecked")
+    <T> T getLiveFallback(String key) {
+        if (worldConfigFields != null) {
+            Field field = worldConfigFields.get(key);
+            if (field != null) {
+                try {
+                    field.setAccessible(true);
+                    Object live = field.get(null);
+                    if (live != null) {
+                        return (T) live;
+                    }
+                } catch (IllegalAccessException ignored) {
+                }
+            }
+        }
+        if (configFileInstance != null) {
+            T fileValue = configFileInstance.get(key);
+            if (fileValue != null) {
+                return fileValue;
+            }
+        }
+        return (T) defaultvalueMap.get(key);
+    }
+
+    Object convertValue(String key, Object value) throws IllegalAccessException {
+        if (worldConfigFields == null || value == null) {
+            return value;
+        }
+        Field field = worldConfigFields.get(key);
+        if (field == null) {
+            return value;
+        }
+        field.setAccessible(true);
+        return tryTransform(field, value);
+    }
+
     /**
      * Get configuration suggestions by key
      */
@@ -1000,6 +1114,10 @@ public class ConfigsInstance implements LuminolConfigsInstance {
      */
     public String getName() {
         return name;
+    }
+
+    public File getBaseConfigFolder() {
+        return baseConfigFolder;
     }
 
     // Configuration path completion methods
@@ -1109,9 +1227,32 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                             }
                         }
                     }
+                    case EnumConfigData.CAN_DEFINED_BY_WORLD -> dataMap.put(feature, isWorldConfigKey(key));
                 }
             }
             map.put(key, dataMap);
+        }
+        return map;
+    }
+
+    public Map<String, Map<EnumConfigData, Object>> getWorldData(WorldConfigInstance world, Collection<String> list, Collection<EnumConfigData> features) {
+        Map<String, Map<EnumConfigData, Object>> map = getData(list, features);
+        for (String key : list) {
+            Map<EnumConfigData, Object> dataMap = map.get(key);
+            if (dataMap == null) {
+                continue;
+            }
+            Object value = world.get(key);
+            if (dataMap.containsKey(EnumConfigData.VALUE)) {
+                dataMap.put(EnumConfigData.VALUE, parseDataToReadable(value));
+            }
+            if (dataMap.containsKey(EnumConfigData.REAL_VALUE)) {
+                dataMap.put(EnumConfigData.REAL_VALUE, value);
+            }
+            if (dataMap.containsKey(EnumConfigData.STRING_VALUE)) {
+                Object readable = parseDataToReadable(value);
+                dataMap.put(EnumConfigData.STRING_VALUE, readable == null ? null : readable.toString());
+            }
         }
         return map;
     }

@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class RecipeSyncProtocol implements LeavesProtocol {
     public static final String PROTOCOL_ID = "recipe-sync";
 
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = LogUtils.getClassLogger();
     private static final int MAX_PAYLOAD_SIZE = 1024 * 1024;
     private static final int MAX_CONFIGURATION_PAYLOAD_SIZE = 32767;
     private static final int MAX_SUPPORTED_SERIALIZERS = 256;

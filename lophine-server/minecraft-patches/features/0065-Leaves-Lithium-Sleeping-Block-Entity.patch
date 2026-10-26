@@ -9,7 +9,7 @@ Origin patch link: https://github.com/LeavesMC/Leaves/blob/master/leaves-server/
 Origin license: https://github.com/LeavesMC/Leaves/blob/master/LICENSE.md
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index b9f3245e21e312b55ba568b51d46712fa2336415..a4ffd4261ece9863e3c854f2a4af4222f9c7d933 100644
+index 1b07501c063eefb7336db88ab210023d69d89af5..d3f4143c97f49ab04aa5ddb1b11f761281192f02 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -65,6 +65,10 @@ import java.util.Set;
@@ -171,7 +171,7 @@ index 8fd27a342f7302284c48b3db7d085bb692e08cdc..8992e13df499333235e1a51b725c0ad3
  
      public static <E> NonNullList<E> create() {
 diff --git a/net/minecraft/core/component/PatchedDataComponentMap.java b/net/minecraft/core/component/PatchedDataComponentMap.java
-index 9ef7b9e82c55c42a91099ebcb8abb4558d53f2d8..8c399846c4d8f00e005888812864c3233e663453 100644
+index 9ef7b9e82c55c42a91099ebcb8abb4558d53f2d8..1beb560f220128dad8268229adf5039581f57ca0 100644
 --- a/net/minecraft/core/component/PatchedDataComponentMap.java
 +++ b/net/minecraft/core/component/PatchedDataComponentMap.java
 @@ -13,7 +13,7 @@ import java.util.Map.Entry;
@@ -187,7 +187,7 @@ index 9ef7b9e82c55c42a91099ebcb8abb4558d53f2d8..8c399846c4d8f00e005888812864c323
      }
  
      private void ensureMapOwnership() {
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && this.copyOnWrite && this.subscriber != null) this.subscriber.lithium$notify((PatchedDataComponentMap) (Object) this, 0); // Leaves - Lithium Sleeping Block Entity (only notify when actually copying, matches Lithium mixin semantics)
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this.copyOnWrite && this.subscriber != null) this.subscriber.lithium$notify((PatchedDataComponentMap) (Object) this, 0); // Leaves - Lithium Sleeping Block Entity (only notify when actually copying, matches Lithium mixin semantics)
          if (this.copyOnWrite) {
              this.patch = new Reference2ObjectArrayMap<>(this.patch);
              this.copyOnWrite = false;
@@ -215,14 +215,14 @@ index 9ef7b9e82c55c42a91099ebcb8abb4558d53f2d8..8c399846c4d8f00e005888812864c323
 +    // Leaves end - Lithium Sleeping Block Entity
  }
 diff --git a/net/minecraft/server/commands/data/EntityDataAccessor.java b/net/minecraft/server/commands/data/EntityDataAccessor.java
-index d8cacf975c2c35e5fe7370bd5b007fbe0d4bd031..10ac7b7a62649dc8d0a652b80c306e557ff92cd8 100644
+index d8cacf975c2c35e5fe7370bd5b007fbe0d4bd031..a0b4ccedd9dfe5a15bc195d1e7e621e56bddb535 100644
 --- a/net/minecraft/server/commands/data/EntityDataAccessor.java
 +++ b/net/minecraft/server/commands/data/EntityDataAccessor.java
 @@ -44,6 +44,7 @@ public class EntityDataAccessor implements DataAccessor {
              this.entity.load(TagValueInput.create(reporter, this.entity.registryAccess(), tag));
              this.entity.setUUID(uuid);
              this.entity.postDataManipulated();
-+            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && this.entity instanceof net.minecraft.world.entity.item.ItemEntity itemEntity) itemEntity.levelCallback.onMove(); // Leaves - Lithium Sleeping Block Entity
++            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this.entity instanceof net.minecraft.world.entity.item.ItemEntity itemEntity) itemEntity.levelCallback.onMove(); // Leaves - Lithium Sleeping Block Entity
          }
      }
  
@@ -240,7 +240,7 @@ index 6e08d50794c4af4405f3e164a3fd46f376b3f78f..dd2d0940eece3e85078e574f66f71a4c
  
      int getContainerSize();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 288a602c0fa6f7f48eb2108ea97cd5efe6b28d84..251b69089ba1f6dbe62f09fdfe53a05193665a36 100644
+index 32a3cb4bf34bb548452f7a79a292055ba215094e..b1bd3eb4c75fc641fc3cd048d857f6fab6a8a274 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -327,7 +327,7 @@ public abstract class Entity
@@ -276,7 +276,7 @@ index 288a602c0fa6f7f48eb2108ea97cd5efe6b28d84..251b69089ba1f6dbe62f09fdfe53a051
 +    // Anonymous start - Region threading for lithium sleeping block entity
 +    private void notifyLithiumTrackerIfNeeded() {
 +        // Leaves start - Lithium Sleeping Block Entity
-+        if (!me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) return;
++        if (!me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) return;
 +        var currentWorldData = io.papermc.paper.threadedregions.TickRegionScheduler.getCurrentRegionizedWorldData();
 +        if (currentWorldData == null || currentWorldData.world != this.level) return;
 +        if (this instanceof ItemEntity) {
@@ -297,7 +297,7 @@ index 288a602c0fa6f7f48eb2108ea97cd5efe6b28d84..251b69089ba1f6dbe62f09fdfe53a051
      }
  
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index e8264bb8e389d0ad07463d42994f77d1642c5faf..ba1224d890a909ce34a2c1ae9c26d2de5ab47962 100644
+index e8264bb8e389d0ad07463d42994f77d1642c5faf..47da215a3df10040ba9d9a7c7a5574524cdacd88 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
 @@ -36,8 +36,12 @@ import net.minecraft.world.level.storage.ValueInput;
@@ -319,7 +319,7 @@ index e8264bb8e389d0ad07463d42994f77d1642c5faf..ba1224d890a909ce34a2c1ae9c26d2de
  
      public void setItem(final ItemStack itemStack) {
 +        // Leaves start - Lithium Sleeping Block Entity
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && this.subscriber != null) {
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this.subscriber != null) {
 +            ItemStack oldStack = this.getItem();
 +            if (oldStack != itemStack) {
 +                if (!oldStack.isEmpty()) {
@@ -447,19 +447,19 @@ index d3651110e15e8e1ad530df4bb4c05dbc73a79a63..d87dcb72fd5d2b22eafc1a444d4fc380
 +    // Leaves end - Lithium Sleeping Block Entity
  }
 diff --git a/net/minecraft/world/inventory/AbstractContainerMenu.java b/net/minecraft/world/inventory/AbstractContainerMenu.java
-index bb584da75d693254a9843fc1c856bacfcdd7d149..0b5c0fa8e49673bdf8a952c51b98c3dbdaab3797 100644
+index bb584da75d693254a9843fc1c856bacfcdd7d149..2c92454cf413e3d23ff1e32411325635b9251c4e 100644
 --- a/net/minecraft/world/inventory/AbstractContainerMenu.java
 +++ b/net/minecraft/world/inventory/AbstractContainerMenu.java
 @@ -909,6 +909,7 @@ public abstract class AbstractContainerMenu {
  
          float totalPercent = 0.0F;
  
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && container instanceof org.leavesmc.leaves.lithium.api.inventory.LithiumInventory optimizedInventory) return org.leavesmc.leaves.lithium.common.hopper.InventoryHelper.getLithiumStackList(optimizedInventory).getSignalStrength(container); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && container instanceof org.leavesmc.leaves.lithium.api.inventory.LithiumInventory optimizedInventory) return org.leavesmc.leaves.lithium.common.hopper.InventoryHelper.getLithiumStackList(optimizedInventory).getSignalStrength(container); // Leaves - Lithium Sleeping Block Entity
          for (int i = 0; i < container.getContainerSize(); i++) {
              ItemStack itemStack = container.getItem(i);
              if (!itemStack.isEmpty()) {
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index 34e2f33709007a821025c4efcc25c71bb7210b74..cfae6b4265f866f95007d8e359df56963e738992 100644
+index 34e2f33709007a821025c4efcc25c71bb7210b74..9229f3d5542d07cdc23ba10fba1abcfa9c9ac6fe 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
 @@ -99,8 +99,12 @@ import org.apache.commons.lang3.function.TriConsumer;
@@ -480,7 +480,7 @@ index 34e2f33709007a821025c4efcc25c71bb7210b74..cfae6b4265f866f95007d8e359df5696
      // CraftBukkit end
  
      public <T> @Nullable T set(final DataComponentType<T> type, final @Nullable T value) {
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && type == DataComponents.ENCHANTMENTS && this.subscriber instanceof ChangeSubscriber.EnchantmentSubscriber<ItemStack> enchantmentSubscriber) enchantmentSubscriber.lithium$notifyAfterEnchantmentChange(this, this.subscriberData); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && type == DataComponents.ENCHANTMENTS && this.subscriber instanceof ChangeSubscriber.EnchantmentSubscriber<ItemStack> enchantmentSubscriber) enchantmentSubscriber.lithium$notifyAfterEnchantmentChange(this, this.subscriberData); // Leaves - Lithium Sleeping Block Entity
          return this.components.set(type, value);
      }
  
@@ -489,7 +489,7 @@ index 34e2f33709007a821025c4efcc25c71bb7210b74..cfae6b4265f866f95007d8e359df5696
  
      public void setCount(final int count) {
 +        // Leaves start - Lithium Sleeping Block Entity
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && count != this.count) {
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && count != this.count) {
 +            if (this.subscriber instanceof ChangeSubscriber.CountChangeSubscriber<ItemStack> countChangeSubscriber) {
 +                countChangeSubscriber.lithium$notifyCount(this, this.subscriberData, count);
 +            }
@@ -600,10 +600,10 @@ index 34e2f33709007a821025c4efcc25c71bb7210b74..cfae6b4265f866f95007d8e359df5696
 +    // Leaves end - Lithium Sleeping Block Entity
  }
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index fb007cc5766a4e6c5e5e798c67906a31ba36aeed..729ee46ca819a5c11dcbefb7567c5f1d699e0785 100644
+index c5cfc90f4a49385f52607cf79f61890c80f3204e..f291099cc946c24587f8cbbcf9192b141449c4c1 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
-@@ -1554,7 +1554,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+@@ -1563,7 +1563,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
          // Paper end - Fix MC-117075 use removeAll
              if (ticker.isRemoved()) {
                  toRemove.add(ticker); // Paper - Fix MC-117075 use removeAll
@@ -612,7 +612,7 @@ index fb007cc5766a4e6c5e5e798c67906a31ba36aeed..729ee46ca819a5c11dcbefb7567c5f1d
                  ticker.tick();
                  // Paper start - rewrite chunk system
                  if ((++tickedEntities & 7) == 0) {
-@@ -1632,6 +1632,27 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+@@ -1641,6 +1641,27 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
          return this.shouldTickBlocksAt(ChunkPos.pack(pos));
      }
  
@@ -641,7 +641,7 @@ index fb007cc5766a4e6c5e5e798c67906a31ba36aeed..729ee46ca819a5c11dcbefb7567c5f1d
          final @Nullable Entity source, final double x, final double y, final double z, final float r, final Level.ExplosionInteraction blockInteraction
      ) {
 diff --git a/net/minecraft/world/level/block/ComposterBlock.java b/net/minecraft/world/level/block/ComposterBlock.java
-index c89b85391ab2b982b7a6f0f11f74599d5acbb0fa..efc2c315340d76cfc6959e6710b64108b03902d1 100644
+index c89b85391ab2b982b7a6f0f11f74599d5acbb0fa..539f7aacd4023bf9c211034e0ff7dfdeb59729d6 100644
 --- a/net/minecraft/world/level/block/ComposterBlock.java
 +++ b/net/minecraft/world/level/block/ComposterBlock.java
 @@ -285,7 +285,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
@@ -666,7 +666,7 @@ index c89b85391ab2b982b7a6f0f11f74599d5acbb0fa..efc2c315340d76cfc6959e6710b64108
                  }
                  // Paper end - call compost events
                  this.level.levelEvent(LevelEvent.COMPOSTER_FILL, this.pos, newState != this.state ? 1 : 0);
-+                if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) this.changed = false; // Leaves - Lithium Sleeping Block Entity
++                if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) this.changed = false; // Leaves - Lithium Sleeping Block Entity
                  this.removeItemNoUpdate(0);
              }
          }
@@ -678,19 +678,19 @@ index c89b85391ab2b982b7a6f0f11f74599d5acbb0fa..efc2c315340d76cfc6959e6710b64108
          private final LevelAccessor level;
          private final BlockPos pos;
 diff --git a/net/minecraft/world/level/block/DiodeBlock.java b/net/minecraft/world/level/block/DiodeBlock.java
-index fc007b164c7fc4e9608d02c64c5cd4dc6934b4e2..c343e1c54951fd82a74d97e196af162743049033 100644
+index fc007b164c7fc4e9608d02c64c5cd4dc6934b4e2..fadfa0b80215c75253a6acdff5b84a50933e9e81 100644
 --- a/net/minecraft/world/level/block/DiodeBlock.java
 +++ b/net/minecraft/world/level/block/DiodeBlock.java
 @@ -175,6 +175,7 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
      @Override
      protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
          this.updateNeighborsInFront(level, pos, state);
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && this instanceof ComparatorBlock && !oldState.is(Blocks.COMPARATOR)) org.leavesmc.leaves.lithium.common.block.entity.inventory_comparator_tracking.ComparatorTracking.notifyNearbyBlockEntitiesAboutNewComparator(level, pos); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this instanceof ComparatorBlock && !oldState.is(Blocks.COMPARATOR)) org.leavesmc.leaves.lithium.common.block.entity.inventory_comparator_tracking.ComparatorTracking.notifyNearbyBlockEntitiesAboutNewComparator(level, pos); // Leaves - Lithium Sleeping Block Entity
      }
  
      @Override
 diff --git a/net/minecraft/world/level/block/HopperBlock.java b/net/minecraft/world/level/block/HopperBlock.java
-index c2d18458ce81c2d1523b3cf932e3c133c75b6f3f..b830c0524901a4d728af2709b27afc5dcd4d8f3e 100644
+index c2d18458ce81c2d1523b3cf932e3c133c75b6f3f..2068d22c14aa42635c63a9e3e2e8788a9983ad0b 100644
 --- a/net/minecraft/world/level/block/HopperBlock.java
 +++ b/net/minecraft/world/level/block/HopperBlock.java
 @@ -37,7 +37,7 @@ import net.minecraft.world.phys.shapes.Shapes;
@@ -708,7 +708,7 @@ index c2d18458ce81c2d1523b3cf932e3c133c75b6f3f..b830c0524901a4d728af2709b27afc5d
              this.checkPoweredState(level, pos, state);
 +            // Leaves start - Lithium Sleeping Block Entity
 +            //invalidate caches of nearby hoppers when placing an update suppressed hopper
-+            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && level.getBlockState(pos) != state) {
++            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && level.getBlockState(pos) != state) {
 +                for (Direction direction : UPDATE_SHAPE_ORDER) {
 +                    BlockEntity hopper = level.lithium$getLoadedExistingBlockEntity(pos.relative(direction));
 +                    if (hopper instanceof org.leavesmc.leaves.lithium.common.hopper.UpdateReceiver updateReceiver) {
@@ -724,7 +724,7 @@ index c2d18458ce81c2d1523b3cf932e3c133c75b6f3f..b830c0524901a4d728af2709b27afc5d
      protected void neighborChanged(
          final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston
      ) {
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && level.lithium$getLoadedExistingBlockEntity(pos) instanceof org.leavesmc.leaves.lithium.common.hopper.UpdateReceiver updateReceiver) updateReceiver.lithium$invalidateCacheOnUndirectedNeighborUpdate(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && level.lithium$getLoadedExistingBlockEntity(pos) instanceof org.leavesmc.leaves.lithium.common.hopper.UpdateReceiver updateReceiver) updateReceiver.lithium$invalidateCacheOnUndirectedNeighborUpdate(); // Leaves - Lithium Sleeping Block Entity
          this.checkPoweredState(level, pos, state);
      }
  
@@ -755,7 +755,7 @@ index c2d18458ce81c2d1523b3cf932e3c133c75b6f3f..b830c0524901a4d728af2709b27afc5d
 +    // Leaves end - Lithium Sleeping Block Entity
  }
 diff --git a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
-index f72a3c3a0a7a012608a1748388dec651ca813da0..df081b40c088c3cce18f40fb2bdb549eaa2cd028 100644
+index f72a3c3a0a7a012608a1748388dec651ca813da0..c21253264e4a2d9e37fe8a78bd45c90ff2693d60 100644
 --- a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
 @@ -44,7 +44,7 @@ import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableIn
@@ -771,7 +771,7 @@ index f72a3c3a0a7a012608a1748388dec651ca813da0..df081b40c088c3cce18f40fb2bdb549e
          this.recipesUsed.clear();
          this.recipesUsed.putAll(input.read("RecipesUsed", RECIPES_USED_CODEC).orElse(Map.of()));
          this.cookSpeedMultiplier = input.getDoubleOr("Paper.CookSpeedMultiplier", 1); // Paper - cook speed multiplier API
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && this.isSleeping() && this.level != null) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this.isSleeping() && this.level != null) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
      }
  
      @Override
@@ -779,7 +779,7 @@ index f72a3c3a0a7a012608a1748388dec651ca813da0..df081b40c088c3cce18f40fb2bdb549e
          if (changed) {
              setChanged(level, pos, state);
          }
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) entity.checkSleep(state); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) entity.checkSleep(state); // Leaves - Lithium Sleeping Block Entity
      }
  
      private static void consumeFuel(final ServerLevel level, final BlockPos pos, final NonNullList<ItemStack> items, final ItemStack fuel) {
@@ -838,7 +838,7 @@ index f72a3c3a0a7a012608a1748388dec651ca813da0..df081b40c088c3cce18f40fb2bdb549e
 +    // Leaves end - Lithium Sleeping Block Entity
  }
 diff --git a/net/minecraft/world/level/block/entity/BarrelBlockEntity.java b/net/minecraft/world/level/block/entity/BarrelBlockEntity.java
-index 5ddfc7c9df08e9abedcb0fbaa0f614a804ee4059..cb255428e2b4219edab25de629139ae24ebdd275 100644
+index 5ddfc7c9df08e9abedcb0fbaa0f614a804ee4059..21e1ad1b0015fa7b8715e7f936e6c818493cafc4 100644
 --- a/net/minecraft/world/level/block/entity/BarrelBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BarrelBlockEntity.java
 @@ -22,7 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
@@ -854,7 +854,7 @@ index 5ddfc7c9df08e9abedcb0fbaa0f614a804ee4059..cb255428e2b4219edab25de629139ae2
      @Override
      protected void setItems(final NonNullList<ItemStack> items) {
          this.items = items;
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) this.lithium$emitStackListReplaced(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) this.lithium$emitStackListReplaced(); // Leaves - Lithium Sleeping Block Entity
      }
  
      @Override
@@ -878,7 +878,7 @@ index 5ddfc7c9df08e9abedcb0fbaa0f614a804ee4059..cb255428e2b4219edab25de629139ae2
 +    // Leaves end - Lithium Sleeping Block Entity
  }
 diff --git a/net/minecraft/world/level/block/entity/BaseContainerBlockEntity.java b/net/minecraft/world/level/block/entity/BaseContainerBlockEntity.java
-index c2f8479eef826efca3ed2993973b2cfc2c51ed00..191a43ce6c98583b4cc1ed2b5d5f0897224be41f 100644
+index c2f8479eef826efca3ed2993973b2cfc2c51ed00..9a59b5a1f7385e7205b34fe0d90a6764eb9858f3 100644
 --- a/net/minecraft/world/level/block/entity/BaseContainerBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BaseContainerBlockEntity.java
 @@ -31,8 +31,17 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -905,7 +905,7 @@ index c2f8479eef826efca3ed2993973b2cfc2c51ed00..191a43ce6c98583b4cc1ed2b5d5f0897
          super.loadAdditional(input);
          this.lockKey = LockCode.fromTag(input);
          this.name = parseCustomNameSafe(input, "CustomName");
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && this instanceof InventoryChangeTracker inventoryChangeTracker) inventoryChangeTracker.lithium$emitStackListReplaced(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this instanceof InventoryChangeTracker inventoryChangeTracker) inventoryChangeTracker.lithium$emitStackListReplaced(); // Leaves - Lithium Sleeping Block Entity
      }
  
      @Override
@@ -1009,7 +1009,7 @@ index c2f8479eef826efca3ed2993973b2cfc2c51ed00..191a43ce6c98583b4cc1ed2b5d5f0897
 +    // Leaves end - Lithium Sleeping Block Entity
  }
 diff --git a/net/minecraft/world/level/block/entity/BlockEntity.java b/net/minecraft/world/level/block/entity/BlockEntity.java
-index cc6258e1edc9f0a746e9298feac273d8b8f958e9..16cd9e2ace00fd7e76324a97a34e23c6d60ce9d3 100644
+index cc6258e1edc9f0a746e9298feac273d8b8f958e9..6eef13a897eda9fba6f7b84bc43726e43b55dea2 100644
 --- a/net/minecraft/world/level/block/entity/BlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BlockEntity.java
 @@ -37,8 +37,16 @@ import net.minecraft.world.level.storage.ValueInput;
@@ -1043,7 +1043,7 @@ index cc6258e1edc9f0a746e9298feac273d8b8f958e9..16cd9e2ace00fd7e76324a97a34e23c6
          if (this.level != null) {
              if (IGNORE_TILE_UPDATES.get().booleanValue()) return; // Paper - Perf: Optimize Hoppers // Folia - region threading
              setChanged(this.level, this.worldPosition, this.blockState);
-+            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) lithium$handleSetChanged(); // Leaves - Lithium Sleeping Block Entity
++            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) lithium$handleSetChanged(); // Leaves - Lithium Sleeping Block Entity
          }
      }
  
@@ -1053,7 +1053,7 @@ index cc6258e1edc9f0a746e9298feac273d8b8f958e9..16cd9e2ace00fd7e76324a97a34e23c6
      public void setRemoved() {
 +        this.hasComparators = UNKNOWN; // Leaves - Lithium Sleeping Block Entity
          this.remove = true;
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && this.level != null && !this.level.isClientSide() && this instanceof InventoryChangeTracker inventoryChangeTracker) inventoryChangeTracker.lithium$emitRemoved(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this.level != null && !this.level.isClientSide() && this instanceof InventoryChangeTracker inventoryChangeTracker) inventoryChangeTracker.lithium$emitRemoved(); // Leaves - Lithium Sleeping Block Entity
      }
  
      public void clearRemoved() {
@@ -1061,7 +1061,7 @@ index cc6258e1edc9f0a746e9298feac273d8b8f958e9..16cd9e2ace00fd7e76324a97a34e23c6
      public void setBlockState(final BlockState blockState) {
          this.validateBlockState(blockState);
          this.blockState = blockState;
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) this.lithium$handleSetBlockState(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) this.lithium$handleSetBlockState(); // Leaves - Lithium Sleeping Block Entity
      }
  
      protected void applyImplicitComponents(final DataComponentGetter components) {
@@ -1099,7 +1099,7 @@ index cc6258e1edc9f0a746e9298feac273d8b8f958e9..16cd9e2ace00fd7e76324a97a34e23c6
 +    // Leaves end - Lithium Sleeping Block Entity
  }
 diff --git a/net/minecraft/world/level/block/entity/BrewingStandBlockEntity.java b/net/minecraft/world/level/block/entity/BrewingStandBlockEntity.java
-index bc59b6e738f28666f561118399c0a028ba6c95e6..21a9558488aae8ff1e5883b0e588d284086e3bfd 100644
+index bc59b6e738f28666f561118399c0a028ba6c95e6..083712a4d167e2a3798c021f486171cfb411f942 100644
 --- a/net/minecraft/world/level/block/entity/BrewingStandBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BrewingStandBlockEntity.java
 @@ -36,7 +36,7 @@ import net.minecraft.world.level.storage.ValueInput;
@@ -1115,7 +1115,7 @@ index bc59b6e738f28666f561118399c0a028ba6c95e6..21a9558488aae8ff1e5883b0e588d284
      }
  
      public static void serverTick(final ServerLevel level, final BlockPos pos, final BlockState selfState, final BrewingStandBlockEntity entity) {
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) entity.checkSleep(selfState); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) entity.checkSleep(selfState); // Leaves - Lithium Sleeping Block Entity
          NonNullList<ItemStack> items = entity.getItems();
          ItemStack fuel = items.get(4);
          BrewingFuel brewingFuel = fuel.get(DataComponents.BREWING_FUEL);
@@ -1123,7 +1123,7 @@ index bc59b6e738f28666f561118399c0a028ba6c95e6..21a9558488aae8ff1e5883b0e588d284
              } // Paper - call BrewingStandFuelEvent
  
              items.set(4, newFuel);
-+            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) entity.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
++            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) entity.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
              setChanged(level, pos, selfState);
          }
  
@@ -1132,7 +1132,7 @@ index bc59b6e738f28666f561118399c0a028ba6c95e6..21a9558488aae8ff1e5883b0e588d284
                  entity.brewTime = 0;
              }
 -
-+            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) entity.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
++            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) entity.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
              setChanged(level, pos, selfState);
          } else if (brewable && entity.fuel > 0) {
              float speedMutliplier = entity.speedMultiplier > 0.0F ? entity.speedMultiplier : 1.0F;
@@ -1140,7 +1140,7 @@ index bc59b6e738f28666f561118399c0a028ba6c95e6..21a9558488aae8ff1e5883b0e588d284
              entity.totalBrewTime = event.getRecipeBrewTime();
              // Paper end - call BrewingStartEvent
              entity.ingredient = ingredient.getItem();
-+            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) entity.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
++            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) entity.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
              setChanged(level, pos, selfState);
          }
  
@@ -1148,7 +1148,7 @@ index bc59b6e738f28666f561118399c0a028ba6c95e6..21a9558488aae8ff1e5883b0e588d284
          this.fuel = input.getIntOr("Fuel", 0);
          this.totalFuel = input.getIntOr("total_fuel", 20);
          this.speedMultiplier = input.getFloatOr("speed_multiplier", 1.0F);
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && this.isSleeping() && this.level != null) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this.isSleeping() && this.level != null) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
      }
  
      @Override
@@ -1207,7 +1207,7 @@ index bc59b6e738f28666f561118399c0a028ba6c95e6..21a9558488aae8ff1e5883b0e588d284
 +    // Leaves end - Lithium Sleeping Block Entity
  }
 diff --git a/net/minecraft/world/level/block/entity/CampfireBlockEntity.java b/net/minecraft/world/level/block/entity/CampfireBlockEntity.java
-index 3bd910ae83694a6d19f53dcc4b74598ec0b62b17..52212fd787cc7530f7e2d402217d2cb103698f1f 100644
+index 3bd910ae83694a6d19f53dcc4b74598ec0b62b17..5bc5da44c6305ee837f25208d5fe6308425d2208 100644
 --- a/net/minecraft/world/level/block/entity/CampfireBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/CampfireBlockEntity.java
 @@ -39,7 +39,7 @@ import net.minecraft.world.level.storage.ValueOutput;
@@ -1224,7 +1224,7 @@ index 3bd910ae83694a6d19f53dcc4b74598ec0b62b17..52212fd787cc7530f7e2d402217d2cb1
          if (changed) {
              setChanged(level, pos, state);
 -        }
-+        } else if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) entity.lithium$startSleeping(); // Leaves - Lithium Sleeping Block Entity
++        } else if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) entity.lithium$startSleeping(); // Leaves - Lithium Sleeping Block Entity
      }
  
      public static void cooldownTick(final Level level, final BlockPos pos, final BlockState state, final CampfireBlockEntity entity) {
@@ -1233,7 +1233,7 @@ index 3bd910ae83694a6d19f53dcc4b74598ec0b62b17..52212fd787cc7530f7e2d402217d2cb1
          if (changed) {
              setChanged(level, pos, state);
 -        }
-+        } else if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) entity.lithium$startSleeping(); // Leaves - Lithium Sleeping Block Entity
++        } else if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) entity.lithium$startSleeping(); // Leaves - Lithium Sleeping Block Entity
      }
  
      public static void particleTick(final Level level, final BlockPos pos, final BlockState state, final CampfireBlockEntity entity) {
@@ -1241,7 +1241,7 @@ index 3bd910ae83694a6d19f53dcc4b74598ec0b62b17..52212fd787cc7530f7e2d402217d2cb1
              System.arraycopy(cookingState, 0, this.stopCooking, 0, Math.min(this.stopCooking.length, bytes.capacity()));
          });
          // Paper end - Add more Campfire API
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
      }
  
      @Override
@@ -1249,7 +1249,7 @@ index 3bd910ae83694a6d19f53dcc4b74598ec0b62b17..52212fd787cc7530f7e2d402217d2cb1
                  this.cookingTime[slot] = event.getTotalCookTime(); // recipe.get().value().cookingTime() -> event.getTotalCookTime()
                  // CraftBukkit end
                  this.cookingProgress[slot] = 0;
-+                if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
++                if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
                  this.items.set(slot, placeItem.consumeAndReturn(1, sourceEntity));
                  serverLevel.gameEvent(GameEvent.BLOCK_CHANGE, this.getBlockPos(), GameEvent.Context.of(sourceEntity, this.getBlockState()));
                  this.markUpdated();
@@ -1285,7 +1285,7 @@ index 3bd910ae83694a6d19f53dcc4b74598ec0b62b17..52212fd787cc7530f7e2d402217d2cb1
 +    // Leaves end - Lithium Sleeping Block Entity
  }
 diff --git a/net/minecraft/world/level/block/entity/ChestBlockEntity.java b/net/minecraft/world/level/block/entity/ChestBlockEntity.java
-index c1cdced85052cbc600cf8f9d81e38ab37817a14a..55ffd227effdf73cab736834056b09db4c9fd8cd 100644
+index c1cdced85052cbc600cf8f9d81e38ab37817a14a..e6bc643477fe254178b9e4f1fcd2ba3c98b2769e 100644
 --- a/net/minecraft/world/level/block/entity/ChestBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/ChestBlockEntity.java
 @@ -25,7 +25,7 @@ import net.minecraft.world.level.block.state.properties.ChestType;
@@ -1301,7 +1301,7 @@ index c1cdced85052cbc600cf8f9d81e38ab37817a14a..55ffd227effdf73cab736834056b09db
  
      public static void lidAnimateTick(final Level level, final BlockPos pos, final BlockState state, final ChestBlockEntity entity) {
          entity.chestLidController.tickLid();
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) entity.checkSleep(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) entity.checkSleep(); // Leaves - Lithium Sleeping Block Entity
      }
  
      public static void playSound(final Level level, final BlockPos worldPosition, final BlockState blockState, final SoundEvent event) {
@@ -1309,7 +1309,7 @@ index c1cdced85052cbc600cf8f9d81e38ab37817a14a..55ffd227effdf73cab736834056b09db
      @Override
      public boolean triggerEvent(final int b0, final int b1) {
          if (b0 == EVENT_SET_OPEN_COUNT) {
-+            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && this.sleepingTicker != null) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
++            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this.sleepingTicker != null) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
              this.chestLidController.shouldBeOpen(b1 > 0);
              return true;
          } else {
@@ -1317,7 +1317,7 @@ index c1cdced85052cbc600cf8f9d81e38ab37817a14a..55ffd227effdf73cab736834056b09db
      @Override
      protected void setItems(final NonNullList<ItemStack> items) {
          this.items = items;
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) this.lithium$emitStackListReplaced(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) this.lithium$emitStackListReplaced(); // Leaves - Lithium Sleeping Block Entity
      }
  
      @Override
@@ -1395,7 +1395,7 @@ index 8967c271678a8ee8d4f79fb40eeaf646af192010..d2f1916f0d7a2c2319d05f71b341acfd
 +    @Override public boolean lithium$itemInsertionTestRequiresStackSize1() {return true;} // Leaves - Lithium Sleeping Block Entity
  }
 diff --git a/net/minecraft/world/level/block/entity/CrafterBlockEntity.java b/net/minecraft/world/level/block/entity/CrafterBlockEntity.java
-index 6ad1e1113f78a4e3fe03a08e9f6c18241aa6f124..ddebddef3ad8a2a86b1b372f756a1f29c21d0271 100644
+index 6ad1e1113f78a4e3fe03a08e9f6c18241aa6f124..f3e015d9354a1b74abb12ea05381b89394aaac73 100644
 --- a/net/minecraft/world/level/block/entity/CrafterBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/CrafterBlockEntity.java
 @@ -22,7 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
@@ -1411,7 +1411,7 @@ index 6ad1e1113f78a4e3fe03a08e9f6c18241aa6f124..ddebddef3ad8a2a86b1b372f756a1f29
              }
          });
          this.containerData.set(9, input.getIntOr("triggered", 0));
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && this.isSleeping() && this.level != null) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this.isSleeping() && this.level != null) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
      }
  
      @Override
@@ -1419,12 +1419,12 @@ index 6ad1e1113f78a4e3fe03a08e9f6c18241aa6f124..ddebddef3ad8a2a86b1b372f756a1f29
                  level.setBlockAndUpdate(blockPos, blockState.setValue(CrafterBlock.CRAFTING, false));
              }
          }
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && craftingTicksRemaining < 0) entity.checkSleep(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && craftingTicksRemaining < 0) entity.checkSleep(); // Leaves - Lithium Sleeping Block Entity
      }
  
      public void setCraftingTicksRemaining(final int maxCraftingTicks) {
          this.craftingTicksRemaining = maxCraftingTicks;
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && this.isSleeping() && this.level != null) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this.isSleeping() && this.level != null) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
      }
  
      public int getRedstoneSignal() {
@@ -1473,7 +1473,7 @@ index 6ad1e1113f78a4e3fe03a08e9f6c18241aa6f124..ddebddef3ad8a2a86b1b372f756a1f29
 +    // Leaves end - Lithium Sleeping Block Entity
  }
 diff --git a/net/minecraft/world/level/block/entity/DispenserBlockEntity.java b/net/minecraft/world/level/block/entity/DispenserBlockEntity.java
-index 736f5fd76f4a86ab16740904b5c0823413d65cd2..3604ffc9e85b0b34da7446ae13b7bfbbab374b9e 100644
+index 736f5fd76f4a86ab16740904b5c0823413d65cd2..69a6f4cd2994e5440065695f40f77bea03ed1362 100644
 --- a/net/minecraft/world/level/block/entity/DispenserBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/DispenserBlockEntity.java
 @@ -13,7 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
@@ -1489,7 +1489,7 @@ index 736f5fd76f4a86ab16740904b5c0823413d65cd2..3604ffc9e85b0b34da7446ae13b7bfbb
      @Override
      protected void setItems(final NonNullList<ItemStack> items) {
          this.items = items;
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) this.lithium$emitStackListReplaced(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) this.lithium$emitStackListReplaced(); // Leaves - Lithium Sleeping Block Entity
      }
  
      @Override
@@ -1510,7 +1510,7 @@ index 736f5fd76f4a86ab16740904b5c0823413d65cd2..3604ffc9e85b0b34da7446ae13b7bfbb
 +    // Leaves end - Lithium Sleeping Block Entity
  }
 diff --git a/net/minecraft/world/level/block/entity/EnderChestBlockEntity.java b/net/minecraft/world/level/block/entity/EnderChestBlockEntity.java
-index c669d0ad531fc43bb7799bd011ed73ccf7b6244a..576231eb773caaf0d33784aa1476b867cb0f2c0e 100644
+index c669d0ad531fc43bb7799bd011ed73ccf7b6244a..4033a9d0c3f7caa4ecebd81e18bd6fa469fa1b81 100644
 --- a/net/minecraft/world/level/block/entity/EnderChestBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/EnderChestBlockEntity.java
 @@ -11,7 +11,7 @@ import net.minecraft.world.level.block.Blocks;
@@ -1526,13 +1526,13 @@ index c669d0ad531fc43bb7799bd011ed73ccf7b6244a..576231eb773caaf0d33784aa1476b867
  
      public static void lidAnimateTick(final Level level, final BlockPos pos, final BlockState state, final EnderChestBlockEntity entity) {
          entity.chestLidController.tickLid();
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) entity.checkSleep(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) entity.checkSleep(); // Leaves - Lithium Sleeping Block Entity
      }
  
      @Override
      public boolean triggerEvent(final int b0, final int b1) {
          if (b0 == ChestBlock.EVENT_SET_OPEN_COUNT) {
-+            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && this.sleepingTicker != null) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
++            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this.sleepingTicker != null) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
              this.chestLidController.shouldBeOpen(b1 > 0);
              return true;
          } else {
@@ -1574,7 +1574,7 @@ index c669d0ad531fc43bb7799bd011ed73ccf7b6244a..576231eb773caaf0d33784aa1476b867
 +    // Leaves end - Lithium Sleeping Block Entity
  }
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index bdfce5533041d609f6ee94c888a6298a138a4e92..b2c6c2e2380be11306bea5dcc5cc41c34502ee8b 100644
+index bdfce5533041d609f6ee94c888a6298a138a4e92..9e9e5d139791a71d3a1b96a9a8955390146c3742 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -27,8 +27,29 @@ import net.minecraft.world.level.storage.ValueInput;
@@ -1634,7 +1634,7 @@ index bdfce5533041d609f6ee94c888a6298a138a4e92..b2c6c2e2380be11306bea5dcc5cc41c3
  
      @Override
      public void setBlockState(final BlockState blockState) {
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && this.level != null && !this.level.isClientSide() && blockState.getValue(HopperBlock.FACING) != this.getBlockState().getValue(HopperBlock.FACING)) this.invalidateCachedData(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this.level != null && !this.level.isClientSide() && blockState.getValue(HopperBlock.FACING) != this.getBlockState().getValue(HopperBlock.FACING)) this.invalidateCachedData(); // Leaves - Lithium Sleeping Block Entity
          super.setBlockState(blockState);
          this.facing = blockState.getValue(HopperBlock.FACING);
      }
@@ -1642,7 +1642,7 @@ index bdfce5533041d609f6ee94c888a6298a138a4e92..b2c6c2e2380be11306bea5dcc5cc41c3
              entity.setCooldown(0);
              // Spigot start
              boolean result = tryMoveItems(level, pos, state, entity, () -> suckInItems(level, entity));
-+            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) entity.checkSleepingConditions(); // Leaves - Lithium Sleeping Block Entity
++            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) entity.checkSleepingConditions(); // Leaves - Lithium Sleeping Block Entity
              if (!result && entity.level.spigotConfig.hopperCheck > 1) {
                  entity.setCooldown(entity.level.spigotConfig.hopperCheck);
              }
@@ -1651,7 +1651,7 @@ index bdfce5533041d609f6ee94c888a6298a138a4e92..b2c6c2e2380be11306bea5dcc5cc41c3
                  entity.setCooldown(level.spigotConfig.hopperTransfer); // Spigot
                  setChanged(level, pos, state);
 +                // Leaves start - Lithium Sleeping Block Entity
-+                if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled
++                if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()
 +                        && !entity.isOnCooldown()
 +                        && !entity.isSleeping()
 +                        && !state.getValue(HopperBlock.ENABLED)) {
@@ -1674,14 +1674,14 @@ index bdfce5533041d609f6ee94c888a6298a138a4e92..b2c6c2e2380be11306bea5dcc5cc41c3
  
      private static boolean ejectItems(final Level level, final BlockPos blockPos, final HopperBlockEntity self) {
 -        Container container = getAttachedContainer(level, blockPos, self);
-+        Container container = me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled ? self.getInsertInventory(level) : getAttachedContainer(level, blockPos, self); // Leaves - Lithium Sleeping Block Entity
++        Container container = me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() ? self.getInsertInventory(level) : getAttachedContainer(level, blockPos, self); // Leaves - Lithium Sleeping Block Entity
          if (container == null) {
              return false;
          }
  
          Direction direction = self.facing.getOpposite();
 +        // Leaves start - Lithium Sleeping Block Entity
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) {
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) {
 +            Boolean res = lithiumInsert(level, blockPos, self, container);
 +            if (res != null) {
 +                return res;
@@ -1697,13 +1697,13 @@ index bdfce5533041d609f6ee94c888a6298a138a4e92..b2c6c2e2380be11306bea5dcc5cc41c3
          BlockState blockState = level.getBlockState(blockPos);
 -        Container container = getSourceContainer(level, hopper, blockPos, blockState);
 -        if (container != null) {
-+        Container sourceContainer = me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled ? getExtractInventory(level, hopper, blockPos, blockState) : getSourceContainer(level, hopper, blockPos, blockState); // Leaves - Lithium Sleeping Block Entity
++        Container sourceContainer = me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() ? getExtractInventory(level, hopper, blockPos, blockState) : getSourceContainer(level, hopper, blockPos, blockState); // Leaves - Lithium Sleeping Block Entity
 +        if (sourceContainer != null) {
              Direction direction = Direction.DOWN;
              worldData.skipPullModeEventFire = worldData.skipHopperEvents; // Paper - Perf: Optimize Hoppers // Folia - region threading
 -            final long disallowedSlots = callPrepareTransferEvent(level, container, hopper, false); // Paper - Add PrepareHopperTransferEvent
 +            // Leaves start - Lithium Sleeping Block Entity
-+            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) {
++            if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) {
 +                Boolean res = lithiumExtract(level, hopper, sourceContainer);
 +                if (res != null) {
 +                    return res;
@@ -1725,7 +1725,7 @@ index bdfce5533041d609f6ee94c888a6298a138a4e92..b2c6c2e2380be11306bea5dcc5cc41c3
                  && !blockState.is(BlockTags.DOES_NOT_BLOCK_HOPPERS);
              if (!isBlocked) {
 -                for (ItemEntity entity : getItemsAtAndAbove(level, hopper)) {
-+                for (ItemEntity entity : me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled ? lithiumGetInputItemEntities(level, hopper) : getItemsAtAndAbove(level, hopper)) { // Leaves - Lithium Sleeping Block Entity
++                for (ItemEntity entity : me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() ? lithiumGetInputItemEntities(level, hopper) : getItemsAtAndAbove(level, hopper)) { // Leaves - Lithium Sleeping Block Entity
                      if (addItem(hopper, entity)) {
                          return true;
                      }
@@ -1743,7 +1743,7 @@ index bdfce5533041d609f6ee94c888a6298a138a4e92..b2c6c2e2380be11306bea5dcc5cc41c3
  
      public void setCooldown(final int time) {
 +        // Leaves start - Lithium Sleeping Block Entity
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) {
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) {
 +            if (time == 7) {
 +                if (this.tickedGameTime == Long.MAX_VALUE) {
 +                    this.sleepOnlyCurrentTick();
@@ -1762,7 +1762,7 @@ index bdfce5533041d609f6ee94c888a6298a138a4e92..b2c6c2e2380be11306bea5dcc5cc41c3
      @Override
      protected void setItems(final NonNullList<ItemStack> items) {
          this.items = items;
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) this.lithium$emitStackListReplaced(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) this.lithium$emitStackListReplaced(); // Leaves - Lithium Sleeping Block Entity
      }
  
      public static void entityInside(final Level level, final BlockPos pos, final BlockState blockState, final Entity entity, final HopperBlockEntity hopper) {
@@ -2526,7 +2526,7 @@ index bdfce5533041d609f6ee94c888a6298a138a4e92..b2c6c2e2380be11306bea5dcc5cc41c3
 +    // Leaves end - Lithium Sleeping Block Entity
  }
 diff --git a/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java b/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
-index c0ec84f3366297b72a12b1f534fd29226165034f..3948b7a0beccb35d55cf3915e2ae431f884bdaa0 100644
+index c0ec84f3366297b72a12b1f534fd29226165034f..2354b64a715de2151f153a729aa528569ad94b5f 100644
 --- a/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
 @@ -32,7 +32,7 @@ import net.minecraft.world.phys.AABB;
@@ -2542,7 +2542,7 @@ index c0ec84f3366297b72a12b1f534fd29226165034f..3948b7a0beccb35d55cf3915e2ae431f
                      doNeighborUpdates(level, pos, blockState);
                  }
          }
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && this.animationStatus == ShulkerBoxBlockEntity.AnimationStatus.CLOSED && this.progressOld == 0.0f && this.progress == 0.0f) this.lithium$startSleeping(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this.animationStatus == ShulkerBoxBlockEntity.AnimationStatus.CLOSED && this.progressOld == 0.0f && this.progress == 0.0f) this.lithium$startSleeping(); // Leaves - Lithium Sleeping Block Entity
      }
  
      public ShulkerBoxBlockEntity.AnimationStatus getAnimationStatus() {
@@ -2550,7 +2550,7 @@ index c0ec84f3366297b72a12b1f534fd29226165034f..3948b7a0beccb35d55cf3915e2ae431f
  
      @Override
      public boolean triggerEvent(final int b0, final int b1) {
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && this.sleepingTicker != null) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && this.sleepingTicker != null) this.wakeUpNow(); // Leaves - Lithium Sleeping Block Entity
          if (b0 == EVENT_SET_OPEN_COUNT) {
              this.openCount = b1;
              if (b1 == 0) {
@@ -2558,7 +2558,7 @@ index c0ec84f3366297b72a12b1f534fd29226165034f..3948b7a0beccb35d55cf3915e2ae431f
      @Override
      protected void setItems(final NonNullList<ItemStack> items) {
          this.itemStacks = items;
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) this.lithium$emitStackListReplaced(); // Leaves - Lithium Sleeping Block Entity
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) this.lithium$emitStackListReplaced(); // Leaves - Lithium Sleeping Block Entity
      }
  
      @Override
@@ -2616,7 +2616,7 @@ index c8facee29ee08e0975528083f89b64f0b593957f..52f88fec8c5268ed33d825a4fb354113
 +    // Anonymous end
  }
 diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
-index 44fcc919a2de54c3ceb0fd0875aadaea083fabad..0282d2e88698e1c9db194b5bfe4846a120ee9160 100644
+index 44fcc919a2de54c3ceb0fd0875aadaea083fabad..10ddf77c088088a9b30aff0706e74afca958957e 100644
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
 @@ -82,7 +82,7 @@ import net.minecraft.world.phys.shapes.Shapes;
@@ -2632,7 +2632,7 @@ index 44fcc919a2de54c3ceb0fd0875aadaea083fabad..0282d2e88698e1c9db194b5bfe4846a1
          final BlockState neighbourState,
          final RandomSource random
      ) {
-+        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) this.lithium$handleShapeUpdate(level, state, pos, neighbourPos, neighbourState); // Leaves - Lithium Sleeping Block Entity /* Triggers when a shape update (= update that observers can detect) is sent */
++        if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) this.lithium$handleShapeUpdate(level, state, pos, neighbourPos, neighbourState); // Leaves - Lithium Sleeping Block Entity /* Triggers when a shape update (= update that observers can detect) is sent */
          return state;
      }
  
@@ -2650,7 +2650,7 @@ index ed5a5fb38bfe8fb9216c7eab00b833485c4bbade..fc45703525901d700c98b5ad0c6eb10b
      ) {
          for (int x = 0; x < this.width; x++) {
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index f17c2c90bf47f573edb00e817a70c8ccc05dc1d3..64490a4e89787fbd1a43de7eef1a258dd105de40 100644
+index f17c2c90bf47f573edb00e817a70c8ccc05dc1d3..f801b1bd2d835db84d5a0e370a1f0eef1b1f97a3 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -626,6 +626,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
@@ -2673,14 +2673,14 @@ index f17c2c90bf47f573edb00e817a70c8ccc05dc1d3..64490a4e89787fbd1a43de7eef1a258d
              this.tickersInLevel.compute(blockEntity.getBlockPos(), (blockPos, existingTicker) -> {
                  TickingBlockEntity actualTicker = this.createTicker(blockEntity, ticker);
                  if (existingTicker != null) {
-+                    if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && blockEntity instanceof org.leavesmc.leaves.lithium.common.block.entity.SleepingBlockEntity sleepingBlockEntity) sleepingBlockEntity.lithium$setTickWrapper(existingTicker); // Leaves - Lithium Sleeping Block Entity
-+                    if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) existingTicker.createdBy = blockEntity; // Anonymous - Region threading for lithium sleeping block entity
++                    if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && blockEntity instanceof org.leavesmc.leaves.lithium.common.block.entity.SleepingBlockEntity sleepingBlockEntity) sleepingBlockEntity.lithium$setTickWrapper(existingTicker); // Leaves - Lithium Sleeping Block Entity
++                    if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) existingTicker.createdBy = blockEntity; // Anonymous - Region threading for lithium sleeping block entity
                      existingTicker.rebind(actualTicker);
                      return (LevelChunk.RebindableTickingBlockEntityWrapper)existingTicker;
                  } else if (this.isInLevel()) {
                      LevelChunk.RebindableTickingBlockEntityWrapper result = new LevelChunk.RebindableTickingBlockEntityWrapper(actualTicker);
-+                    if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled && blockEntity instanceof org.leavesmc.leaves.lithium.common.block.entity.SleepingBlockEntity sleepingBlockEntity) sleepingBlockEntity.lithium$setTickWrapper(result); // Leaves - Lithium Sleeping Block Entity
-+                    if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled) result.createdBy = blockEntity; // Anonymous - Region threading for lithium sleeping block entity
++                    if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() && blockEntity instanceof org.leavesmc.leaves.lithium.common.block.entity.SleepingBlockEntity sleepingBlockEntity) sleepingBlockEntity.lithium$setTickWrapper(result); // Leaves - Lithium Sleeping Block Entity
++                    if (me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled()) result.createdBy = blockEntity; // Anonymous - Region threading for lithium sleeping block entity
                      this.level.addBlockEntityTicker(result);
                      return result;
                  } else {

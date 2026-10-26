@@ -19,7 +19,7 @@ public class EndIslandGenerator {
     }
 
     public static float getDefaultDoffs(float x, float z, boolean onlyCheck) {
-        if (OldFeatureConfig.shouldGenerateEndRing) {
+        if (OldFeatureConfig.shouldGenerateEndRing()) {
             long i = (long) x * (long) x + (long) z * (long) z;
             int j = (int) i;
             if (j < 0) {
@@ -37,7 +37,7 @@ public class EndIslandGenerator {
     }
 
     public static void clearOverflowBlocks(final ChunkAccess chunk) {
-        if (!OldFeatureConfig.shouldGenerateEndRing) return;
+        if (!OldFeatureConfig.shouldGenerateEndRing()) return;
         if (chunk.getHighestFilledSectionIndex() == -1) return;
 
         ChunkPos chunkPos = chunk.getPos();

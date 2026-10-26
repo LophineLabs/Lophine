@@ -58,7 +58,7 @@ index d87dcb72fd5d2b22eafc1a444d4fc3807595b6a5..bd92576ec323befd4bc0aaf36cf3c1d0
  
      @Override
 diff --git a/net/minecraft/world/level/block/entity/BlockEntity.java b/net/minecraft/world/level/block/entity/BlockEntity.java
-index 16cd9e2ace00fd7e76324a97a34e23c6d60ce9d3..b863c4e356098c6603497bb0384d42a6cab84654 100644
+index 6eef13a897eda9fba6f7b84bc43726e43b55dea2..891cd9b05dd1a77d505d2114bd6395969a811c57 100644
 --- a/net/minecraft/world/level/block/entity/BlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BlockEntity.java
 @@ -236,6 +236,14 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo

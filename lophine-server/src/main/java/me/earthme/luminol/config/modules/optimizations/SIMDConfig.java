@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 @ConfigClassInfo(category = EnumConfigCategory.OPTIMIZATIONS, name = "use_simd")
 public class SIMDConfig {
     @DoNotLoad
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = LogUtils.getClassLogger();
     @ConfigInfo(name = "enabled")
     public static boolean enabled = true;
 

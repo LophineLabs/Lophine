@@ -15,4 +15,11 @@ public @interface ConfigInfo {
     String section() default "";
 
     boolean allowAutoReset() default true;
+
+    /**
+     * When true, this entry can be overridden per world.
+     * The global file still stores the default. A world file only stores an override;
+     * if the world has no value, the global default is used.
+     */
+    boolean isWorldConfig() default false;
 }

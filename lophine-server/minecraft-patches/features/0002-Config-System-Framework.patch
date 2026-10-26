@@ -1,0 +1,87 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 14 Jun 2026 18:10:20 +0800
+Subject: [PATCH] Config System Framework
+
+
+diff --git a/net/minecraft/server/Main.java b/net/minecraft/server/Main.java
+index aa7f2ba4d931f98ce15c52dc2b99f07504149582..f72f7044b4110e2a5a185b1012a3181900e836b4 100644
+--- a/net/minecraft/server/Main.java
++++ b/net/minecraft/server/Main.java
+@@ -110,6 +110,7 @@ public class Main {
+                 JvmProfiler.INSTANCE.start(Environment.SERVER);
+             }
+ 
++            me.earthme.luminol.config.ConfigManager.initConfigs(); // Luminol - Luminol config
+             io.papermc.paper.plugin.PluginInitializerManager.load(options); // Paper
+             Bootstrap.bootStrap();
+             Bootstrap.validate();
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index 7336ed6fce34e0aae96893b18cd142d448e2fcfa..8dd8644745a7b18471bff7da3849024a782b278b 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -1151,6 +1151,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+             ca.spottedleaf.moonrise.common.util.MoonriseCommon.haltExecutors();
+         }
+         // Paper end - rewrite chunk system
++        me.earthme.luminol.config.ConfigManager.saveConfigs(); // Luminol - Config Systems
+         // Paper start - Improved watchdog support - move final shutdown items here
+         Util.shutdownExecutors();
+         this.onServerExit();
+diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
+index 762822ce2ccf98952dc92be4824c48fe6bc1bacb..dcbdffd521fd37fe7de222023ed3b933787473b2 100644
+--- a/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -238,6 +238,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+         this.paperConfigurations.initializeGlobalConfiguration(this.registryAccess());
+         this.paperConfigurations.initializeWorldDefaultsConfiguration(this.registryAccess());
+         // Paper end - initialize global and world-defaults configuration
++        me.earthme.luminol.config.ConfigManager.loadConfigFiles(); // Luminol - load config file
+         this.server.spark.enableEarlyIfRequested(); // Paper - spark
+         // Paper start - fix converting txt to json file; convert old users earlier after PlayerList creation but before file load/save
+         if (this.convertOldUsers()) {
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index 3d352bb9b0606236d789a70897d7bec12bcf6846..efe3ba3cdada4a8713d4cae5c0e42e9475dd0240 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -608,6 +608,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+         // CraftBukkit end
+         this.tickTime = tickTime;
+         this.server = server;
++        // Lophine start - per-world config
++        this.luminolWorldConfig(me.earthme.luminol.config.ConfigManager.loadWorldConfigs(
++            loadedWorldData.bukkitName(),
++            server.storageSource.getDimensionPath(dimension).toFile()
++        ));
++        // Lophine end - per-world config
+         this.customSpawners = customSpawners;
+         this.serverLevelData = levelData;
+         ChunkGenerator generator = levelStem.generator();
+@@ -1630,6 +1636,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+     public void saveLevelData(final boolean sync) { // Folia - public
+         SavedDataStorage savedDataStorage = this.getChunkSource().getDataStorage();
+         savedDataStorage.computeIfAbsent(io.papermc.paper.world.saveddata.PaperWorldPDC.TYPE).setFrom(this.persistentDataContainer); // Paper
++        this.luminolWorldConfig().save(); // Lophine - per-world config
+         if (sync) {
+             savedDataStorage.saveAndJoin();
+         } else {
+diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
+index 7c61b018508c24ae1e338763393dd6a9c5db60d9..7acff82e2e0e83e57b86cc996fce84c2e6f223a6 100644
+--- a/net/minecraft/world/level/Level.java
++++ b/net/minecraft/world/level/Level.java
+@@ -159,6 +159,15 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+         return this.paperConfig;
+     }
+     // Paper end - add paper world config
++    // Lophine start - per-world config
++    private me.earthme.luminol.config.WorldConfigHolder luminolWorldConfig = me.earthme.luminol.config.WorldConfigHolder.empty();
++    public me.earthme.luminol.config.WorldConfigHolder luminolWorldConfig() {
++        return this.luminolWorldConfig;
++    }
++    public void luminolWorldConfig(me.earthme.luminol.config.WorldConfigHolder holder) {
++        this.luminolWorldConfig = java.util.Objects.requireNonNull(holder);
++    }
++    // Lophine end - per-world config
+ 
+     public static @Nullable BlockPos lastPhysicsProblem; // Spigot
+     //public final Map<ServerExplosion.CacheKey, Float> explosionDensityCache = new java.util.HashMap<>(); // Paper - Optimize explosions // Folia - region threading
