@@ -8,24 +8,21 @@ import me.earthme.luminol.config.WorldValues;
 @ConfigClassInfo(category = EnumConfigCategory.OPTIMIZATIONS, name = "lobotomize_villager")
 public class LobotomizeVillageConfig {
     @ConfigInfo(name = "enabled", isWorldConfig = true)
-    public static boolean villagerLobotomizeEnabled = false;
-    public static final WorldValues.Key<Boolean> VILLAGER_LOBOTOMIZE_ENABLED = WorldValues.key();
+    public static final WorldValues.Key<Boolean> villagerLobotomizeEnabled = WorldValues.key(false);
     @ConfigInfo(name = "check_interval", isWorldConfig = true)
-    public static int villagerLobotomizeCheckInterval = 100;
-    public static final WorldValues.Key<Integer> VILLAGER_LOBOTOMIZE_CHECK_INTERVAL = WorldValues.key();
+    public static final WorldValues.Key<Integer> villagerLobotomizeCheckInterval = WorldValues.key(100);
     @ConfigInfo(name = "wait_until_trade_locked", isWorldConfig = true)
-    public static boolean villagerLobotomizeWaitUntilTradeLocked = false;
-    public static final WorldValues.Key<Boolean> VILLAGER_LOBOTOMIZE_WAIT_UNTIL_TRADE_LOCKED = WorldValues.key();
+    public static final WorldValues.Key<Boolean> villagerLobotomizeWaitUntilTradeLocked = WorldValues.key(false);
 
     public static boolean villagerLobotomizeEnabled() {
-        return WorldValues.get(VILLAGER_LOBOTOMIZE_ENABLED, villagerLobotomizeEnabled);
+        return villagerLobotomizeEnabled.get();
     }
 
     public static int villagerLobotomizeCheckInterval() {
-        return WorldValues.get(VILLAGER_LOBOTOMIZE_CHECK_INTERVAL, villagerLobotomizeCheckInterval);
+        return villagerLobotomizeCheckInterval.get();
     }
 
     public static boolean villagerLobotomizeWaitUntilTradeLocked() {
-        return WorldValues.get(VILLAGER_LOBOTOMIZE_WAIT_UNTIL_TRADE_LOCKED, villagerLobotomizeWaitUntilTradeLocked);
+        return villagerLobotomizeWaitUntilTradeLocked.get();
     }
 }

@@ -135,10 +135,10 @@ public class LithiumDoubleStackList extends LithiumStackList {
     public void runComparatorUpdatePatternOnFailedExtract(LithiumStackList masterStackList, Container inventory) {
         if (inventory instanceof CompoundContainer compoundContainer) {
             this.first.runComparatorUpdatePatternOnFailedExtract(
-                this, compoundContainer.container1
+                    this, compoundContainer.container1
             );
             this.second.runComparatorUpdatePatternOnFailedExtract(
-                this, compoundContainer.container2
+                    this, compoundContainer.container2
             );
         }
     }

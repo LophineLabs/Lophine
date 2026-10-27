@@ -8,38 +8,33 @@ import me.earthme.luminol.config.WorldValues;
 @ConfigClassInfo(category = EnumConfigCategory.EXPERIMENT, name = "ray_tracking_entity_tracker")
 public class RayTrackingEntityTrackerConfig {
     @ConfigInfo(name = "enabled", isWorldConfig = true)
-    public static boolean enabled = false;
-    public static final WorldValues.Key<Boolean> ENABLED = WorldValues.key();
+    public static final WorldValues.Key<Boolean> enabled = WorldValues.key(false);
     @ConfigInfo(name = "skip_marker_armor_stands", isWorldConfig = true)
-    public static boolean skipMarkerArmorStands = true;
-    public static final WorldValues.Key<Boolean> SKIP_MARKER_ARMOR_STANDS = WorldValues.key();
+    public static final WorldValues.Key<Boolean> skipMarkerArmorStands = WorldValues.key(true);
     @ConfigInfo(name = "check_interval_ms", isWorldConfig = true)
-    public static int checkIntervalMs = 10;
-    public static final WorldValues.Key<Integer> CHECK_INTERVAL_MS = WorldValues.key();
+    public static final WorldValues.Key<Integer> checkIntervalMs = WorldValues.key(10);
     @ConfigInfo(name = "tracing_distance", isWorldConfig = true)
-    public static int tracingDistance = 48;
-    public static final WorldValues.Key<Integer> TRACING_DISTANCE = WorldValues.key();
+    public static final WorldValues.Key<Integer> tracingDistance = WorldValues.key(48);
     @ConfigInfo(name = "hitbox_limit", isWorldConfig = true)
-    public static int hitboxLimit = 50;
-    public static final WorldValues.Key<Integer> HITBOX_LIMIT = WorldValues.key();
+    public static final WorldValues.Key<Integer> hitboxLimit = WorldValues.key(50);
 
     public static boolean enabled() {
-        return WorldValues.get(ENABLED, enabled);
+        return enabled.get();
     }
 
     public static boolean skipMarkerArmorStands() {
-        return WorldValues.get(SKIP_MARKER_ARMOR_STANDS, skipMarkerArmorStands);
+        return skipMarkerArmorStands.get();
     }
 
     public static int checkIntervalMs() {
-        return WorldValues.get(CHECK_INTERVAL_MS, checkIntervalMs);
+        return checkIntervalMs.get();
     }
 
     public static int tracingDistance() {
-        return WorldValues.get(TRACING_DISTANCE, tracingDistance);
+        return tracingDistance.get();
     }
 
     public static int hitboxLimit() {
-        return WorldValues.get(HITBOX_LIMIT, hitboxLimit);
+        return hitboxLimit.get();
     }
 }

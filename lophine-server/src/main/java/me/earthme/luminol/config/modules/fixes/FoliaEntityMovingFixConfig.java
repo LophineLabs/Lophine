@@ -8,18 +8,16 @@ import me.earthme.luminol.config.WorldValues;
 @ConfigClassInfo(category = EnumConfigCategory.FIXES, name = "fix_high_velocity_issue")
 public class FoliaEntityMovingFixConfig {
     @ConfigInfo(name = "enabled", isWorldConfig = true)
-    public static boolean enabled = false;
-    public static final WorldValues.Key<Boolean> ENABLED = WorldValues.key();
+    public static final WorldValues.Key<Boolean> enabled = WorldValues.key(false);
 
     @ConfigInfo(name = "warn_on_detected", isWorldConfig = true)
-    public static boolean warnOnDetected = false;
-    public static final WorldValues.Key<Boolean> WARN_ON_DETECTED = WorldValues.key();
+    public static final WorldValues.Key<Boolean> warnOnDetected = WorldValues.key(false);
 
     public static boolean enabled() {
-        return WorldValues.get(ENABLED, enabled);
+        return enabled.get();
     }
 
     public static boolean warnOnDetected() {
-        return WorldValues.get(WARN_ON_DETECTED, warnOnDetected);
+        return warnOnDetected.get();
     }
 }

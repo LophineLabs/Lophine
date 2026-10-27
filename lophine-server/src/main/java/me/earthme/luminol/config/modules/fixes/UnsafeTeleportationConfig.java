@@ -8,10 +8,9 @@ import me.earthme.luminol.config.WorldValues;
 @ConfigClassInfo(category = EnumConfigCategory.FIXES, name = "allow_unsafe_teleportation")
 public class UnsafeTeleportationConfig {
     @ConfigInfo(name = "enabled", isWorldConfig = true)
-    public static boolean enabled = false;
-    public static final WorldValues.Key<Boolean> ENABLED = WorldValues.key();
+    public static final WorldValues.Key<Boolean> enabled = WorldValues.key(false);
 
     public static boolean enabled() {
-        return WorldValues.get(ENABLED, enabled);
+        return enabled.get();
     }
 }

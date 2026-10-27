@@ -13,14 +13,13 @@ import org.jetbrains.annotations.Nullable;
 public class CollisionBehaviorConfig {
     @CommandSuggestions(suggest = {"VANILLA", "BLOCK_SHAPE_VANILLA", "PAPER"})
     @ConfigInfo(name = "mode", isWorldConfig = true)
-    public static EnumCollisionBehaviorMode behaviorMode = EnumCollisionBehaviorMode.BLOCK_SHAPE_VANILLA;
-    public static final WorldValues.Key<EnumCollisionBehaviorMode> BEHAVIOR_MODE = WorldValues.key();
+    public static final WorldValues.Key<EnumCollisionBehaviorMode> behaviorMode = WorldValues.key(EnumCollisionBehaviorMode.BLOCK_SHAPE_VANILLA);
 
     public static EnumCollisionBehaviorMode behaviorMode() {
         return behaviorMode(null);
     }
 
     public static EnumCollisionBehaviorMode behaviorMode(@Nullable Level level) {
-        return WorldValues.get(level, BEHAVIOR_MODE, behaviorMode);
+        return behaviorMode.get(level);
     }
 }

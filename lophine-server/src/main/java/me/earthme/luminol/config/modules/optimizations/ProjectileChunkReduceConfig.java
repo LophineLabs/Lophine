@@ -8,17 +8,15 @@ import me.earthme.luminol.config.WorldValues;
 @ConfigClassInfo(category = EnumConfigCategory.OPTIMIZATIONS, name = "projectile")
 public class ProjectileChunkReduceConfig {
     @ConfigInfo(name = "max-loads-per-tick", isWorldConfig = true)
-    public static int maxProjectileLoadsPerTick;
-    public static final WorldValues.Key<Integer> MAX_PROJECTILE_LOADS_PER_TICK = WorldValues.key();
+    public static final WorldValues.Key<Integer> maxProjectileLoadsPerTick = WorldValues.key(0);
     @ConfigInfo(name = "max-loads-per-projectile", isWorldConfig = true)
-    public static int maxProjectileLoadsPerProjectile;
-    public static final WorldValues.Key<Integer> MAX_PROJECTILE_LOADS_PER_PROJECTILE = WorldValues.key();
+    public static final WorldValues.Key<Integer> maxProjectileLoadsPerProjectile = WorldValues.key(0);
 
     public static int maxProjectileLoadsPerTick() {
-        return WorldValues.get(MAX_PROJECTILE_LOADS_PER_TICK, maxProjectileLoadsPerTick);
+        return maxProjectileLoadsPerTick.get();
     }
 
     public static int maxProjectileLoadsPerProjectile() {
-        return WorldValues.get(MAX_PROJECTILE_LOADS_PER_PROJECTILE, maxProjectileLoadsPerProjectile);
+        return maxProjectileLoadsPerProjectile.get();
     }
 }

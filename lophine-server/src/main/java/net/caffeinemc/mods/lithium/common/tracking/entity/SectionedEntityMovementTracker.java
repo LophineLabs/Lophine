@@ -46,6 +46,7 @@ public abstract class SectionedEntityMovementTracker<E extends EntityAccess> {
     void offsetMovementTime(long offset) {
         this.maxChangeTime += offset;
     }
+
     private ReferenceOpenHashSet<SectionedEntityMovementListener> sectionedEntityMovementListeners;
 
     public SectionedEntityMovementTracker(WorldSectionBox interactionChunks, Object entityType) {
@@ -65,8 +66,8 @@ public abstract class SectionedEntityMovementTracker<E extends EntityAccess> {
     @Override
     public boolean equals(Object obj) {
         return obj.getClass() == this.getClass() &&
-            this.clazz == ((SectionedEntityMovementTracker<?>) obj).clazz &&
-            this.trackedWorldSections.equals(((SectionedEntityMovementTracker<?>) obj).trackedWorldSections);
+                this.clazz == ((SectionedEntityMovementTracker<?>) obj).clazz &&
+                this.trackedWorldSections.equals(((SectionedEntityMovementTracker<?>) obj).trackedWorldSections);
     }
 
     /**

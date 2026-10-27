@@ -11,19 +11,17 @@ import org.jetbrains.annotations.Nullable;
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "tripwire_dupe")
 public class TripwireBehaviorConfig {
     @ConfigInfo(name = "enabled", isWorldConfig = true)
-    public static boolean enabled = false;
-    public static final WorldValues.Key<Boolean> ENABLED = WorldValues.key();
+    public static final WorldValues.Key<Boolean> enabled = WorldValues.key(false);
 
     @ConfigInfo(name = "behavior_mode", isWorldConfig = true)
-    public static EnumTripwireBehavior behaviorMode = EnumTripwireBehavior.VANILLA21;
-    public static final WorldValues.Key<EnumTripwireBehavior> BEHAVIOR_MODE = WorldValues.key();
+    public static final WorldValues.Key<EnumTripwireBehavior> behaviorMode = WorldValues.key(EnumTripwireBehavior.VANILLA21);
 
     public static boolean enabled() {
         return enabled(null);
     }
 
     public static boolean enabled(@Nullable Level level) {
-        return WorldValues.get(level, ENABLED, enabled);
+        return enabled.get(level);
     }
 
     public static EnumTripwireBehavior behaviorMode() {
@@ -31,6 +29,6 @@ public class TripwireBehaviorConfig {
     }
 
     public static EnumTripwireBehavior behaviorMode(@Nullable Level level) {
-        return WorldValues.get(level, BEHAVIOR_MODE, behaviorMode);
+        return behaviorMode.get(level);
     }
 }

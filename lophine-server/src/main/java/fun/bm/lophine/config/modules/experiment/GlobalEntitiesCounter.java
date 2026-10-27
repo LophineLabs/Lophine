@@ -12,11 +12,10 @@ import me.earthme.luminol.config.WorldValues;
 public class GlobalEntitiesCounter {
     @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "version", isWorldConfig = true)
-    public static GlobalEntitiesCounterType type = GlobalEntitiesCounterType.DISABLED;
-    public static final WorldValues.Key<GlobalEntitiesCounterType> TYPE = WorldValues.key();
+    public static final WorldValues.Key<GlobalEntitiesCounterType> type = WorldValues.key(GlobalEntitiesCounterType.DISABLED);
 
     public static GlobalEntitiesCounterType type() {
-        return WorldValues.get(TYPE, type);
+        return type.get();
     }
 
     public static boolean isEnabled() {

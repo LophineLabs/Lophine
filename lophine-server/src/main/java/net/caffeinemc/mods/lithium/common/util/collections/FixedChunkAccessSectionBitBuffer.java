@@ -51,7 +51,7 @@ public class FixedChunkAccessSectionBitBuffer {
         this.numSections = yLength * xLength * zLength;
 
         this.chunkSectionBits = new BitSet(numSections);
-        this.chunkAccesses = new ArrayList<>(Collections.nCopies(xLength * zLength,null));
+        this.chunkAccesses = new ArrayList<>(Collections.nCopies(xLength * zLength, null));
     }
 
     public FixedChunkAccessSectionBitBuffer(BlockPos center, int horizontalRangeInclusive, int verticalRangeInclusive) {
@@ -103,11 +103,11 @@ public class FixedChunkAccessSectionBitBuffer {
         return this.getChunkIndex(ChunkPos.getX(chunkPos), ChunkPos.getZ(chunkPos));
     }
 
-    public ChunkAccess getChunkAccess(long chunkPos){
+    public ChunkAccess getChunkAccess(long chunkPos) {
         return this.chunkAccesses.get(this.getChunkIndex(chunkPos));
     }
 
-    public ChunkAccess getChunkAccess(BlockPos blockPos){
+    public ChunkAccess getChunkAccess(BlockPos blockPos) {
         return this.getChunkAccess(ChunkPos.pack(blockPos));
     }
 
@@ -119,14 +119,14 @@ public class FixedChunkAccessSectionBitBuffer {
         this.setChunkAccess(ChunkPos.pack(blockPos), chunkAccess);
     }
 
-    public boolean hasNoTrueChunkSections(){
+    public boolean hasNoTrueChunkSections() {
         return this.chunkSectionBits.nextSetBit(0) == -1;
     }
 
     public LongIterable getChunkPosInRange() {
         return new LongIterable() {
             @Override
-            public @NotNull LongIterator iterator(){
+            public @NotNull LongIterator iterator() {
                 return getChunkPosInRangeIterator();
             }
         };
@@ -142,7 +142,7 @@ public class FixedChunkAccessSectionBitBuffer {
             int z = zMin;
 
             @Override
-            public long nextLong () {
+            public long nextLong() {
                 long result = ChunkPos.pack(x, z);
                 if (z < zMax) {
                     z++;
@@ -154,7 +154,7 @@ public class FixedChunkAccessSectionBitBuffer {
             }
 
             @Override
-            public boolean hasNext(){
+            public boolean hasNext() {
                 return x <= xMax;
             }
         };
@@ -163,7 +163,7 @@ public class FixedChunkAccessSectionBitBuffer {
     public IntIterable getSectionYInRange() {
         return new IntIterable() {
             @Override
-            public @NotNull IntIterator iterator(){
+            public @NotNull IntIterator iterator() {
                 return getSectionYInRangeIterator();
             }
         };
@@ -176,12 +176,12 @@ public class FixedChunkAccessSectionBitBuffer {
             int y = yMin;
 
             @Override
-            public int nextInt(){
+            public int nextInt() {
                 return y++;
             }
 
             @Override
-            public boolean hasNext(){
+            public boolean hasNext() {
                 return y < yLimit;
             }
         };

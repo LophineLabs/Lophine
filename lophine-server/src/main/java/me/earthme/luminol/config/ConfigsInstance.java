@@ -199,8 +199,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
             Field[] fields = module.getClass().getDeclaredFields();
 
             for (Field field : fields) {
-                int modifiers = field.getModifiers();
-                if (!(Modifier.isStatic(modifiers) && !Modifier.isFinal(modifiers))) {
+                if (!isManagedConfigField(field)) {
                     continue;
                 }
 
@@ -223,7 +222,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                         Object stagedValue = getActualConfigValue(fullConfigKeyName);
                         if (stagedValue != null) {
                             stagedValue = tryTransform(field, stagedValue);
-                            field.set(null, stagedValue);
+                            writeConfigValue(field, stagedValue);
                         }
                     } catch (Exception e) {
                         logger.error("Failed to re-apply staged config value for {}", fullConfigKeyName, e);
@@ -284,8 +283,8 @@ public class ConfigsInstance implements LuminolConfigsInstance {
             ConfigClassInfo classInfo = getConfigClassInfo(module);
             for (Field field : module.getClass().getDeclaredFields()) {
                 ConfigInfo info = field.getAnnotation(ConfigInfo.class);
-                if (info == null || info.section().isEmpty() || !Modifier.isStatic(field.getModifiers())
-                        || Modifier.isFinal(field.getModifiers()) || field.getAnnotation(DoNotLoad.class) != null)
+                if (info == null || info.section().isEmpty() || !isManagedConfigField(field)
+                        || field.getAnnotation(DoNotLoad.class) != null)
                     continue;
                 String legacy = ConfigPaths.legacy(classInfo, info);
                 String target = ConfigPaths.resolve(classInfo, info);
@@ -421,8 +420,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
      */
     private void processConfigField(Field field, @NotNull Object singleConfigModule,
                                     boolean keepComments) throws IllegalAccessException {
-        int modifiers = field.getModifiers();
-        if (!(Modifier.isStatic(modifiers) && !Modifier.isFinal(modifiers))) {
+        if (!isManagedConfigField(field)) {
             return;
         }
 
@@ -448,7 +446,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         if (skipLoad) return;
 
         field.setAccessible(true);
-        Object currentValue = field.get(null);
+        Object currentValue = readConfigValue(field);
         if (currentValue instanceof Enum) {
             currentValue = ((Enum<?>) currentValue).name();
         }
@@ -456,12 +454,10 @@ public class ConfigsInstance implements LuminolConfigsInstance {
 
         if (worldConfigFields != null && configInfo.isWorldConfig() && !removed && !skipLoad) {
             worldConfigFields.put(fullConfigKeyName, field);
-            WorldValues.bind(
-                    WorldValues.findOrCreateKey(field.getDeclaringClass(), field.getName()),
-                    this.name,
-                    fullConfigKeyName,
-                    field
-            );
+            Object live = field.get(null);
+            if (live instanceof WorldValues.Key<?> key) {
+                WorldValues.bind(key, this.name, fullConfigKeyName);
+            }
         }
 
         // Store default value if not initialized
@@ -511,10 +507,10 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         }
 
         // Validate default value
-        Object currentValue = field.get(null);
+        Object currentValue = readConfigValue(field);
         if (alreadyInit && hooks.restoreMissingToDefault() && defaultvalueMap.containsKey(fullConfigKeyName)) {
             currentValue = tryTransform(field, defaultvalueMap.get(fullConfigKeyName));
-            if (!doNotReload) field.set(null, currentValue);
+            if (!doNotReload) writeConfigValue(field, currentValue);
         }
         if (currentValue instanceof Enum) {
             currentValue = ((Enum<?>) currentValue).name();
@@ -614,7 +610,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
 
         // Update field value if hot reload is supported
         if (!doNotReload) {
-            field.set(null, actuallyValue);
+            writeConfigValue(field, actuallyValue);
         }
 
         if (!keepComments) {
@@ -649,13 +645,12 @@ public class ConfigsInstance implements LuminolConfigsInstance {
             for (Field field : module.getClass().getDeclaredFields()) {
                 ConfigInfo info = field.getAnnotation(ConfigInfo.class);
                 DoNotLoad loading = field.getAnnotation(DoNotLoad.class);
-                if (info == null || !Modifier.isStatic(field.getModifiers()) || Modifier.isFinal(field.getModifiers())
-                        || loading != null) continue;
+                if (info == null || !isManagedConfigField(field) || loading != null) continue;
                 String key = ConfigPaths.resolve(classInfo, info);
                 if (!defaultvalueMap.containsKey(key)) continue;
                 try {
                     field.setAccessible(true);
-                    field.set(null, tryTransform(field, defaultvalueMap.get(key)));
+                    writeConfigValue(field, tryTransform(field, defaultvalueMap.get(key)));
                 } catch (IllegalAccessException failure) {
                     throw new IllegalStateException("Cannot restore default for " + key, failure);
                 }
@@ -873,7 +868,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
             if (classInfo == null) continue;
             for (Field field : module.getClass().getDeclaredFields()) {
                 ConfigInfo info = field.getAnnotation(ConfigInfo.class);
-                if (info == null || !Modifier.isStatic(field.getModifiers()) || Modifier.isFinal(field.getModifiers()))
+                if (info == null || !isManagedConfigField(field))
                     continue;
                 if (!ConfigPaths.resolve(classInfo, info).equals(key)) continue;
                 DoNotLoad loading = field.getAnnotation(DoNotLoad.class);
@@ -888,10 +883,10 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                     saveConfigs();
                     return SingleConfigResult.SAVED_FOR_RESTART;
                 }
-                boolean changed = !Objects.equals(field.get(null), converted);
+                boolean changed = !Objects.equals(readConfigValue(field), converted);
                 if (changed) {
                     invokeNeedRunMethods(module, EnumRunnableType.ON_UNLOAD, null);
-                    field.set(null, converted);
+                    writeConfigValue(field, converted);
                     stagedConfigMap.remove(key);
                     invokeNeedRunMethods(module, EnumRunnableType.BEFORE_FINAL_LOAD, null);
                     invokeNeedRunMethods(module, EnumRunnableType.ON_LOADED, null);
@@ -918,7 +913,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         if (customized.isPresent()) {
             return customized.get();
         }
-        Class<?> targetType = field.get(null).getClass();
+        Class<?> targetType = configValueType(field);
         if (!targetType.isAssignableFrom(value.getClass())) {
             try {
                 if (targetType == Integer.class) {
@@ -964,6 +959,42 @@ public class ConfigsInstance implements LuminolConfigsInstance {
             }
         }
         return value;
+    }
+
+    private static boolean isManagedConfigField(Field field) {
+        int modifiers = field.getModifiers();
+        if (!Modifier.isStatic(modifiers)) {
+            return false;
+        }
+        if (field.getType() == WorldValues.Key.class) {
+            return Modifier.isFinal(modifiers);
+        }
+        return !Modifier.isFinal(modifiers);
+    }
+
+    private static Object readConfigValue(Field field) throws IllegalAccessException {
+        Object live = field.get(null);
+        if (live instanceof WorldValues.Key<?> key) {
+            return key.global();
+        }
+        return live;
+    }
+
+    private static void writeConfigValue(Field field, Object value) throws IllegalAccessException {
+        Object live = field.get(null);
+        if (live instanceof WorldValues.Key<?> key) {
+            key.setGlobal(value);
+            return;
+        }
+        field.set(null, value);
+    }
+
+    private static Class<?> configValueType(Field field) throws IllegalAccessException {
+        Object live = readConfigValue(field);
+        if (live != null) {
+            return live.getClass();
+        }
+        throw new IllegalStateException("Config field " + field + " has no default value");
     }
 
     private Class<?> getListElementType(Field field) {
@@ -1081,7 +1112,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
             if (field != null) {
                 try {
                     field.setAccessible(true);
-                    Object live = field.get(null);
+                    Object live = readConfigValue(field);
                     if (live != null) {
                         return (T) live;
                     }

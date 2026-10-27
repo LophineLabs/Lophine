@@ -17,7 +17,7 @@ public final class MovementTrackerRegionRegistry {
     // Equal trackers from merged regions can both still be referenced by hoppers. Keep every live
     // identity, but return one representative for future registrations. No world-wide lock is needed.
     private final it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<SectionedEntityMovementTracker<?>,
-        java.util.ArrayList<SectionedEntityMovementTracker<?>>> canonicalTrackers = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>();
+            java.util.ArrayList<SectionedEntityMovementTracker<?>>> canonicalTrackers = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>();
 
     @SuppressWarnings("unchecked")
     <T extends SectionedEntityMovementTracker<?>> T getCanonical(T candidate) {
@@ -106,7 +106,7 @@ public final class MovementTrackerRegionRegistry {
         }
         for (MoonriseEntityMovementTrackerSection section : this.sections) {
             MovementTrackerRegionRegistry into = regionToRegistry.apply(CoordinateUtils.getChunkKey(
-                section.chunkX >> chunkToRegionShift, section.chunkZ >> chunkToRegionShift));
+                    section.chunkX >> chunkToRegionShift, section.chunkZ >> chunkToRegionShift));
             MovementTrackerRegionRegistry owner = into == null ? section.getListenerRegistryAfterSplit(this) : into;
             if (owner != null && owner != this) {
                 owner.addSection(section);

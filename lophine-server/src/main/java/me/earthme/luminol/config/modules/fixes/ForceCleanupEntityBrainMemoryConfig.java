@@ -8,26 +8,23 @@ import me.earthme.luminol.config.WorldValues;
 @ConfigClassInfo(category = EnumConfigCategory.FIXES, name = "force_cleanup_drop_non_owned_entity_memory_module")
 public class ForceCleanupEntityBrainMemoryConfig {
     @ConfigInfo(name = "enabled_for_entity", isWorldConfig = true)
-    public static boolean enabledForEntity = false;
-    public static final WorldValues.Key<Boolean> ENABLED_FOR_ENTITY = WorldValues.key();
+    public static final WorldValues.Key<Boolean> enabledForEntity = WorldValues.key(false);
 
     @ConfigInfo(name = "enabled_for_block_pos", isWorldConfig = true)
-    public static boolean enabledForBlockPos = false;
-    public static final WorldValues.Key<Boolean> ENABLED_FOR_BLOCK_POS = WorldValues.key();
+    public static final WorldValues.Key<Boolean> enabledForBlockPos = WorldValues.key(false);
 
     @ConfigInfo(name = "enabled_for_position_tracker", isWorldConfig = true)
-    public static boolean enabledForPositionTracker = false;
-    public static final WorldValues.Key<Boolean> ENABLED_FOR_POSITION_TRACKER = WorldValues.key();
+    public static final WorldValues.Key<Boolean> enabledForPositionTracker = WorldValues.key(false);
 
     public static boolean enabledForEntity() {
-        return WorldValues.get(ENABLED_FOR_ENTITY, enabledForEntity);
+        return enabledForEntity.get();
     }
 
     public static boolean enabledForBlockPos() {
-        return WorldValues.get(ENABLED_FOR_BLOCK_POS, enabledForBlockPos);
+        return enabledForBlockPos.get();
     }
 
     public static boolean enabledForPositionTracker() {
-        return WorldValues.get(ENABLED_FOR_POSITION_TRACKER, enabledForPositionTracker);
+        return enabledForPositionTracker.get();
     }
 }

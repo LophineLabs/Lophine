@@ -15,56 +15,50 @@ import org.jetbrains.annotations.Nullable;
 public class PortalRateLimiterConfig {
     @ConfigInfo(name = "enable", isWorldConfig = true)
     @DoNotLoad(when = EnumLoadType.RELOAD)
-    public static boolean enabled = false;
-    public static final WorldValues.Key<Boolean> ENABLED = WorldValues.key();
+    public static final WorldValues.Key<Boolean> enabled = WorldValues.key(false);
 
     @ConfigInfo(name = "maximum_portal_teleports_per_tick", isWorldConfig = true)
     @DoNotLoad(when = EnumLoadType.RELOAD)
-    public static int maxPortalTeleportsPerTick = 200;
-    public static final WorldValues.Key<Integer> MAX_PORTAL_TELEPORTS_PER_TICK = WorldValues.key();
+    public static final WorldValues.Key<Integer> maxPortalTeleportsPerTick = WorldValues.key(200);
 
     @ConfigInfo(name = "maximum_portal_teleports_per_tick_expression", isWorldConfig = true)
     @DoNotLoad(when = EnumLoadType.RELOAD)
-    public static String maxPortalTeleportsExpression = "50 * (1 + sqrt(e/1000) + c/200 + p/5)";
-    public static final WorldValues.Key<String> MAX_PORTAL_TELEPORTS_EXPRESSION = WorldValues.key();
+    public static final WorldValues.Key<String> maxPortalTeleportsExpression = WorldValues.key("50 * (1 + sqrt(e/1000) + c/200 + p/5)");
 
     @ConfigInfo(name = "destination_backpressure_enabled", isWorldConfig = true)
     @DoNotLoad(when = EnumLoadType.RELOAD)
-    public static boolean destinationBackpressureEnabled = true;
-    public static final WorldValues.Key<Boolean> DESTINATION_BACKPRESSURE_ENABLED = WorldValues.key();
+    public static final WorldValues.Key<Boolean> destinationBackpressureEnabled = WorldValues.key(true);
 
     @ConfigInfo(name = "destination_tokens_per_tick", isWorldConfig = true)
     @DoNotLoad(when = EnumLoadType.RELOAD)
-    public static int portalIngressTokensPerTick = 16;
-    public static final WorldValues.Key<Integer> PORTAL_INGRESS_TOKENS_PER_TICK = WorldValues.key();
+    public static final WorldValues.Key<Integer> portalIngressTokensPerTick = WorldValues.key(16);
 
     @ConfigInfo(name = "destination_burst_capacity", isWorldConfig = true)
     @DoNotLoad(when = EnumLoadType.RELOAD)
-    public static int portalIngressBurstCapacity = 64;
-    public static final WorldValues.Key<Integer> PORTAL_INGRESS_BURST_CAPACITY = WorldValues.key();
+    public static final WorldValues.Key<Integer> portalIngressBurstCapacity = WorldValues.key(64);
 
     public static boolean enabled() {
-        return WorldValues.get(ENABLED, enabled);
+        return enabled.get();
     }
 
     public static int maxPortalTeleportsPerTick() {
-        return WorldValues.get(MAX_PORTAL_TELEPORTS_PER_TICK, maxPortalTeleportsPerTick);
+        return maxPortalTeleportsPerTick.get();
     }
 
     public static String maxPortalTeleportsExpression() {
-        return WorldValues.get(MAX_PORTAL_TELEPORTS_EXPRESSION, maxPortalTeleportsExpression);
+        return maxPortalTeleportsExpression.get();
     }
 
     public static boolean destinationBackpressureEnabled() {
-        return WorldValues.get(DESTINATION_BACKPRESSURE_ENABLED, destinationBackpressureEnabled);
+        return destinationBackpressureEnabled.get();
     }
 
     public static int portalIngressTokensPerTick() {
-        return WorldValues.get(PORTAL_INGRESS_TOKENS_PER_TICK, portalIngressTokensPerTick);
+        return portalIngressTokensPerTick.get();
     }
 
     public static int portalIngressBurstCapacity() {
-        return WorldValues.get(PORTAL_INGRESS_BURST_CAPACITY, portalIngressBurstCapacity);
+        return portalIngressBurstCapacity.get();
     }
 
     // use this to prevent reallocation
