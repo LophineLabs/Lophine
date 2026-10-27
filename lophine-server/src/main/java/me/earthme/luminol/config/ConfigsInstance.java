@@ -46,7 +46,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     private final ConfigsInstanceHooks hooks;
     /**
      * Fields marked {@code isWorldConfig}. {@code null} means this instance does not
-     * use per-world overlays.
+     * keep a per-level copy of those keys.
      */
     private final Map<String, Field> worldConfigFields;
 
@@ -178,6 +178,9 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         allInstanced.replaceAll((_, _) -> null);
         setupLatch();
         saveConfigs();
+        if (usesWorldConfig()) {
+            ConfigManager.refreshWorldSnapshots();
+        }
     }
 
     /**
@@ -227,6 +230,9 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                     }
                 }
             }
+        }
+        if (usesWorldConfig()) {
+            ConfigManager.refreshWorldSnapshots();
         }
     }
 
@@ -450,7 +456,12 @@ public class ConfigsInstance implements LuminolConfigsInstance {
 
         if (worldConfigFields != null && configInfo.isWorldConfig() && !removed && !skipLoad) {
             worldConfigFields.put(fullConfigKeyName, field);
-            WorldValues.register(field.getDeclaringClass(), field.getName(), this.name, fullConfigKeyName);
+            WorldValues.bind(
+                    WorldValues.findOrCreateKey(field.getDeclaringClass(), field.getName()),
+                    this.name,
+                    fullConfigKeyName,
+                    field
+            );
         }
 
         // Store default value if not initialized
@@ -884,6 +895,9 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                     stagedConfigMap.remove(key);
                     invokeNeedRunMethods(module, EnumRunnableType.BEFORE_FINAL_LOAD, null);
                     invokeNeedRunMethods(module, EnumRunnableType.ON_LOADED, null);
+                    if (isWorldConfigKey(key)) {
+                        ConfigManager.refreshWorldSnapshots();
+                    }
                 }
                 stagedConfigMap.remove(key);
                 if (persist) {
@@ -1045,7 +1059,8 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     }
 
     /**
-     * Resolve a world-config key for {@code level}. Missing world values fall back to the global default.
+     * Resolve a world-config key for {@code level} from that level's copy.
+     * Missing world values fall back to the global default.
      * Keys without {@code isWorldConfig} always use the global value.
      */
     @SuppressWarnings("unchecked")

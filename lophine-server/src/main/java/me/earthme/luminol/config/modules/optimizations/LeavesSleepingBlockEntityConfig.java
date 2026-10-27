@@ -12,8 +12,9 @@ public class LeavesSleepingBlockEntityConfig {
     @ConfigInfo(name = "enabled", isWorldConfig = true)
     @DoNotLoad(when = EnumLoadType.RELOAD)
     public static boolean enabled = true;
+    public static final WorldValues.Key<Boolean> ENABLED = WorldValues.key();
 
     public static boolean enabled() {
-        return WorldValues.get(enabled);
+        return WorldValues.get(ENABLED, enabled);
     }
 }

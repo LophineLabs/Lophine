@@ -9,8 +9,9 @@ import me.earthme.luminol.config.WorldValues;
 public class POIRangeFixes {
     @ConfigInfo(name = "do_not_compete_poi_if_unloaded", isWorldConfig = true)
     public static boolean doNotCompetePOIIfUnloaded = false;
+    public static final WorldValues.Key<Boolean> DO_NOT_COMPETE_POI_IF_UNLOADED = WorldValues.key();
 
     public static boolean doNotCompetePOIIfUnloaded() {
-        return WorldValues.get(doNotCompetePOIIfUnloaded);
+        return WorldValues.get(DO_NOT_COMPETE_POI_IF_UNLOADED, doNotCompetePOIIfUnloaded);
     }
 }

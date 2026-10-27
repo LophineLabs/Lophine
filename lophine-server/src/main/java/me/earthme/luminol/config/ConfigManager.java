@@ -160,6 +160,15 @@ public class ConfigManager {
         }
     }
 
+    /**
+     * Rebuild every loaded level's world-config copy from live globals plus that world's overrides.
+     */
+    static void refreshWorldSnapshots() {
+        for (WorldConfigHolder holder : worldHolders.values()) {
+            holder.rebuildSnapshot();
+        }
+    }
+
     public static void acceptTransformedConfigs() {
         Set<ConfigsInstance> toReload = new HashSet<>();
         for (TransformingConfig entry : needTransformedConfigs) {

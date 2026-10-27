@@ -13,8 +13,9 @@ import me.earthme.luminol.config.WorldValues;
 public class RedStoneConfig {
     @ConfigInfo(name = "old-block-remove-behaviour", isWorldConfig = true)
     public static boolean oldBlockRemoveBehaviour = false;
+    public static final WorldValues.Key<Boolean> OLD_BLOCK_REMOVE_BEHAVIOUR = WorldValues.key();
 
     public static boolean oldBlockRemoveBehaviour() {
-        return WorldValues.get(oldBlockRemoveBehaviour);
+        return WorldValues.get(OLD_BLOCK_REMOVE_BEHAVIOUR, oldBlockRemoveBehaviour);
     }
 }

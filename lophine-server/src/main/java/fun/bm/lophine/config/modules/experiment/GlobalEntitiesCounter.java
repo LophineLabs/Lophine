@@ -13,9 +13,10 @@ public class GlobalEntitiesCounter {
     @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "version", isWorldConfig = true)
     public static GlobalEntitiesCounterType type = GlobalEntitiesCounterType.DISABLED;
+    public static final WorldValues.Key<GlobalEntitiesCounterType> TYPE = WorldValues.key();
 
     public static GlobalEntitiesCounterType type() {
-        return WorldValues.get(type);
+        return WorldValues.get(TYPE, type);
     }
 
     public static boolean isEnabled() {

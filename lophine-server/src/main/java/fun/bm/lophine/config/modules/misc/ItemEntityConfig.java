@@ -9,8 +9,9 @@ import me.earthme.luminol.config.WorldValues;
 public class ItemEntityConfig {
     @ConfigInfo(name = "follow-tick-sequence-merge", isWorldConfig = true)
     public static boolean followTickSequenceMerge = false;
+    public static final WorldValues.Key<Boolean> FOLLOW_TICK_SEQUENCE_MERGE = WorldValues.key();
 
     public static boolean followTickSequenceMerge() {
-        return WorldValues.get(followTickSequenceMerge);
+        return WorldValues.get(FOLLOW_TICK_SEQUENCE_MERGE, followTickSequenceMerge);
     }
 }

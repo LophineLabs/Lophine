@@ -14,8 +14,9 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Per-world overlay for keys marked {@code @ConfigInfo(isWorldConfig = true)}.
- * Missing world values fall back to the parent instance's live global default.
+ * Per-world copy of keys marked {@code @ConfigInfo(isWorldConfig = true)}.
+ * Runtime values live on the attached {@link WorldConfigHolder} snapshot:
+ * global defaults, then this world's file overrides.
  * GUI submit does not add keys that still match that global default.
  * Keys already stored for a world stay in the overlay, including after they are set back to the default.
  */
@@ -25,6 +26,7 @@ public class WorldConfigInstance {
     private final File configFile;
     private Map<String, Object> overrides;
     private CommentedFileConfig file;
+    private WorldConfigHolder holder;
 
     private WorldConfigInstance(@NotNull ConfigsInstance parent, @NotNull String worldName, @NotNull File configFile) {
         this.parent = parent;
@@ -45,6 +47,10 @@ public class WorldConfigInstance {
         File dimensionConfig = new File(worldFolder, "dimension_config");
         File systemFolder = new File(dimensionConfig, parent.getBaseConfigFolder().getName());
         return new File(systemFolder, parent.getName() + "_world_config.toml");
+    }
+
+    void attach(@NotNull WorldConfigHolder holder) {
+        this.holder = holder;
     }
 
     public String worldName() {
@@ -82,6 +88,7 @@ public class WorldConfigInstance {
         try {
             stage(key, value, true);
             persistOverrides();
+            publish();
             return true;
         } catch (Exception e) {
             parent.logger.error("Failed to set world config {} for {}", key, worldName, e);
@@ -109,11 +116,13 @@ public class WorldConfigInstance {
             }
         }
         persistOverrides();
+        publish();
     }
 
     public void reset(String key) {
         dropOverride(key);
         persistOverrides();
+        publish();
     }
 
     public void save() {
@@ -126,20 +135,41 @@ public class WorldConfigInstance {
     public void reload() {
         overrides = null;
         closeFile();
-        if (!configFile.exists()) {
-            return;
-        }
-        if (configFile.length() == 0) {
+        if (configFile.exists() && configFile.length() > 0) {
+            ensureFile();
+            loadOverrides();
+            closeFile();
+        } else if (configFile.exists() && configFile.length() == 0) {
             deleteFileIfPresent();
-            return;
         }
-        ensureFile();
-        loadOverrides();
-        closeFile();
     }
 
     public void close() {
         closeFile();
+    }
+
+    void applyOverridesTo(Object[] snapshot) {
+        Map<String, Object> map = overrides;
+        if (map == null || map.isEmpty()) {
+            return;
+        }
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            WorldValues.Key<?> key = WorldValues.keyOf(parent.getName(), entry.getKey());
+            if (key == null) {
+                continue;
+            }
+            int index = key.index;
+            if (index >= 0 && index < snapshot.length) {
+                snapshot[index] = entry.getValue();
+            }
+        }
+    }
+
+    private void publish() {
+        WorldConfigHolder attached = holder;
+        if (attached != null) {
+            attached.rebuildSnapshot();
+        }
     }
 
     private void stage(String key, Object value, boolean explicit) throws Exception {

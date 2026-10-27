@@ -12,16 +12,18 @@ import org.jetbrains.annotations.Nullable;
 public class TripwireBehaviorConfig {
     @ConfigInfo(name = "enabled", isWorldConfig = true)
     public static boolean enabled = false;
+    public static final WorldValues.Key<Boolean> ENABLED = WorldValues.key();
 
     @ConfigInfo(name = "behavior_mode", isWorldConfig = true)
     public static EnumTripwireBehavior behaviorMode = EnumTripwireBehavior.VANILLA21;
+    public static final WorldValues.Key<EnumTripwireBehavior> BEHAVIOR_MODE = WorldValues.key();
 
     public static boolean enabled() {
         return enabled(null);
     }
 
     public static boolean enabled(@Nullable Level level) {
-        return WorldValues.get(level, enabled);
+        return WorldValues.get(level, ENABLED, enabled);
     }
 
     public static EnumTripwireBehavior behaviorMode() {
@@ -29,6 +31,6 @@ public class TripwireBehaviorConfig {
     }
 
     public static EnumTripwireBehavior behaviorMode(@Nullable Level level) {
-        return WorldValues.get(level, behaviorMode);
+        return WorldValues.get(level, BEHAVIOR_MODE, behaviorMode);
     }
 }
