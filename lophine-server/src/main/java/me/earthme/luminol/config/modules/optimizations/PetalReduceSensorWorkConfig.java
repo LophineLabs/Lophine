@@ -7,8 +7,8 @@ import me.earthme.luminol.config.WorldValues;
 
 @ConfigClassInfo(category = EnumConfigCategory.OPTIMIZATIONS, name = "reduce_sensor_work")
 public class PetalReduceSensorWorkConfig {
-    @ConfigInfo(name = "enabled", isWorldConfig = true)
+    @ConfigInfo(name = "enabled")
     public static final WorldValues.Key<Boolean> enabled = WorldValues.key(true);
-    @ConfigInfo(name = "delay_ticks", isWorldConfig = true)
+    @ConfigInfo(name = "delay_ticks")
     public static final WorldValues.Key<Integer> delayTicks = WorldValues.key(10);
 }

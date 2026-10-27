@@ -14,7 +14,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Per-world copy of keys marked {@code @ConfigInfo(isWorldConfig = true)}.
+ * Per-world copy of keys stored as {@link WorldValues.Key}.
  * Runtime values live on the attached {@link WorldConfigHolder} snapshot:
  * global defaults, then this world's file overrides.
  * GUI submit does not add keys that still match that global default.

@@ -11,6 +11,6 @@ import me.earthme.luminol.config.WorldValues;
  */
 @ConfigClassInfo(category = EnumConfigCategory.EXPERIMENT, name = "redstone")
 public class RedStoneConfig {
-    @ConfigInfo(name = "old-block-remove-behaviour", isWorldConfig = true)
+    @ConfigInfo(name = "old-block-remove-behaviour")
     public static final WorldValues.Key<Boolean> oldBlockRemoveBehaviour = WorldValues.key(false);
 }

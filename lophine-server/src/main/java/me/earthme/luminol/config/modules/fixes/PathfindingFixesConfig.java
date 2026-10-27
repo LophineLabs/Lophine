@@ -7,8 +7,8 @@ import me.earthme.luminol.config.WorldValues;
 
 @ConfigClassInfo(category = EnumConfigCategory.FIXES, name = "pathfinding_fixes")
 public class PathfindingFixesConfig {
-    @ConfigInfo(name = "break_down_pathfinding_when_out_of_region", isWorldConfig = true)
+    @ConfigInfo(name = "break_down_pathfinding_when_out_of_region")
     public static final WorldValues.Key<Boolean> breakDownPathfindingWhenOutOfRegion = WorldValues.key(false);
-    @ConfigInfo(name = "do_not_pathfind_to_not_owned_targets", isWorldConfig = true)
+    @ConfigInfo(name = "do_not_pathfind_to_not_owned_targets")
     public static final WorldValues.Key<Boolean> doNotPathfindToNotOwnedTargets = WorldValues.key(false);
 }

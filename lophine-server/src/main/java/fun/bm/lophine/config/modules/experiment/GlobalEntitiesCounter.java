@@ -11,7 +11,7 @@ import me.earthme.luminol.config.WorldValues;
 @ConfigClassInfo(name = "global_entities_counter", category = EnumConfigCategory.EXPERIMENT)
 public class GlobalEntitiesCounter {
     @DoNotLoad(when = EnumLoadType.RELOAD)
-    @ConfigInfo(name = "version", isWorldConfig = true)
+    @ConfigInfo(name = "version")
     public static final WorldValues.Key<GlobalEntitiesCounterType> type = WorldValues.key(GlobalEntitiesCounterType.DISABLED);
 
     public static boolean isEnabled() {

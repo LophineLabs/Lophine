@@ -7,6 +7,6 @@ import me.earthme.luminol.config.WorldValues;
 
 @ConfigClassInfo(category = EnumConfigCategory.FIXES, name = "item_multitask")
 public class ItemMultitaskConfig {
-    @ConfigInfo(name = "enabled", isWorldConfig = true)
+    @ConfigInfo(name = "enabled")
     public static final WorldValues.Key<Boolean> enabled = WorldValues.key(false);
 }

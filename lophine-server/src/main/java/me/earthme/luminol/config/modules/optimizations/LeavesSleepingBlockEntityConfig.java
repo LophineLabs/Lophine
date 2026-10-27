@@ -9,7 +9,7 @@ import me.earthme.luminol.config.WorldValues;
 
 @ConfigClassInfo(category = EnumConfigCategory.OPTIMIZATIONS, name = "lithium_sleeping_block_entity")
 public class LeavesSleepingBlockEntityConfig {
-    @ConfigInfo(name = "enabled", isWorldConfig = true)
+    @ConfigInfo(name = "enabled")
     @DoNotLoad(when = EnumLoadType.RELOAD)
     public static final WorldValues.Key<Boolean> enabled = WorldValues.key(true);
 }

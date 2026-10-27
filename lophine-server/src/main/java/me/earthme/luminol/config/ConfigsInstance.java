@@ -45,7 +45,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     private final String pack;          // Used to find all classes
     private final ConfigsInstanceHooks hooks;
     /**
-     * Fields marked {@code isWorldConfig}. {@code null} means this instance does not
+     * Fields typed as {@link WorldValues.Key}. {@code null} means this instance does not
      * keep a per-level copy of those keys.
      */
     private final Map<String, Field> worldConfigFields;
@@ -383,9 +383,9 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         return category;
     }
 
-    private void applyFieldComment(String fullConfigKeyName, ConfigInfo configInfo) {
+    private void applyFieldComment(String fullConfigKeyName, Field field) {
         String comments = ServerI18nUtil.getLocalizedText(name + "." + fullConfigKeyName + ".comment");
-        if (configInfo != null && configInfo.isWorldConfig()) {
+        if (isWorldValueField(field)) {
             String worldHint = ServerI18nUtil.getLocalizedText("luminol.config.file.is_world_config");
             if (!worldHint.isBlank()) {
                 comments = comments.isBlank() ? worldHint : comments + "\n" + worldHint;
@@ -452,7 +452,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         }
         boolean removed = getConfigClassInfo(singleConfigModule).category() == EnumConfigCategory.REMOVED;
 
-        if (worldConfigFields != null && configInfo.isWorldConfig() && !removed && !skipLoad) {
+        if (worldConfigFields != null && isWorldValueField(field) && !removed) {
             worldConfigFields.put(fullConfigKeyName, field);
             Object live = field.get(null);
             if (live instanceof WorldValues.Key<?> key) {
@@ -531,7 +531,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
             throw new UnsupportedOperationException("Config " + configInfo.name() + "tried to add an null default value!");
         }
 
-        applyFieldComment(fullConfigKeyName, configInfo);
+        applyFieldComment(fullConfigKeyName, field);
 
         configFileInstance.add(fullConfigKeyName, currentValue);
     }
@@ -572,7 +572,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                         removeConfig(oldConfigKeyName, transformedConfig.directory());
                     }
 
-                    applyFieldComment(fullConfigKeyName, field.getAnnotation(ConfigInfo.class));
+                    applyFieldComment(fullConfigKeyName, field);
 
                     if (!removed && configFileInstance.get(fullConfigKeyName) != null) {
                         break;
@@ -614,7 +614,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         }
 
         if (!keepComments) {
-            applyFieldComment(fullConfigKeyName, configInfo);
+            applyFieldComment(fullConfigKeyName, field);
         }
 
         // Store suggestions for command completion
@@ -966,10 +966,14 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         if (!Modifier.isStatic(modifiers)) {
             return false;
         }
-        if (field.getType() == WorldValues.Key.class) {
+        if (isWorldValueField(field)) {
             return Modifier.isFinal(modifiers);
         }
         return !Modifier.isFinal(modifiers);
+    }
+
+    private static boolean isWorldValueField(Field field) {
+        return field != null && field.getType() == WorldValues.Key.class;
     }
 
     private static Object readConfigValue(Field field) throws IllegalAccessException {
@@ -1092,7 +1096,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     /**
      * Resolve a world-config key for {@code level} from that level's copy.
      * Missing world values fall back to the global default.
-     * Keys without {@code isWorldConfig} always use the global value.
+     * Keys that are not {@link WorldValues.Key} fields always use the global value.
      */
     @SuppressWarnings("unchecked")
     public <T> T getForWorld(@Nullable net.minecraft.world.level.Level level, String key) {

@@ -8,9 +8,9 @@ import me.earthme.luminol.enums.EnumTripwireBehavior;
 
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "tripwire_dupe")
 public class TripwireBehaviorConfig {
-    @ConfigInfo(name = "enabled", isWorldConfig = true)
+    @ConfigInfo(name = "enabled")
     public static final WorldValues.Key<Boolean> enabled = WorldValues.key(false);
 
-    @ConfigInfo(name = "behavior_mode", isWorldConfig = true)
+    @ConfigInfo(name = "behavior_mode")
     public static final WorldValues.Key<EnumTripwireBehavior> behaviorMode = WorldValues.key(EnumTripwireBehavior.VANILLA21);
 }

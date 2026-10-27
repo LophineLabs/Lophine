@@ -13,27 +13,27 @@ import org.jetbrains.annotations.Nullable;
 
 @ConfigClassInfo(name = "portal_rate_limit", category = EnumConfigCategory.FUNCTION)
 public class PortalRateLimiterConfig {
-    @ConfigInfo(name = "enable", isWorldConfig = true)
+    @ConfigInfo(name = "enable")
     @DoNotLoad(when = EnumLoadType.RELOAD)
     public static final WorldValues.Key<Boolean> enabled = WorldValues.key(false);
 
-    @ConfigInfo(name = "maximum_portal_teleports_per_tick", isWorldConfig = true)
+    @ConfigInfo(name = "maximum_portal_teleports_per_tick")
     @DoNotLoad(when = EnumLoadType.RELOAD)
     public static final WorldValues.Key<Integer> maxPortalTeleportsPerTick = WorldValues.key(200);
 
-    @ConfigInfo(name = "maximum_portal_teleports_per_tick_expression", isWorldConfig = true)
+    @ConfigInfo(name = "maximum_portal_teleports_per_tick_expression")
     @DoNotLoad(when = EnumLoadType.RELOAD)
     public static final WorldValues.Key<String> maxPortalTeleportsExpression = WorldValues.key("50 * (1 + sqrt(e/1000) + c/200 + p/5)");
 
-    @ConfigInfo(name = "destination_backpressure_enabled", isWorldConfig = true)
+    @ConfigInfo(name = "destination_backpressure_enabled")
     @DoNotLoad(when = EnumLoadType.RELOAD)
     public static final WorldValues.Key<Boolean> destinationBackpressureEnabled = WorldValues.key(true);
 
-    @ConfigInfo(name = "destination_tokens_per_tick", isWorldConfig = true)
+    @ConfigInfo(name = "destination_tokens_per_tick")
     @DoNotLoad(when = EnumLoadType.RELOAD)
     public static final WorldValues.Key<Integer> portalIngressTokensPerTick = WorldValues.key(16);
 
-    @ConfigInfo(name = "destination_burst_capacity", isWorldConfig = true)
+    @ConfigInfo(name = "destination_burst_capacity")
     @DoNotLoad(when = EnumLoadType.RELOAD)
     public static final WorldValues.Key<Integer> portalIngressBurstCapacity = WorldValues.key(64);
 

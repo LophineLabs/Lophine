@@ -7,24 +7,24 @@ import me.earthme.luminol.config.WorldValues;
 
 @ConfigClassInfo(category = EnumConfigCategory.FUNCTION, name = "old-feature")
 public class OldFeatureConfig {
-    @ConfigInfo(name = "spawn_invulnerable_time", isWorldConfig = true)
+    @ConfigInfo(name = "spawn_invulnerable_time")
     public static final WorldValues.Key<Boolean> spawnInvulnerableTime = WorldValues.key(false);
 
-    @ConfigInfo(name = "old_zombie_reinforcement", isWorldConfig = true)
+    @ConfigInfo(name = "old_zombie_reinforcement")
     public static final WorldValues.Key<Boolean> oldZombieReinforcement = WorldValues.key(false);
 
-    @ConfigInfo(name = "old_leader_zombie_health", isWorldConfig = true)
+    @ConfigInfo(name = "old_leader_zombie_health")
     public static final WorldValues.Key<Boolean> oldLeaderZombieHealth = WorldValues.key(false);
 
-    @ConfigInfo(name = "old_explosion_damage_calculator", isWorldConfig = true)
+    @ConfigInfo(name = "old_explosion_damage_calculator")
     public static final WorldValues.Key<Boolean> oldExplosionDamageCalculator = WorldValues.key(false);
 
-    @ConfigInfo(name = "old_raid_behavior", isWorldConfig = true)
+    @ConfigInfo(name = "old_raid_behavior")
     public static final WorldValues.Key<Boolean> oldRaidBehavior = WorldValues.key(false);
 
-    @ConfigInfo(name = "villager-void-trade", isWorldConfig = true)
+    @ConfigInfo(name = "villager-void-trade")
     public static final WorldValues.Key<Boolean> villagerVoidTrade = WorldValues.key(false);
 
-    @ConfigInfo(name = "should-generate-end-ring", isWorldConfig = true)
+    @ConfigInfo(name = "should-generate-end-ring")
     public static final WorldValues.Key<Boolean> shouldGenerateEndRing = WorldValues.key(false);
 }

@@ -7,6 +7,6 @@ import me.earthme.luminol.config.WorldValues;
 
 @ConfigClassInfo(category = EnumConfigCategory.MISC, name = "item-entity")
 public class ItemEntityConfig {
-    @ConfigInfo(name = "follow-tick-sequence-merge", isWorldConfig = true)
+    @ConfigInfo(name = "follow-tick-sequence-merge")
     public static final WorldValues.Key<Boolean> followTickSequenceMerge = WorldValues.key(false);
 }

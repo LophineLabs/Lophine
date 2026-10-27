@@ -7,6 +7,6 @@ import me.earthme.luminol.config.WorldValues;
 
 @ConfigClassInfo(name = "poi_range_fixes", category = EnumConfigCategory.FIXES)
 public class POIRangeFixes {
-    @ConfigInfo(name = "do_not_compete_poi_if_unloaded", isWorldConfig = true)
+    @ConfigInfo(name = "do_not_compete_poi_if_unloaded")
     public static final WorldValues.Key<Boolean> doNotCompetePOIIfUnloaded = WorldValues.key(false);
 }

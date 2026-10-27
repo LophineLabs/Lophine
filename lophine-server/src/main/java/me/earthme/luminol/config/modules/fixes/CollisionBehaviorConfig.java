@@ -8,6 +8,6 @@ import me.earthme.luminol.enums.EnumCollisionBehaviorMode;
 
 @ConfigClassInfo(category = EnumConfigCategory.FIXES, name = "collision_behavior")
 public class CollisionBehaviorConfig {
-    @ConfigInfo(name = "mode", isWorldConfig = true)
+    @ConfigInfo(name = "mode")
     public static final WorldValues.Key<EnumCollisionBehaviorMode> behaviorMode = WorldValues.key(EnumCollisionBehaviorMode.BLOCK_SHAPE_VANILLA);
 }

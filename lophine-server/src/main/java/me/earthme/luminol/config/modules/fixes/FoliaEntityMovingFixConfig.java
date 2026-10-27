@@ -7,9 +7,9 @@ import me.earthme.luminol.config.WorldValues;
 
 @ConfigClassInfo(category = EnumConfigCategory.FIXES, name = "fix_high_velocity_issue")
 public class FoliaEntityMovingFixConfig {
-    @ConfigInfo(name = "enabled", isWorldConfig = true)
+    @ConfigInfo(name = "enabled")
     public static final WorldValues.Key<Boolean> enabled = WorldValues.key(false);
 
-    @ConfigInfo(name = "warn_on_detected", isWorldConfig = true)
+    @ConfigInfo(name = "warn_on_detected")
     public static final WorldValues.Key<Boolean> warnOnDetected = WorldValues.key(false);
 }

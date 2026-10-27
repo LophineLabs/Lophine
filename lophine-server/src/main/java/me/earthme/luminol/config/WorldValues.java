@@ -21,9 +21,6 @@ public final class WorldValues {
     private static final Map<String, Key<?>> BY_ID = new ConcurrentHashMap<>();
     private static final AtomicInteger NEXT_INDEX = new AtomicInteger();
 
-    private WorldValues() {
-    }
-
     public static <T> Key<T> key(T global) {
         Key<T> key = new Key<>(global);
         synchronized (WorldValues.class) {

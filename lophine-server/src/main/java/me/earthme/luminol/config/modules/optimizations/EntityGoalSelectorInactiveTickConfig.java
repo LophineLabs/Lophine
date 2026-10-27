@@ -7,6 +7,6 @@ import me.earthme.luminol.config.WorldValues;
 
 @ConfigClassInfo(category = EnumConfigCategory.OPTIMIZATIONS, name = "throttle_goal_selector_tick_in_inactive_tick")
 public class EntityGoalSelectorInactiveTickConfig {
-    @ConfigInfo(name = "enabled", isWorldConfig = true)
+    @ConfigInfo(name = "enabled")
     public static final WorldValues.Key<Boolean> enabled = WorldValues.key(false);
 }
