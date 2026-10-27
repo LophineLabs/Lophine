@@ -60,7 +60,7 @@ public class ConfigCommandDialog {
     }
 
     private static WorldConfigInstance resolveWorldConfig(Player player, ConfigsInstance config, ServerLevel level) {
-        if (!config.usesWorldConfig()) {
+        if (!config.isWorldConfig()) {
             player.sendSystemMessage(Component.literal(ServerI18nUtil.getLocalizedText("general.command.config.dimension.unsupported")));
             return null;
         }
@@ -205,7 +205,7 @@ public class ConfigCommandDialog {
             try {
                 int id = Integer.parseInt(entry.getKey());
                 String path = config.getConfigPathById(id);
-                if (path != null && config.isWorldConfigKey(path)) {
+                if (path != null && config.isWorldConfig(path)) {
                     updates.put(path, entry.getValue());
                 }
             } catch (Exception _) {

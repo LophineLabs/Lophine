@@ -35,7 +35,7 @@ public class WorldConfigInstance {
     }
 
     static @Nullable WorldConfigInstance load(@NotNull ConfigsInstance parent, @NotNull String worldName, @NotNull File worldFolder) {
-        if (!parent.usesWorldConfig()) {
+        if (!parent.isWorldConfig()) {
             return null;
         }
         WorldConfigInstance instance = new WorldConfigInstance(parent, worldName, resolveFile(parent, worldFolder));
@@ -82,7 +82,7 @@ public class WorldConfigInstance {
     }
 
     public boolean set(String key, Object value) {
-        if (!parent.isWorldConfigKey(key)) {
+        if (!parent.isWorldConfig(key)) {
             return false;
         }
         try {
@@ -106,7 +106,7 @@ public class WorldConfigInstance {
             return;
         }
         for (Map.Entry<String, ?> entry : values.entrySet()) {
-            if (!parent.isWorldConfigKey(entry.getKey())) {
+            if (!parent.isWorldConfig(entry.getKey())) {
                 continue;
             }
             try {

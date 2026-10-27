@@ -112,7 +112,7 @@ public class ConfigManager {
     public static WorldConfigHolder loadWorldConfigs(@NotNull String worldName, @NotNull File worldFolder) {
         Map<String, WorldConfigInstance> instances = new LinkedHashMap<>();
         for (ConfigsInstance config : configfiles.values()) {
-            if (!config.usesWorldConfig()) {
+            if (!config.isWorldConfig()) {
                 continue;
             }
             WorldConfigInstance instance = WorldConfigInstance.load(config, worldName, worldFolder);
@@ -152,7 +152,7 @@ public class ConfigManager {
     }
 
     static void reloadWorldOverlays(ConfigsInstance parent) {
-        if (!parent.usesWorldConfig()) {
+        if (!parent.isWorldConfig()) {
             return;
         }
         for (WorldConfigHolder holder : worldHolders.values()) {

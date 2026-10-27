@@ -90,6 +90,22 @@ public interface LuminolConfigsInstance {
     <T> T getConfigOrigin(String key);
 
     /**
+     * Whether this instance keeps a per-level copy of world-config keys.
+     * Matches the {@code isWorldConfig} flag passed to {@link LuminolConfigBuilder}.
+     *
+     * @return {@code true} when per-world copies are enabled for this instance
+     */
+    boolean isWorldConfig();
+
+    /**
+     * Whether {@code key} is stored as a per-world value on this instance.
+     *
+     * @param key the configuration key (dot-separated path)
+     * @return {@code true} when the key has a per-level copy
+     */
+    boolean isWorldConfig(String key);
+
+    /**
      * Gets available suggestions for a configuration key
      *
      * @param key the configuration key

@@ -178,7 +178,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         allInstanced.replaceAll((_, _) -> null);
         setupLatch();
         saveConfigs();
-        if (usesWorldConfig()) {
+        if (isWorldConfig()) {
             ConfigManager.refreshWorldSnapshots();
         }
     }
@@ -230,7 +230,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                 }
             }
         }
-        if (usesWorldConfig()) {
+        if (isWorldConfig()) {
             ConfigManager.refreshWorldSnapshots();
         }
     }
@@ -890,7 +890,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                     stagedConfigMap.remove(key);
                     invokeNeedRunMethods(module, EnumRunnableType.BEFORE_FINAL_LOAD, null);
                     invokeNeedRunMethods(module, EnumRunnableType.ON_LOADED, null);
-                    if (isWorldConfigKey(key)) {
+                    if (isWorldConfig(key)) {
                         ConfigManager.refreshWorldSnapshots();
                     }
                 }
@@ -1050,11 +1050,13 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         return configFileInstance.get(key);
     }
 
-    public boolean usesWorldConfig() {
+    @Override
+    public boolean isWorldConfig() {
         return worldConfigFields != null;
     }
 
-    public boolean isWorldConfigKey(String key) {
+    @Override
+    public boolean isWorldConfig(String key) {
         return worldConfigFields != null && worldConfigFields.containsKey(key);
     }
 
@@ -1079,7 +1081,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     public List<String> getSingleWorldConfig(String key) {
         List<String> list = new ArrayList<>();
         for (String check : getSingleConfig(key)) {
-            if (isWorldConfigKey(check)) {
+            if (isWorldConfig(check)) {
                 list.add(check);
             }
         }
@@ -1100,7 +1102,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
      */
     @SuppressWarnings("unchecked")
     public <T> T getForWorld(@Nullable net.minecraft.world.level.Level level, String key) {
-        if (level != null && isWorldConfigKey(key)) {
+        if (level != null && isWorldConfig(key)) {
             WorldConfigHolder holder = level.luminolWorldConfig();
             if (holder != null) {
                 return holder.get(this.name, key);
@@ -1277,7 +1279,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                             }
                         }
                     }
-                    case EnumConfigData.CAN_DEFINED_BY_WORLD -> dataMap.put(feature, isWorldConfigKey(key));
+                    case EnumConfigData.CAN_DEFINED_BY_WORLD -> dataMap.put(feature, isWorldConfig(key));
                 }
             }
             map.put(key, dataMap);

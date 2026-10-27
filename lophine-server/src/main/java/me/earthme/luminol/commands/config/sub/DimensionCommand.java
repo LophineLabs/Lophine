@@ -190,7 +190,7 @@ public class DimensionCommand extends ConfigSubcommand {
         protected boolean execute(@NotNull CommandContext context) {
             String path = context.getArgumentOrDefault(SetPathArgument.class, "");
             CommandSender sender = context.getSender();
-            if (!parent.config.isWorldConfigKey(path)) {
+            if (!parent.config.isWorldConfig(path)) {
                 sender.sendMessage(
                         Component.text(ServerI18nUtil.getLocalizedText("general.command.config.set.error.hint"))
                                 .color(TextColor.color(255, 0, 0))
@@ -221,7 +221,7 @@ public class DimensionCommand extends ConfigSubcommand {
         @Override
         protected CompletableFuture<Suggestions> getSuggestions(@NotNull CommandContext context, @NotNull SuggestionsBuilder builder) {
             String path = context.getArgument(SetPathArgument.class);
-            if (!parent.config.isWorldConfigKey(path)) {
+            if (!parent.config.isWorldConfig(path)) {
                 return builder
                         .suggest(ServerI18nUtil.getLocalizedText("general.command.config.set.error.main"),
                                 net.minecraft.network.chat.Component.literal(ServerI18nUtil.getLocalizedText("general.command.config.set.error.hint")))
@@ -305,7 +305,7 @@ public class DimensionCommand extends ConfigSubcommand {
         protected boolean execute(@NotNull CommandContext context) {
             String path = context.getArgumentOrDefault(ResetPathArgument.class, "");
             CommandSender sender = context.getSender();
-            if (!parent.config.isWorldConfigKey(path)) {
+            if (!parent.config.isWorldConfig(path)) {
                 sender.sendMessage(
                         Component.text(ServerI18nUtil.getLocalizedText("general.command.config.set.error.hint"))
                                 .color(TextColor.color(255, 0, 0))
