@@ -15,16 +15,4 @@ public class ForceCleanupEntityBrainMemoryConfig {
 
     @ConfigInfo(name = "enabled_for_position_tracker", isWorldConfig = true)
     public static final WorldValues.Key<Boolean> enabledForPositionTracker = WorldValues.key(false);
-
-    public static boolean enabledForEntity() {
-        return enabledForEntity.get();
-    }
-
-    public static boolean enabledForBlockPos() {
-        return enabledForBlockPos.get();
-    }
-
-    public static boolean enabledForPositionTracker() {
-        return enabledForPositionTracker.get();
-    }
 }

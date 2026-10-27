@@ -11,12 +11,4 @@ public class ProjectileChunkReduceConfig {
     public static final WorldValues.Key<Integer> maxProjectileLoadsPerTick = WorldValues.key(0);
     @ConfigInfo(name = "max-loads-per-projectile", isWorldConfig = true)
     public static final WorldValues.Key<Integer> maxProjectileLoadsPerProjectile = WorldValues.key(0);
-
-    public static int maxProjectileLoadsPerTick() {
-        return maxProjectileLoadsPerTick.get();
-    }
-
-    public static int maxProjectileLoadsPerProjectile() {
-        return maxProjectileLoadsPerProjectile.get();
-    }
 }

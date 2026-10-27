@@ -9,7 +9,7 @@ Original patch: https://github.com/pufferfish-gg/Pufferfish/blob/ver/1.21/puffer
 Original license(GPL-3.0): https://github.com/pufferfish-gg/Pufferfish/blob/ver/1.21/PATCH-LICENSE
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 662cf19508ff3b807f78f7b9084f943cf4cefcbe..1b07501c063eefb7336db88ab210023d69d89af5 100644
+index d50a5a729698ef8b9338c1b3662e68ae1d8990ae..bb1f0d213ac891b304634be81fea792fb2412767 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -333,6 +333,10 @@ public final class RegionizedWorldData {
@@ -24,7 +24,7 @@ index 662cf19508ff3b807f78f7b9084f943cf4cefcbe..1b07501c063eefb7336db88ab210023d
      private static final Connection[] EMPTY_CONNECTION_ARRAY = new Connection[0];
      private final ReferenceList<Connection> connections = new ReferenceList<>(EMPTY_CONNECTION_ARRAY);
 diff --git a/net/minecraft/world/entity/projectile/Projectile.java b/net/minecraft/world/entity/projectile/Projectile.java
-index 937d06dbb1826ac053bfb92b58d18e3e1e9841c1..a1e702e66961420803a6da6de03b50e42bbd1b92 100644
+index 937d06dbb1826ac053bfb92b58d18e3e1e9841c1..9d12c9b001c33694c925585e0bc77fff26060653 100644
 --- a/net/minecraft/world/entity/projectile/Projectile.java
 +++ b/net/minecraft/world/entity/projectile/Projectile.java
 @@ -85,6 +85,38 @@ public abstract class Projectile extends Entity implements TraceableEntity {
@@ -50,8 +50,8 @@ index 937d06dbb1826ac053bfb92b58d18e3e1e9841c1..a1e702e66961420803a6da6de03b50e4
 +        if (previousX != newX || previousZ != newZ) {
 +            boolean isLoaded = ((net.minecraft.server.level.ServerChunkCache) this.level().getChunkSource()).getChunkAtIfLoadedImmediately(newX, newZ) != null;
 +            if (!isLoaded) {
-+                if (currRegionData.pufferfish$loadedThisTick > me.earthme.luminol.config.modules.optimizations.ProjectileChunkReduceConfig.maxProjectileLoadsPerTick()) {
-+                    if (++this.loadedLifetime > me.earthme.luminol.config.modules.optimizations.ProjectileChunkReduceConfig.maxProjectileLoadsPerProjectile()) {
++                if (currRegionData.pufferfish$loadedThisTick > me.earthme.luminol.config.modules.optimizations.ProjectileChunkReduceConfig.maxProjectileLoadsPerTick.get()) {
++                    if (++this.loadedLifetime > me.earthme.luminol.config.modules.optimizations.ProjectileChunkReduceConfig.maxProjectileLoadsPerProjectile.get()) {
 +                        this.discard();
 +                    }
 +                    return;

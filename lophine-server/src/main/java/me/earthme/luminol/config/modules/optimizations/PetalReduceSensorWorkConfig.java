@@ -11,12 +11,4 @@ public class PetalReduceSensorWorkConfig {
     public static final WorldValues.Key<Boolean> enabled = WorldValues.key(true);
     @ConfigInfo(name = "delay_ticks", isWorldConfig = true)
     public static final WorldValues.Key<Integer> delayTicks = WorldValues.key(10);
-
-    public static boolean enabled() {
-        return enabled.get();
-    }
-
-    public static int delayTicks() {
-        return delayTicks.get();
-    }
 }

@@ -17,24 +17,4 @@ public class RayTrackingEntityTrackerConfig {
     public static final WorldValues.Key<Integer> tracingDistance = WorldValues.key(48);
     @ConfigInfo(name = "hitbox_limit", isWorldConfig = true)
     public static final WorldValues.Key<Integer> hitboxLimit = WorldValues.key(50);
-
-    public static boolean enabled() {
-        return enabled.get();
-    }
-
-    public static boolean skipMarkerArmorStands() {
-        return skipMarkerArmorStands.get();
-    }
-
-    public static int checkIntervalMs() {
-        return checkIntervalMs.get();
-    }
-
-    public static int tracingDistance() {
-        return tracingDistance.get();
-    }
-
-    public static int hitboxLimit() {
-        return hitboxLimit.get();
-    }
 }

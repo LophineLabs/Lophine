@@ -8,7 +8,7 @@ This is a part of Leaf(https://github.com/Winds-Studio/Leaf/blob/d0ed97cf45dfa94
 Original license: https://github.com/Winds-Studio/Leaf/blob/d0ed97cf45dfa94f686ef32f0eea1ec7323f78d5/LICENSE.md
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index b41c27840bad8b11cc6fa5d2e907e673319ee592..662cf19508ff3b807f78f7b9084f943cf4cefcbe 100644
+index b2e3fb3d92f15f9f2feca9a330a663824a1cc4d9..d50a5a729698ef8b9338c1b3662e68ae1d8990ae 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -452,6 +452,7 @@ public final class RegionizedWorldData {

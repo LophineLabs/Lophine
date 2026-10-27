@@ -12,12 +12,4 @@ public class FoliaEntityMovingFixConfig {
 
     @ConfigInfo(name = "warn_on_detected", isWorldConfig = true)
     public static final WorldValues.Key<Boolean> warnOnDetected = WorldValues.key(false);
-
-    public static boolean enabled() {
-        return enabled.get();
-    }
-
-    public static boolean warnOnDetected() {
-        return warnOnDetected.get();
-    }
 }

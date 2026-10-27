@@ -8,7 +8,7 @@ As part of: Gale (https://github.com/GaleMC/Gale/blob/276e903b2688f23b19bdc8d493
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/io/papermc/paper/entity/activation/ActivationRange.java b/io/papermc/paper/entity/activation/ActivationRange.java
-index b4f9f41a56bbc40e90217c0344c070ebdd08c119..ceb6860187abfc98e6808c0b0e06bc9edba5f4fe 100644
+index b4f9f41a56bbc40e90217c0344c070ebdd08c119..19a6aab9b5ea2d015af3d340ca1d9c503220674a 100644
 --- a/io/papermc/paper/entity/activation/ActivationRange.java
 +++ b/io/papermc/paper/entity/activation/ActivationRange.java
 @@ -61,27 +61,39 @@ public final class ActivationRange {
@@ -44,7 +44,7 @@ index b4f9f41a56bbc40e90217c0344c070ebdd08c119..ceb6860187abfc98e6808c0b0e06bc9e
 +    private static final java.util.concurrent.ThreadLocalRandom wakeUpDurationRandom = java.util.concurrent.ThreadLocalRandom.current();
 +
 +    private static int getWakeUpDurationWithVariance(Entity entity, int wakeUpDuration) {
-+        double deviation = me.earthme.luminol.config.modules.optimizations.GaleVariableEntityWakeupConfig.entityWakeUpDurationRatioStandardDeviation();
++        double deviation = me.earthme.luminol.config.modules.optimizations.GaleVariableEntityWakeupConfig.entityWakeUpDurationRatioStandardDeviation.get();
 +        if (deviation <= 0) {
 +            return wakeUpDuration;
 +        }

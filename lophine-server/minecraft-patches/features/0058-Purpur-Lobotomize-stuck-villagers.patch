@@ -8,7 +8,7 @@ As part of: Purpur (https://github.com/PurpurMC/Purpur/blob/09f547de09fc5d886f18
 Licensed under: MIT (https://github.com/PurpurMC/Purpur/blob/09f547de09fc5d886f18f6d99ff389289766ec9d/LICENSE)
 
 diff --git a/net/minecraft/world/entity/npc/villager/Villager.java b/net/minecraft/world/entity/npc/villager/Villager.java
-index 086334694874fccaf7aad9d6d1dde78cfd961c3c..cf2f3df5a1f46fd9a51dda86a6ec175218a3ebcb 100644
+index 086334694874fccaf7aad9d6d1dde78cfd961c3c..e77919aabbd7fb9d0a834d8c6062aff9a7b8a36c 100644
 --- a/net/minecraft/world/entity/npc/villager/Villager.java
 +++ b/net/minecraft/world/entity/npc/villager/Villager.java
 @@ -187,6 +187,53 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
@@ -20,8 +20,8 @@ index 086334694874fccaf7aad9d6d1dde78cfd961c3c..cf2f3df5a1f46fd9a51dda86a6ec1752
 +    private int notLobotomizedCount = 0; // Purpur
 +
 +    private boolean checkLobotomized() {
-+        int interval = me.earthme.luminol.config.modules.optimizations.LobotomizeVillageConfig.villagerLobotomizeCheckInterval();
-+        boolean shouldCheckForTradeLocked = me.earthme.luminol.config.modules.optimizations.LobotomizeVillageConfig.villagerLobotomizeWaitUntilTradeLocked();
++        int interval = me.earthme.luminol.config.modules.optimizations.LobotomizeVillageConfig.villagerLobotomizeCheckInterval.get();
++        boolean shouldCheckForTradeLocked = me.earthme.luminol.config.modules.optimizations.LobotomizeVillageConfig.villagerLobotomizeWaitUntilTradeLocked.get();
 +        if (this.notLobotomizedCount > 3) {
 +            // check half as often if not lobotomized for the last 3+ consecutive checks
 +            interval *= 2;
@@ -75,7 +75,7 @@ index 086334694874fccaf7aad9d6d1dde78cfd961c3c..cf2f3df5a1f46fd9a51dda86a6ec1752
          ProfilerFiller profiler = Profiler.get();
          profiler.push("villagerBrain");
 +        // Purpur start
-+        if (me.earthme.luminol.config.modules.optimizations.LobotomizeVillageConfig.villagerLobotomizeEnabled()) {
++        if (me.earthme.luminol.config.modules.optimizations.LobotomizeVillageConfig.villagerLobotomizeEnabled.get()) {
 +            // treat as inactive if lobotomized
 +            inactive = inactive || checkLobotomized();
 +        } else {

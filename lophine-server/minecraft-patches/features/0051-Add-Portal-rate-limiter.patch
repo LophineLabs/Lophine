@@ -5,7 +5,7 @@ Subject: [PATCH] Add Portal rate limiter
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 88014b8c75cf4a804f11f6089ba0dbc5ad67db80..b41c27840bad8b11cc6fa5d2e907e673319ee592 100644
+index 88014b8c75cf4a804f11f6089ba0dbc5ad67db80..b2e3fb3d92f15f9f2feca9a330a663824a1cc4d9 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -154,6 +154,10 @@ public final class RegionizedWorldData {
@@ -43,7 +43,7 @@ index 88014b8c75cf4a804f11f6089ba0dbc5ad67db80..b41c27840bad8b11cc6fa5d2e907e673
 +    private int computePortalRateCap() {
 +        // expression mode is disabled
 +        if (this.portalRateCapExpression == null) {
-+            return me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.maxPortalTeleportsPerTick();
++            return me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.maxPortalTeleportsPerTick.get();
 +        }
 +
 +        final int tickingEntityCount = this.entityTickList.size();
@@ -58,7 +58,7 @@ index 88014b8c75cf4a804f11f6089ba0dbc5ad67db80..b41c27840bad8b11cc6fa5d2e907e673
 +        );
 +    }
 +    public boolean isPortalTeleportationOutOfRate() {
-+        if (!me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.enabled()) {
++        if (!me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.enabled.get()) {
 +            return false;
 +        }
 +
@@ -106,7 +106,7 @@ index 13961a5f94651cef262ab71bac635eeb9e6edf90..8ec2b23af03c257c5c00fc9dd064a7a0
          //this.isIteratingOverLevels = false; // Paper - Throw exception on world create while being ticked // Folia - region threading
  
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 7c239344d8c5b55cbccb620c37f654f8caaf12aa..f810d6f4b4c97544209d5f2a657073d28d3016ed 100644
+index f7946d66a513e681f28d6fd9f04722eff5c92cfe..2bf6024b1a903badc0de5883625fff615e8f1c12 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -1586,8 +1586,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -142,7 +142,7 @@ index 7c239344d8c5b55cbccb620c37f654f8caaf12aa..f810d6f4b4c97544209d5f2a657073d2
              }
              // Folia end - region threading
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 4806f0e8aecd9d675993915145ba8a4e12328c0d..32a3cb4bf34bb548452f7a79a292055ba215094e 100644
+index 1233d36a34459e58ca9f4f5a17b24ca9d467fb84..c7dbc3d78a36efdf86f1c8422e31e44b15852143 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -5076,6 +5076,31 @@ public abstract class Entity
@@ -150,7 +150,7 @@ index 4806f0e8aecd9d675993915145ba8a4e12328c0d..32a3cb4bf34bb548452f7a79a292055b
          }
          // Luminol end
 +        // Lophine start - destination-driven portal backpressure
-+        if (type == PortalType.NETHER && me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.destinationBackpressureEnabled()) {
++        if (type == PortalType.NETHER && me.earthme.luminol.config.modules.function.PortalRateLimiterConfig.destinationBackpressureEnabled.get()) {
 +            final double dimensionScale = net.minecraft.world.level.dimension.DimensionType.getTeleportationScale(this.level().dimensionType(), destination.dimensionType());
 +            final BlockPos approximateTarget = destination.getWorldBorder().clampToBounds(
 +                    this.getX() * dimensionScale, this.getY(), this.getZ() * dimensionScale

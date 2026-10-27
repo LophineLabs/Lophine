@@ -12,12 +12,4 @@ public class TeleportConfig {
 
     @ConfigInfo(name = "max_delay_compensation_ticks", isWorldConfig = true)
     public static final WorldValues.Key<Integer> maxDelayCompensationTicks = WorldValues.key(1);
-
-    public static boolean enableDelayCompensation() {
-        return enableDelayCompensation.get();
-    }
-
-    public static int maxDelayCompensationTicks() {
-        return maxDelayCompensationTicks.get();
-    }
 }

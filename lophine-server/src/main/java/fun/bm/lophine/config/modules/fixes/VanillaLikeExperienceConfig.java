@@ -9,8 +9,4 @@ import me.earthme.luminol.config.WorldValues;
 public class VanillaLikeExperienceConfig {
     @ConfigInfo(name = "enabled", isWorldConfig = true)
     public static final WorldValues.Key<Boolean> enabled = WorldValues.key(false);
-
-    public static boolean enabled() {
-        return enabled.get();
-    }
 }

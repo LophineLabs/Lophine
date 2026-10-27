@@ -279,7 +279,7 @@ public class EntitiesCounterUtil {
             return false;
         }
 
-        if (VanillaLikeExperienceConfig.enabled() || entity.level().paperConfig().entities.spawning.countAllMobsForSpawning) {
+        if (VanillaLikeExperienceConfig.enabled.get() || entity.level().paperConfig().entities.spawning.countAllMobsForSpawning) {
             return true;
         }
 

@@ -13,16 +13,4 @@ public class LobotomizeVillageConfig {
     public static final WorldValues.Key<Integer> villagerLobotomizeCheckInterval = WorldValues.key(100);
     @ConfigInfo(name = "wait_until_trade_locked", isWorldConfig = true)
     public static final WorldValues.Key<Boolean> villagerLobotomizeWaitUntilTradeLocked = WorldValues.key(false);
-
-    public static boolean villagerLobotomizeEnabled() {
-        return villagerLobotomizeEnabled.get();
-    }
-
-    public static int villagerLobotomizeCheckInterval() {
-        return villagerLobotomizeCheckInterval.get();
-    }
-
-    public static boolean villagerLobotomizeWaitUntilTradeLocked() {
-        return villagerLobotomizeWaitUntilTradeLocked.get();
-    }
 }

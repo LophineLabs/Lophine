@@ -5,7 +5,7 @@ Subject: [PATCH] Fix entity portal-teleport speed
 
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index efe3ba3cdada4a8713d4cae5c0e42e9475dd0240..73687681aa1fe81cc6fb01ab4d56e69710e42f03 100644
+index efe3ba3cdada4a8713d4cae5c0e42e9475dd0240..5952362d092618adfa418bedf4520005ab692dce 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -1504,7 +1504,65 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -38,7 +38,7 @@ index efe3ba3cdada4a8713d4cae5c0e42e9475dd0240..73687681aa1fe81cc6fb01ab4d56e697
 +                entity.losingTicks = 0; // reset losingTicks
 +                if (entity.teleportTickType == fun.bm.lophine.enums.EnumTeleportStage.SYNCING) entity.teleportTickType = fun.bm.lophine.enums.EnumTeleportStage.NORMAL;
 +            } else if (!(entity instanceof Player) && entity.teleportTickType == fun.bm.lophine.enums.EnumTeleportStage.STOP_TICKING) { // Luminol - portal teleport only
-+                if (fun.bm.lophine.config.modules.fixes.TeleportConfig.enableDelayCompensation() && entity.losingTicks < fun.bm.lophine.config.modules.fixes.TeleportConfig.maxDelayCompensationTicks()) {
++                if (fun.bm.lophine.config.modules.fixes.TeleportConfig.enableDelayCompensation.get() && entity.losingTicks < fun.bm.lophine.config.modules.fixes.TeleportConfig.maxDelayCompensationTicks.get()) {
 +                    entity.losingTicks++;
 +                }
 +                if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(entity)) {

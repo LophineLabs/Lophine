@@ -26,7 +26,7 @@ index 0f412551685a8ea76be3b389e0782e57d22bb87c..b6154f677943e22ecb6dfdd6f9b8f867
  
      @Override
 diff --git a/net/minecraft/world/entity/vehicle/boat/AbstractChestBoat.java b/net/minecraft/world/entity/vehicle/boat/AbstractChestBoat.java
-index ba043c55dacee3bff7077b5c2938fe750cf5fc1e..d46389c7a8737ee2d644e5a7d2daf154a82e952a 100644
+index 419679b5d5d01ff52b901fddf2e8c4aeabe85476..598108564b10698ddf05fff654f08e9f6ec88738 100644
 --- a/net/minecraft/world/entity/vehicle/boat/AbstractChestBoat.java
 +++ b/net/minecraft/world/entity/vehicle/boat/AbstractChestBoat.java
 @@ -167,6 +167,11 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
@@ -58,7 +58,7 @@ index 4e3d6b000ea80915e43093891da533dd69392f31..540027d5ce6db702e0065caf60aeac78
  
      @Override
 diff --git a/net/minecraft/world/level/block/entity/BlockEntity.java b/net/minecraft/world/level/block/entity/BlockEntity.java
-index 7578537d8d11623a82ead30d276a130da9931fbb..315cdba040de1e96a9d064e875f570d7e1b37e53 100644
+index d4cf4e9b39acce410bedf976fd8588347157ea3a..b5e422cccf56da5caa5136675b989d67d663f911 100644
 --- a/net/minecraft/world/level/block/entity/BlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BlockEntity.java
 @@ -228,6 +228,14 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo

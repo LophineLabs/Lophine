@@ -8,14 +8,14 @@ is for Anarchy servers or Crystal PVP servers this allows them to pvp
 without stopping the item mid animation.
 
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 4fa12dddbd3ae35656580f154d5ebc82f16daa14..a58a9318a3c9d43707a77dd7a95dc1bb2c237d6c 100644
+index 4fa12dddbd3ae35656580f154d5ebc82f16daa14..4bd34d1954898945c708fdf1cceb8bbbb639f3ae 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -2247,7 +2247,9 @@ public class ServerGamePacketListenerImpl
                                  this.player.sendSpawnProtectionMessage(pos);
                              } else if (this.awaitingPositionFromClient == null && (level.mayInteract(this.player, pos) || passthroughSignInteraction)) {
                                  // Paper end - Allow using signs inside spawn protection
-+                                 if (!me.earthme.luminol.config.modules.fixes.ItemMultitaskConfig.enabled()) { // Luminol - Add item multitask config
++                                 if (!me.earthme.luminol.config.modules.fixes.ItemMultitaskConfig.enabled.get()) { // Luminol - Add item multitask config
                                  this.player.stopUsingItem(); // CraftBukkit - SPIGOT-4706
 +                                } // Luminol - Add item multitask config
                                  InteractionResult interactionResult = this.player.gameMode.useItemOn(this.player, level, itemStack, hand, blockHit);
@@ -28,7 +28,7 @@ index 4fa12dddbd3ae35656580f154d5ebc82f16daa14..a58a9318a3c9d43707a77dd7a95dc1bb
 -            if (this.player.getInventory().getSelectedSlot() != packet.getSlot() && this.player.getUsedItemHand() == InteractionHand.MAIN_HAND) {
 -                this.player.stopUsingItem();
 +            // Luminol start - Add item multitask config
-+            if (!me.earthme.luminol.config.modules.fixes.ItemMultitaskConfig.enabled()) {
++            if (!me.earthme.luminol.config.modules.fixes.ItemMultitaskConfig.enabled.get()) {
 +                if (this.player.getInventory().getSelectedSlot() != packet.getSlot() && this.player.getUsedItemHand() == InteractionHand.MAIN_HAND) {
 +                    this.player.stopUsingItem();
 +                }

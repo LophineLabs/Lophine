@@ -322,7 +322,7 @@ public final class CarpetFakePlayerManager {
             if (entity.hasExactlyOnePlayerPassenger()) {
                 bot.stopRiding();
                 entity.getPassengersAndSelf().forEach((entity1) -> {
-                    if (!OldFeatureConfig.villagerVoidTrade() && entity1 instanceof AbstractVillager villager) {
+                    if (!OldFeatureConfig.villagerVoidTrade.get() && entity1 instanceof AbstractVillager villager) {
                         final Player human = villager.getTradingPlayer();
                         if (human != null) {
                             villager.setTradingPlayer(null);

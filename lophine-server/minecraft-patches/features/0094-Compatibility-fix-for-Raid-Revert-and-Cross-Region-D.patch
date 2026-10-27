@@ -41,7 +41,7 @@ index 53e7d04612630b1088fc3bec2aef2699d8d2fa35..8c66dc24c3a67bfd5c89b96fe2dc9db8
          if (this.is(EntityTypeTags.IMMUNE_TO_INFESTED)) {
              return !newEffect.is(MobEffects.INFESTED);
 diff --git a/net/minecraft/world/entity/raid/Raider.java b/net/minecraft/world/entity/raid/Raider.java
-index d754c90db8ede2b5dfe632f0221c5eeeb9e2c8c0..f3c4ce899c91dc2a29aa0117295e7c7bb2fa42e7 100644
+index cb2670c37f668478d9decedb3b66b0aae2656168..a6c800dbb817db1a983ab670a8d9ddb3f939b45d 100644
 --- a/net/minecraft/world/entity/raid/Raider.java
 +++ b/net/minecraft/world/entity/raid/Raider.java
 @@ -159,7 +159,7 @@ public abstract class Raider extends PatrollingMonster {

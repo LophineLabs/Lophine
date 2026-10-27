@@ -68,7 +68,7 @@ index 27f17f89e3941daf896eada0012a6dab5d14328d..13961a5f94651cef262ab71bac635eeb
              this.lastServerStatus = nano;
              this.status = this.buildServerStatus();
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 092982cde03ff1cf8487fe7d8ddff721ca3f024f..7c239344d8c5b55cbccb620c37f654f8caaf12aa 100644
+index cf6d183892f053d35f06db97ef251525b7263987..f7946d66a513e681f28d6fd9f04722eff5c92cfe 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -1505,6 +1505,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -183,7 +183,7 @@ index c5a212e73c2efeb1f440778cb3f1fa6ee8165e63..52f0b0ad01d852f5bd17202eeaccd9a5
 +    // KioCG end
  }
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index fde1f7f1dd13567e8d00bd639d06c38cb3ae35e4..7b46a88f7414720c007c25c27b98971022d24bf1 100644
+index d8b394c3fcf5642755c16e3f30ede2aeda6c92cb..6199f02fcd1247dd98543f114d5b7d892732315e 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -6644,4 +6644,6 @@ public abstract class Entity

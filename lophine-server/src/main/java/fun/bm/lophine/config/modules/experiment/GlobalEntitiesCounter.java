@@ -14,19 +14,15 @@ public class GlobalEntitiesCounter {
     @ConfigInfo(name = "version", isWorldConfig = true)
     public static final WorldValues.Key<GlobalEntitiesCounterType> type = WorldValues.key(GlobalEntitiesCounterType.DISABLED);
 
-    public static GlobalEntitiesCounterType type() {
-        return type.get();
-    }
-
     public static boolean isEnabled() {
-        return type().isEnabled();
+        return type.get().isEnabled();
     }
 
     public static boolean isAsync() {
-        return type().isAsync();
+        return type.get().isAsync();
     }
 
     public static boolean isDefaultModule() {
-        return type().isDefaultModule();
+        return type.get().isDefaultModule();
     }
 }

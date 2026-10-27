@@ -11,12 +11,4 @@ public class PathfindingFixesConfig {
     public static final WorldValues.Key<Boolean> breakDownPathfindingWhenOutOfRegion = WorldValues.key(false);
     @ConfigInfo(name = "do_not_pathfind_to_not_owned_targets", isWorldConfig = true)
     public static final WorldValues.Key<Boolean> doNotPathfindToNotOwnedTargets = WorldValues.key(false);
-
-    public static boolean breakDownPathfindingWhenOutOfRegion() {
-        return breakDownPathfindingWhenOutOfRegion.get();
-    }
-
-    public static boolean doNotPathfindToNotOwnedTargets() {
-        return doNotPathfindToNotOwnedTargets.get();
-    }
 }

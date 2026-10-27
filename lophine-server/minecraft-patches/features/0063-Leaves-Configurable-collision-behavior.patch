@@ -8,7 +8,7 @@ As part of: Leaves (https://github.com/LeavesMC/Leaves/blob/c5f18b7864206cea4411
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java b/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
-index ca5065d057d039aaaa2334534edae351749cc7a0..c5df982511594957e4e3a014b949c25d95e92092 100644
+index ca5065d057d039aaaa2334534edae351749cc7a0..6f36590f17cbce775b3e0f149ba21973eb9a4a99 100644
 --- a/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
 +++ b/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
 @@ -101,6 +101,14 @@ public final class CollisionUtil {
@@ -42,7 +42,7 @@ index ca5065d057d039aaaa2334534edae351749cc7a0..c5df982511594957e4e3a014b949c25d
 +    // Leaves start - Configurable collision behavior
 +    private static boolean shouldSkip(AABB aabb, VoxelShape blockCollision, AABB singleAABB) {
 +        boolean isBlockShape = blockCollision == Shapes.block();
-+        return switch (me.earthme.luminol.config.modules.fixes.CollisionBehaviorConfig.behaviorMode()) {
++        return switch (me.earthme.luminol.config.modules.fixes.CollisionBehaviorConfig.behaviorMode.get()) {
 +            case me.earthme.luminol.enums.EnumCollisionBehaviorMode.VANILLA -> !voxelShapeIntersectVanilla(aabb, singleAABB);
 +            case me.earthme.luminol.enums.EnumCollisionBehaviorMode.PAPER -> !voxelShapeIntersect(aabb, singleAABB);
 +            default -> isBlockShape && !voxelShapeIntersectVanilla(aabb, singleAABB) || !isBlockShape && !voxelShapeIntersect(aabb, singleAABB);

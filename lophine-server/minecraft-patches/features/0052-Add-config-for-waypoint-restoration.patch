@@ -33,7 +33,7 @@ index 8ec2b23af03c257c5c00fc9dd064a7a0b8b584b6..dca2f1ed84e2a041647c646a855337c1
                      level.players().forEach(waypointManager::updatePlayer);
                  } else {
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index f810d6f4b4c97544209d5f2a657073d28d3016ed..ebb9fbfda53eb56fdd01a5d0543d1b0d0866a242 100644
+index 2bf6024b1a903badc0de5883625fff615e8f1c12..8b21733b51fd4df62179dcd795363203490c8d0e 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -697,7 +697,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet

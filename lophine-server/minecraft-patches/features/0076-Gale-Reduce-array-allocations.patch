@@ -150,7 +150,7 @@ index 2500a3cf1cdd99b6941378b9a4b004feca2f5812..dea9e6128695180c7f43870cfa406509
                      this.getInventory().equipment.set(value, net.minecraft.world.item.ItemStack.EMPTY);
                  }
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 4a55d12ed265fd9c6047bbdddbc958c595fedb38..6651d3ae71daeba546930b294944a1e928c89c7e 100644
+index e88fd6b25b6e4b1322d7dd3e962b6774c6950192..4d768a91af45c5151dc38503f94725be86e9d976 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -3087,7 +3087,7 @@ public class ServerGamePacketListenerImpl
@@ -361,7 +361,7 @@ index 9c667a09fcea23b4072c0616837b685e256e0462..d170ee3c74d0352fed4044cad9a87c8b
              if (predicate.test(item)) {
                  ItemEnchantments enchantments = item.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index 059a27a2891c8a047fe043b5c4a270d28d6efc31..3935be37d30c21df449cc7950549f812afe490b4 100644
+index 24e6370683a54f535ddfc4b57cd7583e713853bb..65291809faad5494b93ff5d605b12947c37f39a5 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -1955,7 +1955,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
@@ -383,7 +383,7 @@ index 059a27a2891c8a047fe043b5c4a270d28d6efc31..3935be37d30c21df449cc7950549f812
      // Paper end - rewrite chunk system
  
 diff --git a/net/minecraft/world/level/block/ComposterBlock.java b/net/minecraft/world/level/block/ComposterBlock.java
-index 4b84851d27bfd709f95feef492d8d4970ceb5687..18faa2fbd2db7c6d9fe6acf53b3807826111a096 100644
+index 9d07ab78ce323fd4da0f73d7308be42810e4d36b..4be816c0b8f71d940b2226d8c556c07b1d0720d2 100644
 --- a/net/minecraft/world/level/block/ComposterBlock.java
 +++ b/net/minecraft/world/level/block/ComposterBlock.java
 @@ -293,7 +293,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
@@ -414,7 +414,7 @@ index 4b84851d27bfd709f95feef492d8d4970ceb5687..18faa2fbd2db7c6d9fe6acf53b380782
  
          @Override
 diff --git a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
-index 30969fc40d976ad12660bf1b2829f5b6145fdd0c..2c1ae85955503e921ca0836d7cdacc3fa19d72ba 100644
+index 408fcdfff7359ff9e859fec08ac78f524bbfe39c..de3174fb4b2d4c53ab55aef845b339b886c713f2 100644
 --- a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
 @@ -49,7 +49,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit

@@ -5,7 +5,7 @@ Subject: [PATCH] Global Entities Counter
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 1431b930a1f20617dc037a6999af69fd1598fced..891cbe2a4d6b2a9d6f927fd8409cb72320c5931e 100644
+index ca686f35b29c67d10bf733607bd73a8690df7e5f..f3dcb9346a3c1a6e33b87e986b6148f999aabc60 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -503,6 +503,9 @@ public final class RegionizedWorldData {
@@ -99,7 +99,7 @@ index c1ba9f45837a718099461d8e1a84c3dfc2468489..021ff2785ddd8a88376ee2f9e47f79d9
                  NaturalSpawner.spawnForChunk(this.level, chunk, spawnCookie, spawningCategories);
              }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 02d093eafbbf4d6a63d9c452b09cfb0b2c192d5d..19b69aeb3692c36c683fdbe42c1598698b46638d 100644
+index 983f9b8c389c94018c6f71e4101de9452ae23bfa..8bf48a7b07e3d4d3d48a9d8bca948caec068a394 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -836,6 +836,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -151,7 +151,7 @@ index 02d093eafbbf4d6a63d9c452b09cfb0b2c192d5d..19b69aeb3692c36c683fdbe42c159869
              // Spigot start
              if (entity instanceof Player player) {
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
-index df800452cef1391441c88e0eb2673ec123cab796..ab68f7ed969c99a0c8fee80f1045cb90bd5b731c 100644
+index 9c27498c94fe38bd48f48eb2c0e5b067210636c8..dc1997ce7529aa0cff51333603e18aa0ea614bba 100644
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
 @@ -835,6 +835,41 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs

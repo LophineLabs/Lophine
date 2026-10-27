@@ -5,7 +5,7 @@ Subject: [PATCH] Restore vanilla ender pearl loading
 
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 5528ee1783faacff49e651a3e3b12b791d1aaa4b..ea924890de500545ce9ab298db6807f6e38637e8 100644
+index 2c8142adcf8827f615a1748ba59ac6da43b3b870..f6877a587a66ec0f78286bb5a16314863bca9645 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -281,7 +281,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -56,7 +56,7 @@ index 5528ee1783faacff49e651a3e3b12b791d1aaa4b..ea924890de500545ce9ab298db6807f6
          // would otherwise remain true after respawn / End return and make them permanently invulnerable.
          return (super.isInvulnerableTo(level, source) || this.isChangingDimension() && !this.isFakePlayer() && !source.is(DamageTypes.ENDER_PEARL) || !this.connection.hasClientLoaded())
 -            || (!this.level().paperConfig().collisions.allowPlayerCrammingDamage && source.is(DamageTypes.CRAMMING));
-+            || (!fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled() && !this.level().paperConfig().collisions.allowPlayerCrammingDamage && source.is(DamageTypes.CRAMMING)); // Lophine - Vanilla-like experience
++            || (!fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled.get() && !this.level().paperConfig().collisions.allowPlayerCrammingDamage && source.is(DamageTypes.CRAMMING)); // Lophine - Vanilla-like experience
          // Paper end - disable player cramming
      }
  
@@ -75,7 +75,7 @@ index 5528ee1783faacff49e651a3e3b12b791d1aaa4b..ea924890de500545ce9ab298db6807f6
  
      public Set<ThrownEnderpearl> getEnderPearls() {
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index c415fd1ee15121b3064d033b1f81b381ddea26ff..13689ab6092f8f43fada8cdb1fdb993412fca208 100644
+index 4a56aa5b4353564ed9a0ca7812b7c9246eda777e..5dd2f820f9b77954422aa66e68921100407c8745 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -785,11 +785,13 @@ public abstract class PlayerList {
@@ -98,7 +98,7 @@ index c415fd1ee15121b3064d033b1f81b381ddea26ff..13689ab6092f8f43fada8cdb1fdb9934
  
          level.removePlayerImmediately(player, Entity.RemovalReason.UNLOADED_WITH_PLAYER);
 diff --git a/net/minecraft/world/entity/item/PrimedTnt.java b/net/minecraft/world/entity/item/PrimedTnt.java
-index 30d63b6114b4bfcb8a1e3b34b2ec36e7d52c7be9..8f7730310b5a5b4127b3ec5cf27186a4b129a3a3 100644
+index 30d63b6114b4bfcb8a1e3b34b2ec36e7d52c7be9..180df4c44adf5b6ea1bbb4285e7d6df70048fa03 100644
 --- a/net/minecraft/world/entity/item/PrimedTnt.java
 +++ b/net/minecraft/world/entity/item/PrimedTnt.java
 @@ -141,7 +141,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
@@ -106,7 +106,7 @@ index 30d63b6114b4bfcb8a1e3b34b2ec36e7d52c7be9..8f7730310b5a5b4127b3ec5cf27186a4
      @Override
      public void tick() {
 -        if (this.level().spigotConfig.maxTntTicksPerTick > 0 && ++this.level().getCurrentWorldData().currentPrimedTnt > this.level().spigotConfig.maxTntTicksPerTick) { return; } // Spigot // Folia - region threading
-+        if (!fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled() && this.level().spigotConfig.maxTntTicksPerTick > 0 && ++this.level().getCurrentWorldData().currentPrimedTnt > this.level().spigotConfig.maxTntTicksPerTick) { return; } // Spigot // Folia - region threading // Lophine - Vanilla-like experience
++        if (!fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled.get() && this.level().spigotConfig.maxTntTicksPerTick > 0 && ++this.level().getCurrentWorldData().currentPrimedTnt > this.level().spigotConfig.maxTntTicksPerTick) { return; } // Spigot // Folia - region threading // Lophine - Vanilla-like experience
          //this.handlePortal(); // Folia - region threading
          this.applyGravity();
          if (carpet.script.external.ScarpetExplosionContinuations.pending(this)) return;
@@ -245,7 +245,7 @@ index 98001b04d9c7b252fb9fac803ff9cdfafb838d58..53acb2b4de9f7aa1fe35eb408f03d674
                      itemStack.consume(1, player);
                  } else {
 diff --git a/net/minecraft/world/level/block/piston/PistonBaseBlock.java b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
-index d0dbb3897f906a141a8fcca1588737335c3d808a..04aa232123c1117ddbcb296be1e346b6201c41b2 100644
+index d0dbb3897f906a141a8fcca1588737335c3d808a..a5e5f9ac9faab4bf606d4a4ba514578172e1f4bb 100644
 --- a/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 +++ b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 @@ -142,7 +142,7 @@ public class PistonBaseBlock extends DirectionalBlock {
@@ -253,7 +253,7 @@ index d0dbb3897f906a141a8fcca1588737335c3d808a..04aa232123c1117ddbcb296be1e346b6
          // Paper start - Protect Bedrock and End Portal/Frames from being destroyed; prevent retracting when we're facing the wrong way (we were replaced before retraction could occur)
          Direction directionQueuedAs = Direction.from3DDataValue(b1 & 7); // Paper - copied from below
 -        if (!io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPermanentBlockBreakExploits && direction != directionQueuedAs) {
-+        if (!fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled() && !io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPermanentBlockBreakExploits && direction != directionQueuedAs) { // Lophine - Vanilla-like experience
++        if (!fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled.get() && !io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPermanentBlockBreakExploits && direction != directionQueuedAs) { // Lophine - Vanilla-like experience
              return false;
          }
          // Paper end - Protect Bedrock and End Portal/Frames from being destroyed
@@ -262,7 +262,7 @@ index d0dbb3897f906a141a8fcca1588737335c3d808a..04aa232123c1117ddbcb296be1e346b6
                  // Paper start - Protect Bedrock and End Portal/Frames from being destroyed; fix headless pistons breaking blocks
                  BlockPos headPos = pos.relative(direction);
 -                if (io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPermanentBlockBreakExploits || level.getBlockState(headPos) == Blocks.PISTON_HEAD.defaultBlockState().setValue(FACING, direction)) { // double check to make sure we're not a headless piston
-+                if (fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled() || io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPermanentBlockBreakExploits || level.getBlockState(headPos) == Blocks.PISTON_HEAD.defaultBlockState().setValue(FACING, direction)) { // double check to make sure we're not a headless piston // Lophine - Vanilla-like experience
++                if (fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled.get() || io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPermanentBlockBreakExploits || level.getBlockState(headPos) == Blocks.PISTON_HEAD.defaultBlockState().setValue(FACING, direction)) { // double check to make sure we're not a headless piston // Lophine - Vanilla-like experience
                      level.removeBlock(headPos, false);
                  } else {
                      ((ServerLevel) level).getChunkSource().blockChanged(headPos); // ... fix client desync

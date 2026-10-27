@@ -10,7 +10,7 @@ Licensed under: MIT
 This patch is Powered by fabric-carpet(https://github.com/gnembon/fabric-carpet)
 
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index 1a49d2857111c38b07a6af0406ba49f32fe8b339..282630d0e78b8137a9d8c4f72e669359867cc109 100644
+index 5673f5b7fba9e119b1dadd1da7cb2c2b90a1fdee..9e772a0348ef78b34737ac7e163e7381b2c6122d 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -219,8 +219,30 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
@@ -55,7 +55,7 @@ index 1a49d2857111c38b07a6af0406ba49f32fe8b339..282630d0e78b8137a9d8c4f72e669359
 +            }
 +        }
 +        // Leaves end - hopper counter
-         Container container = me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled() ? self.getInsertInventory(level) : getAttachedContainer(level, blockPos, self); // Leaves - Lithium Sleeping Block Entity
+         Container container = me.earthme.luminol.config.modules.optimizations.LeavesSleepingBlockEntityConfig.enabled.get() ? self.getInsertInventory(level) : getAttachedContainer(level, blockPos, self); // Leaves - Lithium Sleeping Block Entity
          if (container == null) {
              return false;
 @@ -496,6 +525,25 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen

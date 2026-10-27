@@ -27,32 +27,4 @@ public class OldFeatureConfig {
 
     @ConfigInfo(name = "should-generate-end-ring", isWorldConfig = true)
     public static final WorldValues.Key<Boolean> shouldGenerateEndRing = WorldValues.key(false);
-
-    public static boolean spawnInvulnerableTime() {
-        return spawnInvulnerableTime.get();
-    }
-
-    public static boolean oldZombieReinforcement() {
-        return oldZombieReinforcement.get();
-    }
-
-    public static boolean oldLeaderZombieHealth() {
-        return oldLeaderZombieHealth.get();
-    }
-
-    public static boolean oldExplosionDamageCalculator() {
-        return oldExplosionDamageCalculator.get();
-    }
-
-    public static boolean oldRaidBehavior() {
-        return oldRaidBehavior.get();
-    }
-
-    public static boolean villagerVoidTrade() {
-        return villagerVoidTrade.get();
-    }
-
-    public static boolean shouldGenerateEndRing() {
-        return shouldGenerateEndRing.get();
-    }
 }

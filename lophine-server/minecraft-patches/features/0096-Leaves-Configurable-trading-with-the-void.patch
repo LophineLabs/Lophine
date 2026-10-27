@@ -8,7 +8,7 @@ As a part of : Leaves (https://github.com/LeavesMC/Leaves/blob/9d2bd3f7b0a48f00d
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 722b5e5b975e2ca14654903ce4c66de1a30c6969..25795cc151c13b3147e283a29f23df9f8fee6386 100644
+index d9d61eade35afd37f227bf7eab8986197453f7f3..2ef67d31e5655eefb8e2986330c658dd95f112d5 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -3436,7 +3436,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -16,12 +16,12 @@ index 722b5e5b975e2ca14654903ce4c66de1a30c6969..25795cc151c13b3147e283a29f23df9f
              if (entity.getBukkitEntity() instanceof org.bukkit.inventory.InventoryHolder && (!(entity instanceof ServerPlayer) || entity.getRemovalReason() != Entity.RemovalReason.KILLED)) { // SPIGOT-6876: closeInventory clears death message
                  // Paper start - Fix merchant inventory not closing on entity removal
 -                if (entity.getBukkitEntity() instanceof org.bukkit.inventory.Merchant merchant && merchant.getTrader() != null) {
-+                if (!fun.bm.lophine.config.modules.function.OldFeatureConfig.villagerVoidTrade() && entity.getBukkitEntity() instanceof org.bukkit.inventory.Merchant merchant && merchant.getTrader() != null) { // Leaves - Configurable trading with the void
++                if (!fun.bm.lophine.config.modules.function.OldFeatureConfig.villagerVoidTrade.get() && entity.getBukkitEntity() instanceof org.bukkit.inventory.Merchant merchant && merchant.getTrader() != null) { // Leaves - Configurable trading with the void
                      merchant.getTrader().closeInventory(org.bukkit.event.inventory.InventoryCloseEvent.Reason.UNLOADED);
                  }
                  // Paper end - Fix merchant inventory not closing on entity removal
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 45cca1667cb6e1eb9dc35da080cd19a0c1112a59..4af3ba4c3de3ba8028a986ba8f5df2cf36852bcf 100644
+index 45cca1667cb6e1eb9dc35da080cd19a0c1112a59..6ae6e73cf8030549dfd0d429a3d1faaad9b0da9b 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -561,7 +561,7 @@ public abstract class PlayerList {
@@ -29,19 +29,19 @@ index 45cca1667cb6e1eb9dc35da080cd19a0c1112a59..4af3ba4c3de3ba8028a986ba8f5df2cf
                  vehicle.getPassengersAndSelf().forEach(e -> {
                      // Paper start - Fix villager boat exploit
 -                    if (e instanceof net.minecraft.world.entity.npc.villager.AbstractVillager villager) {
-+                    if (!fun.bm.lophine.config.modules.function.OldFeatureConfig.villagerVoidTrade() && e instanceof net.minecraft.world.entity.npc.villager.AbstractVillager villager) { // Leaves - Configurable trading with the void
++                    if (!fun.bm.lophine.config.modules.function.OldFeatureConfig.villagerVoidTrade.get() && e instanceof net.minecraft.world.entity.npc.villager.AbstractVillager villager) { // Leaves - Configurable trading with the void
                          final net.minecraft.world.entity.player.Player human = villager.getTradingPlayer();
                          if (human != null) {
                              villager.setTradingPlayer(null);
 diff --git a/net/minecraft/world/inventory/MerchantMenu.java b/net/minecraft/world/inventory/MerchantMenu.java
-index 200f7b44a0677b2df08c0fafc8c15797101614b4..14fe8e4a4096844e192416149021d2ca29ec1c0a 100644
+index 200f7b44a0677b2df08c0fafc8c15797101614b4..0ceb4fc95974e4b4f77e6338e8232cf4583fc8e2 100644
 --- a/net/minecraft/world/inventory/MerchantMenu.java
 +++ b/net/minecraft/world/inventory/MerchantMenu.java
 @@ -79,6 +79,7 @@ public class MerchantMenu extends AbstractContainerMenu {
  
      @Override
      public boolean stillValid(final Player player) {
-+        if (fun.bm.lophine.config.modules.function.OldFeatureConfig.villagerVoidTrade()) return this.trader.getTradingPlayer() == player; // Leaves - Configurable trading with the void
++        if (fun.bm.lophine.config.modules.function.OldFeatureConfig.villagerVoidTrade.get()) return this.trader.getTradingPlayer() == player; // Leaves - Configurable trading with the void
          if (!checkReachable) return true; // Paper - checkReachable
          return this.trader.stillValid(player);
      }

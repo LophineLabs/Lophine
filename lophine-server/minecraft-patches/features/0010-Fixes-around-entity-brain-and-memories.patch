@@ -121,7 +121,7 @@ index a12d01d1278a8d49df67d7b1f8714b179e76ca36..176982c212db8166d9569dcadc96ef29
          if (blockState == null) return false; // Paper - Prevent sync chunk loads when villagers try to find beds
          return target.pos().closerToCenterThan(body.position(), 2.0)
 diff --git a/net/minecraft/world/entity/ai/memory/MemorySlot.java b/net/minecraft/world/entity/ai/memory/MemorySlot.java
-index 88a89b4c72cc99dc89d3f3cc928b2dfda4125759..3554732088496ad5801c1085b6ee8aaf8e0afc5b 100644
+index 88a89b4c72cc99dc89d3f3cc928b2dfda4125759..eff81577350f1526232a74d53ce3d783d9c1ce03 100644
 --- a/net/minecraft/world/entity/ai/memory/MemorySlot.java
 +++ b/net/minecraft/world/entity/ai/memory/MemorySlot.java
 @@ -13,7 +13,7 @@ public class MemorySlot<T> {
@@ -141,14 +141,14 @@ index 88a89b4c72cc99dc89d3f3cc928b2dfda4125759..3554732088496ad5801c1085b6ee8aaf
 +        final net.minecraft.world.level.Level ownerLevel = owner.level();
 +
 +        // type: entity
-+        if (me.earthme.luminol.config.modules.fixes.ForceCleanupEntityBrainMemoryConfig.enabledForEntity() && this.value instanceof net.minecraft.world.entity.Entity entity) {
++        if (me.earthme.luminol.config.modules.fixes.ForceCleanupEntityBrainMemoryConfig.enabledForEntity.get() && this.value instanceof net.minecraft.world.entity.Entity entity) {
 +            if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(entity)) {
 +                this.clear();
 +            }
 +        }
 +
 +        // type: block_pos
-+        if (me.earthme.luminol.config.modules.fixes.ForceCleanupEntityBrainMemoryConfig.enabledForBlockPos() && this.value instanceof net.minecraft.core.BlockPos blockPos) {
++        if (me.earthme.luminol.config.modules.fixes.ForceCleanupEntityBrainMemoryConfig.enabledForBlockPos.get() && this.value instanceof net.minecraft.core.BlockPos blockPos) {
 +            if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(ownerLevel, blockPos)) {
 +                this.clear();
 +            }
@@ -156,7 +156,7 @@ index 88a89b4c72cc99dc89d3f3cc928b2dfda4125759..3554732088496ad5801c1085b6ee8aaf
 +
 +
 +        //type: position_tracker and walk_target
-+        if (me.earthme.luminol.config.modules.fixes.ForceCleanupEntityBrainMemoryConfig.enabledForPositionTracker()) {
++        if (me.earthme.luminol.config.modules.fixes.ForceCleanupEntityBrainMemoryConfig.enabledForPositionTracker.get()) {
 +            net.minecraft.world.entity.ai.behavior.PositionTracker tracker = null;
 +
 +            if (value instanceof net.minecraft.world.entity.ai.behavior.PositionTracker positionTracker) {
@@ -176,7 +176,7 @@ index 88a89b4c72cc99dc89d3f3cc928b2dfda4125759..3554732088496ad5801c1085b6ee8aaf
  
      public static <T> MemorySlot<T> create() {
 diff --git a/net/minecraft/world/entity/ai/navigation/FlyingPathNavigation.java b/net/minecraft/world/entity/ai/navigation/FlyingPathNavigation.java
-index e44814cfb6afb594456b8215bd13a92e93de2c85..a505ecd530f1cbd5e1bac9d7dc79bee14acd3d2b 100644
+index e44814cfb6afb594456b8215bd13a92e93de2c85..52eb5bc2d1a3c2203316d6576f1a75971d93c323 100644
 --- a/net/minecraft/world/entity/ai/navigation/FlyingPathNavigation.java
 +++ b/net/minecraft/world/entity/ai/navigation/FlyingPathNavigation.java
 @@ -60,6 +60,17 @@ public class FlyingPathNavigation extends PathNavigation {
@@ -184,7 +184,7 @@ index e44814cfb6afb594456b8215bd13a92e93de2c85..a505ecd530f1cbd5e1bac9d7dc79bee1
              if (!this.isDone()) {
                  Vec3 target = this.path.getNextEntityPos(this.mob);
 +                // Luminol - Recompute path when path finding out of current tick region
-+                if (me.earthme.luminol.config.modules.fixes.PathfindingFixesConfig.breakDownPathfindingWhenOutOfRegion()) {
++                if (me.earthme.luminol.config.modules.fixes.PathfindingFixesConfig.breakDownPathfindingWhenOutOfRegion.get()) {
 +                    // we assume that:
 +                    // 1. The code above doesn't touch the 'main thread context' with the position from 'this.path'
 +                    // 2. The pathfinder could correctly recompute or discard the incorrect target position and this situation is happening rarely
@@ -198,7 +198,7 @@ index e44814cfb6afb594456b8215bd13a92e93de2c85..a505ecd530f1cbd5e1bac9d7dc79bee1
              }
          }
 diff --git a/net/minecraft/world/entity/ai/navigation/PathNavigation.java b/net/minecraft/world/entity/ai/navigation/PathNavigation.java
-index 34b71f5276a00dbbc375728246ae544953a54146..3ec575999fa9bcb8a40ed3dc69746378583855c2 100644
+index 34b71f5276a00dbbc375728246ae544953a54146..1fa805c312dda1c7093f872ca39ddbf088180564 100644
 --- a/net/minecraft/world/entity/ai/navigation/PathNavigation.java
 +++ b/net/minecraft/world/entity/ai/navigation/PathNavigation.java
 @@ -188,6 +188,18 @@ public abstract class PathNavigation {
@@ -206,7 +206,7 @@ index 34b71f5276a00dbbc375728246ae544953a54146..3ec575999fa9bcb8a40ed3dc69746378
          }
          // Paper end - EntityPathfindEvent
 +        // Luminol start - Do not path find for targets out of current region
-+        if (me.earthme.luminol.config.modules.fixes.PathfindingFixesConfig.doNotPathfindToNotOwnedTargets()) {
++        if (me.earthme.luminol.config.modules.fixes.PathfindingFixesConfig.doNotPathfindToNotOwnedTargets.get()) {
 +            // filter the targets not owned by current region
 +            targets = new java.util.HashSet<>(targets); // well no idea about how to determine if this should be copied to a modifiable one
 +            targets.removeIf(pos -> !ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(this.mob.level(), pos));
@@ -225,7 +225,7 @@ index 34b71f5276a00dbbc375728246ae544953a54146..3ec575999fa9bcb8a40ed3dc69746378
              if (!this.isDone()) {
                  Vec3 target = this.path.getNextEntityPos(this.mob);
 +                // Luminol - Recompute path when path finding out of current tick region
-+                if (me.earthme.luminol.config.modules.fixes.PathfindingFixesConfig.breakDownPathfindingWhenOutOfRegion()) {
++                if (me.earthme.luminol.config.modules.fixes.PathfindingFixesConfig.breakDownPathfindingWhenOutOfRegion.get()) {
 +                    // we assume that:
 +                    // 1. The code above doesn't touch the 'main thread context' with the position from 'this.path'
 +                    // 2. The pathfinder could correctly recompute or discard the incorrect target position and this situation is happening rarely

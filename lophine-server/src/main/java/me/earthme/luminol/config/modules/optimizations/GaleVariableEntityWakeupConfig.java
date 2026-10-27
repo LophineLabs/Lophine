@@ -9,8 +9,4 @@ import me.earthme.luminol.config.WorldValues;
 public class GaleVariableEntityWakeupConfig {
     @ConfigInfo(name = "entity_wakeup_duration_ratio_standard_deviation", isWorldConfig = true)
     public static final WorldValues.Key<Double> entityWakeUpDurationRatioStandardDeviation = WorldValues.key(0.2);
-
-    public static double entityWakeUpDurationRatioStandardDeviation() {
-        return entityWakeUpDurationRatioStandardDeviation.get();
-    }
 }

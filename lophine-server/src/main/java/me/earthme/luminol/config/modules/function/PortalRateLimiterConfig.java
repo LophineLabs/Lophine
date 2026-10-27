@@ -37,30 +37,6 @@ public class PortalRateLimiterConfig {
     @DoNotLoad(when = EnumLoadType.RELOAD)
     public static final WorldValues.Key<Integer> portalIngressBurstCapacity = WorldValues.key(64);
 
-    public static boolean enabled() {
-        return enabled.get();
-    }
-
-    public static int maxPortalTeleportsPerTick() {
-        return maxPortalTeleportsPerTick.get();
-    }
-
-    public static String maxPortalTeleportsExpression() {
-        return maxPortalTeleportsExpression.get();
-    }
-
-    public static boolean destinationBackpressureEnabled() {
-        return destinationBackpressureEnabled.get();
-    }
-
-    public static int portalIngressTokensPerTick() {
-        return portalIngressTokensPerTick.get();
-    }
-
-    public static int portalIngressBurstCapacity() {
-        return portalIngressBurstCapacity.get();
-    }
-
     // use this to prevent reallocation
     private static final String VARIABLE_TICKING_ENTITY_CONT = "e";
     private static final String VARIABLE_TICKING_CHUNK_CONT = "c";
@@ -68,11 +44,11 @@ public class PortalRateLimiterConfig {
 
     @Nullable
     public static Expression getExpressionIfConfigured() {
-        if (maxPortalTeleportsPerTick() != -1) {
+        if (maxPortalTeleportsPerTick.get() != -1) {
             return null;
         }
 
-        return new ExpressionBuilder(maxPortalTeleportsExpression())
+        return new ExpressionBuilder(maxPortalTeleportsExpression.get())
                 .variables(
                         VARIABLE_PLAYER_CONT,
                         VARIABLE_TICKING_CHUNK_CONT,

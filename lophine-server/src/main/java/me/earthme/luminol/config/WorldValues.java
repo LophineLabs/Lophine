@@ -42,10 +42,8 @@ public final class WorldValues {
     }
 
     static Object[] copyGlobals() {
-        List<Key<?>> keys = ALL_KEYS;
         Object[] copy = new Object[NEXT_INDEX.get()];
-        for (int i = 0, size = keys.size(); i < size; i++) {
-            Key<?> key = keys.get(i);
+        for (Key<?> key : ALL_KEYS) {
             int index = key.index;
             if (index >= 0 && index < copy.length) {
                 copy[index] = key.global;
