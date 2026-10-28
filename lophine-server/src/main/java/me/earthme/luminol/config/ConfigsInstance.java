@@ -6,9 +6,7 @@ import com.mojang.logging.LogUtils;
 import fun.bm.lophine.utils.ServerI18nUtil;
 import io.papermc.paper.threadedregions.RegionizedServer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
-import me.earthme.luminol.api.config.ConfigsInstanceHooks;
-import me.earthme.luminol.api.config.LuminolConfigsInstance;
-import me.earthme.luminol.api.config.TransformLogic;
+import me.earthme.luminol.api.config.*;
 import me.earthme.luminol.api.config.annotation.*;
 import me.earthme.luminol.api.config.enums.EnumConfigCategory;
 import me.earthme.luminol.api.config.enums.EnumConfigData;
@@ -45,7 +43,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     private final String pack;          // Used to find all classes
     private final ConfigsInstanceHooks hooks;
     /**
-     * Fields typed as {@link WorldValues.Key}. {@code null} means this instance does not
+     * Fields typed as {@link WorldValue}. {@code null} means this instance does not
      * keep a per-level copy of those keys.
      */
     private final Map<String, Field> worldConfigFields;
@@ -455,7 +453,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         if (worldConfigFields != null && isWorldValueField(field) && !removed) {
             worldConfigFields.put(fullConfigKeyName, field);
             Object live = field.get(null);
-            if (live instanceof WorldValues.Key<?> key) {
+            if (live instanceof WorldValue<?> key) {
                 WorldValues.bind(key, this.name, fullConfigKeyName);
             }
         }
@@ -973,12 +971,12 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     }
 
     private static boolean isWorldValueField(Field field) {
-        return field != null && field.getType() == WorldValues.Key.class;
+        return field != null && WorldValue.class.isAssignableFrom(field.getType());
     }
 
     private static Object readConfigValue(Field field) throws IllegalAccessException {
         Object live = field.get(null);
-        if (live instanceof WorldValues.Key<?> key) {
+        if (live instanceof WorldValue<?> key) {
             return key.global();
         }
         return live;
@@ -986,7 +984,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
 
     private static void writeConfigValue(Field field, Object value) throws IllegalAccessException {
         Object live = field.get(null);
-        if (live instanceof WorldValues.Key<?> key) {
+        if (live instanceof WorldValue<?> key) {
             key.setGlobal(value);
             return;
         }
@@ -1098,7 +1096,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
     /**
      * Resolve a world-config key for {@code level} from that level's copy.
      * Missing world values fall back to the global default.
-     * Keys that are not {@link WorldValues.Key} fields always use the global value.
+     * Keys that are not {@link WorldValue} fields always use the global value.
      */
     @SuppressWarnings("unchecked")
     public <T> T getForWorld(@Nullable net.minecraft.world.level.Level level, String key) {

@@ -1,6 +1,8 @@
 package me.earthme.luminol.config;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import me.earthme.luminol.api.config.WorldValue;
+import me.earthme.luminol.api.config.WorldValues;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,7 +16,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Per-world copy of keys stored as {@link WorldValues.Key}.
+ * Per-world copy of keys stored as {@link WorldValue}.
  * Runtime values live on the attached {@link WorldConfigHolder} snapshot:
  * global defaults, then this world's file overrides.
  * GUI submit does not add keys that still match that global default.
@@ -154,11 +156,11 @@ public class WorldConfigInstance {
             return;
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
-            WorldValues.Key<?> key = WorldValues.keyOf(parent.getName(), entry.getKey());
+            WorldValue<?> key = WorldValues.keyOf(parent.getName(), entry.getKey());
             if (key == null) {
                 continue;
             }
-            int index = key.index;
+            int index = key.index();
             if (index >= 0 && index < snapshot.length) {
                 snapshot[index] = entry.getValue();
             }

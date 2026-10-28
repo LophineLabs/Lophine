@@ -3,6 +3,7 @@ package me.earthme.luminol.config;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import fun.bm.lophine.carpet.CarpetConfigHooks;
 import me.earthme.luminol.api.config.TransformLogic;
+import me.earthme.luminol.api.config.WorldValues;
 import me.earthme.luminol.api.config.annotation.TransformedConfig;
 import me.earthme.luminol.commands.CommandRegister;
 import net.minecraft.world.level.Level;
@@ -29,6 +30,7 @@ public class ConfigManager {
      * then they are included in the same preload.
      */
     public static void initConfigs() {
+        WorldValues.setInstance(new ServerWorldValues()); // before config start register, make sure world values instance init
         registerConfig(builder.of("luminol", "me.earthme.luminol.config.modules"));
         registerConfig(builder.of("lophine", "fun.bm.lophine.config.modules")); // add lophine global config
         // Lophine start - add carpet config

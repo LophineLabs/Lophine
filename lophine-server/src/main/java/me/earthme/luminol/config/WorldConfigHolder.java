@@ -1,5 +1,7 @@
 package me.earthme.luminol.config;
 
+import me.earthme.luminol.api.config.WorldValue;
+import me.earthme.luminol.api.config.WorldValues;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,9 +52,9 @@ public final class WorldConfigHolder {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T get(WorldValues.Key<T> key) {
+    public <T> T get(WorldValue<T> key) {
         Object[] snap = this.values;
-        int index = key.index;
+        int index = key.index();
         if (index < 0 || index >= snap.length) {
             return null;
         }
@@ -65,7 +67,7 @@ public final class WorldConfigHolder {
      */
     @SuppressWarnings("unchecked")
     public <T> T get(String configName, String key) {
-        WorldValues.Key<?> worldKey = WorldValues.keyOf(configName, key);
+        WorldValue<?> worldKey = WorldValues.keyOf(configName, key);
         if (worldKey != null) {
             Object value = get(worldKey);
             if (value != null) {
