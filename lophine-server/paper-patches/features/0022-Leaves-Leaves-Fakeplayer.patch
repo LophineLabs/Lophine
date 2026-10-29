@@ -53,7 +53,7 @@ index 40a49c50b0d468ebdcd5c9b9753c2a8b3c8e1116..d77333fdfc4bb5b177f704c922773d72
          if (nmsEntity.level() != this.getHandle().getLevel()) {
              throw new IllegalArgumentException(entity + " wasn't created with this world, you must create the entity with the world you want to add it to.");
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 916b348cf036db35d00675cefa83ef91716d17de..bdfcbcef836ac5185637ead7e86575b918999b08 100644
+index ca0bc5845e380160c72ac77c196646c09cef71fb..f314e313838470e90198826d01961c536da04044 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -285,6 +285,7 @@ public final class CraftServer implements Server {
@@ -81,7 +81,7 @@ index 916b348cf036db35d00675cefa83ef91716d17de..bdfcbcef836ac5185637ead7e86575b9
              return false;
          }
  
-@@ -3104,6 +3106,13 @@ public final class CraftServer implements Server {
+@@ -3105,6 +3107,13 @@ public final class CraftServer implements Server {
      }
      // Leaves end - Feature API
  

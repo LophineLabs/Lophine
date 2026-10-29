@@ -21,7 +21,7 @@ index d65a903c38537843048bcdcc668358b29893a253..4c871ad7893e714018f088dd0baefda1
          }
          // Leaves end - skip bot
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index bdfcbcef836ac5185637ead7e86575b918999b08..4fee05eaee3cd1464a43d5d7f4c678167dc959f2 100644
+index f314e313838470e90198826d01961c536da04044..9e8aead70918b16e77c20a431af248748f85f8a3 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -286,6 +286,7 @@ public final class CraftServer implements Server {
@@ -41,7 +41,7 @@ index bdfcbcef836ac5185637ead7e86575b918999b08..4fee05eaee3cd1464a43d5d7f4c67816
          this.serverVersion = io.papermc.paper.ServerBuildInfo.buildInfo().asString(io.papermc.paper.ServerBuildInfo.StringRepresentation.VERSION_SIMPLE); // Paper - improve version
          this.structureManager = new CraftStructureManager(console.getStructureTemplateManager(), console.registryAccess());
          this.serverTickManager = new CraftServerTickManager(console.tickRateManager());
-@@ -3113,6 +3114,13 @@ public final class CraftServer implements Server {
+@@ -3114,6 +3115,13 @@ public final class CraftServer implements Server {
      }
      // Leaves end - Bot API
  
