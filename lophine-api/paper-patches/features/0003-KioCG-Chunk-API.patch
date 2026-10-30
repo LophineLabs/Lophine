@@ -16,10 +16,10 @@ index d873b78f6935a23ff8f6092b80968267b182cc0f..b4323370859dd4d9e86614484cdb9d2e
 +    long getChunkHotAvg(); // KioCG
  }
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index 190313bc060d5f8440cec7c249ad1d2f1074f5bc..053b4da2f413e806f3e9590cc6470e22ce500a33 100644
+index e763c44f999df2814be8fbc2dfb9eceead2e77db..037bd1d642194590177d9f01bc6bd6da33db9128 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
-@@ -4084,4 +4084,6 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -4095,4 +4095,6 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * @return the post-effects
       */
      PlayerPostEffects postEffects();

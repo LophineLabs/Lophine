@@ -352,7 +352,7 @@ index 6e08d50794c4af4405f3e164a3fd46f376b3f78f..942c985ff067f163b4d4434625e71c90
  
      int getContainerSize();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index c7dbc3d78a36efdf86f1c8422e31e44b15852143..b987e768d7b5ae010df7e678e7aa08cc4a34f31a 100644
+index 79d801ed3794472b3eb8be413105df16e49da171..d76ee82d0663b623084b93e5f7390a2c83cbddcb 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -166,7 +166,7 @@ public abstract class Entity
@@ -373,7 +373,7 @@ index c7dbc3d78a36efdf86f1c8422e31e44b15852143..b987e768d7b5ae010df7e678e7aa08cc
      private final VecDeltaCodec packetPositionCodec = new VecDeltaCodec();
      public boolean needsSync;
      public boolean syncPosition;
-@@ -6503,6 +6503,13 @@ public abstract class Entity
+@@ -6504,6 +6504,13 @@ public abstract class Entity
      @Override
      public void setLevelCallback(final EntityInLevelCallback levelCallback) {
          this.levelCallback = levelCallback;
@@ -387,7 +387,7 @@ index c7dbc3d78a36efdf86f1c8422e31e44b15852143..b987e768d7b5ae010df7e678e7aa08cc
      }
  
      @Override
-@@ -6735,6 +6742,13 @@ public abstract class Entity
+@@ -6736,6 +6743,13 @@ public abstract class Entity
          return ((ServerLevel) this.level()).isPositionEntityTicking(this.blockPosition());
      }
      // Paper end

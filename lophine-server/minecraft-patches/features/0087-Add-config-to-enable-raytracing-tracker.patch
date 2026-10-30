@@ -18,7 +18,7 @@ index f5601ee683c9daef74ab34c96b70d990ac6cf534..ef8c1e81327dd3dd3535bb86920f2522
                      double rangeY = level.paperConfig().entities.trackingRangeY.get(this.entity, -1);
                      if (rangeY != -1) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index e8f3324d5d9a5453d534cb4e451ff9e497f9350c..b2a39491517a6ea1b4903716e82e13b610870f19 100644
+index 787822525fa46d24d9b46ccbea728f3b4d4f66a9..f0901bf99d627e2b1bbdce1db9743c0fb5078f23 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -166,7 +166,7 @@ public abstract class Entity
@@ -30,7 +30,7 @@ index e8f3324d5d9a5453d534cb4e451ff9e497f9350c..b2a39491517a6ea1b4903716e82e13b6
      // CraftBukkit start
      private static final int CURRENT_LEVEL = 2;
      static boolean isLevelAtLeast(ValueInput input, int level) {
-@@ -6772,4 +6772,48 @@ public abstract class Entity
+@@ -6773,4 +6773,48 @@ public abstract class Entity
      // Leaf end - Lithium - equipment tracking
  
      public boolean shouldTickHot() { return this.tickCount > 20 * 10 && this.isAlive(); } // KioCG

@@ -21,10 +21,10 @@ index d65a903c38537843048bcdcc668358b29893a253..4c871ad7893e714018f088dd0baefda1
          }
          // Leaves end - skip bot
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index f314e313838470e90198826d01961c536da04044..9e8aead70918b16e77c20a431af248748f85f8a3 100644
+index 044250d892b4363d5518d8990091925920b493ef..2d201e6e28a7055b00517782a0845d439410675f 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-@@ -286,6 +286,7 @@ public final class CraftServer implements Server {
+@@ -288,6 +288,7 @@ public final class CraftServer implements Server {
      public io.papermc.paper.SparksFly spark; // Paper - spark // Luminol - Force disable builtin spark
      private final ServerConfiguration serverConfig = new PaperServerConfiguration();
      private final org.leavesmc.leaves.entity.bot.CraftBotManager botManager; // Leaves
@@ -32,7 +32,7 @@ index f314e313838470e90198826d01961c536da04044..9e8aead70918b16e77c20a431af24874
  
      // Paper start - Folia region threading API
      private final io.papermc.paper.threadedregions.scheduler.FoliaRegionScheduler regionizedScheduler = new io.papermc.paper.threadedregions.scheduler.FoliaRegionScheduler(); // Folia - region threading
-@@ -380,7 +381,7 @@ public final class CraftServer implements Server {
+@@ -382,7 +383,7 @@ public final class CraftServer implements Server {
      public CraftServer(DedicatedServer console, PlayerList playerList) {
          this.console = console;
          this.playerList = (DedicatedPlayerList) playerList;
@@ -41,7 +41,7 @@ index f314e313838470e90198826d01961c536da04044..9e8aead70918b16e77c20a431af24874
          this.serverVersion = io.papermc.paper.ServerBuildInfo.buildInfo().asString(io.papermc.paper.ServerBuildInfo.StringRepresentation.VERSION_SIMPLE); // Paper - improve version
          this.structureManager = new CraftStructureManager(console.getStructureTemplateManager(), console.registryAccess());
          this.serverTickManager = new CraftServerTickManager(console.tickRateManager());
-@@ -3114,6 +3115,13 @@ public final class CraftServer implements Server {
+@@ -3135,6 +3136,13 @@ public final class CraftServer implements Server {
      }
      // Leaves end - Bot API
  

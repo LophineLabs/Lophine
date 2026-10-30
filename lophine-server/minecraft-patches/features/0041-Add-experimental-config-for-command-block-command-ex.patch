@@ -5,7 +5,7 @@ Subject: [PATCH] Add experimental config for command block command execution
 
 
 diff --git a/net/minecraft/world/level/BaseCommandBlock.java b/net/minecraft/world/level/BaseCommandBlock.java
-index 31f1583f29eebe5e13b5a7ac5116fdafc3592e5c..47fe63e49a7cfb77f8fe5cc95ab9faf46d244ba9 100644
+index 664422d93449a11b545832558326dfbe8f2cefd7..bd028983cce65b73c48ef1dd1d1b2e90255042bf 100644
 --- a/net/minecraft/world/level/BaseCommandBlock.java
 +++ b/net/minecraft/world/level/BaseCommandBlock.java
 @@ -91,7 +91,7 @@ public abstract class BaseCommandBlock {

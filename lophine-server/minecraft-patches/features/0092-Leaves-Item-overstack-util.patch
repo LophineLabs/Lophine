@@ -38,7 +38,7 @@ index 465268835e2fb91204b16e2d859628050022b403..8055657581041124a5ab0130f9d3b90f
          if (count > maxAllowedCount) {
              throw TOO_MANY_ITEMS.create(maxAllowedCount, prototypeItemStack.getDisplayName());
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 0929a4f86f42280f48ed9fca27cd0c6e893e9081..a6fe9281514b809f4c339daa35b5c2b41ca8a712 100644
+index 8e5376c92ef46c0cc5a22542e9e4d46918882cab..9b41cfbac779f9ff564db76ecce28f1537adb7d2 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -3293,7 +3293,7 @@ public class ServerGamePacketListenerImpl

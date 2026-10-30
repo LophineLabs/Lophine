@@ -418,7 +418,7 @@ index fd0d6ab5c3b221116af34a7f77f4916cfc0b0ce2..6a6e4b04ccbcb213fb9b57dc77da2406
          org.bukkit.event.player.PlayerChangedWorldEvent changeEvent = new org.bukkit.event.player.PlayerChangedWorldEvent(this.getBukkitEntity(), oldLevel.getWorld());
          this.level().getCraftServer().getPluginManager().callEvent(changeEvent);
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 4cdf0f7cdc2f02043a1b8caff6b25b6efe346927..40c6ab7184722374f827d2e0d5176a2eb6e39fc1 100644
+index 44c9b2c2e1d0f89e4fd0bb273892e0ec7750d56a..035a80db1bca34b94a19553fad57631b5eb7f888 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -3969,7 +3969,7 @@ public class ServerGamePacketListenerImpl
@@ -583,10 +583,10 @@ index ed78ba7e95b522570b5955a7197fbeaeb073a53b..b9e3af1868f6a5b3c8101064dde5f916
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index b2a39491517a6ea1b4903716e82e13b610870f19..c6af6c74c12b92260adce51689124711a7d9071b 100644
+index f0901bf99d627e2b1bbdce1db9743c0fb5078f23..01b36cef7040ac44918dbcd9736fdd7fe78d075a 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -1294,7 +1294,7 @@ public abstract class Entity
+@@ -1295,7 +1295,7 @@ public abstract class Entity
  
              BlockPos effectPos = this.getOnPosLegacy();
              BlockState effectState = this.level().getBlockState(effectPos);
@@ -595,7 +595,7 @@ index b2a39491517a6ea1b4903716e82e13b610870f19..c6af6c74c12b92260adce51689124711
                  this.checkFallDamage(movement.y, this.onGround(), effectState, effectPos);
              }
  
-@@ -1704,7 +1704,7 @@ public abstract class Entity
+@@ -1705,7 +1705,7 @@ public abstract class Entity
          return colliders.isEmpty() ? maxDistance : -Shapes.collide(Direction.Axis.Y, aabb, colliders, -maxDistance);
      }
  
@@ -604,7 +604,7 @@ index b2a39491517a6ea1b4903716e82e13b610870f19..c6af6c74c12b92260adce51689124711
          // Paper start - optimise collisions
          final boolean xZero = movement.x == 0.0;
          final boolean yZero = movement.y == 0.0;
-@@ -6027,7 +6027,7 @@ public abstract class Entity
+@@ -6028,7 +6028,7 @@ public abstract class Entity
          return MoveSimulationType.AUTHORITATIVE_SIDE;
      }
  

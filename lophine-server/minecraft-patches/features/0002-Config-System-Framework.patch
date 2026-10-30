@@ -5,7 +5,7 @@ Subject: [PATCH] Config System Framework
 
 
 diff --git a/net/minecraft/server/Main.java b/net/minecraft/server/Main.java
-index aa7f2ba4d931f98ce15c52dc2b99f07504149582..f72f7044b4110e2a5a185b1012a3181900e836b4 100644
+index a6d9b95c42926754acd2e54e7af7ade3f7d2c322..5b19c0f63cc0057aa3e8069168560a17d5f35e78 100644
 --- a/net/minecraft/server/Main.java
 +++ b/net/minecraft/server/Main.java
 @@ -110,6 +110,7 @@ public class Main {

@@ -10,10 +10,10 @@ VMP (https://github.com/RelativityMC/VMP-fabric)
 Licensed under: MIT (https://opensource.org/licenses/MIT)
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index b987e768d7b5ae010df7e678e7aa08cc4a34f31a..8084559a67652c8ed6c5e11915cdfa534d80f041 100644
+index d76ee82d0663b623084b93e5f7390a2c83cbddcb..7f65a947c37c4a836351022ad7fb45dc97be1194 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -1177,6 +1177,7 @@ public abstract class Entity
+@@ -1178,6 +1178,7 @@ public abstract class Entity
      private double moveStartY;
      private double moveStartZ;
      // Paper end - detailed watchdog information
@@ -21,7 +21,7 @@ index b987e768d7b5ae010df7e678e7aa08cc4a34f31a..8084559a67652c8ed6c5e11915cdfa53
  
      public void move(final MoverType moverType, Vec3 delta) {
          if (SharedConstants.IS_RUNNING_IN_IDE && !moverType.isServerAndClientSimulated() && !this.canSimulateMovement()) {
-@@ -1185,6 +1186,12 @@ public abstract class Entity
+@@ -1186,6 +1187,12 @@ public abstract class Entity
              );
          }
  
@@ -34,7 +34,7 @@ index b987e768d7b5ae010df7e678e7aa08cc4a34f31a..8084559a67652c8ed6c5e11915cdfa53
          final Vec3 originalMovement = delta; // Paper - Expose pre-collision velocity
          // Paper start - detailed watchdog information
          ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread("Cannot move an entity off-main");
-@@ -5807,6 +5814,11 @@ public abstract class Entity
+@@ -5808,6 +5815,11 @@ public abstract class Entity
      }
  
      public final void setBoundingBox(final AABB bb) {

@@ -5,7 +5,7 @@ Subject: [PATCH] Add cancel task by task id in FoliaGlobalRegionScheduler
 
 
 diff --git a/src/main/java/io/papermc/paper/threadedregions/scheduler/FoliaGlobalRegionScheduler.java b/src/main/java/io/papermc/paper/threadedregions/scheduler/FoliaGlobalRegionScheduler.java
-index 14ffbcb66006878eacf310547dad53718f8308eb..f20f2735fbb4d1e38d576eafe18a0054a45aa59e 100644
+index 8e4d5dd086f0c9854ef2a7d97bde5b59298ecdbb..db0c4069962c30199b552ac93724fb73add92702 100644
 --- a/src/main/java/io/papermc/paper/threadedregions/scheduler/FoliaGlobalRegionScheduler.java
 +++ b/src/main/java/io/papermc/paper/threadedregions/scheduler/FoliaGlobalRegionScheduler.java
 @@ -16,6 +16,8 @@ public class FoliaGlobalRegionScheduler implements GlobalRegionScheduler {
@@ -88,7 +88,7 @@ index 14ffbcb66006878eacf310547dad53718f8308eb..f20f2735fbb4d1e38d576eafe18a0054
          }
  
          private final int getStateVolatile() {
-@@ -262,5 +293,11 @@ public class FoliaGlobalRegionScheduler implements GlobalRegionScheduler {
+@@ -267,5 +298,11 @@ public class FoliaGlobalRegionScheduler implements GlobalRegionScheduler {
                  }
              }
          }

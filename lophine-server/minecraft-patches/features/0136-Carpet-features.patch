@@ -2584,7 +2584,7 @@ index 5ed9cec1827455b399f486b5d26834ff5b56330e..38d94632e62a716ae20857b08d970a2e
      }
  
 diff --git a/net/minecraft/core/dispenser/DefaultDispenseItemBehavior.java b/net/minecraft/core/dispenser/DefaultDispenseItemBehavior.java
-index 4f46cf67e20c4d491500ed6da8b6cf6808f980c7..ab0a9c1388efa621873d359a51a5dc8b7c997423 100644
+index 71a531436d078ae91dd454aff4abf1d74fd7d832..3f4dad415dbc00902e8bdfcf10765a20a29b06cf 100644
 --- a/net/minecraft/core/dispenser/DefaultDispenseItemBehavior.java
 +++ b/net/minecraft/core/dispenser/DefaultDispenseItemBehavior.java
 @@ -15,6 +15,9 @@ public class DefaultDispenseItemBehavior implements DispenseItemBehavior {
@@ -5837,7 +5837,7 @@ index 279b5072596c062a7c800510ed914a9df8ce0698..56cb4738c5d7bf2545ff841dc4ac34bc
          // Paper start - Implement click callbacks with custom click action
          final io.papermc.paper.event.player.PaperPlayerCustomClickEvent event = new io.papermc.paper.event.player.PaperPlayerCustomClickEvent(io.papermc.paper.adventure.PaperAdventure.asAdventure(packet.id()), this.getApiConnection(), packet.payload().orElse(null));
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 40c6ab7184722374f827d2e0d5176a2eb6e39fc1..9e1b0312a893a490295ebc314aa5a583de729459 100644
+index 035a80db1bca34b94a19553fad57631b5eb7f888..a355d0a0eb3eaa57f1d05691c19865c4aa5bd03d 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -275,6 +275,7 @@ public class ServerGamePacketListenerImpl
@@ -7424,7 +7424,7 @@ index 6541fe108f60d2c55a47f0bb5ba3b17f270cd5fa..df6c5b7cefa43c23e8cb0ede133b5c2d
          this.age = newAge;
          if (oldAge < 0 && newAge >= 0 || oldAge >= 0 && newAge < 0) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f0343c417 100644
+index 91fdb2334ba20154b51b3230295c900ca9ef8cce..08e9298c207167fa8739e347545caab25ea16030 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -267,6 +267,8 @@ public abstract class Entity
@@ -7487,7 +7487,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
      public final void discard(org.bukkit.event.entity.EntityRemoveEvent.@Nullable Cause cause) {
          this.remove(Entity.RemovalReason.DISCARDED, cause);
          // CraftBukkit end
-@@ -772,8 +790,20 @@ public abstract class Entity
+@@ -773,8 +791,20 @@ public abstract class Entity
      }
  
      public void remove(final Entity.RemovalReason reason, org.bukkit.event.entity.EntityRemoveEvent.@Nullable Cause eventCause) {
@@ -7508,7 +7508,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
      }
  
      public void onClientRemoval() {
-@@ -796,7 +826,7 @@ public abstract class Entity
+@@ -797,7 +827,7 @@ public abstract class Entity
      }
  
      public Pose getPose() {
@@ -7517,7 +7517,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
      }
  
      public boolean hasPose(final Pose pose) {
-@@ -885,6 +915,7 @@ public abstract class Entity
+@@ -886,6 +916,7 @@ public abstract class Entity
      }
  
      public void tick() {
@@ -7525,7 +7525,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
          // Paper start - entity despawn time limit
          if (this.despawnTime >= 0 && this.totalEntityAge >= this.despawnTime) {
              this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DESPAWN);
-@@ -994,10 +1025,15 @@ public abstract class Entity
+@@ -995,10 +1026,15 @@ public abstract class Entity
      public void checkBelowWorld() {
          if (!this.level.getWorld().isVoidDamageEnabled()) return; // Paper - check if void damage is enabled on the world
          // Paper start - Configurable nether ceiling damage
@@ -7542,7 +7542,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
              this.onBelowWorld();
          }
      }
-@@ -1058,15 +1094,26 @@ public abstract class Entity
+@@ -1059,15 +1095,26 @@ public abstract class Entity
      public void lavaHurt(@Nullable BlockPos pos) {
          // Paper end - track lava contact
          if (!this.fireImmune()) {
@@ -7575,7 +7575,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
      }
  
      protected boolean shouldPlayLavaHurtSound() {
-@@ -1180,6 +1227,10 @@ public abstract class Entity
+@@ -1181,6 +1228,10 @@ public abstract class Entity
      private boolean boundingBoxChanged = false; // Gale - VMP - skip entity move if movement is zero
  
      public void move(final MoverType moverType, Vec3 delta) {
@@ -7586,7 +7586,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
          if (SharedConstants.IS_RUNNING_IN_IDE && !moverType.isServerAndClientSimulated() && !this.canSimulateMovement()) {
              throw (IllegalStateException)Util.pauseInIde(
                  new IllegalStateException("Attempted to move entity on a logical side not permitted to simulate movement")
-@@ -1226,6 +1277,7 @@ public abstract class Entity
+@@ -1227,6 +1278,7 @@ public abstract class Entity
          } else {
              if (moverType == MoverType.PISTON) {
                  delta = this.limitPistonMovement(delta);
@@ -7594,7 +7594,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
                  // Paper start - EAR 2
                  this.activatedTick = Math.max(this.activatedTick, io.papermc.paper.threadedregions.RegionizedServer.getCurrentTick() + 20); // Folia - region threading
                  this.activatedImmunityTick = Math.max(this.activatedImmunityTick, io.papermc.paper.threadedregions.RegionizedServer.getCurrentTick() + 20); // Folia - region threading
-@@ -1240,6 +1292,7 @@ public abstract class Entity
+@@ -1241,6 +1293,7 @@ public abstract class Entity
              if (this.stuckSpeedMultiplier.lengthSqr() > 1.0E-7) {
                  if (moverType != MoverType.PISTON) {
                      delta = delta.multiply(this.stuckSpeedMultiplier);
@@ -7602,7 +7602,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
                  }
  
                  this.stuckSpeedMultiplier = Vec3.ZERO;
-@@ -1247,6 +1300,7 @@ public abstract class Entity
+@@ -1248,6 +1301,7 @@ public abstract class Entity
              }
              // Paper start - ignore movement changes while inactive.
              if (isTemporarilyActive && !(this instanceof ItemEntity) && delta == getDeltaMovement() && moverType == MoverType.SELF) {
@@ -7610,7 +7610,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
                  setDeltaMovement(Vec3.ZERO);
                  profiler.pop();
                  return;
-@@ -1254,7 +1308,9 @@ public abstract class Entity
+@@ -1255,7 +1309,9 @@ public abstract class Entity
              // Paper end
  
              delta = this.maybeBackOffFromEdge(delta, moverType);
@@ -7620,7 +7620,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
              double movementLength = movement.lengthSqr();
              if (movementLength > 1.0E-7 || delta.lengthSqr() - movementLength < 1.0E-7) {
                  if (this.fallDistance != 0.0 && movementLength >= 1.0) {
-@@ -1294,7 +1350,7 @@ public abstract class Entity
+@@ -1295,7 +1351,7 @@ public abstract class Entity
  
              BlockPos effectPos = this.getOnPosLegacy();
              BlockState effectState = this.level().getBlockState(effectPos);
@@ -7629,7 +7629,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
                  this.checkFallDamage(movement.y, this.onGround(), effectState, effectPos);
              }
  
-@@ -1354,6 +1410,12 @@ public abstract class Entity
+@@ -1355,6 +1411,12 @@ public abstract class Entity
              } // Paper
          }
          // Paper end - detailed watchdog information
@@ -7642,7 +7642,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
      }
  
      public void recordMovement(final MoverType moverType, final Vec3 movement) {
-@@ -1748,12 +1810,17 @@ public abstract class Entity
+@@ -1749,12 +1811,17 @@ public abstract class Entity
              this.level, (Entity)(Object)this, entityQueryBox, entityAABBs, 0, null
          );
  
@@ -7666,7 +7666,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
  
          final boolean collidedX = collided.x != movement.x;
          final boolean collidedY = collided.y != movement.y;
-@@ -1818,6 +1885,9 @@ public abstract class Entity
+@@ -1819,6 +1886,9 @@ public abstract class Entity
      public static Vec3 collideBoundingBox(
          final Entity source, final Vec3 movement, final AABB boundingBox, final Level level, final List<VoxelShape> entityColliders
      ) {
@@ -7676,7 +7676,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
          List<VoxelShape> colliders = collectCollidersIgnoringWorldBorder(source, level, entityColliders, boundingBox.expandTowards(movement));
          return collideWithShapes(movement, boundingBox, colliders);
      }
-@@ -2734,6 +2804,8 @@ public abstract class Entity
+@@ -2735,6 +2805,8 @@ public abstract class Entity
      }
  
      public boolean saveAsPassenger(final ValueOutput output, final boolean includeAll, final boolean includeNonSaveable, final boolean forceSerialization) {
@@ -7685,7 +7685,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
          // Paper end - Raw entity serialization API
          // CraftBukkit end
          if (this.removalReason != null && !this.removalReason.shouldSave() && !forceSerialization) { // Paper - Raw entity serialization API
-@@ -2911,8 +2983,9 @@ public abstract class Entity
+@@ -2912,8 +2984,9 @@ public abstract class Entity
              Vec3 pos = input.read("Pos", Vec3.CODEC).orElse(Vec3.ZERO);
              Vec3 motion = input.read("Motion", Vec3.CODEC).orElse(Vec3.ZERO);
              Vec2 rotation = input.read("Rotation", Vec2.CODEC).orElse(Vec2.ZERO);
@@ -7696,7 +7696,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
              );
              this.needsSync = true;
              double maxHorizontalPosition = 3.0000512E7;
-@@ -3072,7 +3145,22 @@ public abstract class Entity
+@@ -3073,7 +3146,22 @@ public abstract class Entity
      }
  
      public @Nullable ItemEntity spawnAtLocation(final ServerLevel level, final ItemStack itemStack) {
@@ -7720,7 +7720,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
      }
  
      public @Nullable ItemEntity spawnAtLocation(final ServerLevel level, final ItemStack itemStack, final Vec3 offset) {
-@@ -3105,6 +3193,7 @@ public abstract class Entity
+@@ -3106,6 +3194,7 @@ public abstract class Entity
              livingEntity.deathDropItems.add(new DefaultDrop(itemStack, dropStack -> {
                  ItemEntity dropEntity = new ItemEntity(this.level, this.getX() + offset.x, this.getY() + offset.y, this.getZ() + offset.z, dropStack); // stack is copied before consumer
                  dropEntity.setDefaultPickUpDelay();
@@ -7728,7 +7728,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
                  this.level.addFreshEntity(dropEntity);
                  if (delayedAddConsumer != null) delayedAddConsumer.accept(dropEntity);
              }));
-@@ -3127,6 +3216,7 @@ public abstract class Entity
+@@ -3128,6 +3217,7 @@ public abstract class Entity
              return null;
          }
          // CraftBukkit end
@@ -7736,7 +7736,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
          level.addFreshEntity(entity);
          return entity;
      }
-@@ -3511,6 +3601,8 @@ public abstract class Entity
+@@ -3512,6 +3602,8 @@ public abstract class Entity
              this.setPose(Pose.STANDING);
              this.vehicle = entityToRide;
              this.vehicle.addPassenger(this);
@@ -7745,7 +7745,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
              if (sendEventAndTriggers) {
                  this.level().gameEvent(this, GameEvent.ENTITY_MOUNT, this.vehicle.position);
                  entityToRide.getIndirectPassengersStream()
-@@ -3551,6 +3643,7 @@ public abstract class Entity
+@@ -3552,6 +3644,7 @@ public abstract class Entity
              Entity oldVehicle = this.vehicle;
              this.vehicle = null;
              if (!oldVehicle.removePassenger(this, suppressCancellation)) this.vehicle = oldVehicle; // CraftBukkit // Paper - Force entity dismount during teleportation
@@ -7753,7 +7753,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
              Entity.RemovalReason removalReason = this.getRemovalReason();
              if (removalReason == null || removalReason.shouldDestroy()) {
                  if (!this.hasNullCallback()) this.level().gameEvent(this, GameEvent.ENTITY_DISMOUNT, oldVehicle.position); // Folia - region threading - do not fire game events for entities not added
-@@ -3636,6 +3729,43 @@ public abstract class Entity
+@@ -3637,6 +3730,43 @@ public abstract class Entity
          return true; // CraftBukkit
      }
  
@@ -7797,7 +7797,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
      protected boolean canAddPassenger(final Entity passenger) {
          return this.passengers.isEmpty();
      }
-@@ -4613,11 +4743,13 @@ public abstract class Entity
+@@ -4614,11 +4744,13 @@ public abstract class Entity
      }
  
      protected Entity transformForAsyncTeleport(ServerLevel destination, Vec3 pos, Float yaw, Float pitch, Vec3 velocity) {
@@ -7811,7 +7811,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
          if (copy instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) dragon.syncDragonPartsAfterTeleportTransform(); // Luminol - Sync dragon part when teleportation or firstly created
          // vanilla code used to call remove _after_ copying, and some stuff is required to be after copy - so add hook here
          // for example, clearing of inventory after switching dimensions
-@@ -4626,6 +4758,24 @@ public abstract class Entity
+@@ -4627,6 +4759,24 @@ public abstract class Entity
          return copy;
      }
  
@@ -7836,7 +7836,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
      public final boolean teleportAsync(TeleportTransition teleportTarget, long teleportFlags,
                                         java.util.function.Consumer<Entity> teleportComplete) {
          PositionMoveRotation move = PositionMoveRotation.calculateAbsolute(PositionMoveRotation.of(this), PositionMoveRotation.of(teleportTarget), teleportTarget.relatives());
-@@ -4745,6 +4895,7 @@ public abstract class Entity
+@@ -4746,6 +4896,7 @@ public abstract class Entity
                          entity.root.xRot
                  );
                  // Luminol end
@@ -7844,7 +7844,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
                  entity.root.teleportSyncSameRegion(pos, yaw, pitch, velocity);
              }
  
-@@ -4760,6 +4911,9 @@ public abstract class Entity
+@@ -4761,6 +4912,9 @@ public abstract class Entity
                  // performs add/remove from world logic which will also perform add/remove tracker logic
              }
  
@@ -7854,7 +7854,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
              if (finalTeleportComplete != null) { // Luminol - Level hot unload apis
                  finalTeleportComplete.accept(this); // Luminol - Level hot unload apis
              }
-@@ -4774,11 +4928,17 @@ public abstract class Entity
+@@ -4775,11 +4929,17 @@ public abstract class Entity
              node.root.preChangeDimension();
          }
  
@@ -7877,7 +7877,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
  
          return true;
      }
-@@ -4792,6 +4952,7 @@ public abstract class Entity
+@@ -4793,6 +4953,7 @@ public abstract class Entity
      public void postChangeDimension() {
          this.resetStoredPositions();
          this.teleportTickType = fun.bm.lophine.enums.EnumTeleportStage.NEED_SYNC; // Lophine - Entity portal-teleport speed fix
@@ -7885,7 +7885,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
      }
  
      protected static enum PortalType {
-@@ -4868,7 +5029,8 @@ public abstract class Entity
+@@ -4869,7 +5030,8 @@ public abstract class Entity
                                      destination, finalPos, this.getDeltaMovement(), Direction.WEST.toYRot(), 0.0f, // Kaiiju - Vanilla end teleportation
                                      false, false,
                                      /*Relative.union(Relative.DELTA, Set.of(Relative.X_ROT))*/Set.of(), // Kaiiju - Vanilla end teleportation
@@ -7895,7 +7895,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
                                      org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.END_PORTAL,
                                      TeleportTransition.PassengerTeleportationMode.POSITION_RIDER
                                  )
-@@ -4905,7 +5067,8 @@ public abstract class Entity
+@@ -4906,7 +5068,8 @@ public abstract class Entity
                                      destination, finalPos, this.getDeltaMovement(), 0.0f, 0.0f, // Kaiiju - Vanilla end teleportation
                                      false, false,
                                      Relative.union(Relative.DELTA, Relative.ROTATION),
@@ -7905,7 +7905,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
                                      org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.END_PORTAL,
                                      TeleportTransition.PassengerTeleportationMode.POSITION_RIDER
                                  )
-@@ -5155,13 +5318,20 @@ public abstract class Entity
+@@ -5156,13 +5319,20 @@ public abstract class Entity
              node.root.prePortalLogic(originWorld, destination, type);
          }
  
@@ -7932,7 +7932,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
          // ensure the region is always ticking in case of a shutdown
          // otherwise, the shutdown will not be able to complete the shutdown as it requires a ticking region
          Long teleportHoldId = Long.valueOf(TELEPORT_HOLD_TICKET_GEN.getAndIncrement());
-@@ -5177,10 +5347,11 @@ public abstract class Entity
+@@ -5178,10 +5348,11 @@ public abstract class Entity
          ca.spottedleaf.concurrentutil.completable.CallbackCompletable<TeleportTransition> portalInfoCompletable
              = new ca.spottedleaf.concurrentutil.completable.CallbackCompletable<>();
  
@@ -7945,7 +7945,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
                  return;
              }
              originWorld.moonrise$getChunkTaskScheduler().chunkHolderManager.removeTicketAtLevel(
-@@ -5197,14 +5368,19 @@ public abstract class Entity
+@@ -5198,14 +5369,19 @@ public abstract class Entity
              passengerTree.root.placeInAsync(
                  originWorld, destination, Entity.TELEPORT_FLAG_LOAD_CHUNK | (takePassengers ? Entity.TELEPORT_FLAG_TELEPORT_PASSENGERS : 0L),
                  passengerTree,
@@ -7969,7 +7969,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
  
                      // Kaiiju start - vanilla end teleportation
                      /*if (teleportComplete != null) {
-@@ -5214,15 +5390,20 @@ public abstract class Entity
+@@ -5215,15 +5391,20 @@ public abstract class Entity
                          tpComplete.accept(teleported);
                      }
                      // Kaiiju end
@@ -7994,7 +7994,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
      // Folia end - region threading
      // Folia start - fix passenger desync
      public void fixPassengerDesync() {
-@@ -6295,6 +6476,8 @@ public abstract class Entity
+@@ -6296,6 +6477,8 @@ public abstract class Entity
      }
  
      public final void setPosRaw(double x, double y, double z, boolean forceBoundingBoxUpdate) {
@@ -8003,7 +8003,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
          // Paper start - rewrite chunk system
          if (this.updatingSectionStatus) {
              LOGGER.error(
-@@ -6346,6 +6529,7 @@ public abstract class Entity
+@@ -6347,6 +6530,7 @@ public abstract class Entity
              this.setBoundingBox(this.makeBoundingBox());
          }
          // Paper end - Block invalid positions and bounding box
@@ -8011,7 +8011,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
      }
  
      public void checkDespawn() {
-@@ -6450,6 +6634,11 @@ public abstract class Entity
+@@ -6451,6 +6635,11 @@ public abstract class Entity
      }
  
      public float maxUpStep() {
@@ -8023,7 +8023,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
          return 0.0F;
      }
  
-@@ -6481,6 +6670,10 @@ public abstract class Entity
+@@ -6482,6 +6671,10 @@ public abstract class Entity
          // Paper end - rewrite chunk system
          org.bukkit.craftbukkit.event.CraftEventFactory.callEntityRemoveEvent(this, cause); // CraftBukkit
          final boolean alreadyRemoved = this.removalReason != null; // Paper - Folia schedulers
@@ -8034,7 +8034,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
          // Folia start - region threading
          this.preRemove(reason);
          // Folia end - region threading
-@@ -6489,6 +6682,11 @@ public abstract class Entity
+@@ -6490,6 +6683,11 @@ public abstract class Entity
              this.removeEventCause = cause; // Paper
          }
  
@@ -8046,7 +8046,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
          if (this.removalReason.shouldDestroy()) {
              this.stopRiding();
          }
-@@ -6521,6 +6719,7 @@ public abstract class Entity
+@@ -6522,6 +6720,7 @@ public abstract class Entity
       * Invoked only when the entity is truly removed from the server, never to be added to any world.
       */
      public final void retireScheduler() {
@@ -8054,7 +8054,7 @@ index 1f7962fb2c429fc31e21dacde8031666721a0efa..f0422a5df5e3957d757fdaaeb0e30f7f
          // we need to force create the bukkit entity so that the scheduler can be retired...
          this.getBukkitEntity().taskScheduler.retire();
      }
-@@ -6826,4 +7025,18 @@ public abstract class Entity
+@@ -6827,4 +7026,18 @@ public abstract class Entity
      }
  
      // Lophine end - Add config to enable raytracing tracker
@@ -12266,7 +12266,7 @@ index 54e7c0e1d3bf2d41c04d4661f48ac96bda7c1113..91b6a9a569da1a0018b86ccc6a386473
      protected Vec3 getPassengerAttachmentPoint(final Entity passenger, final EntityDimensions dimensions, final float scale) {
          return new Vec3(0.0, dimensions.height() - 0.015625 * this.getSize() * scale, 0.0);
 diff --git a/net/minecraft/world/entity/monster/cubemob/SulfurCube.java b/net/minecraft/world/entity/monster/cubemob/SulfurCube.java
-index 2626154e60a4e8cf107ea1bb4f4e4c98ca0866c4..03d45bb0034f723bcd8cee1aa1825b969f43a994 100644
+index 94e49898cbbe9a249881accd44831314ed2cdf04..c1c1bda4f3f5ed9a2e021eba462feb76bba3f9e5 100644
 --- a/net/minecraft/world/entity/monster/cubemob/SulfurCube.java
 +++ b/net/minecraft/world/entity/monster/cubemob/SulfurCube.java
 @@ -283,6 +283,11 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
@@ -15819,7 +15819,7 @@ index 416feeb88dd0c473e596a8bb217fab52a24d23be..566db1f6dedcb524ff8ee45ac0727c04
              }
  
 diff --git a/net/minecraft/world/item/BucketItem.java b/net/minecraft/world/item/BucketItem.java
-index 3bc24a581404fee042f9be29595ade92b7b29c0c..0999c443a367e4d6087cdd122bb0edeb85f06f2c 100644
+index 88de6142f66f158a4425a4cc5d093fdda80b6ebb..623a8cf9597dca7b82b1c65abb99e0e00e191877 100644
 --- a/net/minecraft/world/item/BucketItem.java
 +++ b/net/minecraft/world/item/BucketItem.java
 @@ -153,7 +153,10 @@ public class BucketItem extends Item implements DispensibleContainerItem {
@@ -17587,7 +17587,7 @@ index b7766e7155a6a5345bc4eefcbd05e6848e1bf026..e492e1052e0ea39ff9efef2866ca587a
  
      public int getDemand() {
 diff --git a/net/minecraft/world/level/BaseCommandBlock.java b/net/minecraft/world/level/BaseCommandBlock.java
-index 47fe63e49a7cfb77f8fe5cc95ab9faf46d244ba9..80a2f14e8fbd0feca91101962d88e3f184a08631 100644
+index bd028983cce65b73c48ef1dd1d1b2e90255042bf..b9b7589a564516272bb2f3660e351ae8e64f68ff 100644
 --- a/net/minecraft/world/level/BaseCommandBlock.java
 +++ b/net/minecraft/world/level/BaseCommandBlock.java
 @@ -24,6 +24,7 @@ public abstract class BaseCommandBlock {
@@ -21095,7 +21095,7 @@ index 41154db05edbb777fbe08e1e79b4f30f12a3cc80..297731710596143e73ef99a2e9b48947
          if (!this.connectedPlayers.equals(currentConnectedPlayers)) {
              this.connectedPlayers = currentConnectedPlayers;
 diff --git a/net/minecraft/world/level/block/grower/TreeGrower.java b/net/minecraft/world/level/block/grower/TreeGrower.java
-index 5846fbfc5975a11c5de605554bca2aaab57522f5..b3231db767f9f21f412df7f7c94efb76228564e8 100644
+index 13797ac0c866ec4bdea0cb597800634cbbea3586..80e2fd2f43dbf8c0ba04f08ee0cb81852e8877e9 100644
 --- a/net/minecraft/world/level/block/grower/TreeGrower.java
 +++ b/net/minecraft/world/level/block/grower/TreeGrower.java
 @@ -103,6 +103,14 @@ public final class TreeGrower {
@@ -22764,10 +22764,10 @@ index 90145a3ea384b568897ee665b80b24cccba1b6c5..1c2719965f402d284b6e98e780c80d5f
      }
  }
 diff --git a/net/minecraft/world/level/storage/LevelStorageSource.java b/net/minecraft/world/level/storage/LevelStorageSource.java
-index 01b4ea4159d1885c4f409cca85297342bf485d56..63b51eb79331edf61029e7173d60bb17697fda07 100644
+index 4bcec74c0b0301c4dd8475a04494c4fcdbe2ed70..8788fe21d0a3c9012fad5d1c9806c1b8438bb515 100644
 --- a/net/minecraft/world/level/storage/LevelStorageSource.java
 +++ b/net/minecraft/world/level/storage/LevelStorageSource.java
-@@ -460,7 +460,7 @@ public class LevelStorageSource {
+@@ -486,7 +486,7 @@ public class LevelStorageSource {
          private DirectoryLock lock;
          private final LevelStorageSource.LevelDirectory levelDirectory;
          private final String levelId;
@@ -23446,10 +23446,10 @@ index ab620a3a674c30ee74e2319a9223cd6dbea6ffa4..497bea321c4fddd98f3d6e4ca2b7a8bd
 +    public void carpetSetCriterion(ObjectiveCriteria criterion) { this.criteria = criterion; }
  }
 diff --git a/net/minecraft/world/scores/Scoreboard.java b/net/minecraft/world/scores/Scoreboard.java
-index 4a15851bda30c918c58c96d2cb98b74f30db396c..b0a7fa4274dcbaed70f0d048ed13491afca06614 100644
+index ccff13ea50431fbde5b1e0238a8534fab06aa786..35e60a8ace24bc7ff8ae3083858993ed53c433b3 100644
 --- a/net/minecraft/world/scores/Scoreboard.java
 +++ b/net/minecraft/world/scores/Scoreboard.java
-@@ -431,4 +431,7 @@ public class Scoreboard {
+@@ -432,4 +432,7 @@ public class Scoreboard {
                  .apply(i, Scoreboard.PackedScore::new)
          );
      }

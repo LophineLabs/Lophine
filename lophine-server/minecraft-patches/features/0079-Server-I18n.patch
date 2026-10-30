@@ -26,7 +26,7 @@ index 5760100429aa76fe6b2b004a8a2e1e0f6de4d1c4..abad2338c581d7881d093e2995231c10
              loadFromJson(stream, output);
          } catch (IOException | JsonParseException e) {
 diff --git a/net/minecraft/server/Main.java b/net/minecraft/server/Main.java
-index f72f7044b4110e2a5a185b1012a3181900e836b4..89cc1eb32ef2daf8523cdce5ab707863c9647ad9 100644
+index 5b19c0f63cc0057aa3e8069168560a17d5f35e78..d0a80c34da409bcdb143c72e059177116e98648c 100644
 --- a/net/minecraft/server/Main.java
 +++ b/net/minecraft/server/Main.java
 @@ -167,6 +167,8 @@ public class Main {
