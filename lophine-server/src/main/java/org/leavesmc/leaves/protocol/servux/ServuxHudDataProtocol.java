@@ -53,8 +53,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServuxHudDataProtocol implements LeavesProtocol {
 
     public static final int PROTOCOL_VERSION = 3;
+    private static final int LEGACY_PROTOCOL_VERSION = 2;
 
-    private static final Set<ServerPlayer> players = ConcurrentHashMap.newKeySet();
+    private static final Map<ServerPlayer, Integer> players = new ConcurrentHashMap<>();
     private static final int updateInterval = 80;
 
     private static final Map<ServerPlayer, List<DataLogger.Type>> loggerPlayers = new ConcurrentHashMap<>();
@@ -76,11 +77,6 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
         }
     }
 
-    @ProtocolHandler.PlayerJoin
-    private static void onPlayerJoin(ServerPlayer player) {
-        sendHudMetadata(player);
-    }
-
     @ProtocolHandler.PlayerLeave
     private static void onPlayerLeave(ServerPlayer player) {
         players.remove(player);
@@ -92,23 +88,25 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
     public static void onPacketReceive(ServerPlayer player, HudDataPayload payload) {
         switch (payload.packetType) {
             case PACKET_C2S_METADATA_REQUEST -> {
-                if (payload.nbt.getIntOr("version", -1) >= PROTOCOL_VERSION) {
-                    players.add(player);
+                int version = payload.nbt.getIntOr("version", -1);
+                if (version == LEGACY_PROTOCOL_VERSION || version == PROTOCOL_VERSION) {
+                    players.put(player, version);
                     sendHudMetadata(player);
                 }
             }
             case PACKET_C2S_SPAWN_DATA_REQUEST -> {
-                if (players.contains(player)) refreshSpawnMetadata(player);
+                if (players.containsKey(player)) refreshSpawnMetadata(player);
             }
             case PACKET_C2S_RECIPE_MANAGER_REQUEST -> {
-                if (players.contains(player)) refreshRecipeManager(player);
+                if (players.containsKey(player)) refreshRecipeManager(player);
             }
             case PACKET_C2S_DATA_LOGGER_REQUEST -> {
-                if (players.contains(player)) refreshLoggers(player, payload.nbt);
+                if (players.containsKey(player)) refreshLoggers(player, payload.nbt);
             }
             case PACKET_C2S_UNREGISTER_REPLY -> {
                 players.remove(player);
                 loggerPlayers.remove(player);
+                DATA.clearXZ(player);
             }
         }
     }
@@ -117,7 +115,7 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
         CompoundTag metadata = new CompoundTag();
         metadata.putString("name", "hud_data");
         metadata.putString("id", HudDataPayload.CHANNEL.toString());
-        metadata.putInt("version", PROTOCOL_VERSION);
+        metadata.putInt("version", players.getOrDefault(player, PROTOCOL_VERSION));
         metadata.putString("servux", ServuxProtocol.SERVUX_STRING);
         if (ServuxProtocolConfig.hudLoggerProtocol) {
             CompoundTag nbt = new CompoundTag();
@@ -146,7 +144,7 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
         ListTag list = new ListTag();
 
         recipes.forEach((recipeEntry -> {
-            DataResult<Tag> dr = Recipe.CODEC.encodeStart(NbtOps.INSTANCE, recipeEntry.value());
+            DataResult<Tag> dr = Recipe.CODEC.encodeStart(player.registryAccess().createSerializationContext(NbtOps.INSTANCE), recipeEntry.value());
 
             if (dr.result().isPresent()) {
                 CompoundTag entry = new CompoundTag();
@@ -245,7 +243,7 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
 
     @ProtocolHandler.Ticker
     public void protocolTick() {
-        for (ServerPlayer player : players) {
+        for (ServerPlayer player : players.keySet()) {
             if (refreshSpawnMetadata) {
                 refreshSpawnMetadata(player);
             }
@@ -268,7 +266,7 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
                 if (!isLoggerTypeEnabled(type)) {
                     return;
                 }
-                players.forEach(player -> {
+                players.keySet().forEach(player -> {
                     Tag ret = logger.getResult(server, this, player);
                     if (ret != null) {
                         DATA.put(type, player, ret);
@@ -309,12 +307,20 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
     }
 
     public static void sendPacket(ServerPlayer player, HudDataPayload payload) {
+        Integer version = players.get(player);
+        if (version == null) {
+            return;
+        }
         if (payload.packetType == HudDataPayloadType.PACKET_S2C_NBT_RESPONSE_START) {
             FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
-            ServuxDataByteBuf.write(buffer, payload.nbt);
+            if (version == LEGACY_PROTOCOL_VERSION) {
+                buffer.writeNbt(payload.nbt);
+            } else {
+                ServuxDataByteBuf.write(buffer, payload.nbt);
+            }
             PacketSplitter.send(ServuxHudDataProtocol::sendWithSplitter, buffer, player);
         } else {
-            ProtocolUtils.sendPayloadPacket(player, payload);
+            ProtocolUtils.sendPayloadPacket(player, new HudDataPayload(payload.packetType, payload.nbt, payload.buffer, version));
         }
     }
 
@@ -353,7 +359,7 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
     }
 
     public record HudDataPayload(HudDataPayloadType packetType, CompoundTag nbt,
-                                 FriendlyByteBuf buffer) implements LeavesCustomPayload {
+                                 FriendlyByteBuf buffer, int protocolVersion) implements LeavesCustomPayload {
 
         @ID
         public static final Identifier CHANNEL = ServuxProtocol.id("hud_metadata");
@@ -363,10 +369,18 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
                 (buf, payload) -> {
                     buf.writeVarInt(payload.packetType().type);
                     switch (payload.packetType()) {
-                        case PACKET_S2C_NBT_RESPONSE_DATA -> buf.writeBytes(payload.buffer().copy());
-                        case PACKET_C2S_METADATA_REQUEST, PACKET_S2C_METADATA, PACKET_C2S_SPAWN_DATA_REQUEST,
+                        case PACKET_S2C_NBT_RESPONSE_DATA -> buf.writeBytes(payload.buffer(), payload.buffer().readerIndex(), payload.buffer().readableBytes());
+                        // The handshake remains vanilla network NBT in both protocol versions.
+                        case PACKET_C2S_METADATA_REQUEST, PACKET_S2C_METADATA -> buf.writeNbt(payload.nbt());
+                        case PACKET_C2S_SPAWN_DATA_REQUEST,
                              PACKET_S2C_SPAWN_DATA, PACKET_S2C_WEATHER_TICK, PACKET_C2S_RECIPE_MANAGER_REQUEST,
-                             PACKET_C2S_DATA_LOGGER_REQUEST, PACKET_S2C_DATA_LOGGER_TICK -> buf.writeNbt(payload.nbt());
+                             PACKET_C2S_DATA_LOGGER_REQUEST, PACKET_S2C_DATA_LOGGER_TICK -> {
+                            if (payload.protocolVersion() == LEGACY_PROTOCOL_VERSION) {
+                                buf.writeNbt(payload.nbt());
+                            } else {
+                                ServuxDataByteBuf.write(buf, payload.nbt());
+                            }
+                        }
                         case PACKET_C2S_UNREGISTER_REPLY -> ServuxDataByteBuf.write(buf, payload.nbt());
                     }
                 },
@@ -379,11 +393,25 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
                         case PACKET_S2C_NBT_RESPONSE_DATA -> {
                             return new HudDataPayload(type, new FriendlyByteBuf(buf.readBytes(buf.readableBytes())));
                         }
-                        case PACKET_C2S_METADATA_REQUEST, PACKET_S2C_METADATA, PACKET_C2S_SPAWN_DATA_REQUEST,
+                        case PACKET_C2S_METADATA_REQUEST, PACKET_S2C_METADATA -> {
+                            CompoundTag nbt = buf.readNbt();
+                            if (nbt == null) {
+                                throw new IllegalArgumentException("Missing Servux HUD metadata");
+                            }
+                            return new HudDataPayload(type, nbt, null, nbt.getIntOr("version", -1));
+                        }
+                        case PACKET_C2S_SPAWN_DATA_REQUEST,
                              PACKET_S2C_SPAWN_DATA, PACKET_S2C_WEATHER_TICK,
                              PACKET_C2S_RECIPE_MANAGER_REQUEST, PACKET_C2S_DATA_LOGGER_REQUEST,
                              PACKET_S2C_DATA_LOGGER_TICK -> {
-                            return new HudDataPayload(type, buf.readNbt());
+                            // A v2 compound starts with TAG_COMPOUND; a v3 length prefix
+                            // is at most 16 MiB and cannot start with that byte.
+                            if (buf.getUnsignedByte(buf.readerIndex()) == Tag.TAG_COMPOUND
+                                    || (buf.readableBytes() == 1 && buf.getByte(buf.readerIndex()) == Tag.TAG_END)) {
+                                CompoundTag nbt = buf.readNbt();
+                                return new HudDataPayload(type, nbt == null ? new CompoundTag() : nbt, null, LEGACY_PROTOCOL_VERSION);
+                            }
+                            return new HudDataPayload(type, ServuxDataByteBuf.read(buf, 16 * 1024 * 1024));
                         }
                         case PACKET_C2S_UNREGISTER_REPLY -> {
                             ServuxDataByteBuf.skip(buf);
@@ -395,11 +423,11 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
         );
 
         public HudDataPayload(HudDataPayloadType type, CompoundTag nbt) {
-            this(type, nbt, null);
+            this(type, nbt, null, PROTOCOL_VERSION);
         }
 
         public HudDataPayload(HudDataPayloadType type, FriendlyByteBuf buffer) {
-            this(type, new CompoundTag(), buffer);
+            this(type, new CompoundTag(), buffer, PROTOCOL_VERSION);
         }
     }
 }
