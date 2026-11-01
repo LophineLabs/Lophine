@@ -91,7 +91,9 @@ public final class ScarpetExplosionActors {
         // shooter must not make an explosion load every chunk between both actors.
         // Foreign source calculator calls already use their own source actor and block view.
         Supplier<T> captured = ScarpetRuntime.captureNativeContinuation(() -> ScarpetAttribution.with(attribution, operation));
-        CompletableFuture<T> done = fun.bm.lophine.carpet.CarpetRegionLease.runValue((ServerLevel) explosion.level(), minX, minZ, maxX, maxZ, lease -> captured.get());
+        // An owned, already-loaded footprint stays on this tick. Ticket-backed
+        // runValue always queues after drainTasks and delays Wind Burst.
+        CompletableFuture<T> done = fun.bm.lophine.carpet.CarpetRegionLease.runOwnedPhaseValue((ServerLevel) explosion.level(), minX, minZ, maxX, maxZ, lease -> captured.get());
         ScarpetNativeWork.record(done);
         return done;
     }

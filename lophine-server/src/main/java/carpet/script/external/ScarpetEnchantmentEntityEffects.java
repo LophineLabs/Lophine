@@ -127,7 +127,9 @@ public final class ScarpetEnchantmentEntityEffects {
             ScarpetNativeWork.trackNative(world.getServer(), observed);
             return ScarpetNativeWork.recoverGuestValue(observed);
         });
-        var actual = fun.bm.lophine.carpet.CarpetRegionLease.<CompletableFuture<T>>runValue(world, (position.getX() - radius) >> 4,
+        // Post-attack effects already sit on their caller region; an owned phase
+        // keeps Wind Burst on this tick instead of queueing after drainTasks.
+        var actual = fun.bm.lophine.carpet.CarpetRegionLease.<CompletableFuture<T>>runOwnedPhaseValue(world, (position.getX() - radius) >> 4,
                         (position.getZ() - radius) >> 4, (position.getX() + radius) >> 4, (position.getZ() + radius) >> 4, lease -> accepted.get())
                 .thenCompose(ScarpetRuntime.captureNativeFunction(value -> value));
         ScarpetNativeWork.record(actual);
