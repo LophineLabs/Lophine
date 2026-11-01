@@ -9,6 +9,8 @@ body:
   - type: markdown
     attributes:
       value: |
+        **安全问题：可利用的崩溃、拒绝服务、非预期物品复制、权限绕过或信息泄露，请先阅读 [安全政策](https://github.com/LophineLabs/Lophine/security/policy)，通过私密渠道报告，不要在此公开利用细节。**
+        **Security: for exploitable crashes, denial of service, unintended duplication, permission bypasses, or information disclosure, read the [security policy](https://github.com/LophineLabs/Lophine/security/policy) and report privately. Do not disclose exploit details here.**
         在提问之前，请您先阅读 [提问的智慧](https://lug.ustc.edu.cn/wiki/doc/smart-questions/) ，我们不会为任何无意义的问题作回复。
         Please read [smart questions](http://www.catb.org/~esr/faqs/smart-questions.html) before asking questions, we won't respond to any meaningless questions.
         请详细描述您所遇到的Bug。确保您**真的**遇到了**服务端**Bug，而非原版特性或客户端Bug。

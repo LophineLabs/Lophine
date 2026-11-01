@@ -118,6 +118,8 @@ java {
 
 ## 🐛 Bug Reports
 
+> For security issues, exploitable crashes, or unintended item duplication, read the [security policy](./SECURITY.md) and report privately. Do not publish exploit details in public issues or community channels.
+
 When you encounter any issues, please ask us and we'll do our best to resolve them. Please remember to:
 
 - **Describe the problem clearly** - Provide detailed information about the specific issue

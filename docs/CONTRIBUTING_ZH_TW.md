@@ -1,100 +1,141 @@
-為 Lophine 貢獻程式碼
-===============
+# 為 Lophine 貢獻程式碼
 
-[English](./CONTRIBUTING_EN.md) | [中文（簡體）](./CONTRIBUTING.md) | **中文（繁體）** | [日本語](./CONTRIBUTING_JP.md)
+[English](./CONTRIBUTING_EN.md) | [中文（简体）](./CONTRIBUTING.md) | **中文（繁體）** | [日本語](./CONTRIBUTING_JP.md)
 
-很高興你願意為這個專案貢獻！一般來說，我們對 PR 的審核標準相當寬鬆；
-如果你可以照著下面的規則來，我們就能更快完成審核。
+感謝你參與 Lophine。請在 PR 說明問題、實作方式與驗證結果，讓維護者能理解變更及其維護成本。使用程式碼代理時，也需遵循根目錄的 [AGENTS.md](../AGENTS.md)。
 
-## 請使用個人帳號進行 Fork
+## 開發環境與首次建置
 
-我們會定期嘗試合併現有的 PR，如果內容有一些小問題，我們會直接幫你修改後合併。
+- 安裝 Git 與 JDK 25，使用儲存庫內的 Gradle Wrapper。目前編譯工具鏈與 CI 都使用 Java 25。
+- Minecraft 版本、Folia 基準與外掛版本以 `gradle.properties`、`settings.gradle.kts` 和模組建置設定為準。
+- Windows 下請啟用系統與 Git 的長路徑支援，參見 [Windows 文件](https://learn.microsoft.com/windows/win32/fileio/maximum-file-path-limitation)與 [Git for Windows FAQ](https://gitforwindows.org/faq.html#i-get-errors-trying-to-check-out-files-with-long-path-names)。
+- 建議使用個人帳號 Fork，在以目標分支為基礎的工作分支上開發。先檢查 `git status`，保留既有修改。
 
-但如果你的 PR 是用組織（organization）帳號 fork 出來的，我們就沒辦法直接修改你的 PR，只能先關閉、再手動合併一次。
+以下指令都在主儲存庫根目錄執行。範例使用 PowerShell；Linux/macOS 請將 `.\gradlew.bat` 換成 `./gradlew`。
 
-所以，請不要用組織帳號來 fork 這個專案！
+```powershell
+java -version
+git --version
+.\gradlew.bat applyAllPatches --console=plain --stacktrace --no-daemon
+.\gradlew.bat :lophine-server:compileJava --console=plain --no-daemon
+.\gradlew.bat createPaperclipJar --console=plain --no-daemon
+```
 
-你可以參考[這個 Issue](https://github.com/isaacs/github/issues/1681)，了解為什麼我們沒辦法直接修改組織帳號的 PR。
+Paperclip JAR 輸出至 `lophine-server/build/libs/`。`applyAllPatches` 準備上游原始碼並套用各層修補檔；首次執行需要下載相依套件。執行前先儲存或匯出既有的產生原始碼修改，套用修補檔可能重新建立這些目錄。
 
-## 開發環境
+## 找到正確的修改位置
 
-在開始寫程式之前，你需要先準備好以下開發工具與環境：
+Lophine 使用 ComfreyWeight 的多層修補流程，以 Folia 為基礎，並繼承 Paper 與 Minecraft 原始碼。直接維護的檔案和套用修補檔後產生的檔案需要分別處理。
 
-- `git`
-- `JDK 25` 或更新版本
+| 修改範圍 | 編輯位置 | 主儲存庫儲存位置 |
+| --- | --- | --- |
+| Lophine 自有實作、設定、資源及測試 | `lophine-server/src/main/`、`lophine-server/src/test/` | 直接提交檔案 |
+| Lophine 新增 API 及測試 | `lophine-api/src/main/`、`lophine-api/src/test/` | 直接提交檔案 |
+| Minecraft Java | `lophine-server/src/minecraft/java/` | `lophine-server/minecraft-patches/sources/` 或 `features/` |
+| Minecraft 原版資源 | `lophine-server/src/minecraft/resources/` | `lophine-server/minecraft-patches/resources/` |
+| Paper 伺服器原始碼、資源及測試 | `paper-server/` | `lophine-server/paper-patches/files/` 或 `features/` |
+| 既有 Paper/Bukkit API | `paper-api/` | `lophine-api/paper-patches/files/` 或 `features/` |
+| Folia 自有伺服器或 API 檔案 | `folia-server/`、`folia-api/` | 對應模組的 `folia-patches/`，依目前設定決定 |
+| 模組建置腳本 | `lophine-*/build.gradle.kts` | 對應的 `build.gradle.kts.patch` |
 
-特別提醒：動手之前，請先在你的作業系統與 Git 裡啟用長路徑（long path）支援，以下是部分平台的設定說明。
+主儲存庫通常忽略 `paper-*`、`folia-*`、Minecraft 原始碼和套用後的模組建置腳本。只修改這些檔案不會形成持久變更，必須匯出所屬修補檔。Lophine 自有的新類別與資源應放在直接維護的目錄，不需要產生修補檔。
 
-[`Windows`](https://learn.microsoft.com/windows/win32/fileio/maximum-file-path-limitation)
-[`Git for Windows`](https://gitforwindows.org/faq.html#i-get-errors-trying-to-check-out-files-with-long-path-names)
+產生的原始碼有獨立 Git 歷史。在目標目錄執行 `git rev-parse --show-toplevel`、`git status` 和 `git log --oneline`，確認操作的是哪個儲存庫。`base`、`file` 等參照屬於該修補層：逐檔修改彙入 File Patches 提交，後續功能提交分別匯出。不能將 `base` 後的所有提交都視為獨立功能修補檔。
 
-## 認識 Patch（補丁）系統
+## 選擇修補類型與任務
 
-Lophine 沿用了和 Folia 相同的 patch 系統，並依照修改的部分分成了兩個目錄：
+修改既有功能時維護所屬修補檔。小範圍的上游修改可用逐檔修補；需要獨立說明和維護的完整功能可用 feature patch。Minecraft 原版資源使用資源修補。功能重建任務也可能執行逐檔修補相依任務，請檢查所有匯出結果。
 
-- `lophine-api` - 基於 `Folia-API` / `Paper-API` / `Spigot-API` / `Bukkit-API` 所做出的修改。
-- `lophine-server` - 針對 Minecraft 原版伺服器既有邏輯所做的修改。
+以下完整任務名稱從主儲存庫根目錄呼叫：
 
-這套 patch 系統是以 git 為基礎運作的，你可以在這裡了解 git 的基本操作：<https://git-scm.com/docs/gittutorial>
+| 修改層 | 收集逐檔修改 | 匯出逐檔修補檔 | 匯出功能修補檔 |
+| --- | --- | --- | --- |
+| Minecraft Java | `:lophine-server:fixupMinecraftSourcePatches` | `:lophine-server:rebuildMinecraftSourcePatches` | `:lophine-server:rebuildMinecraftFeaturePatches` |
+| Minecraft 資源 | `:lophine-server:fixupMinecraftResourcePatches` | `:lophine-server:rebuildMinecraftResourcePatches` | — |
+| Paper 伺服器 | `:lophine-server:fixupPaperServerFilePatches` | `:lophine-server:rebuildPaperServerFilePatches` | `:lophine-server:rebuildPaperServerFeaturePatches` |
+| Paper API | `:fixupPaperApiFilePatches` | `:rebuildPaperApiFilePatches` | `:rebuildPaperApiFeaturePatches` |
+| Folia 伺服器 | `:lophine-server:fixupFoliaServerFilePatches` | `:lophine-server:rebuildFoliaServerFilePatches` | `:lophine-server:rebuildFoliaServerFeaturePatches` |
+| Folia API | `:fixupFoliaApiFilePatches` | `:rebuildFoliaApiFilePatches` | `:rebuildFoliaApiFeaturePatches` |
 
-如果你已經 fork 了主要的 repository，接下來請照以下步驟操作：
+模組建置腳本以 `:rebuildFoliaSingleFilePatches` 匯出。名稱對應根建置註冊的 Folia 上游，不能依模組名推導成 `rebuildLophineSingleFilePatches`。更多任務請查看：
 
-1. 把你 fork 出來的 repository clone 到本機；
-2. 在你的 IDE 或終端機（terminal）裡執行 Gradle 的 `applyAllPatches` 任務；如果是在終端機裡，可以直接執行 `./gradlew applyAllPatches`；
-3. 執行完成後，repository  的根目錄下應該會出現以下幾組目錄： `lophine-api` 與 `lophine-server`、`folia-api` 與 `folia-server` 以及 `paper-api` 與 `paper-server`（以下統稱為 `*-api` 與 `*-server`）；
-4. 進入 repository 根目錄下對應的 `*-api` 與 `*-server` 資料夾，在裡面進行修改。
+```powershell
+.\gradlew.bat tasks --all :lophine-server:tasks --all --console=plain
+```
 
-以下是對上述各個資料夾的簡單說明，更詳細的說明可以參考[這裡](https://github.com/Toffikk/paperweight-examples/blob/18241979c88068d5b061d95ad69c98ecb201c246/README.md)：
+### 直接維護的 Lophine 檔案
 
-1. API 部分
+編輯與驗證後，在主儲存庫提交選定檔案即可。新增檔案需正常加入 Git 追蹤。舊指南「不要提交新增檔案」的說明不適用於這些目錄，也不需要執行 API 的 `fixup` 任務。
 
-- `lophine-api`：新增 API 的修改請放在這裡
-- `folia-api`：針對 Folia API 的修改請放在這個資料夾
-- `paper-api`：對於 Paper API / Spigot API / Bukkit API 的修改請放在這個資料夾
+### 新增功能修補檔
 
-2. Server 部分
+以 Minecraft 為例，在套用後的原始碼實作並驗證，再於該產生儲存庫建立功能提交，然後從主儲存庫匯出：
 
-- `lophine-server`：針對 Minecraft 原版伺服器的修改、以及新增的檔案，都請放在這個資料夾
-- `folia-server`：針對 folia-server 的修改請放在這個資料夾
-- `paper-server`：根據 Paper 伺服器邏輯的修改請放在這個資料夾
+```powershell
+git -C lophine-server/src/minecraft/java status --short
+git -C lophine-server/src/minecraft/java add -- path/to/ChangedClass.java
+git -C lophine-server/src/minecraft/java commit -m "Describe the feature"
+.\gradlew.bat :lophine-server:rebuildMinecraftFeaturePatches --console=plain
+```
 
-順帶一提，repository 根目錄下的 `*-api` 與 `*-server` 並不是一般的 git repository：
+替換範例路徑，以相對於產生儲存庫的路徑逐項列出檔案。Paper 伺服器或 API 的功能提交在對應產生儲存庫建立，使用任務表中的對應任務。最後在主儲存庫檢查並提交匯出的修補檔及本次直接維護的檔案。
 
-- 在套用 patch 之前，base（基準點）指向的是未經修改的原始程式碼；
-- base 之後的每一個 commit，都會被視為一個 patch；
-- 只有在 Folia 最後一個 commit 之後的 commit，才會被視為是 Lophine 的 patch。
+### 修改既有功能修補檔
 
-## 新增 Patch
+在完整套用的原始碼 HEAD 上開發與驗證，用 `git log` / `git blame` 找出所屬功能提交。在該產生儲存庫建立 fixup 並合入原提交。將 `<target-hash>` 替換為已確認屬於 Lophine 的功能提交：
 
-依照以下步驟新增一個 patch 非常簡單：
+```powershell
+git -C lophine-server/src/minecraft/java add -- path/to/ChangedClass.java
+git -C lophine-server/src/minecraft/java commit --fixup=<target-hash>
+git -C lophine-server/src/minecraft/java rebase -i --autosquash '<target-hash>^'
+.\gradlew.bat :lophine-server:rebuildMinecraftFeaturePatches --console=plain
+```
 
-1. 在 `*-api` 與 `*-server` 裡進行修改；
-2. 用 git 把你的修改加入暫存區，例如執行 `git add .`（請不要把新建立的檔案一併加入）；
-3. 執行 `git commit -m <提交訊息>` 進行 commit；
-4. 執行 Gradle 任務 `fixupPaperApiFilePatches`，用於新建立的檔案產生對應的 patch 檔（注意：執行完之前先不要 commit）；
-5. 執行 Gradle 任務 `rebuildAllServerPatches`，用於把你的 commit 轉換成一個 patch；
-6. 把產生出來的 patch 檔 push 上去。
+檢查並儲存 rebase 計畫。遇到衝突時先確認各層修改歸屬，再解決衝突並繼續。有他人的修改或複雜相依關係時，使用隔離副本。修復所屬修補檔，避免追加修補檔來抵銷前面的錯誤。上述 rebase 針對產生儲存庫，不要直接用於主儲存庫。
 
-完成以上步驟後，你就可以拿這些 patch 檔開 PR 提交了。
+### 修改逐檔修補檔
 
-## 修改 Patch
+編輯目標產生儲存庫中的既有上游檔案，不先建立新的功能提交；依任務表先執行對應 `fixup...`，再執行 `rebuild...`。例如 Minecraft Java：
 
-你可以用以下方法來修改一個既有 patch 的內容：
+```powershell
+.\gradlew.bat :lophine-server:fixupMinecraftSourcePatches --console=plain
+.\gradlew.bat :lophine-server:rebuildMinecraftSourcePatches --console=plain
+```
 
-1. 直接在 HEAD 上進行修改；
-2. 執行 `git commit -a --fixup <hash>` ，做一個 fixup commit（請不要把 Lophine 新建立的檔案的修改一併 commit 進去）；
-   - 如果你想順便修改 commit 訊息，可以用 `--squash` 取代 `--fixup`。
-3. 執行 `git rebase -i --autosquash base` ，進行自動 rebase，接著只要輸入 `:q` 關掉確認頁面即可；
-4. 執行 Gradle 任務 `fixupPaperApiFilePatches`，用於重新產生 Lophine 新建立檔案的 patch（注意：執行完之前先不要 commit）；
-5. 執行 Gradle 任務 `rebuildAllServerPatches`，把修改套用到既有的 patch 上；
-6. 把修改後的 patch 重新 push 回去，再開一次 PR。
+`fixup` 收集該產生儲存庫已追蹤檔案的修改並整理 File Patches 提交，不會代為儲存主儲存庫新增檔案。先隔離不相關的產生原始碼修改；存在後續功能提交時，過程可能需要處理 rebase 衝突。
 
-## 為設定項目提供本地化的注解支援
+## 歸屬、程式碼風格與相容性
 
-1. 在 `lophine-server/src/main/resources/assets/lophine/lang` 目錄下新增或修改對應語言的檔案，加入本地化的注解；
-   - 檔名請依照 <https://minecraft.wiki/w/Language> 頁面上列出的語言代碼來命名，例如 `en_us`、`zh_cn`、`zh_hk`、`zh_tw`，檔案格式為 `json`；
-2. 執行 Gradle 任務 `sortLangKeys`，把你修改的語言檔內容重新排序；
-3. 執行 `git commit -m <提交訊息>` 進行 commit；
-4. 把你修改的檔案 push 上去。
+- Carpet、Scarpet 與公共適配歸入 Carpet 修補檔；AMS、ORG、TIS 依來源放入各自修補檔。同一類別的混合修改也依設定 `section` 和實際實作劃分。先檢查目前檔名，不依賴固定編號。
+- 拆分或重排修補檔後，完整產生原始碼應與原版本一致，除非本次明確修改行為。保留後續修補檔內容與必要套用順序。
+- 遵循相鄰程式碼風格。上游修改使用有意義的 `// Lophine - ...` 或 `// Lophine start/end - ...` 標記，保留上游註解、作者與授權資訊。複雜功能在修補提交正文解釋原因與維護要點。
+- Folia 程式碼需確認實體、區塊和可變狀態的執行緒歸屬，檢查跨區域排程、卸載、移除及停服過程，不能僅以「非同步執行」作為執行緒安全依據。
+- 保持外掛事件、API 契約、持久化格式和預設設定相容。效能修改應說明機制、情境與測量結果，不能將推測寫成已測收益。
 
-完成以上步驟後，你就可以拿修改後的內容開 PR 提交了。
+## 設定與本地化
+
+使用現有 `@ConfigClassInfo`、`@ConfigInfo` 和共享 `ConfigPaths`，檢查讀取、預設值、執行階段修改、儲存及舊路徑遷移。註解重新整理應保留使用者值。Carpet 擴充沿用 `carpet` 層級與對應來源的 section。
+
+設定名稱或說明變更時，同步更新 `lophine-server/src/main/resources/assets/lophine/lang/` 的 `en_us.json`、`zh_cn.json`、`zh_tw.json` 和受影響語言，保留格式預留位置：
+
+```powershell
+.\gradlew.bat verifyLangFiles --console=plain
+```
+
+該任務檢查 JSON、字串值和相對於英文的未知鍵；缺少譯文會報告並回退至英文，成功不代表翻譯完整。`sortLangKeys` 會重寫語言檔案順序，僅於需要排序時執行，並檢查所有修改。
+
+## 驗證與提交 PR
+
+依修改範圍選擇檢查，純文件變更不必編譯伺服器：
+
+```powershell
+git diff --check
+.\gradlew.bat :lophine-api:compileJava :lophine-server:compileJava --console=plain --no-daemon
+.\gradlew.bat :lophine-server:test --tests 'package.RelevantTest' --console=plain --no-daemon
+```
+
+測試篩選器需替換為實際測試。修補變更應在隔離副本或確認無未儲存修改的產生樹中重新執行 `applyAllPatches`；交付伺服器時再建置 `createPaperclipJar`。API 變更同時檢查實作與呼叫端，協定或外掛相容性需驗證對應客戶端／外掛的實際互動。
+
+`runDevServer` 使用原始碼集輸出，Java 修改後需重新編譯與啟動。使用獨立測試目錄和明確設定，不使用正式世界；執行者自行閱讀 EULA 並決定是否接受。選用測試外掛透過 `test-plugin.settings.gradle.kts` 啟用。
+
+PR 前檢查主儲存庫及產生儲存庫差異，確認原始碼已匯出，不夾帶快取、建置產物、執行世界或無關修改。描述問題及觸發條件、最終行為、相容性或執行緒影響、實際檢查和未驗證範圍。編譯通過不能取代真實客戶端驗證。貢獻者應理解並負責程式碼與說明；如使用 AI 輔助，請如實說明有意義的參與方式，並複核輸出。

@@ -1,103 +1,141 @@
-Contributing to Lophine
-=======================
+# Contributing to Lophine
 
 **English** | [中文（简体）](./CONTRIBUTING.md) | [中文（繁體）](./CONTRIBUTING_ZH_TW.md) | [日本語](./CONTRIBUTING_JP.md)
 
-We're glad that you want to contribute to our project!  
-In general, our review of pull requests is very lenient.  
-And if you can follow the rules below, we can complete the review faster.
+Thank you for contributing to Lophine. Explain the problem, implementation, and validation in your PR so reviewers can assess the change and its maintenance cost. Coding agents must also follow [AGENTS.md](../AGENTS.md) in the repository root.
 
-## Please fork using your personal account
+## Environment and first build
 
-We regularly merge existing PRs.  
-If there are some small problems, we'll help you solve them by editing your PR.
+- Install Git and JDK 25, and use the checked-in Gradle wrapper. The compilation toolchain and CI currently use Java 25.
+- Read `gradle.properties`, `settings.gradle.kts`, and module build configuration for the Minecraft version, Folia baseline, and plugin versions.
+- On Windows, enable long paths in the OS and Git; see the [Windows documentation](https://learn.microsoft.com/windows/win32/fileio/maximum-file-path-limitation) and [Git for Windows FAQ](https://gitforwindows.org/faq.html#i-get-errors-trying-to-check-out-files-with-long-path-names).
+- Prefer a personal fork and a working branch based on the intended target. Inspect `git status` and preserve existing work.
 
-But, if your PR is from an organization, we can NOT edit your PR, so we must merge your PR manually.
+Run commands from the main repository root. Examples use PowerShell; on Linux/macOS replace `.\gradlew.bat` with `./gradlew`.
 
-So, don't use organization accounts for fork!
+```powershell
+java -version
+git --version
+.\gradlew.bat applyAllPatches --console=plain --stacktrace --no-daemon
+.\gradlew.bat :lophine-server:compileJava --console=plain --no-daemon
+.\gradlew.bat createPaperclipJar --console=plain --no-daemon
+```
 
-See also [This issue](https://github.com/isaacs/github/issues/1681), and then you'll know why we can't edit PRs from organizations.
+The Paperclip JAR is written to `lophine-server/build/libs/`. `applyAllPatches` prepares upstream sources and applies all layers; the first run downloads dependencies. Save or export applied-source work first, as patch application can recreate those directories.
 
-## Development Environment
+## Find the correct editing target
 
-Before coding, you need these pieces of software / tools as Dev Environment.
+Lophine uses ComfreyWeight for layered patching on top of Folia, Paper, and Minecraft. Directly maintained files and applied upstream files require different workflows.
 
-- `git`
-- `JDK 25 or higher`
+| Change | Editing location | Persistent location in the main repository |
+| --- | --- | --- |
+| Lophine implementation, configuration, resources, and tests | `lophine-server/src/main/`, `lophine-server/src/test/` | Commit files directly |
+| New Lophine API and tests | `lophine-api/src/main/`, `lophine-api/src/test/` | Commit files directly |
+| Minecraft Java | `lophine-server/src/minecraft/java/` | `lophine-server/minecraft-patches/sources/` or `features/` |
+| Vanilla Minecraft resources | `lophine-server/src/minecraft/resources/` | `lophine-server/minecraft-patches/resources/` |
+| Paper server sources, resources, and tests | `paper-server/` | `lophine-server/paper-patches/files/` or `features/` |
+| Existing Paper/Bukkit API | `paper-api/` | `lophine-api/paper-patches/files/` or `features/` |
+| Folia-owned server or API files | `folia-server/`, `folia-api/` | The module's `folia-patches/`, as configured |
+| Module build scripts | `lophine-*/build.gradle.kts` | The corresponding `build.gradle.kts.patch` |
 
-PS: You need to enable long path support in your System and Git before start, some of the platform's resolution here.
+The main repository normally ignores `paper-*`, `folia-*`, Minecraft sources, and applied module build scripts. Changes made only there must be exported to their owning patches to persist. Put new Lophine-owned classes and resources in directly maintained directories; they do not need patch generation.
 
-[`Windows`](https://learn.microsoft.com/windows/win32/fileio/maximum-file-path-limitation)
-[`Git for Windows`](https://gitforwindows.org/faq.html#i-get-errors-trying-to-check-out-files-with-long-path-names)
+Applied sources have independent Git histories. Run `git rev-parse --show-toplevel`, `git status`, and `git log --oneline` in the target directory before editing history. References such as `base` and `file` belong to that layer: per-file changes are collected in a File Patches commit, followed by individually exported feature commits. Not every commit after `base` is a separate feature patch.
 
-## Understanding "Patches"
+## Choose a patch type and task
 
-Lophine uses as the same patching system as Paper,  
-and has been divided into two directories for the purpose of modifying different parts of it:
+Maintain the owning patch when changing an existing feature. Small upstream edits can use per-file patches; a complete feature that needs separate explanation and maintenance can use a feature patch. Vanilla Minecraft resources use resource patches. Feature rebuild tasks may also run per-file dependencies, so review every exported change.
 
-- `lophine-api` - Modifications to `Folia-API` / `Paper-API` / `Spigot-API` / `Bukkit-API`.
-- `lophine-server` - Modifications to Minecraft Vanilla Server's source logic.
+Invoke these fully qualified tasks from the main repository root:
 
-The patching system is based on git, and you can learn about it at here: <https://git-scm.com/docs/gittutorial>
+| Layer | Collect per-file changes | Export per-file patches | Export feature patches |
+| --- | --- | --- | --- |
+| Minecraft Java | `:lophine-server:fixupMinecraftSourcePatches` | `:lophine-server:rebuildMinecraftSourcePatches` | `:lophine-server:rebuildMinecraftFeaturePatches` |
+| Minecraft resources | `:lophine-server:fixupMinecraftResourcePatches` | `:lophine-server:rebuildMinecraftResourcePatches` | — |
+| Paper server | `:lophine-server:fixupPaperServerFilePatches` | `:lophine-server:rebuildPaperServerFilePatches` | `:lophine-server:rebuildPaperServerFeaturePatches` |
+| Paper API | `:fixupPaperApiFilePatches` | `:rebuildPaperApiFilePatches` | `:rebuildPaperApiFeaturePatches` |
+| Folia server | `:lophine-server:fixupFoliaServerFilePatches` | `:lophine-server:rebuildFoliaServerFilePatches` | `:lophine-server:rebuildFoliaServerFeaturePatches` |
+| Folia API | `:fixupFoliaApiFilePatches` | `:rebuildFoliaApiFilePatches` | `:rebuildFoliaApiFeaturePatches` |
 
-If you have forked the main repository, then you should follow the steps below:
+Export module build script edits with `:rebuildFoliaSingleFilePatches`. Its name comes from the Folia upstream registered in the root build; do not infer `rebuildLophineSingleFilePatches` from the module name. Inspect additional tasks with:
 
-1. Clone your repository to local
-2. Run Gradle's `applyAllPatches` task in your IDE or terminal (You can run `./gradlew applyAllPatches` directly in terminal.)
-3. After performing the operation, the following directory pairs should exist in the root directory of the warehouse: `lophine-api` and `lophine-server` , `folia-api` and `folia-server` , `paper-api` and `paper-server` (Referred to `*-api` and `*-server` as below)
-4. Enter `*-api` and `*-server` directory to carry out modifications.
+```powershell
+.\gradlew.bat tasks --all :lophine-server:tasks --all --console=plain
+```
 
-The following is the simple description of the aforementioned folders, detailed description can be referred to [here](https://github.com/Toffikk/paperweight-examples/blob/18241979c88068d5b061d95ad69c98ecb201c246/README.md):
+### Directly maintained Lophine files
 
-1. API part
+Edit, validate, and commit selected files in the main repository. Add new files to Git tracking normally. The old instruction to exclude new files does not apply to these directories, and API `fixup` tasks are not part of this workflow.
 
-- `lophine-api` : Modifications to the new API
-- `folia-api` : Modifications to Folia API should be carried out in this folder
-- `paper-api` : Modifications to Paper API/Spigot API/Bukkit API should be carried out in this folder
+### Add a feature patch
 
-2. Server part
+For Minecraft, implement and validate the change in applied sources, create a feature commit in that generated repository, and export from the main repository:
 
-- `lophine-server` : Changes and new files to the Minecraft vanilla server should be made in this folder
-- `folia-server` : Changes to folia-server should be made in this folder
-- `paper-server` : Modifications to the server logic for paper should be made in this folder
+```powershell
+git -C lophine-server/src/minecraft/java status --short
+git -C lophine-server/src/minecraft/java add -- path/to/ChangedClass.java
+git -C lophine-server/src/minecraft/java commit -m "Describe the feature"
+.\gradlew.bat :lophine-server:rebuildMinecraftFeaturePatches --console=plain
+```
 
-BTW, `*-api` and `*-server` and are not normal git repositories.
+Replace the example path with actual paths relative to the generated repository, listing each affected file. Create Paper server or API feature commits in the corresponding generated repository and use its matching task. Finally, review and commit the exported patches and directly maintained files in the main repository.
 
-- Before applying patches, the base will point to unmodified source code.
-- Every commit after the base is a patch.
-- Only commits after the last commit of Folia will be considered as Lophine patches.
+### Modify an existing feature patch
 
-## Adding new patches
+Develop and validate at the fully applied source HEAD. Locate the owning feature commit with `git log` / `git blame`, create a fixup in that generated repository, and fold it into the original commit. Replace `<target-hash>` with a verified Lophine feature commit:
 
-It's very easy to add patches by following the steps below:
+```powershell
+git -C lophine-server/src/minecraft/java add -- path/to/ChangedClass.java
+git -C lophine-server/src/minecraft/java commit --fixup=<target-hash>
+git -C lophine-server/src/minecraft/java rebase -i --autosquash '<target-hash>^'
+.\gradlew.bat :lophine-server:rebuildMinecraftFeaturePatches --console=plain
+```
 
-1. Modify the code of `*-api` and `*-server`
-2. Add these changes to the local git repository (For example, `git add .`)
-3. Commit these changes using `git commit -m <Commit Message>` (PS: do not commit new-created files)
-4. Run Gradle's task `fixupPaperApiFilePatches` to generate newly created files to new patches (PS: do not commit again before you run this task)
-5. Run Gradle's task `rebuildAllServerPatches` to convert your commits to a new patch
-6. Push your patches to your repository
+Inspect and save the rebase plan. Resolve conflicts according to patch ownership before continuing. Use an isolated copy when other work or complex dependencies are present. Repair the owning patch instead of appending another patch to cancel an earlier mistake. Do not run this generated-history rebase in the main repository.
 
-After pushing, you can open a PR to submit your patches.
+### Modify per-file patches
 
-## Modifying patches
+Edit existing upstream files in the target generated repository without first creating a new feature commit. Run the matching `fixup...` task followed by `rebuild...`. For Minecraft Java:
 
-You can modify an existing patch by following the steps below:
+```powershell
+.\gradlew.bat :lophine-server:fixupMinecraftSourcePatches --console=plain
+.\gradlew.bat :lophine-server:rebuildMinecraftSourcePatches --console=plain
+```
 
-1. Modify code at HEAD
-2. Run `git commit -a --fixup <hash>` in your terminal to make a fix-up commit (PS: do not commit changes of lophine-created files)
-    - If you want to edit the commit message, replace `--fixup` with `--squash`
-3. Run `git rebase -i --autosquash base` to rebase automatically, then just type `:q` to close the confirm page
-4. Run Gradle's task `fixupPaperApiFilePatches` to regenerate lophine-created files to patches (PS: do not commit again before you run this task)
-5. Run Gradle's task `rebuildAllServerPatches` to modify existing patches
-6. Push and PR again
+`fixup` collects changes to tracked files in that generated repository and updates the File Patches commit. It does not save new main-repository files for you. Isolate unrelated applied-source changes first; later feature commits can cause rebase conflicts during this operation.
 
-## Providing localized comment support for configuration entries
+## Ownership, style, and compatibility
 
-1. Create or modify the corresponding language file under the `lophine-server/src/main/resources/assets/lophine/lang` directory to add localized comments;
-    - The file name should follow the format listed on the `https://minecraft.wiki/w/Language` page, such as `en_us`, `zh_cn`, `zh_hk`, `zh_tw`. The file format is `json`;
-2. Run the Gradle task `sortLangKeys` to re-sort the keys in your language file;
-3. Commit your changes using `git commit -m <Commit Message>`;
-4. Push your modified files to your repository.
+- Keep Carpet, Scarpet, and shared integration in the Carpet patch. Group AMS, ORG, and TIS changes by origin, using configuration `section` annotations and implementation evidence even within one class. Inspect current filenames rather than relying on fixed patch numbers.
+- A split or reorder should reproduce the original complete source tree unless behavior changes are intended. Preserve subsequent patch contents and necessary application order.
+- Follow surrounding style. Mark upstream edits with meaningful `// Lophine - ...` or `// Lophine start/end - ...` comments and retain upstream comments, authorship, and licenses. Explain complex features and maintenance constraints in the patch commit body.
+- For Folia code, verify ownership of entities, chunks, and mutable state through region scheduling, unloading, removal, and shutdown. Running asynchronously is not a thread-safety argument.
+- Preserve plugin events, API contracts, persisted formats, and configuration defaults. Explain performance mechanisms, scenarios, and measurements; do not report predictions as measured gains.
 
-After pushing, you can open a PR to submit your changes.
+## Configuration and localization
+
+Use the existing `@ConfigClassInfo`, `@ConfigInfo`, and shared `ConfigPaths`. Check loading, defaults, runtime edits, persistence, and legacy path migration. Comment refreshes must preserve user values. Carpet extensions retain the `carpet` hierarchy and their source-specific sections.
+
+Update affected configuration names and descriptions in `lophine-server/src/main/resources/assets/lophine/lang/`, including `en_us.json`, `zh_cn.json`, `zh_tw.json`, and other affected languages. Preserve formatting placeholders:
+
+```powershell
+.\gradlew.bat verifyLangFiles --console=plain
+```
+
+This task validates JSON, string values, and keys unknown to the English reference. Missing translations are reported and fall back to English; success does not establish complete translation coverage. `sortLangKeys` rewrites language file ordering. Run it when sorting is needed and review the full diff.
+
+## Validation and pull requests
+
+Choose checks appropriate to the change. Documentation-only changes do not require server compilation:
+
+```powershell
+git diff --check
+.\gradlew.bat :lophine-api:compileJava :lophine-server:compileJava --console=plain --no-daemon
+.\gradlew.bat :lophine-server:test --tests 'package.RelevantTest' --console=plain --no-daemon
+```
+
+Replace the test filter with an existing test. For patch changes, rerun `applyAllPatches` in an isolated copy or an applied tree verified to have no unsaved changes. Build `createPaperclipJar` when delivering a server. Check API implementations and callers together; protocol or plugin compatibility needs interactions with the affected clients or plugins.
+
+`runDevServer` uses source-set output, so Java changes require recompilation and restart. Use a separate test directory and explicit configuration, not production worlds. The operator must read the EULA and decide whether to accept it. Enable the optional test plugin through `test-plugin.settings.gradle.kts`.
+
+Before opening a PR, review main and generated repository diffs. Export required source changes and exclude caches, build output, runtime worlds, and unrelated edits. Describe the problem and trigger, resulting behavior, compatibility or threading effects, actual checks, and unverified scope. Compilation does not replace real client testing. Contributors must understand and own their code and explanations; disclose meaningful AI assistance honestly and review its output.
