@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <wangxyper@163.com>
+Date: Sun, 12 Jan 2025 12:22:53 +0800
+Subject: [PATCH] Disable timings warn msg and commands
+
+
+diff --git a/src/main/java/co/aikar/timings/Timings.java b/src/main/java/co/aikar/timings/Timings.java
+index 89017af09ce32e7a66014fc3aeb50155921252a5..b862779b48176dd7e67a2f1a3e7f24bc8c84e993 100644
+--- a/src/main/java/co/aikar/timings/Timings.java
++++ b/src/main/java/co/aikar/timings/Timings.java
+@@ -147,7 +147,7 @@ public final class Timings {
+     public static void setTimingsEnabled(boolean enabled) {
+         enabled = false; // Folia - region threading - disable timings
+         if (enabled && !warnedAboutDeprecationOnEnable) {
+-            Bukkit.getLogger().severe(PlainTextComponentSerializer.plainText().serialize(deprecationMessage()));
++            // Bukkit.getLogger().severe(PlainTextComponentSerializer.plainText().serialize(deprecationMessage()));  // Luminol - Disable timings warn msg and commands
+             warnedAboutDeprecationOnEnable = true;
+         }
+     }
+diff --git a/src/main/java/org/bukkit/command/SimpleCommandMap.java b/src/main/java/org/bukkit/command/SimpleCommandMap.java
+index a9eaa6ffaab8c1bcb3ede2b6dd66a868a099a890..2c58d5e0e1f7f807198b4e2cb1b8322783cf60eb 100644
+--- a/src/main/java/org/bukkit/command/SimpleCommandMap.java
++++ b/src/main/java/org/bukkit/command/SimpleCommandMap.java
+@@ -41,7 +41,7 @@ public class SimpleCommandMap implements CommandMap {
+         //final ReloadCommand reload = new ReloadCommand("reload"); // Luminol - Force disable reload command
+         //this.knownCommands.put("bukkit:reload", reload); // Luminol - Force disable reload command
+         //this.knownCommands.put("bukkit:rl", reload); // Luminol - Force disable reload command
+-        register("bukkit", new co.aikar.timings.TimingsCommand("timings"));
++        //register("bukkit", new co.aikar.timings.TimingsCommand("timings")); // Luminol - Disable timings warn msg and commands
+     }
+ 
+     public void setFallbackCommands() {
+diff --git a/src/main/java/org/bukkit/plugin/SimplePluginManager.java b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
+index 457e75bbecb70ac3da4c21382f97d68de5a00547..cf22ea227f6dcc13702fb5f6f94bba5b6e326b97 100644
+--- a/src/main/java/org/bukkit/plugin/SimplePluginManager.java
++++ b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
+@@ -960,7 +960,7 @@ public final class SimplePluginManager implements PluginManager {
+      */
+     @Deprecated(forRemoval = true)
+     public void useTimings(boolean use) {
+-        co.aikar.timings.Timings.setTimingsEnabled(use); // Paper
++        // co.aikar.timings.Timings.setTimingsEnabled(use); // Paper // Luminol - Disable timings warn msg and commands
+     }
+ 
+     // Paper start

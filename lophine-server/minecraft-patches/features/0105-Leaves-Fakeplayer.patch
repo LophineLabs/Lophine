@@ -315,10 +315,10 @@ index ef8c1e81327dd3dd3535bb86920f2522f00b0b35..8e7029b560a99003858f09319f89a04f
              }
          }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 454733439f14f5c4f751be1d82f46f7b64665027..f99cab21648e25e773adaf0717cba355d1df9032 100644
+index a0428d231dacb42830e12cd010cd55f68b0e1361..4c90fc1dff871d6a489d8878b1fed53a053d0fbf 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -245,6 +245,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -246,6 +246,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      private static final org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry();
      public final org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer persistentDataContainer = new org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer(DATA_TYPE_REGISTRY);
      //private final alternate.current.wire.WireHandler wireHandler = new alternate.current.wire.WireHandler(this); // Paper - optimize redstone (Alternate Current) // Folia - region threading - move to regionised world data
@@ -326,7 +326,7 @@ index 454733439f14f5c4f751be1d82f46f7b64665027..f99cab21648e25e773adaf0717cba355
  
      @Override
      public @Nullable LevelChunk getChunkIfLoaded(int x, int z) {
-@@ -717,6 +718,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -718,6 +719,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          this.chunkDataController = new ca.spottedleaf.moonrise.patches.chunk_system.io.datacontroller.ChunkDataController((ServerLevel)(Object)this, this.chunkTaskScheduler);
          // Paper end - rewrite chunk system
          this.getCraftServer().addWorld(this.getWorld()); // CraftBukkit
@@ -334,7 +334,7 @@ index 454733439f14f5c4f751be1d82f46f7b64665027..f99cab21648e25e773adaf0717cba355
          this.updateTickData(); // Folia - region threading - make sure it is initialised before ticked
      }
  
-@@ -2906,6 +2908,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2907,6 +2909,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          return this.players;
      }
  
@@ -347,7 +347,7 @@ index 454733439f14f5c4f751be1d82f46f7b64665027..f99cab21648e25e773adaf0717cba355
      @Override
      public void updatePOIOnBlockStateChange(final BlockPos pos, final BlockState oldState, final BlockState newState) {
          Optional<Holder<PoiType>> oldType = PoiTypes.forState(oldState);
-@@ -3370,6 +3378,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3371,6 +3379,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              // ServerLevel.this.getChunkSource().addEntity(entity); // Paper - ignore and warn about illegal addEntity calls instead of crashing server; moved down below valid=true
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.add(player);
@@ -359,7 +359,7 @@ index 454733439f14f5c4f751be1d82f46f7b64665027..f99cab21648e25e773adaf0717cba355
                  if (player.isReceivingWaypoints()) {
                      ServerLevel.this.getWaypointManager().addPlayer(player);
                  }
-@@ -3450,6 +3463,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3451,6 +3464,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              ServerLevel.this.getChunkSource().removeEntity(entity);
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.remove(player);
@@ -583,7 +583,7 @@ index ed78ba7e95b522570b5955a7197fbeaeb073a53b..b9e3af1868f6a5b3c8101064dde5f916
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index f0901bf99d627e2b1bbdce1db9743c0fb5078f23..01b36cef7040ac44918dbcd9736fdd7fe78d075a 100644
+index 1055fb42af3f5cbb0c814064d1b94b17fc46ecc8..9b0c4853ae040169fef5344b8a468d0cf81ceabe 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1295,7 +1295,7 @@ public abstract class Entity

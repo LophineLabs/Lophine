@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Fri, 17 Apr 2026 22:47:34 +0800
+Subject: [PATCH] Add config for cpu affinity
+
+
+diff --git a/io/papermc/paper/threadedregions/TickRegionScheduler.java b/io/papermc/paper/threadedregions/TickRegionScheduler.java
+index 6f27d78de14e49f1c8aac1f8b964c9a20af08871..ae424c8931a2f82c6c8d4ddd8422a2c142a77a95 100644
+--- a/io/papermc/paper/threadedregions/TickRegionScheduler.java
++++ b/io/papermc/paper/threadedregions/TickRegionScheduler.java
+@@ -66,7 +66,7 @@ public final class TickRegionScheduler {
+ 
+             @Override
+             public Thread newThread(final Runnable run) {
+-                final Thread ret = new TickThreadRunner(this.threadGroup, run, "Folia Region Scheduler Thread #" + this.idGenerator.getAndIncrement());
++                final Thread ret = new TickThreadRunner(this.threadGroup, me.earthme.luminol.config.modules.optimizations.CpuAffinityConfig.wrapForTickRegion(run), "Folia Region Scheduler Thread #" + this.idGenerator.getAndIncrement()); // Luminol - cpu affinity
+                 ret.setUncaughtExceptionHandler(TickRegionScheduler.this::uncaughtException);
+                 return ret;
+             }

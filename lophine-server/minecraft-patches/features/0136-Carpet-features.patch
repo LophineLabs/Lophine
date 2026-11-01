@@ -3743,7 +3743,7 @@ index 73810e2b1b2b8346b216ab00c3ce1d69d6a118e9..ae97dbf23c6f9a32ce1a96158be9a40f
 +        return java.util.concurrent.CompletableFuture.completedFuture(new CarpetDeathDrops(showDeathMessage,keepInventory,loot));
 +    }
 +
-
+ 
 +
 +    private record CarpetDeathDrops(boolean showDeathMessage,boolean keepInventory,List<DefaultDrop> loot) {}
 +    private boolean carpetDeathBeforeAttribution(final DamageSource source,final CarpetDeathDrops drops) {
@@ -14531,7 +14531,7 @@ index ffa813ad111f05716c658e3a66a9eeb9b70c5e4c..8f29fb6049b2d3bb5ab1f21257dcb52d
 +                        carpet.script.external.ScarpetDragonRespawnContinuations.beams(fight,level,crystals,new BlockPos(spike.getCenterX(),spike.getHeight()+1,spike.getCenterZ()),()->{});
                      } else {
                          int radius = 10;
-
+ 
 @@ -78,20 +72,21 @@ public enum DragonRespawnStage implements StringRepresentable {
          @Override
          public void tick(final ServerLevel level, final EnderDragonFight fight, final List<EndCrystal> crystals, final int time) {
