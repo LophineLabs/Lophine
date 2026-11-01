@@ -1,21 +1,21 @@
 package me.earthme.luminol.commands.bar.sub;
 
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.suggestion.Suggestions;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import fun.bm.lophine.command.CommandHolder;
 import fun.bm.lophine.utils.ServerI18nUtil;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
+import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import me.earthme.luminol.commands.bar.BarCommand;
 import me.earthme.luminol.enums.EnumBarType;
 import me.earthme.luminol.functions.bars.TickableStatusBarList;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Bukkit;
+import net.minecraft.server.level.ServerPlayer;
+import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -23,8 +23,9 @@ import org.leavesmc.leaves.command.ArgumentNode;
 import org.leavesmc.leaves.command.CommandContext;
 import org.leavesmc.leaves.command.LiteralNode;
 
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ToggleCommand extends LiteralNode {
     private final EnumBarType barType;
@@ -43,47 +44,44 @@ public class ToggleCommand extends LiteralNode {
             context.getSender().sendMessage(Component.text(ServerI18nUtil.getLocalizedText("general.command.only-player"), NamedTextColor.RED));
             return true;
         }
-        return execute0(context, player);
+        return execute0(context, Set.of(((CraftPlayer) player).getHandle()));
     }
 
-    public boolean execute0(@NotNull CommandContext context, Player player) {
-        final TickableStatusBarList barList = ((CraftPlayer) player).getHandle().statusBarList;
-
-        boolean enabled = barList.isEnabled(this.barType);
-
-        if (!enabled) {
-            context.getSender().sendMessage(Component.text(ServerI18nUtil.getFormatedLocalizedText("luminol.command.bar.toggle.already_disabled", this.barType.getName()), NamedTextColor.RED));
-            return true;
+    public boolean execute0(@NotNull CommandContext context, Collection<ServerPlayer> players) {
+        CommandSender sender = context.getSender();
+        for (ServerPlayer player : players) {
+            player.getBukkitEntity().taskScheduler.scheduleOrExecute(scheduled -> {
+                ServerPlayer current = scheduled instanceof ServerPlayer serverPlayer ? serverPlayer : player;
+                toggleBar(sender, current);
+            });
         }
-
-        context.getSender().sendMessage(Component.text(ServerI18nUtil.getFormatedLocalizedText("luminol.command.bar.toggle." + !barList.isVisible(this.barType), this.barType.getName(), player.getName()), NamedTextColor.GREEN));
-        barList.setVisible(this.barType, !barList.isVisible(this.barType));
         return true;
     }
 
-    private class PlayerArg extends ArgumentNode<String> {
+    private void toggleBar(CommandSender sender, ServerPlayer player) {
+        final TickableStatusBarList barList = player.statusBarList;
+
+        if (!barList.isEnabled(this.barType)) {
+            sender.sendMessage(Component.text(ServerI18nUtil.getFormatedLocalizedText("luminol.command.bar.toggle.already_disabled", this.barType.getName()), NamedTextColor.RED));
+            return;
+        }
+
+        boolean newVisible = !barList.isVisible(this.barType);
+        barList.setVisible(this.barType, newVisible);
+        sender.sendMessage(Component.text(ServerI18nUtil.getFormatedLocalizedText("luminol.command.bar.toggle." + newVisible, this.barType.getName(), player.getScoreboardName()), NamedTextColor.GREEN));
+    }
+
+    private class PlayerArg extends ArgumentNode<PlayerSelectorArgumentResolver> {
         protected PlayerArg() {
-            super("player", StringArgumentType.string());
+            super("player", ArgumentTypes.players());
         }
 
         @Override
-        protected CompletableFuture<Suggestions> getSuggestions(@NotNull CommandContext context, @NotNull SuggestionsBuilder builder) {
-            Bukkit.getServer().getOnlinePlayers().forEach(player -> builder.suggest(player.getName()));
-            return builder.buildFuture();
-        }
-
-        @Override
-        protected boolean execute(@NotNull CommandContext context) {
-            String name = context.getArgument(PlayerArg.class);
-            Player player = Bukkit.getServer().getPlayer(name);
-            if (player == null) {
-                player = Bukkit.getServer().getPlayer(UUID.fromString(name));
-                if (player == null) {
-                    context.getSender().sendMessage(Component.text(ServerI18nUtil.getFormatedLocalizedText("luminol.command.bar.toggle.player_not_found", name), NamedTextColor.RED));
-                    return true;
-                }
-            }
-            return execute0(context, player);
+        protected boolean execute(@NotNull CommandContext context) throws CommandSyntaxException {
+            PlayerSelectorArgumentResolver resolver = context.getArgument(PlayerArg.class);
+            Set<ServerPlayer> players = new HashSet<>();
+            resolver.resolve(context.getSource()).forEach(player -> players.add(((CraftPlayer) player).getHandle()));
+            return execute0(context, players);
         }
     }
 
