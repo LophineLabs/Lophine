@@ -369,7 +369,8 @@ public class ServuxHudDataProtocol implements LeavesProtocol {
                 (buf, payload) -> {
                     buf.writeVarInt(payload.packetType().type);
                     switch (payload.packetType()) {
-                        case PACKET_S2C_NBT_RESPONSE_DATA -> buf.writeBytes(payload.buffer(), payload.buffer().readerIndex(), payload.buffer().readableBytes());
+                        case PACKET_S2C_NBT_RESPONSE_DATA ->
+                                buf.writeBytes(payload.buffer(), payload.buffer().readerIndex(), payload.buffer().readableBytes());
                         // The handshake remains vanilla network NBT in both protocol versions.
                         case PACKET_C2S_METADATA_REQUEST, PACKET_S2C_METADATA -> buf.writeNbt(payload.nbt());
                         case PACKET_C2S_SPAWN_DATA_REQUEST,
