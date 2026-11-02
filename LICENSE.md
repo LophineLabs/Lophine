@@ -27,5 +27,4 @@ should submit a pull request to this project to add their name.
 任何希望使用[MIT许可证](licenses/MIT.md)发布的作者都应该向此项目提交一个拉取请求以在下方添加他们的名字。
 
 ```text
-Helvetica Volubi <suisuroru@blue-millennium.fun>
 ```
