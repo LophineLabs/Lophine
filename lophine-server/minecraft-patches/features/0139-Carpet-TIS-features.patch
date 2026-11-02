@@ -107,14 +107,14 @@ index a6507cce368ecdd005d344d93533dbbec9773122..084366f10a04ad885684355aa2089511
          this.tickConnections();
  
 diff --git a/io/papermc/paper/threadedregions/RegionizedTaskQueue.java b/io/papermc/paper/threadedregions/RegionizedTaskQueue.java
-index 53579b6faa9d55485088d59ec2fd1e4251c2fb01..020d5ff82d063c7b20a248cf6e57dd2e7800edd7 100644
+index 53579b6faa9d55485088d59ec2fd1e4251c2fb01..e01c5885a26bd25869fdb6767d8fcb17d78ab232 100644
 --- a/io/papermc/paper/threadedregions/RegionizedTaskQueue.java
 +++ b/io/papermc/paper/threadedregions/RegionizedTaskQueue.java
 @@ -619,12 +619,16 @@ public final class RegionizedTaskQueue {
              }
  
              private void executeInternal() {
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.phase(this.world.world, "async_task", "chunk=" + this.chunkX + "," + this.chunkZ);
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.phase(this.world.world, "async_task", "chunk=" + this.chunkX + "," + this.chunkZ);
 +        try {
                  try {
                      this.run.run();
@@ -129,14 +129,14 @@ index 53579b6faa9d55485088d59ec2fd1e4251c2fb01..020d5ff82d063c7b20a248cf6e57dd2e
              private void cancelInternal() {
                  this.run = null;
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 79f7b5a0237e8215bce7a997e53c2a702fb4c800..747aee6279cf0c040e4ed772045574b780adf9f6 100644
+index cb4ab180fdb836408854499d0a888f4b4fca5db7..a605978c21663c94fa7426791286e97e2b5a0c44 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -75,6 +75,8 @@ public final class RegionizedWorldData {
      public static final RegionizedData.RegioniserCallback<RegionizedWorldData> REGION_CALLBACK = new RegionizedData.RegioniserCallback<>() {
          @Override
          public void merge(final RegionizedWorldData from, final RegionizedWorldData into, final long fromTickOffset) {
-+            fun.bm.lophine.carpet.TisMicroTiming.regionTransition(from.carpetMicroTimingFrame);
++            fun.bm.lophine.carpet.tis.TisMicroTiming.regionTransition(from.carpetMicroTimingFrame);
 +            from.carpetMicroTimingFrame = null;
              // connections
              for (final Connection conn : from.connections) {
@@ -145,7 +145,7 @@ index 79f7b5a0237e8215bce7a997e53c2a702fb4c800..747aee6279cf0c040e4ed772045574b7
          public void split(final RegionizedWorldData from, final int chunkToRegionShift,
                            final Long2ReferenceOpenHashMap<RegionizedWorldData> regionToData,
                            final ReferenceOpenHashSet<RegionizedWorldData> dataSet) {
-+            fun.bm.lophine.carpet.TisMicroTiming.regionTransition(from.carpetMicroTimingFrame);
++            fun.bm.lophine.carpet.tis.TisMicroTiming.regionTransition(from.carpetMicroTimingFrame);
 +            from.carpetMicroTimingFrame = null;
              // connections
              for (final Connection conn : from.connections) {
@@ -154,7 +154,7 @@ index 79f7b5a0237e8215bce7a997e53c2a702fb4c800..747aee6279cf0c040e4ed772045574b7
      };
  
      public final ServerLevel world;
-+    public fun.bm.lophine.carpet.TisMicroTiming.Frame carpetMicroTimingFrame;
++    public fun.bm.lophine.carpet.tis.TisMicroTiming.Frame carpetMicroTimingFrame;
  
      private RegionizedServer.WorldLevelData tickData;
  
@@ -180,15 +180,15 @@ index 79f7b5a0237e8215bce7a997e53c2a702fb4c800..747aee6279cf0c040e4ed772045574b7
  
              try {
 -                conn.tick();
-+                try (var carpetMicroPhase = fun.bm.lophine.carpet.TisMicroTiming.active() ? fun.bm.lophine.carpet.TisMicroTiming.phase(this.world, "network", conn.getPlayer() == null ? "connection" : conn.getPlayer().getScoreboardName()) : fun.bm.lophine.carpet.TisMicroTiming.noop()) { conn.tick(); }
++                try (var carpetMicroPhase = fun.bm.lophine.carpet.tis.TisMicroTiming.active() ? fun.bm.lophine.carpet.tis.TisMicroTiming.phase(this.world, "network", conn.getPlayer() == null ? "connection" : conn.getPlayer().getScoreboardName()) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop()) { conn.tick(); }
              } catch (final Exception exception) {
                  if (conn.isMemoryConnection()) {
                      throw new ReportedException(CrashReport.forThrowable(exception, "Ticking memory connection"));
 @@ -793,6 +808,8 @@ public final class RegionizedWorldData {
          TickThread.ensureTickThread(this.world, blockEventData.pos(), "Cannot queue block even data async");
          boolean carpetMicroAccepted = this.blockEvents.add(blockEventData);
-         if (carpetMicroAccepted) fun.bm.lophine.carpet.OrgHiddenBedrockSignals.queued(this.world,blockEventData);
-+        if (fun.bm.lophine.carpet.TisMicroTiming.active()) fun.bm.lophine.carpet.TisMicroTiming.event(this.world, blockEventData.pos(), blockEventData.block(), "schedule_block_event",
+         if (carpetMicroAccepted) fun.bm.lophine.carpet.org.OrgHiddenBedrockSignals.queued(this.world,blockEventData);
++        if (fun.bm.lophine.carpet.tis.TisMicroTiming.active()) fun.bm.lophine.carpet.tis.TisMicroTiming.event(this.world, blockEventData.pos(), blockEventData.block(), "schedule_block_event",
 +            "type=" + blockEventData.paramA() + "; data=" + blockEventData.paramB() + "; success=" + carpetMicroAccepted, false);
      }
  
@@ -215,55 +215,55 @@ index 7bf0186d77781316d55da9ece36578ff768d5bbe..56909cec87d189a35fcc7356ae1dbe13
              throw ERROR_INVALID_VALUE.createWithContext(this.reader, this.id.toString(), property.getName(), raw);
          }
 diff --git a/net/minecraft/core/dispenser/DefaultDispenseItemBehavior.java b/net/minecraft/core/dispenser/DefaultDispenseItemBehavior.java
-index c9f958ed2472e7dc4ad8449751616e52dd793c3b..3f4dad415dbc00902e8bdfcf10765a20a29b06cf 100644
+index c9f958ed2472e7dc4ad8449751616e52dd793c3b..ec34de52452861df277035b72c4418559fd33e3e 100644
 --- a/net/minecraft/core/dispenser/DefaultDispenseItemBehavior.java
 +++ b/net/minecraft/core/dispenser/DefaultDispenseItemBehavior.java
 @@ -90,11 +90,13 @@ public class DefaultDispenseItemBehavior implements DispenseItemBehavior {
              if (dispenseBehavior != DispenseItemBehavior.NOOP && dispenseBehavior.getClass() != DefaultDispenseItemBehavior.class) {
                  dispenseBehavior.dispense(source, eventStack);
              } else {
-+                fun.bm.lophine.carpet.TisLifetimeTracker.markSpawn(itemEntity, "dispensed");
++                fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(itemEntity, "dispensed");
                  level.addFreshEntity(itemEntity);
              }
              return false;
          }
  
-+        fun.bm.lophine.carpet.TisLifetimeTracker.markSpawn(itemEntity, "dispensed");
++        fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(itemEntity, "dispensed");
          level.addFreshEntity(itemEntity);
  
          return true;
 diff --git a/net/minecraft/network/CompressionEncoder.java b/net/minecraft/network/CompressionEncoder.java
-index 44ab06f7d97648ed41fa1fc96c50e90be2ad4b14..373dcb1b9c75706fcf8c893097d622966eabb9d4 100644
+index 44ab06f7d97648ed41fa1fc96c50e90be2ad4b14..50d3b6d162a6e7f1d6046c23b29cc09f44861739 100644
 --- a/net/minecraft/network/CompressionEncoder.java
 +++ b/net/minecraft/network/CompressionEncoder.java
 @@ -31,6 +31,7 @@ public class CompressionEncoder extends MessageToByteEncoder<ByteBuf> {
      @Override
      protected void encode(final ChannelHandlerContext ctx, final ByteBuf uncompressed, final ByteBuf out) throws Exception { // Paper - Use Velocity cipher
          int uncompressedLength = uncompressed.readableBytes();
-+        boolean carpetSkipCompression = Boolean.TRUE.equals(ctx.channel().attr(fun.bm.lophine.carpet.TisSpeedTestCommand.SKIP_COMPRESSION).getAndSet(false));
++        boolean carpetSkipCompression = Boolean.TRUE.equals(ctx.channel().attr(fun.bm.lophine.carpet.tis.TisSpeedTestCommand.SKIP_COMPRESSION).getAndSet(false));
          if (uncompressedLength > 8388608) {
              throw new IllegalArgumentException("Packet too big (is " + uncompressedLength + ", should be less than 8388608)");
          }
 diff --git a/net/minecraft/network/PacketEncoder.java b/net/minecraft/network/PacketEncoder.java
-index 27316db9eb78660c6f54e1d1ea4dc7d584c7bb55..4fb0751a8dec6392bd5df24f8aea7033c823cbdf 100644
+index 27316db9eb78660c6f54e1d1ea4dc7d584c7bb55..4d99595ef9d974d3d83179530501d311cec50a04 100644
 --- a/net/minecraft/network/PacketEncoder.java
 +++ b/net/minecraft/network/PacketEncoder.java
 @@ -21,10 +21,13 @@ public class PacketEncoder<T extends PacketListener> extends MessageToByteEncode
      @Override
      protected void encode(final ChannelHandlerContext ctx, final Packet<T> packet, final ByteBuf output) throws Exception {
          PacketType<? extends Packet<? super T>> packetId = packet.type();
-+        ctx.channel().attr(fun.bm.lophine.carpet.TisSpeedTestCommand.SKIP_COMPRESSION).set(false);
++        ctx.channel().attr(fun.bm.lophine.carpet.tis.TisSpeedTestCommand.SKIP_COMPRESSION).set(false);
  
          try {
              ADVENTURE_LOCALE.set(ctx.channel().attr(io.papermc.paper.adventure.PaperAdventure.LOCALE_ATTRIBUTE).get()); // Paper - adventure; set player's locale
              this.protocolInfo.codec().encode(output, packet);
-+            ctx.channel().attr(fun.bm.lophine.carpet.TisSpeedTestCommand.SKIP_COMPRESSION)
-+                .set(fun.bm.lophine.carpet.TisSpeedTestCommand.isDownloadPacket(packet));
++            ctx.channel().attr(fun.bm.lophine.carpet.tis.TisSpeedTestCommand.SKIP_COMPRESSION)
++                .set(fun.bm.lophine.carpet.tis.TisSpeedTestCommand.isDownloadPacket(packet));
              int writtenBytes = output.readableBytes();
              if (LOGGER.isDebugEnabled()) {
                  LOGGER.debug(
 diff --git a/net/minecraft/network/PacketProcessor.java b/net/minecraft/network/PacketProcessor.java
-index 49d647b753e0fa9c596422692cfa474afa171e45..96679377efb40db404f45127fc60e3f9894874d5 100644
+index 737026031e774971b9189e2f5a44fdb4d7f0a01e..25c2d73ccb3ef8509166079ceed171c91f8f0ab4 100644
 --- a/net/minecraft/network/PacketProcessor.java
 +++ b/net/minecraft/network/PacketProcessor.java
 @@ -103,7 +103,7 @@ public class PacketProcessor implements AutoCloseable {
@@ -271,10 +271,10 @@ index 49d647b753e0fa9c596422692cfa474afa171e45..96679377efb40db404f45127fc60e3f9
                      final ca.spottedleaf.leafprofiler.RegionizedProfiler.Handle profiler = io.papermc.paper.threadedregions.TickRegionScheduler.getProfiler(); // Folia - profiler
                      final int packetTimerId = profiler.getOrCreateTimerAndStart(() -> "Packet Handler: ".concat(ListenerAndPacket.this.packet.getClass().getName())); try { // Folia - profiler
 -                    try {
-+                    try (var carpetMicroPhase = fun.bm.lophine.carpet.TisMicroTiming.packet(this.listener, this.packet)) {
++                    try (var carpetMicroPhase = fun.bm.lophine.carpet.tis.TisMicroTiming.packet(this.listener, this.packet)) {
                          this.packet.handle(this.listener);
                      } catch (RuntimeException exception) {
-                         fun.bm.lophine.carpet.OrgUpdateSuppression.packetFailure(exception, this.packet, this.listener);
+                         fun.bm.lophine.carpet.org.OrgUpdateSuppression.packetFailure(exception, this.packet, this.listener);
 diff --git a/net/minecraft/network/chat/SignedMessageValidator.java b/net/minecraft/network/chat/SignedMessageValidator.java
 index 916eef53a2b56156bbbaa05d317e605cf1ff560e..588d55442f04b83c7a88bde21b940bb96a2140fb 100644
 --- a/net/minecraft/network/chat/SignedMessageValidator.java
@@ -304,49 +304,49 @@ index 042cb4792b0084f143608f05dd08da133a31e435..120b5cfef3db88032fae0bd4e9a975a3
  
      private void write(final FriendlyByteBuf output) {
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 75b76f9fd26a78b843a6e7765fc4e97069142ac6..adda27db34ab463578c6ec69e59d469c0a96fdea 100644
+index 0991bd3897c9b81e580b645231fb1e44940e2729..014346dd80d5093b45c07951f1e21061fbb46239 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -1048,6 +1048,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.tickRateManager.carpetSetDeeplyFrozen(false);
          carpet.script.external.ScarpetNativeWork.beginDrain(this);
          fun.bm.lophine.carpet.CarpetRegionLease.beginShutdown(this);
-+        fun.bm.lophine.carpet.TisProjectileVisualizer.clearAtShutdown(this);
++        fun.bm.lophine.carpet.tis.TisProjectileVisualizer.clearAtShutdown(this);
          fun.bm.lophine.carpet.CarpetResourceReloadCoordinator.shutdown();
          fun.bm.lophine.carpet.CarpetPlayerTargetArea.closeAtShutdown(this);
-         fun.bm.lophine.carpet.OrgPlayerStatusSync.reset(this);
+         fun.bm.lophine.carpet.org.OrgPlayerStatusSync.reset(this);
 @@ -1056,9 +1057,18 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          carpet.script.external.ScarpetInteractionContinuations.shutdown(this);
          fun.bm.lophine.carpet.CarpetCommandContextContinuations.shutdown(this);
          fun.bm.lophine.carpet.CarpetRegionLease.close(this);
-+        fun.bm.lophine.carpet.TisRaidCommand.stopAtShutdown();
-+        fun.bm.lophine.carpet.TisXpCounter.resetAtShutdown();
-+        fun.bm.lophine.carpet.TisSamplingLoggers.reset();
-+        fun.bm.lophine.carpet.TisMovementLogger.reset();
-+        fun.bm.lophine.carpet.TisLifetimeTracker.reset();
-+        fun.bm.lophine.carpet.TisMicroTiming.reset();
-+        fun.bm.lophine.carpet.TisProjectileVisualizer.reset();
++        fun.bm.lophine.carpet.tis.TisRaidCommand.stopAtShutdown();
++        fun.bm.lophine.carpet.tis.TisXpCounter.resetAtShutdown();
++        fun.bm.lophine.carpet.tis.TisSamplingLoggers.reset();
++        fun.bm.lophine.carpet.tis.TisMovementLogger.reset();
++        fun.bm.lophine.carpet.tis.TisLifetimeTracker.reset();
++        fun.bm.lophine.carpet.tis.TisMicroTiming.reset();
++        fun.bm.lophine.carpet.tis.TisProjectileVisualizer.reset();
          fun.bm.lophine.carpet.CarpetExplosionLogger.reset();
          fun.bm.lophine.carpet.CarpetProfileService.reset();
-+        fun.bm.lophine.carpet.TisSpeedTestCommand.reset();
++        fun.bm.lophine.carpet.tis.TisSpeedTestCommand.reset();
          fun.bm.lophine.carpet.CarpetSpawnReporter.reset();
-+        fun.bm.lophine.carpet.TisManipulateChunks.reset();
++        fun.bm.lophine.carpet.tis.TisManipulateChunks.reset();
          fun.bm.lophine.carpet.CarpetMobAI.resetTrackers();
-         fun.bm.lophine.carpet.AmsClientQueryCommands.stopAtShutdown();
-         fun.bm.lophine.carpet.AmsManagementCommands.reset();
+         fun.bm.lophine.carpet.ams.AmsClientQueryCommands.stopAtShutdown();
+         fun.bm.lophine.carpet.ams.AmsManagementCommands.reset();
 @@ -1208,6 +1218,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.tickRateManager.carpetSetDeeplyFrozen(false);
          carpet.script.external.ScarpetNativeWork.beginDrain(this);
          fun.bm.lophine.carpet.CarpetRegionLease.beginShutdown(this);
-+        fun.bm.lophine.carpet.TisProjectileVisualizer.clearAtShutdown(this);
++        fun.bm.lophine.carpet.tis.TisProjectileVisualizer.clearAtShutdown(this);
          if (carpet.script.external.ScarpetRuntime.beginShutdown(this, () -> this.halt(wait, isRestarting, force))) return;
-         if (fun.bm.lophine.carpet.OrgPlayerManagerLifecycle.beforeStop(this, () -> this.halt(wait, isRestarting, force))) return;
+         if (fun.bm.lophine.carpet.org.OrgPlayerManagerLifecycle.beforeStop(this, () -> this.halt(wait, isRestarting, force))) return;
          if (!force && !this.carpetFakePlayers.forceShutdown && !this.carpetFakePlayers.removeAll()) return;
 @@ -1674,6 +1685,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      // Folia start - region threading
      public void tickServer(final long startTime, final long scheduledEnd, final long targetBuffer,
                             final io.papermc.paper.threadedregions.TickRegions.TickRegionData region) {
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.phase(region == null ? null : region.world, "async_task", null);
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.phase(region == null ? null : region.world, "async_task", null);
 +        try {
          // Lophine start - save-all fix
          if (fun.bm.lophine.utils.SaveAllUtil.isSaving()) {
@@ -366,7 +366,7 @@ index 75b76f9fd26a78b843a6e7765fc4e97069142ac6..adda27db34ab463578c6ec69e59d469c
  
                  ++tickedEntitySchedulers; // Folia - profiler
 -                scheduler.executeTick();
-+                try (var carpetMicroPhase = fun.bm.lophine.carpet.TisMicroTiming.phase(region.world, "async_task", "entity_scheduler")) { scheduler.executeTick(); }
++                try (var carpetMicroPhase = fun.bm.lophine.carpet.tis.TisMicroTiming.phase(region.world, "async_task", "entity_scheduler")) { scheduler.executeTick(); }
              }
              foliaProfiler.addCounter(ca.spottedleaf.leafprofiler.LProfilerRegistry.ENTITY_SCHEDULERS_TICKED, tickedEntitySchedulers); // Folia - profiler
              } finally { foliaProfiler.stopTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.ENTITY_SCHEDULER_TICK); } // Folia - profiler
@@ -375,7 +375,7 @@ index 75b76f9fd26a78b843a6e7765fc4e97069142ac6..adda27db34ab463578c6ec69e59d469c
              for (final ServerLevel level : (region == null ? this.getAllLevels() : Arrays.asList(region.world))) { // Folia - region threading
                  if (level.paperConfig().chunks.autoSaveInterval.value() > 0) {
 -                    level.saveIncrementally(region == null && fullSave); // Folia - region threading - don't auto save level data
-+                    try (var carpetMicroPhase = fun.bm.lophine.carpet.TisMicroTiming.phase(level, "auto_save", null)) { level.saveIncrementally(region == null && fullSave); } // Folia - region threading - don't auto save level data
++                    try (var carpetMicroPhase = fun.bm.lophine.carpet.tis.TisMicroTiming.phase(level, "auto_save", null)) { level.saveIncrementally(region == null && fullSave); } // Folia - region threading - don't auto save level data
                  }
              }
          } finally {
@@ -384,19 +384,19 @@ index 75b76f9fd26a78b843a6e7765fc4e97069142ac6..adda27db34ab463578c6ec69e59d469c
          if (false) this.server.spark.tickEnd(((double)(endTime - startTime) / 1000000D)); // Paper - spark // Folia - region threading // Luminol - Force disable builtin spark
          // Folia - region threading
 +
-+        } finally { fun.bm.lophine.carpet.TisMicroTiming.endCurrentRegionTick(); carpetMicroScope.close(); }
++        } finally { fun.bm.lophine.carpet.tis.TisMicroTiming.endCurrentRegionTick(); carpetMicroScope.close(); }
      }
  
      protected void processPacketsAndTick(final boolean sprinting) {
 diff --git a/net/minecraft/server/ServerFunctionManager.java b/net/minecraft/server/ServerFunctionManager.java
-index d4d2947a57ec8ae12b796da9b2ef7f73ec92534f..ba604bca37394ff5ab01b2c7cd4161908f6be797 100644
+index d4d2947a57ec8ae12b796da9b2ef7f73ec92534f..b0d92f33c1304008de626bb7ba3ead0decc83549 100644
 --- a/net/minecraft/server/ServerFunctionManager.java
 +++ b/net/minecraft/server/ServerFunctionManager.java
 @@ -61,6 +61,8 @@ public class ServerFunctionManager {
      }
  
      public void execute(final CommandFunction<CommandSourceStack> functionIn, final CommandSourceStack sender) {
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.active() ? fun.bm.lophine.carpet.TisMicroTiming.phase(sender.getLevel(), "command_function", functionIn.id().toString()) : fun.bm.lophine.carpet.TisMicroTiming.noop();
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.active() ? fun.bm.lophine.carpet.tis.TisMicroTiming.phase(sender.getLevel(), "command_function", functionIn.id().toString()) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop();
 +        try {
          ProfilerFiller profiler = Profiler.get();
          profiler.push(() -> "function " + functionIn.id());
@@ -411,7 +411,7 @@ index d4d2947a57ec8ae12b796da9b2ef7f73ec92534f..ba604bca37394ff5ab01b2c7cd416190
  
      public void replaceLibrary(final ServerFunctionLibrary library) {
 diff --git a/net/minecraft/server/commands/EnchantCommand.java b/net/minecraft/server/commands/EnchantCommand.java
-index c9a9d4db247878e0ee6e0ae9be0ba4ccafc5843c..2bcf5a8fec4663b177ea35516ad83a8b21772a4c 100644
+index c9a9d4db247878e0ee6e0ae9be0ba4ccafc5843c..e83ce8cfbc1605d754cbbeb97f010d2354105dc8 100644
 --- a/net/minecraft/server/commands/EnchantCommand.java
 +++ b/net/minecraft/server/commands/EnchantCommand.java
 @@ -84,7 +84,18 @@ public class EnchantCommand {
@@ -421,7 +421,7 @@ index c9a9d4db247878e0ee6e0ae9be0ba4ccafc5843c..2bcf5a8fec4663b177ea35516ad83a8b
 -        if (level > enchantment.getMaxLevel()) {
 +        int maximumLevel = enchantment.getMaxLevel();
 +        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.enchantCommandNoRestriction) {
-+            return fun.bm.lophine.carpet.TisEnchantCommand.execute(source, targets,
++            return fun.bm.lophine.carpet.tis.TisEnchantCommand.execute(source, targets,
 +                entity -> carpetEnchantTarget(entity, targets.size(), enchantmentHolder, enchantment, level),
 +                changed -> {
 +                    CommandResponseTracker<Component> actualTracker = CommandResponseTracker.create();
@@ -505,7 +505,7 @@ index b8acd202e8f6e82e1ef1015a39c4bec5b587aa84..e38a68fa3f6d257cfb0747d00e66379b
      }
  
 diff --git a/net/minecraft/server/commands/GameModeCommand.java b/net/minecraft/server/commands/GameModeCommand.java
-index 8816b0a7a1a5a4be875aa06cd843660807b164a0..77bcd0fcffb09dae023f75eed4f0c28440796c44 100644
+index 8816b0a7a1a5a4be875aa06cd843660807b164a0..17117c2b21642e10d4395e05b4df22beed577f7e 100644
 --- a/net/minecraft/server/commands/GameModeCommand.java
 +++ b/net/minecraft/server/commands/GameModeCommand.java
 @@ -21,7 +21,8 @@ public class GameModeCommand {
@@ -514,12 +514,12 @@ index 8816b0a7a1a5a4be875aa06cd843660807b164a0..77bcd0fcffb09dae023f75eed4f0c284
              Commands.literal("gamemode")
 -                .requires(Commands.hasPermission(PERMISSION_CHECK))
 +                .requires(source -> Commands.hasPermission(PERMISSION_CHECK).test(source)
-+                    && fun.bm.lophine.carpet.TisUtilityCommands.canCheat(source))
++                    && fun.bm.lophine.carpet.tis.TisUtilityCommands.canCheat(source))
                  .then(
                      Commands.argument("gamemode", GameModeArgument.gameMode())
                          .executes(c -> setMode(c, Collections.singleton(c.getSource().getPlayerOrException()), GameModeArgument.getGameMode(c, "gamemode")))
 diff --git a/net/minecraft/server/commands/GiveCommand.java b/net/minecraft/server/commands/GiveCommand.java
-index 8055657581041124a5ab0130f9d3b90fb78b95fb..029b08394e96f33a593876df22ec1d35a1646952 100644
+index 8055657581041124a5ab0130f9d3b90fb78b95fb..07557da00bc616a6e4dd6ffeacd3f3601515bc1f 100644
 --- a/net/minecraft/server/commands/GiveCommand.java
 +++ b/net/minecraft/server/commands/GiveCommand.java
 @@ -35,7 +35,8 @@ public class GiveCommand {
@@ -528,12 +528,12 @@ index 8055657581041124a5ab0130f9d3b90fb78b95fb..029b08394e96f33a593876df22ec1d35
              Commands.literal("give")
 -                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
 +                .requires(source -> Commands.hasPermission(Commands.LEVEL_GAMEMASTERS).test(source)
-+                    && fun.bm.lophine.carpet.TisUtilityCommands.canCheat(source))
++                    && fun.bm.lophine.carpet.tis.TisUtilityCommands.canCheat(source))
                  .then(
                      Commands.argument("targets", EntityArgument.players())
                          .then(
 diff --git a/net/minecraft/server/commands/SetBlockCommand.java b/net/minecraft/server/commands/SetBlockCommand.java
-index 21ee94a7949ec7e9c3e74e6e7fbaf8a3d289ff15..d7a89328a42bf1d7fcdf284c3b34810374093505 100644
+index 21ee94a7949ec7e9c3e74e6e7fbaf8a3d289ff15..3b4d233f8fbe26852ffa31e492b8726235dfae41 100644
 --- a/net/minecraft/server/commands/SetBlockCommand.java
 +++ b/net/minecraft/server/commands/SetBlockCommand.java
 @@ -26,7 +26,8 @@ public class SetBlockCommand {
@@ -542,7 +542,7 @@ index 21ee94a7949ec7e9c3e74e6e7fbaf8a3d289ff15..d7a89328a42bf1d7fcdf284c3b348103
              Commands.literal("setblock")
 -                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
 +                .requires(source -> Commands.hasPermission(Commands.LEVEL_GAMEMASTERS).test(source)
-+                    && fun.bm.lophine.carpet.TisUtilityCommands.canCheat(source))
++                    && fun.bm.lophine.carpet.tis.TisUtilityCommands.canCheat(source))
                  .then(
                      Commands.argument("pos", BlockPosArgument.blockPos())
                          .then(
@@ -576,7 +576,7 @@ index adfa4b7590dbc960556a89cf5b90937729900652..f20740c66876d12811a4c957171f5b99
          dispatcher.register(Commands.literal("stop").requires(Commands.hasPermission(Commands.LEVEL_OWNERS)).executes(c -> {
              if (!carpetCanStop(c.getSource())) {
 diff --git a/net/minecraft/server/commands/SummonCommand.java b/net/minecraft/server/commands/SummonCommand.java
-index fae77fe2d3974804d4cefa15e1c2f6c7e743f7f7..6dbbc322f8ddf3fb590c5cef6f1fcf0b70df8a68 100644
+index fae77fe2d3974804d4cefa15e1c2f6c7e743f7f7..e46a4b78749bad9e88a5fd03ce08d7cbacfedd93 100644
 --- a/net/minecraft/server/commands/SummonCommand.java
 +++ b/net/minecraft/server/commands/SummonCommand.java
 @@ -37,7 +37,8 @@ public class SummonCommand {
@@ -585,12 +585,12 @@ index fae77fe2d3974804d4cefa15e1c2f6c7e743f7f7..6dbbc322f8ddf3fb590c5cef6f1fcf0b
              Commands.literal("summon")
 -                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
 +                .requires(source -> Commands.hasPermission(Commands.LEVEL_GAMEMASTERS).test(source)
-+                    && fun.bm.lophine.carpet.TisUtilityCommands.canCheat(source))
++                    && fun.bm.lophine.carpet.tis.TisUtilityCommands.canCheat(source))
                  .then(
                      Commands.argument("entity", ResourceArgument.resource(context, Registries.ENTITY_TYPE))
                          .suggests(SuggestionProviders.cast(SuggestionProviders.SUMMONABLE_ENTITIES))
 diff --git a/net/minecraft/server/commands/TeleportCommand.java b/net/minecraft/server/commands/TeleportCommand.java
-index 0ff0f5ea29aa3c07a0eae77210a864ec31ac5581..b3ed30192d9698fb3c5c964979aa75b1860dfcd1 100644
+index 0ff0f5ea29aa3c07a0eae77210a864ec31ac5581..d16b313cbf7a148bd504f294f5a22636b7e8cca6 100644
 --- a/net/minecraft/server/commands/TeleportCommand.java
 +++ b/net/minecraft/server/commands/TeleportCommand.java
 @@ -49,7 +49,7 @@ public class TeleportCommand {
@@ -598,7 +598,7 @@ index 0ff0f5ea29aa3c07a0eae77210a864ec31ac5581..b3ed30192d9698fb3c5c964979aa75b1
          LiteralCommandNode<CommandSourceStack> teleport = dispatcher.register(
              Commands.literal("teleport")
 -                .requires(source -> true
-+                .requires(source -> fun.bm.lophine.carpet.TisUtilityCommands.canCheat(source)
++                .requires(source -> fun.bm.lophine.carpet.tis.TisUtilityCommands.canCheat(source)
                      && (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.openTpPermission
                          || Commands.hasPermission(Commands.LEVEL_GAMEMASTERS).test(source)))
                  .then(
@@ -607,12 +607,12 @@ index 0ff0f5ea29aa3c07a0eae77210a864ec31ac5581..b3ed30192d9698fb3c5c964979aa75b1
          );
          dispatcher.register(Commands.literal("tp").requires(source ->
 -            true
-+            fun.bm.lophine.carpet.TisUtilityCommands.canCheat(source)
++            fun.bm.lophine.carpet.tis.TisUtilityCommands.canCheat(source)
                  && (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.openTpPermission
                      || Commands.hasPermission(Commands.LEVEL_GAMEMASTERS).test(source))).redirect(teleport));
      }
 diff --git a/net/minecraft/server/commands/TickCommand.java b/net/minecraft/server/commands/TickCommand.java
-index cd8d85e6c48e2edbe5edcdd40e0ea39c2f13738c..41435e4eae5301a5abe822f18d0fd6ef847cfa63 100644
+index cd8d85e6c48e2edbe5edcdd40e0ea39c2f13738c..1bf095ead41915a6b03785a62f254fbd422994a4 100644
 --- a/net/minecraft/server/commands/TickCommand.java
 +++ b/net/minecraft/server/commands/TickCommand.java
 @@ -30,10 +30,20 @@ public class TickCommand {
@@ -624,7 +624,7 @@ index cd8d85e6c48e2edbe5edcdd40e0ea39c2f13738c..41435e4eae5301a5abe822f18d0fd6ef
 +            .then(Commands.argument("time", TimeArgument.time(1))
 +                .suggests((c, b) -> SharedSuggestionProvider.suggest(new String[]{"60s", "1d", "3d"}, b))
 +                .executes(c -> sprint(c.getSource(), IntegerArgumentType.getInteger(c, "time"))))
-+            .then(Commands.literal("status").requires(source -> fun.bm.lophine.carpet.TisTickRules.enhance())
++            .then(Commands.literal("status").requires(source -> fun.bm.lophine.carpet.tis.TisTickRules.enhance())
 +                .executes(c -> {
 +                    c.getSource().sendSuccess(() -> Component.literal(c.getSource().getServer().tickRateManager().carpetSprintStatus()), false);
 +                    return 1;
@@ -633,7 +633,7 @@ index cd8d85e6c48e2edbe5edcdd40e0ea39c2f13738c..41435e4eae5301a5abe822f18d0fd6ef
              Commands.literal("tick")
                  .requires(source -> fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.tickCommandEnabled()
 -                    && Commands.hasPermission(Commands.LEVEL_ADMINS).test(source))
-+                    && fun.bm.lophine.carpet.TisTickRules.canUse(source))
++                    && fun.bm.lophine.carpet.tis.TisTickRules.canUse(source))
                  .executes(c -> tickQuery(c.getSource()))
                  .then(Commands.literal("query").executes(c -> tickQuery(c.getSource())))
                  .then( // Lophine - Add tick rate support
@@ -651,19 +651,19 @@ index cd8d85e6c48e2edbe5edcdd40e0ea39c2f13738c..41435e4eae5301a5abe822f18d0fd6ef
 -                        )
 -                )*/
 +                .then(sprintNode)
-+                .then(Commands.literal("warp").requires(source -> fun.bm.lophine.carpet.TisTickRules.warp()).redirect(sprintNode.build()))
-+                .then(Commands.literal("health").requires(source -> fun.bm.lophine.carpet.TisTickRules.profiler())
++                .then(Commands.literal("warp").requires(source -> fun.bm.lophine.carpet.tis.TisTickRules.warp()).redirect(sprintNode.build()))
++                .then(Commands.literal("health").requires(source -> fun.bm.lophine.carpet.tis.TisTickRules.profiler())
 +                    .executes(c -> fun.bm.lophine.carpet.CarpetProfileCommand.healthReport(c.getSource(), 100))
 +                    .then(Commands.argument("ticks", IntegerArgumentType.integer(20, 24000))
 +                        .executes(c -> fun.bm.lophine.carpet.CarpetProfileCommand.healthReport(c.getSource(), IntegerArgumentType.getInteger(c, "ticks")))))
-+                .then(Commands.literal("entities").requires(source -> fun.bm.lophine.carpet.TisTickRules.profiler())
++                .then(Commands.literal("entities").requires(source -> fun.bm.lophine.carpet.tis.TisTickRules.profiler())
 +                    .executes(c -> fun.bm.lophine.carpet.CarpetProfileCommand.healthEntities(c.getSource(), 100))
 +                    .then(Commands.argument("ticks", IntegerArgumentType.integer(20, 24000))
 +                        .executes(c -> fun.bm.lophine.carpet.CarpetProfileCommand.healthEntities(c.getSource(), IntegerArgumentType.getInteger(c, "ticks")))))
                  .then(Commands.literal("unfreeze").executes(c -> setFreeze(c.getSource(), false)))
 -                .then(Commands.literal("freeze").executes(c -> setFreeze(c.getSource(), true)))
 +                .then(Commands.literal("freeze").executes(c -> setFreeze(c.getSource(), true))
-+                    .then(Commands.literal("deep").requires(source -> fun.bm.lophine.carpet.TisTickRules.deepFreeze())
++                    .then(Commands.literal("deep").requires(source -> fun.bm.lophine.carpet.tis.TisTickRules.deepFreeze())
 +                        .executes(c -> setFreeze(c.getSource(), true, true))))
          );
      }
@@ -673,7 +673,7 @@ index cd8d85e6c48e2edbe5edcdd40e0ea39c2f13738c..41435e4eae5301a5abe822f18d0fd6ef
          }
          ServerTickRateManager manager = source.getServer().tickRateManager();
 +        // Lophine start - Carpet features
-+        if (freeze && fun.bm.lophine.carpet.TisTickRules.toggleFreeze() && manager.isFrozen()) {
++        if (freeze && fun.bm.lophine.carpet.tis.TisTickRules.toggleFreeze() && manager.isFrozen()) {
 +            freeze = false;
 +        }
 +
@@ -697,14 +697,14 @@ index cd8d85e6c48e2edbe5edcdd40e0ea39c2f13738c..41435e4eae5301a5abe822f18d0fd6ef
 +    // Lophine end - Carpet features
  }
 diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
-index 9b5736327af2ead2b6d367c780fc01ab49f4491a..d83997bef70637ae8cccd2091530f6fd76fe3ccb 100644
+index 9b5736327af2ead2b6d367c780fc01ab49f4491a..d849a1e67e159c45c32d83d1d2f9f659d1ed947a 100644
 --- a/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -569,6 +569,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
      }
  
      public void handleConsoleInputs() {
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.phase(null, "console", null);
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.phase(null, "console", null);
 +        try {
          // Paper start - Perf: use proper queue
          ConsoleInput input;
@@ -723,12 +723,12 @@ index 9b5736327af2ead2b6d367c780fc01ab49f4491a..d83997bef70637ae8cccd2091530f6fd
                  return;
              }
 -            this.getCommands().performPrefixedCommand(wrapper, event.getCommand());
-+            try (var carpetMicroPhase = fun.bm.lophine.carpet.TisMicroTiming.phase(wrapper.getLevel(), "console", "rcon")) { this.getCommands().performPrefixedCommand(wrapper, event.getCommand()); }
++            try (var carpetMicroPhase = fun.bm.lophine.carpet.tis.TisMicroTiming.phase(wrapper.getLevel(), "console", "rcon")) { this.getCommands().performPrefixedCommand(wrapper, event.getCommand()); }
          }; // Folia start - region threading
          java.util.concurrent.CompletableFuture
              .runAsync(sync, io.papermc.paper.threadedregions.RegionizedServer.getInstance()::addTask)
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index b3715395edb7cbc8eee6487a8de52e1a34414982..a98b0cd7a024eb3c7cdd5198aca0e247f173dedb 100644
+index b3715395edb7cbc8eee6487a8de52e1a34414982..5a0b26f5da31f8a58c5d0cd8dd8611ea880fda24 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
 @@ -667,7 +667,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
@@ -736,7 +736,7 @@ index b3715395edb7cbc8eee6487a8de52e1a34414982..a98b0cd7a024eb3c7cdd5198aca0e247
              profiler.popPush("customSpawners");
              foliaProfiler.startTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.MISC_MOB_SPAWN_TICK); try { // Folia - profiler
 -            this.level.tickCustomSpawners(this.spawnEnemies);
-+            try (var carpetMicroPhase = fun.bm.lophine.carpet.TisMicroTiming.phase(this.level, "spawning_special", null)) { this.level.tickCustomSpawners(this.spawnEnemies); }
++            try (var carpetMicroPhase = fun.bm.lophine.carpet.tis.TisMicroTiming.phase(this.level, "spawning_special", null)) { this.level.tickCustomSpawners(this.spawnEnemies); }
              } finally { foliaProfiler.stopTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.MISC_MOB_SPAWN_TICK); } // Folia - profiler
          }
  
@@ -744,7 +744,7 @@ index b3715395edb7cbc8eee6487a8de52e1a34414982..a98b0cd7a024eb3c7cdd5198aca0e247
      }
  
      private void tickSpawningChunk(final LevelChunk chunk, final List<MobCategory> spawningCategories, final NaturalSpawner.SpawnState spawnCookie) {
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.active() ? fun.bm.lophine.carpet.TisMicroTiming.phase(this.level, "chunk_tick", chunk.getPos().toString()) : fun.bm.lophine.carpet.TisMicroTiming.noop();
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.active() ? fun.bm.lophine.carpet.tis.TisMicroTiming.phase(this.level, "chunk_tick", chunk.getPos().toString()) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop();
 +        try {
          ChunkPos chunkPos = chunk.getPos();
          chunk.incrementInhabitedTime();
@@ -759,14 +759,14 @@ index b3715395edb7cbc8eee6487a8de52e1a34414982..a98b0cd7a024eb3c7cdd5198aca0e247
  
      private void getFullChunk(final long chunkKey, final Consumer<LevelChunk> output) {
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index cb049466a25d7c78d958bcccdba6eb73f83e6270..eb387499ee6abb685e80154d90f00cd353abd395 100644
+index a1bd3294a839bb70e021a3322e9b4eef9f058f85..390bbecb5c9e5d1ee1a346a49cfd62255e636421 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -848,6 +848,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.keepWorldTickUpdate) {
              this.resetEmptyTime();
          }
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.phase(this, "world_border", null);
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.phase(this, "world_border", null);
 +        try { // Folia - regionised ticking
          this.getChunkSource().getLightEngine().carpetWaitForPendingTasks();
          // Lophine start - Global Entities Counter
@@ -775,13 +775,13 @@ index cb049466a25d7c78d958bcccdba6eb73f83e6270..eb387499ee6abb685e80154d90f00cd3
  
          // Folia - move into tickSleep()
  
-+        fun.bm.lophine.carpet.TisMicroTiming.timeBoundary(this);
++        fun.bm.lophine.carpet.tis.TisMicroTiming.timeBoundary(this);
          //this.updateSkyBrightness(); // Folia - move to global tick
          if (runs) {
              this.tickTime();
          }
  
-+        fun.bm.lophine.carpet.TisMicroTiming.stage("tile_tick");
++        fun.bm.lophine.carpet.tis.TisMicroTiming.stage("tile_tick");
          profiler.push("tickPending");
          if (!this.isDebug() && runs) {
              long tick = this.getRedstoneGameTime(); // Folia - region threading
@@ -798,7 +798,7 @@ index cb049466a25d7c78d958bcccdba6eb73f83e6270..eb387499ee6abb685e80154d90f00cd3
              profiler.pop();
          }
  
-+        fun.bm.lophine.carpet.TisMicroTiming.stage("raid");
++        fun.bm.lophine.carpet.tis.TisMicroTiming.stage("raid");
          profiler.popPush("raid");
          if (runs) {
              foliaProfiler.startTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.RAIDS_TICK); try { // Folia - profiler
@@ -806,12 +806,12 @@ index cb049466a25d7c78d958bcccdba6eb73f83e6270..eb387499ee6abb685e80154d90f00cd3
              } finally { foliaProfiler.stopTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.RAIDS_TICK); } // Folia - profiler
          }
  
-+        fun.bm.lophine.carpet.TisMicroTiming.stage("chunk_tick");
++        fun.bm.lophine.carpet.tis.TisMicroTiming.stage("chunk_tick");
          profiler.popPush("chunkSource");
          foliaProfiler.startTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.CHUNK_PROVIDER_TICK); try { // Folia - profiler
          this.getChunkSource().tick(haveTime, !carpet.script.external.ScarpetNativeWork.isDraining(this.server));
          } finally { foliaProfiler.stopTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.CHUNK_PROVIDER_TICK); } // Folia - profiler
-+        fun.bm.lophine.carpet.TisMicroTiming.stage("block_event");
++        fun.bm.lophine.carpet.tis.TisMicroTiming.stage("block_event");
          profiler.popPush("blockEvents");
          if (runs) {
              foliaProfiler.startTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.BLOCK_EVENT_TICK); try { // Folia - profiler
@@ -819,14 +819,14 @@ index cb049466a25d7c78d958bcccdba6eb73f83e6270..eb387499ee6abb685e80154d90f00cd3
          }
  
          if (this.emptyTime < 300) {
-+        fun.bm.lophine.carpet.TisMicroTiming.stage("entity");
++        fun.bm.lophine.carpet.tis.TisMicroTiming.stage("entity");
              profiler.push("entities");
              if (this.dragonFight != null && runs) {
                  foliaProfiler.startTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.DRAGON_FIGHT_TICK); try { // Folia - profiler
                  if (ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(this, this.dragonFight.origin)) { // Folia - region threading
                  profiler.push("dragonFight");
 -                this.dragonFight.tick();
-+                try (var carpetMicroPhase = fun.bm.lophine.carpet.TisMicroTiming.phase(this, "dragon_fight", null)) { this.dragonFight.tick(); }
++                try (var carpetMicroPhase = fun.bm.lophine.carpet.tis.TisMicroTiming.phase(this, "dragon_fight", null)) { this.dragonFight.tick(); }
                  profiler.pop();
                  } else { // Folia start - region threading
                      // try to load dragon fight
@@ -834,7 +834,7 @@ index cb049466a25d7c78d958bcccdba6eb73f83e6270..eb387499ee6abb685e80154d90f00cd3
                  if (dev.kaiijumc.kaiiju.KaiijuEntityLimits.enabled) regionizedWorldData.entityThrottler.tickLimiterFinish(regionizedWorldData); // Kaiiju
              } finally { foliaProfiler.stopTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.ENTITY_TICK); } // Folia - profiler
              if (this.paperConfig().unsupportedSettings.ticking.blockEntities) { // Paper - option to disable ticking
-+        fun.bm.lophine.carpet.TisMicroTiming.stage("tile_entity");
++        fun.bm.lophine.carpet.tis.TisMicroTiming.stage("tile_entity");
              profiler.popPush("blockEntities");
              foliaProfiler.startTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.TILE_ENTITY); try { // Folia - profiler
              if (!carpet.script.external.ScarpetNativeWork.isDraining(this.server)) this.tickBlockEntities();
@@ -851,7 +851,7 @@ index cb049466a25d7c78d958bcccdba6eb73f83e6270..eb387499ee6abb685e80154d90f00cd3
      // Paper end - optimise random ticking
  
      public void tickChunk(final LevelChunk chunk, final int tickSpeed) {
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.active() ? fun.bm.lophine.carpet.TisMicroTiming.phase(this, "chunk_tick", chunk.getPos().toString()) : fun.bm.lophine.carpet.TisMicroTiming.noop();
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.active() ? fun.bm.lophine.carpet.tis.TisMicroTiming.phase(this, "chunk_tick", chunk.getPos().toString()) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop();
 +        try {
 +        // Each call already runs on the owning Folia region; avoid a world-wide recursion counter.
 +        int repetitions = fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.chunkTickSpeed;
@@ -879,7 +879,7 @@ index cb049466a25d7c78d958bcccdba6eb73f83e6270..eb387499ee6abb685e80154d90f00cd3
 +        if (carpet.script.external.ScarpetNativeRemovals.tickPending(entity)) return;
 +        if (entity instanceof LivingEntity living && carpet.script.external.ScarpetNativeDeaths.isPending(living)) return;
 +        if (fun.bm.lophine.carpet.CarpetPlayerSpawnContinuations.pending(entity)) return;
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.entityPhase(entity);
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.entityPhase(entity);
 +        try {
          // Paper start - log detailed entity tick information
          ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread("Cannot tick an entity off-main");
@@ -898,7 +898,7 @@ index cb049466a25d7c78d958bcccdba6eb73f83e6270..eb387499ee6abb685e80154d90f00cd3
 +        if (carpet.script.external.ScarpetNativeRemovals.tickPending(entity)) return;
 +        if (entity instanceof LivingEntity living && carpet.script.external.ScarpetNativeDeaths.isPending(living)) return;
 +        if (fun.bm.lophine.carpet.CarpetPlayerSpawnContinuations.pending(entity)) return;
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.entityPhase(entity);
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.entityPhase(entity);
 +        try { // Paper - EAR 2
          if (entity.isRemoved() || entity.getVehicle() != vehicle) {
              entity.stopRiding();
@@ -916,7 +916,7 @@ index cb049466a25d7c78d958bcccdba6eb73f83e6270..eb387499ee6abb685e80154d90f00cd3
      }
  
      private boolean carpetAddEntityAfterBlockDrop(final Entity entity, final org.bukkit.event.entity.CreatureSpawnEvent.@Nullable SpawnReason spawnReason) {
-+            fun.bm.lophine.carpet.TisLifetimeTracker.bridgeSpawnReason(entity, spawnReason);
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.bridgeSpawnReason(entity, spawnReason);
              return this.moonrise$getEntityLookup().addNewEntity(entity); // Paper - rewrite chunk system
      }
  
@@ -969,15 +969,15 @@ index cb049466a25d7c78d958bcccdba6eb73f83e6270..eb387499ee6abb685e80154d90f00cd3
      }
  
      private boolean doBlockEvent(final BlockEventData eventData) {
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.active() ? fun.bm.lophine.carpet.TisMicroTiming.begin(this, eventData.pos(), eventData.block(), "execute_block_event", "type=" + eventData.paramA() + "; data=" + eventData.paramB(), false, true) : fun.bm.lophine.carpet.TisMicroTiming.noop();
-         try (var carpetOrgEvent = fun.bm.lophine.carpet.OrgHiddenBedrockSignals.executing(this,eventData)) {
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.active() ? fun.bm.lophine.carpet.tis.TisMicroTiming.begin(this, eventData.pos(), eventData.block(), "execute_block_event", "type=" + eventData.paramA() + "; data=" + eventData.paramB(), false, true) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop();
+         try (var carpetOrgEvent = fun.bm.lophine.carpet.org.OrgHiddenBedrockSignals.executing(this,eventData)) {
          BlockState state = this.getBlockState(eventData.pos());
          boolean carpetMicroResult = state.is(eventData.block()) && state.triggerEvent(this, eventData.pos(), eventData.paramA(), eventData.paramB());
 +        carpetMicroScope.result("success=" + carpetMicroResult + (state.is(eventData.block()) ? "" : "; failure=block_changed"));
          return carpetMicroResult;
  
--        } finally { fun.bm.lophine.carpet.OrgHiddenBedrockSignals.consumed(this,eventData); }
-+        } finally { fun.bm.lophine.carpet.OrgHiddenBedrockSignals.consumed(this,eventData); carpetMicroScope.close(); }
+-        } finally { fun.bm.lophine.carpet.org.OrgHiddenBedrockSignals.consumed(this,eventData); }
++        } finally { fun.bm.lophine.carpet.org.OrgHiddenBedrockSignals.consumed(this,eventData); carpetMicroScope.close(); }
      }
  
      @Override
@@ -994,7 +994,7 @@ index cb049466a25d7c78d958bcccdba6eb73f83e6270..eb387499ee6abb685e80154d90f00cd3
          Optional<Holder<PoiType>> newType = PoiTypes.forState(newState);
          if (!Objects.equals(oldType, newType)) {
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index c492b76a28560e441ba413900a3deac4cd746c4b..2c8142adcf8827f615a1748ba59ac6da43b3b870 100644
+index 46ee9c047b21c990663dd87586df2c9170571497..4a1f464b6e250549f954deb609a9b14cddef677a 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -264,6 +264,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -1006,33 +1006,33 @@ index c492b76a28560e441ba413900a3deac4cd746c4b..2c8142adcf8827f615a1748ba59ac6da
      private @Nullable Vec3 enteredNetherPosition;
      private @Nullable Vec3 enteredLavaOnVehiclePosition;
 @@ -878,7 +879,10 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
-         fun.bm.lophine.carpet.OrgExperienceTransfers.tick(this);
-         fun.bm.lophine.carpet.OrgInventoryTransfers.tick(this);
-         fun.bm.lophine.carpet.OrgNavigation.tick(this);
+         fun.bm.lophine.carpet.org.OrgExperienceTransfers.tick(this);
+         fun.bm.lophine.carpet.org.OrgInventoryTransfers.tick(this);
+         fun.bm.lophine.carpet.org.OrgNavigation.tick(this);
 -        this.carpetActionPack.onUpdate();
 +        if (!(this instanceof fun.bm.lophine.carpet.CarpetFakePlayer bot
 +            && fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig.fakePlayerTicksLikeRealPlayer)) {
 +            this.carpetActionPack.onUpdate();
 +        }
-         fun.bm.lophine.carpet.OrgHiddenPlayerActions.tick(this);
-         fun.bm.lophine.carpet.OrgFakePlayerActions.tick(this);
-         fun.bm.lophine.carpet.OrgPlayerManager.observe(this);
+         fun.bm.lophine.carpet.org.OrgHiddenPlayerActions.tick(this);
+         fun.bm.lophine.carpet.org.OrgFakePlayerActions.tick(this);
+         fun.bm.lophine.carpet.org.OrgPlayerManager.observe(this);
 @@ -3022,6 +3026,9 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.waypointIcon().copyFrom(oldPlayer.waypointIcon());
-         fun.bm.lophine.carpet.AmsManagementCommands.onRespawn(this, restoreAll);
+         fun.bm.lophine.carpet.ams.AmsManagementCommands.onRespawn(this, restoreAll);
          // Lophine start - Carpet features
 +        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.clientSettingsLostOnRespawnFix && oldPlayer.lastKnownClientInformation != null) {
 +            this.updateOptions(oldPlayer.lastKnownClientInformation);
 +        }
-         fun.bm.lophine.carpet.OrgNavigation.copyFrom(this, oldPlayer);
+         fun.bm.lophine.carpet.org.OrgNavigation.copyFrom(this, oldPlayer);
          // Lophine end - Carpet features
      }
 @@ -3212,7 +3219,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      }
  
      public void sendSystemMessage(final Component rawMessage, final boolean overlay) {
--        final Component message = fun.bm.lophine.carpet.AmsTranslations.translate(rawMessage, this);
-+        final Component message = fun.bm.lophine.carpet.TisTranslations.translate(fun.bm.lophine.carpet.AmsTranslations.translate(rawMessage, this), this);
+-        final Component message = fun.bm.lophine.carpet.ams.AmsTranslations.translate(rawMessage, this);
++        final Component message = fun.bm.lophine.carpet.tis.TisTranslations.translate(fun.bm.lophine.carpet.ams.AmsTranslations.translate(rawMessage, this), this);
          if (this.acceptsSystemMessages(overlay)) {
              this.connection
                  .send(
@@ -1087,7 +1087,7 @@ index 948a8a2b38d8ba3a2ea61cb2c85c3039bb938f2d..495b1933476bdbcf6876cc2c5a379617
      public int runLightUpdates() {
          throw (UnsupportedOperationException)Util.pauseInIde(new UnsupportedOperationException("Ran automatically on a different thread!"));
 diff --git a/net/minecraft/server/network/ServerCommandSuggestionsProvider.java b/net/minecraft/server/network/ServerCommandSuggestionsProvider.java
-index 650ce1664d54c0c2d309d1555a90f877e32de19b..46f1ac511d4ce318a3b76fe25614b9e7482e287e 100644
+index 650ce1664d54c0c2d309d1555a90f877e32de19b..1d9ac01724e3177b7c97907daad3ead3f729fac1 100644
 --- a/net/minecraft/server/network/ServerCommandSuggestionsProvider.java
 +++ b/net/minecraft/server/network/ServerCommandSuggestionsProvider.java
 @@ -90,7 +90,7 @@ public class ServerCommandSuggestionsProvider {
@@ -1095,12 +1095,12 @@ index 650ce1664d54c0c2d309d1555a90f877e32de19b..46f1ac511d4ce318a3b76fe25614b9e7
          }
  
 -        return request.future;
-+        return request.future.thenApply(suggestions -> fun.bm.lophine.carpet.TisTickRules.filterSuggestions(command, suggestions));
++        return request.future.thenApply(suggestions -> fun.bm.lophine.carpet.tis.TisTickRules.filterSuggestions(command, suggestions));
      }
  
      private static class Request {
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index d7e197359b1a623e85ebecb634110ff7d12f91d8..a355d0a0eb3eaa57f1d05691c19865c4aa5bd03d 100644
+index 3d7bac7c7bd24fef7744f93bdf7204a5b0ac4d57..15b21ab2ce0ee46f99ee12329f288addd6f017df 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -1501,7 +1501,7 @@ public class ServerGamePacketListenerImpl
@@ -1187,38 +1187,38 @@ index 664c1b3008b62c533b8e3302baa994ed0c135c42..cf903e068238fb30312d79e5b769d9f9
      }
  
 diff --git a/net/minecraft/world/Containers.java b/net/minecraft/world/Containers.java
-index c6a729a9c952cc694b9aff854b3291fc38d7c9fd..d672c2a458a473e556a4f1fc7e6676b0cf74d3db 100644
+index b001d5a608f5fa1c1e904961710f0333cc276787..ba086f3954bdb86a61cfde70e7aa184f0317fa53 100644
 --- a/net/minecraft/world/Containers.java
 +++ b/net/minecraft/world/Containers.java
 @@ -54,6 +54,7 @@ public class Containers {
              entity.setDeltaMovement(
                  random.triangle(0.0, 0.11485000171139836), random.triangle(0.2, 0.11485000171139836), random.triangle(0.0, 0.11485000171139836)
              );
-+            fun.bm.lophine.carpet.TisLifetimeTracker.markSpawn(entity, "container");
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(entity, "container");
              level.addFreshEntity(entity);
          }
      }
 diff --git a/net/minecraft/world/effect/InfestedMobEffect.java b/net/minecraft/world/effect/InfestedMobEffect.java
-index e234c8fd39ce67b7db56b9ff3c501606ce976ba1..9adf740b151b6055f3f570d5850d1f7bfcdc0456 100644
+index e234c8fd39ce67b7db56b9ff3c501606ce976ba1..9b32916bfe1f03e97c83d1b3a4d6fd1016423beb 100644
 --- a/net/minecraft/world/effect/InfestedMobEffect.java
 +++ b/net/minecraft/world/effect/InfestedMobEffect.java
 @@ -45,6 +45,7 @@ class InfestedMobEffect extends MobEffect {
              silverfish.snapTo(x, y, z, level.getRandom().nextFloat() * 360.0F, 0.0F);
              silverfish.setDeltaMovement(new Vec3(viewDirection));
              // CraftBukkit start
-+            fun.bm.lophine.carpet.TisLifetimeTracker.markStatusEffectSpawn(silverfish, this);
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.markStatusEffectSpawn(silverfish, this);
              if (!level.addFreshEntity(silverfish, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.POTION_EFFECT)) {
                  return;
              }
 diff --git a/net/minecraft/world/effect/OozingMobEffect.java b/net/minecraft/world/effect/OozingMobEffect.java
-index a1bf6f11218b84d82377d8e9c3796b6b320d56c1..fcdf449be098c529cab119524fe87ea2a6ce7741 100644
+index a1bf6f11218b84d82377d8e9c3796b6b320d56c1..5b55d43583a956efde49e62e8edb799665b5953e 100644
 --- a/net/minecraft/world/effect/OozingMobEffect.java
 +++ b/net/minecraft/world/effect/OozingMobEffect.java
 @@ -49,6 +49,7 @@ class OozingMobEffect extends MobEffect {
          if (slime != null) {
              slime.setSize(2, true);
              slime.snapTo(x, y, z, level.getRandom().nextFloat() * 360.0F, 0.0F);
-+            fun.bm.lophine.carpet.TisLifetimeTracker.markStatusEffectSpawn(slime, this);
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.markStatusEffectSpawn(slime, this);
              level.addFreshEntity(slime, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.POTION_EFFECT); // CraftBukkit
          }
      }
@@ -1248,14 +1248,14 @@ index 9ce50c3771e7f4c087245b500dc0432d39988a03..df6c5b7cefa43c23e8cb0ede133b5c2d
          this.age = newAge;
          if (oldAge < 0 && newAge >= 0 || oldAge >= 0 && newAge < 0) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 4685ee6ef4d2e248b7d02c369e8de85622cb2c35..08e9298c207167fa8739e347545caab25ea16030 100644
+index 3081881669c0afd6ca192b66f88c010ba7c71f62..4ee593f0867ebfc1e5d4a9b3af0bc7318bc9256d 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -267,6 +267,8 @@ public abstract class Entity
      private final EntityType<?> type;
      private boolean requiresPrecisePosition;
      private int id = 0;
-+    public fun.bm.lophine.carpet.TisLifetimeTracker.Target carpetLifetimeTarget;
++    public fun.bm.lophine.carpet.tis.TisLifetimeTracker.Target carpetLifetimeTarget;
 +    public fun.bm.lophine.carpet.CarpetTrajectoryLogger carpetTisTrajectory;
      public boolean blocksBuilding;
      public ImmutableList<Entity> passengers = ImmutableList.of();
@@ -1273,7 +1273,7 @@ index 4685ee6ef4d2e248b7d02c369e8de85622cb2c35..08e9298c207167fa8739e347545caab2
          this.level = level;
          this.id = level.getNextEntityId();
 +        if (level instanceof ServerLevel) {
-+            fun.bm.lophine.carpet.TisSamplingLoggers.entityAllocated(this.id, this.type, this.stringUUID);
++            fun.bm.lophine.carpet.tis.TisSamplingLoggers.entityAllocated(this.id, this.type, this.stringUUID);
 +        }
          this.dimensions = type.getDimensions();
          this.position = Vec3.ZERO;
@@ -1282,7 +1282,7 @@ index 4685ee6ef4d2e248b7d02c369e8de85622cb2c35..08e9298c207167fa8739e347545caab2
          this.setPos(0.0, 0.0, 0.0);
          this.eyeHeight = this.dimensions.eyeHeight();
          this.despawnTime = level == null || type == EntityTypes.PLAYER ? -1 : level.paperConfig().entities.spawning.despawnTime.getOrDefault(type, io.papermc.paper.configuration.type.number.IntOr.Disabled.DISABLED).or(-1); // Paper - entity despawn time limit
-+        this.carpetLifetimeTarget = fun.bm.lophine.carpet.TisLifetimeTracker.newTarget(this);
++        this.carpetLifetimeTarget = fun.bm.lophine.carpet.tis.TisLifetimeTracker.newTarget(this);
      }
  
      public boolean isColliding(final BlockPos pos, final BlockState state) {
@@ -1307,7 +1307,7 @@ index 4685ee6ef4d2e248b7d02c369e8de85622cb2c35..08e9298c207167fa8739e347545caab2
          // CraftBukkit end
 +        if (this.isRemoved() && this.carpetLifetimeTarget != null && reason != Entity.RemovalReason.CHANGED_DIMENSION
 +            && reason != Entity.RemovalReason.UNLOADED_TO_CHUNK) {
-+            if (reason == Entity.RemovalReason.UNLOADED_WITH_PLAYER) fun.bm.lophine.carpet.TisLifetimeTracker.removed(this, "player_logout");
++            if (reason == Entity.RemovalReason.UNLOADED_WITH_PLAYER) fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(this, "player_logout");
 +            else this.carpetLifetimeTarget.fallbackRemoval(eventCause);
 +        }
      }
@@ -1326,7 +1326,7 @@ index 4685ee6ef4d2e248b7d02c369e8de85622cb2c35..08e9298c207167fa8739e347545caab2
              && this.level.paperConfig().environment.netherCeilingVoidDamageHeight.test(v -> this.getY() >= v)
              && (!(this instanceof Player player) || !player.getAbilities().invulnerable))) {
              // Paper end - Configurable nether ceiling damage
-+            fun.bm.lophine.carpet.TisLifetimeTracker.removed(this, "void");
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(this, "void");
              this.onBelowWorld();
          }
      }
@@ -1334,8 +1334,8 @@ index 4685ee6ef4d2e248b7d02c369e8de85622cb2c35..08e9298c207167fa8739e347545caab2
      private boolean boundingBoxChanged = false; // Gale - VMP - skip entity move if movement is zero
  
      public void move(final MoverType moverType, Vec3 delta) {
-+        if (fun.bm.lophine.carpet.TisProjectileVisualizer.isVisualizer(this)) return;
-+        fun.bm.lophine.carpet.TisMovementLogger.Tracker carpetMovementTracker = fun.bm.lophine.carpet.TisMovementLogger.begin(this, moverType, delta);
++        if (fun.bm.lophine.carpet.tis.TisProjectileVisualizer.isVisualizer(this)) return;
++        fun.bm.lophine.carpet.tis.TisMovementLogger.Tracker carpetMovementTracker = fun.bm.lophine.carpet.tis.TisMovementLogger.begin(this, moverType, delta);
 +        boolean carpetMovementFailed = false;
 +        try {
          if (SharedConstants.IS_RUNNING_IN_IDE && !moverType.isServerAndClientSimulated() && !this.canSimulateMovement()) {
@@ -1399,8 +1399,8 @@ index 4685ee6ef4d2e248b7d02c369e8de85622cb2c35..08e9298c207167fa8739e347545caab2
 -        potentialCollisionsBB.addAll(entityAABBs);
 -        final Vec3 collided = ca.spottedleaf.moonrise.patches.collisions.CollisionUtil.performCollisions(movement, currentBox, potentialCollisionsVoxel, potentialCollisionsBB);
 +        final Vec3 collided;
-+        if (fun.bm.lophine.carpet.TisFastEntityMovement.enabled(movement)) {
-+            collided = fun.bm.lophine.carpet.TisFastEntityMovement.collide(this, movement, currentBox, entityAABBs);
++        if (fun.bm.lophine.carpet.tis.TisFastEntityMovement.enabled(movement)) {
++            collided = fun.bm.lophine.carpet.tis.TisFastEntityMovement.collide(this, movement, currentBox, entityAABBs);
 +        } else {
 +            ca.spottedleaf.moonrise.patches.collisions.CollisionUtil.getCollisionsForBlocksOrWorldBorder(
 +                this.level, (Entity)(Object)this, initialCollisionBox, potentialCollisionsVoxel, potentialCollisionsBB,
@@ -1416,8 +1416,8 @@ index 4685ee6ef4d2e248b7d02c369e8de85622cb2c35..08e9298c207167fa8739e347545caab2
      public static Vec3 collideBoundingBox(
          final Entity source, final Vec3 movement, final AABB boundingBox, final Level level, final List<VoxelShape> entityColliders
      ) {
-+        if (fun.bm.lophine.carpet.TisFastEntityMovement.enabled(movement)) {
-+            return fun.bm.lophine.carpet.TisFastEntityMovement.collideBlocks(source, level, movement, boundingBox, entityColliders);
++        if (fun.bm.lophine.carpet.tis.TisFastEntityMovement.enabled(movement)) {
++            return fun.bm.lophine.carpet.tis.TisFastEntityMovement.collideBlocks(source, level, movement, boundingBox, entityColliders);
 +        }
          List<VoxelShape> colliders = collectCollidersIgnoringWorldBorder(source, level, entityColliders, boundingBox.expandTowards(movement));
          return collideWithShapes(movement, boundingBox, colliders);
@@ -1437,7 +1437,7 @@ index 4685ee6ef4d2e248b7d02c369e8de85622cb2c35..08e9298c207167fa8739e347545caab2
              livingEntity.deathDropItems.add(new DefaultDrop(itemStack, dropStack -> {
                  ItemEntity dropEntity = new ItemEntity(this.level, this.getX() + offset.x, this.getY() + offset.y, this.getZ() + offset.z, dropStack); // stack is copied before consumer
                  dropEntity.setDefaultPickUpDelay();
-+                fun.bm.lophine.carpet.TisLifetimeTracker.markMobDrop(dropEntity, this);
++                fun.bm.lophine.carpet.tis.TisLifetimeTracker.markMobDrop(dropEntity, this);
                  this.level.addFreshEntity(dropEntity);
                  if (delayedAddConsumer != null) delayedAddConsumer.accept(dropEntity);
              }));
@@ -1445,7 +1445,7 @@ index 4685ee6ef4d2e248b7d02c369e8de85622cb2c35..08e9298c207167fa8739e347545caab2
              return null;
          }
          // CraftBukkit end
-+        fun.bm.lophine.carpet.TisLifetimeTracker.markMobDrop(entity, this);
++        fun.bm.lophine.carpet.tis.TisLifetimeTracker.markMobDrop(entity, this);
          level.addFreshEntity(entity);
          return entity;
      }
@@ -1453,8 +1453,8 @@ index 4685ee6ef4d2e248b7d02c369e8de85622cb2c35..08e9298c207167fa8739e347545caab2
              this.setPose(Pose.STANDING);
              this.vehicle = entityToRide;
              this.vehicle.addPassenger(this);
-+            fun.bm.lophine.carpet.TisLifetimeTracker.markJockeyMount(entityToRide);
-+            if (!this.hasNullCallback()) fun.bm.lophine.carpet.TisLifetimeTracker.removedFromCap(this, "vehicle_mounting");
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.markJockeyMount(entityToRide);
++            if (!this.hasNullCallback()) fun.bm.lophine.carpet.tis.TisLifetimeTracker.removedFromCap(this, "vehicle_mounting");
              if (sendEventAndTriggers) {
                  this.level().gameEvent(this, GameEvent.ENTITY_MOUNT, this.vehicle.position);
                  entityToRide.getIndirectPassengersStream()
@@ -1462,7 +1462,7 @@ index 4685ee6ef4d2e248b7d02c369e8de85622cb2c35..08e9298c207167fa8739e347545caab2
              Entity oldVehicle = this.vehicle;
              this.vehicle = null;
              if (!oldVehicle.removePassenger(this, suppressCancellation)) this.vehicle = oldVehicle; // CraftBukkit // Paper - Force entity dismount during teleportation
-+            if (this.vehicle == null && !this.isRemoved() && !this.hasNullCallback()) fun.bm.lophine.carpet.TisLifetimeTracker.returnedToCap(this, "vehicle_dismounting");
++            if (this.vehicle == null && !this.isRemoved() && !this.hasNullCallback()) fun.bm.lophine.carpet.tis.TisLifetimeTracker.returnedToCap(this, "vehicle_dismounting");
              Entity.RemovalReason removalReason = this.getRemovalReason();
              if (removalReason == null || removalReason.shouldDestroy()) {
                  if (!this.hasNullCallback()) this.level().gameEvent(this, GameEvent.ENTITY_DISMOUNT, oldVehicle.position); // Folia - region threading - do not fire game events for entities not added
@@ -1502,7 +1502,7 @@ index 4685ee6ef4d2e248b7d02c369e8de85622cb2c35..08e9298c207167fa8739e347545caab2
 +
 +    public void carpetCompleteVehicleRemoval(Entity oldVehicle,boolean removed,Vec3 actualVehiclePosition) {
 +        if(removed)this.boardingCooldown=60;else this.vehicle=oldVehicle;
-+        if(this.vehicle==null && !this.isRemoved() && !this.hasNullCallback())fun.bm.lophine.carpet.TisLifetimeTracker.returnedToCap(this,"vehicle_dismounting");
++        if(this.vehicle==null && !this.isRemoved() && !this.hasNullCallback())fun.bm.lophine.carpet.tis.TisLifetimeTracker.returnedToCap(this,"vehicle_dismounting");
 +        Entity.RemovalReason reason=this.getRemovalReason();
 +        if((reason==null || reason.shouldDestroy()) && !this.hasNullCallback())this.level().gameEvent(this,GameEvent.ENTITY_DISMOUNT,actualVehiclePosition);
 +    }
@@ -1514,13 +1514,13 @@ index 4685ee6ef4d2e248b7d02c369e8de85622cb2c35..08e9298c207167fa8739e347545caab2
      }
  
      protected Entity transformForAsyncTeleport(ServerLevel destination, Vec3 pos, Float yaw, Float pitch, Vec3 velocity) {
-+        fun.bm.lophine.carpet.TisLifetimeTracker.beforeTeleport(this, destination);
++        fun.bm.lophine.carpet.tis.TisLifetimeTracker.beforeTeleport(this, destination);
          this.removeAfterChangingDimensions(); // remove before so that any CBEntity#getHandle call affects this entity before copying
  
          Entity copy = this.getType().create(destination, EntitySpawnReason.DIMENSION_TRAVEL);
          copy.restoreFrom(this);
          copy.transform(pos, yaw, pitch, velocity);
-+        fun.bm.lophine.carpet.TisLifetimeTracker.afterTeleport(this, copy, destination);
++        fun.bm.lophine.carpet.tis.TisLifetimeTracker.afterTeleport(this, copy, destination);
          if (copy instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) dragon.syncDragonPartsAfterTeleportTransform(); // Luminol - Sync dragon part when teleportation or firstly created
          // vanilla code used to call remove _after_ copying, and some stuff is required to be after copy - so add hook here
          // for example, clearing of inventory after switching dimensions
@@ -1529,14 +1529,14 @@ index 4685ee6ef4d2e248b7d02c369e8de85622cb2c35..08e9298c207167fa8739e347545caab2
      }
  
 +    protected java.util.concurrent.CompletableFuture<Entity> carpetTransformForAsyncTeleportFuture(ServerLevel destination, Vec3 pos, Float yaw, Float pitch, Vec3 velocity) {
-+        fun.bm.lophine.carpet.TisLifetimeTracker.beforeTeleport(this, destination);
++        fun.bm.lophine.carpet.tis.TisLifetimeTracker.beforeTeleport(this, destination);
 +        return carpet.script.external.ScarpetNativeRemovals.removalValue(this, () -> {
 +            this.removeAfterChangingDimensions(); // remove before so that any CBEntity#getHandle call affects this entity before copying
 +
 +            Entity copy = this.getType().create(destination, EntitySpawnReason.DIMENSION_TRAVEL);
 +            copy.restoreFrom(this);
 +            copy.transform(pos, yaw, pitch, velocity);
-+            fun.bm.lophine.carpet.TisLifetimeTracker.afterTeleport(this, copy, destination);
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.afterTeleport(this, copy, destination);
 +            if (copy instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) dragon.syncDragonPartsAfterTeleportTransform(); // Luminol - Sync dragon part when teleportation or firstly created
 +            // vanilla code used to call remove _after_ copying, and some stuff is required to be after copy - so add hook here
 +            // for example, clearing of inventory after switching dimensions
@@ -1553,16 +1553,16 @@ index 4685ee6ef4d2e248b7d02c369e8de85622cb2c35..08e9298c207167fa8739e347545caab2
              this.removeEventCause = cause; // Paper
          }
  
-+        if (!alreadyRemoved) fun.bm.lophine.carpet.TisProjectileVisualizer.removed(this);
++        if (!alreadyRemoved) fun.bm.lophine.carpet.tis.TisProjectileVisualizer.removed(this);
 +        if (!alreadyRemoved && reason == Entity.RemovalReason.UNLOADED_WITH_PLAYER) {
-+            fun.bm.lophine.carpet.TisLifetimeTracker.removed(this, "player_logout");
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(this, "player_logout");
 +        }
 +
          if (this.removalReason.shouldDestroy()) {
              this.stopRiding();
          }
 diff --git a/net/minecraft/world/entity/EntityType.java b/net/minecraft/world/entity/EntityType.java
-index cf5acd1d337a8d3a27fad100f88f92e27a276ec5..ca050a6c42402b9ea332ff78a5cdf86e5999ab21 100644
+index cf5acd1d337a8d3a27fad100f88f92e27a276ec5..c7e80c0ec90d861f96cb11f9072c34dd8a5bacc6 100644
 --- a/net/minecraft/world/entity/EntityType.java
 +++ b/net/minecraft/world/entity/EntityType.java
 @@ -167,7 +167,24 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>,
@@ -1570,7 +1570,7 @@ index cf5acd1d337a8d3a27fad100f88f92e27a276ec5..ca050a6c42402b9ea332ff78a5cdf86e
          }
  
 -        return this.spawn(level, postSpawnConfig, spawnPos, spawnReason, tryMoveDown, movedUp, createSpawnReason); // CraftBukkit
-+        return this.spawn(level, postSpawnConfig.andThen(entity -> fun.bm.lophine.carpet.TisLifetimeTracker.markSpawn(entity, "item")),
++        return this.spawn(level, postSpawnConfig.andThen(entity -> fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(entity, "item")),
 +            spawnPos, spawnReason, tryMoveDown, movedUp, createSpawnReason); // CraftBukkit
 +    }
 +
@@ -1585,7 +1585,7 @@ index cf5acd1d337a8d3a27fad100f88f92e27a276ec5..ca050a6c42402b9ea332ff78a5cdf86e
 +        final @Nullable Vec3 precisePos
 +    ) {
 +        PostSpawnProcessor<T> config = itemStack == null ? PostSpawnProcessor.nop() : createDefaultStackConfig(level, itemStack, user);
-+        config = config.andThen(entity -> fun.bm.lophine.carpet.TisLifetimeTracker.markSpawn(entity, "item"));
++        config = config.andThen(entity -> fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(entity, "item"));
 +        return this.carpetSpawnWithPosition(level, config, spawnPos, spawnReason, tryMoveDown, movedUp,
 +            org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER_EGG, precisePos);
      }
@@ -1597,7 +1597,7 @@ index cf5acd1d337a8d3a27fad100f88f92e27a276ec5..ca050a6c42402b9ea332ff78a5cdf86e
      public @Nullable T create(final Level level, final EntitySpawnRequest request) {
 -        return !request.ignoreChecks() && !this.canSpawn(level) ? null : this.factory.create(this, level);
 +        T entity = !request.ignoreChecks() && !this.canSpawn(level) ? null : this.factory.create(this, level);
-+        if (entity != null) fun.bm.lophine.carpet.TisLifetimeTracker.inferSpawn(entity, request.reason());
++        if (entity != null) fun.bm.lophine.carpet.tis.TisLifetimeTracker.inferSpawn(entity, request.reason());
 +        return entity;
      }
  
@@ -1620,14 +1620,14 @@ index cf5acd1d337a8d3a27fad100f88f92e27a276ec5..ca050a6c42402b9ea332ff78a5cdf86e
  
      public boolean hasUpdateInterval() {
 diff --git a/net/minecraft/world/entity/ExperienceOrb.java b/net/minecraft/world/entity/ExperienceOrb.java
-index 1ded07d0477483da6489e1e603bd356547196ee5..ff11317e02ebc791144b2b1f8a5e146487a7ec8a 100644
+index 1ded07d0477483da6489e1e603bd356547196ee5..17bf9bc1cc59aba4b5ef53c5ee29de8e976749c6 100644
 --- a/net/minecraft/world/entity/ExperienceOrb.java
 +++ b/net/minecraft/world/entity/ExperienceOrb.java
 @@ -112,6 +112,7 @@ public class ExperienceOrb extends Entity {
          }
  
          this.setValue(value);
-+        fun.bm.lophine.carpet.TisLifetimeTracker.markExperienceSpawn(this, reason, sourceId);
++        fun.bm.lophine.carpet.tis.TisLifetimeTracker.markExperienceSpawn(this, reason, sourceId);
      }
  
      public ExperienceOrb(final EntityType<? extends ExperienceOrb> type, final Level level) {
@@ -1635,7 +1635,7 @@ index 1ded07d0477483da6489e1e603bd356547196ee5..ff11317e02ebc791144b2b1f8a5e1464
  
              this.age++;
              if (this.age >= 6000) {
-+                fun.bm.lophine.carpet.TisLifetimeTracker.removed(this, "despawn_timeout");
++                fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(this, "despawn_timeout");
                  this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
              }
          }
@@ -1659,12 +1659,12 @@ index 1ded07d0477483da6489e1e603bd356547196ee5..ff11317e02ebc791144b2b1f8a5e1464
                  }
  
                  // Lophine end - Carpet features
-+                fun.bm.lophine.carpet.TisLifetimeTracker.removed(this, "mob_pickup", fun.bm.lophine.carpet.TisLifetimeTracker.related(player, "pickerType"));
++                fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(this, "mob_pickup", fun.bm.lophine.carpet.tis.TisLifetimeTracker.related(player, "pickerType"));
                  player.take(this, 1);
                  int remaining = this.repairPlayerItems(serverPlayer, this.getValue());
                  if (remaining > 0) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 01da1d222ec7c0a947373686c3ccfd70a31a9bc1..de020c567760776f8b35729c5fc52dc2ae9fb0ee 100644
+index a54f5ba7b74e25bbd5430175b67cd0a1e2fb3a11..7459f053f3dfad7cd90f8cbc01b596de6669249a 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -228,7 +228,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -1693,7 +1693,7 @@ index 01da1d222ec7c0a947373686c3ccfd70a31a9bc1..de020c567760776f8b35729c5fc52dc2
                  }
              }
              // CraftBukkit end
-+            fun.bm.lophine.carpet.TisLifetimeTracker.markSpawn(entity, "mob_throw", fun.bm.lophine.carpet.TisLifetimeTracker.related(this, "throwerType"));
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(entity, "mob_throw", fun.bm.lophine.carpet.tis.TisLifetimeTracker.related(this, "throwerType"));
              this.level().addFreshEntity(entity);
          }
  
@@ -1709,7 +1709,7 @@ index 01da1d222ec7c0a947373686c3ccfd70a31a9bc1..de020c567760776f8b35729c5fc52dc2
                          return;
                      }
                      // CraftBukkit end
-+                    fun.bm.lophine.carpet.TisLifetimeTracker.markMobDrop(itemEntity, this);
++                    fun.bm.lophine.carpet.tis.TisLifetimeTracker.markMobDrop(itemEntity, this);
                      this.level().addFreshEntity(itemEntity);
                  }
              }
@@ -1733,7 +1733,7 @@ index 01da1d222ec7c0a947373686c3ccfd70a31a9bc1..de020c567760776f8b35729c5fc52dc2
  
      @Override
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
-index 03b2f0fa6387426c8d85bf4ed686999b001bf2d0..10f5f3cb1e8dbcd0e7cb2fce9369353af846e73f 100644
+index a9daffbe79d7a96c4c98fab57c54211d0e56c24e..ad2eaec0898e35a62903bd93503efe00f52297bf 100644
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
 @@ -615,7 +615,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
@@ -1749,7 +1749,7 @@ index 03b2f0fa6387426c8d85bf4ed686999b001bf2d0..10f5f3cb1e8dbcd0e7cb2fce9369353a
              this.take(entity, equippedWithStack.getCount());
              itemStack.shrink(equippedWithStack.getCount());
              if (itemStack.isEmpty()) {
-+                fun.bm.lophine.carpet.TisLifetimeTracker.removed(entity, "mob_pickup", fun.bm.lophine.carpet.TisLifetimeTracker.related(this, "pickerType"));
++                fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(entity, "mob_pickup", fun.bm.lophine.carpet.tis.TisLifetimeTracker.related(this, "pickerType"));
                  entity.discard(EntityRemoveEvent.Cause.PICKUP); // CraftBukkit - add Bukkit remove cause
              }
          }
@@ -1757,7 +1757,7 @@ index 03b2f0fa6387426c8d85bf4ed686999b001bf2d0..10f5f3cb1e8dbcd0e7cb2fce9369353a
  
              ItemStack toEquip = slot.limit(itemStack);
              this.setItemSlotAndDropWhenKilled(slot, toEquip);
-+            fun.bm.lophine.carpet.TisLifetimeTracker.removedFromCap(this, "persistent");
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.removedFromCap(this, "persistent");
              this.persistenceRequired = true;
              return toEquip;
          } else {
@@ -1765,7 +1765,7 @@ index 03b2f0fa6387426c8d85bf4ed686999b001bf2d0..10f5f3cb1e8dbcd0e7cb2fce9369353a
              !(fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.disableMobPeacefulDespawn
                  && (this.isPersistenceRequired() || this.requiresCustomPersistence()))
                  && !this.getType().isAllowedInPeaceful())) { // Paper - allow changing despawnInPeaceful
-+            fun.bm.lophine.carpet.TisLifetimeTracker.removed(this, "despawn_difficulty");
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(this, "despawn_difficulty");
              this.discard(EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
          } else {
              boolean isPersistent = this.isPersistenceRequired() || this.requiresCustomPersistence();
@@ -1773,7 +1773,7 @@ index 03b2f0fa6387426c8d85bf4ed686999b001bf2d0..10f5f3cb1e8dbcd0e7cb2fce9369353a
                  final double distanceSquared = dxSqr + dzSqr + dySqr;
                  // Despawn if hard/soft limit is exceeded
                  if (!isPersistent && despawnRangePair.hard().shouldDespawn(shape, dxSqr, dySqr, dzSqr, dy) && this.removeWhenFarAway(distanceSquared)) {
-+                    fun.bm.lophine.carpet.TisLifetimeTracker.removed(this, "despawn_immediately", fun.bm.lophine.carpet.TisLifetimeTracker.noDamage());
++                    fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(this, "despawn_immediately", fun.bm.lophine.carpet.tis.TisLifetimeTracker.noDamage());
                      this.discard(EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
                  }
  
@@ -1781,7 +1781,7 @@ index 03b2f0fa6387426c8d85bf4ed686999b001bf2d0..10f5f3cb1e8dbcd0e7cb2fce9369353a
                          && this.noActionTime > 600
                          && this.random.nextInt(800) == 0
                          && this.removeWhenFarAway(distanceSquared)) {
-+                        fun.bm.lophine.carpet.TisLifetimeTracker.removed(this, "despawn_randomly");
++                        fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(this, "despawn_randomly");
                          this.discard(EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
                      }
                  } else {
@@ -1789,7 +1789,7 @@ index 03b2f0fa6387426c8d85bf4ed686999b001bf2d0..10f5f3cb1e8dbcd0e7cb2fce9369353a
      }
  
      public void setPersistenceRequired() {
-+        fun.bm.lophine.carpet.TisLifetimeTracker.removedFromCap(this, "persistent");
++        fun.bm.lophine.carpet.tis.TisLifetimeTracker.removedFromCap(this, "persistent");
          this.persistenceRequired = true;
      }
  
@@ -1797,8 +1797,8 @@ index 03b2f0fa6387426c8d85bf4ed686999b001bf2d0..10f5f3cb1e8dbcd0e7cb2fce9369353a
  
          params.type().convert(this, newMob, params);
          if (!afterConversion.finalizeConversionOrCancel(newMob)) return null; // Paper - entity zap event - return null if conversion was cancelled
-+        if (params.type() == net.minecraft.world.entity.ConversionType.SPLIT_ON_DEATH) fun.bm.lophine.carpet.TisLifetimeTracker.markSpawn(newMob, "slime");
-+        else fun.bm.lophine.carpet.TisLifetimeTracker.markSpawn(newMob, "mob_conversion", fun.bm.lophine.carpet.TisLifetimeTracker.related(this, "fromType"));
++        if (params.type() == net.minecraft.world.entity.ConversionType.SPLIT_ON_DEATH) fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(newMob, "slime");
++        else fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(newMob, "mob_conversion", fun.bm.lophine.carpet.tis.TisLifetimeTracker.related(this, "fromType"));
          // CraftBukkit start
          if (transformReason == null) {
              // Special handling for slime split and pig lightning
@@ -1806,19 +1806,19 @@ index 03b2f0fa6387426c8d85bf4ed686999b001bf2d0..10f5f3cb1e8dbcd0e7cb2fce9369353a
          }
  
          if (params.type().shouldDiscardAfterConversion()) {
-+            fun.bm.lophine.carpet.TisLifetimeTracker.removed(this, "mob_conversion", fun.bm.lophine.carpet.TisLifetimeTracker.related(newMob, "toType"));
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(this, "mob_conversion", fun.bm.lophine.carpet.tis.TisLifetimeTracker.related(newMob, "toType"));
              this.discard(EntityRemoveEvent.Cause.TRANSFORMATION); // CraftBukkit - add Bukkit remove cause
          }
  
 diff --git a/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java b/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java
-index aa60fbfbe7283f1ed9cf5343d59d1222380857dd..7db13f5be8f1405958f76ef9133d843a4ecd348a 100644
+index aa60fbfbe7283f1ed9cf5343d59d1222380857dd..57af1e14aa4098fc95b515a92c19f90ed0e2c4c2 100644
 --- a/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java
 +++ b/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java
 @@ -114,6 +114,7 @@ public class BehaviorUtils {
              return;
          }
          // CraftBukkit end
-+        fun.bm.lophine.carpet.TisLifetimeTracker.markSpawn(itemEntity, "mob_throw", fun.bm.lophine.carpet.TisLifetimeTracker.related(thrower, "throwerType"));
++        fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(itemEntity, "mob_throw", fun.bm.lophine.carpet.tis.TisLifetimeTracker.related(thrower, "throwerType"));
          thrower.level().addFreshEntity(itemEntity);
      }
  
@@ -1884,14 +1884,14 @@ index 32f9ef4ab3def9a55c8bf7dd6bf1c37d6a208115..08193c9644e534553c1a2986b0ae87db
  
              if (this.timeoutLimit > 0.0 && this.timeoutTimer > this.timeoutLimit * 3.0) {
 diff --git a/net/minecraft/world/entity/animal/dolphin/Dolphin.java b/net/minecraft/world/entity/animal/dolphin/Dolphin.java
-index 13e38d0c9b28c2a8ba10ac146e0fd62494fb6ffb..b12b22efbf76cc58ba145bf768e4103f409e6456 100644
+index 13e38d0c9b28c2a8ba10ac146e0fd62494fb6ffb..cc9906d1556da8f00fa4f9552db26e14ac603f81 100644
 --- a/net/minecraft/world/entity/animal/dolphin/Dolphin.java
 +++ b/net/minecraft/world/entity/animal/dolphin/Dolphin.java
 @@ -238,6 +238,7 @@ public class Dolphin extends AgeableWaterCreature {
                  this.setItemSlot(EquipmentSlot.MAINHAND, itemStack);
                  this.setGuaranteedDrop(EquipmentSlot.MAINHAND);
                  this.take(entity, itemStack.getCount());
-+                fun.bm.lophine.carpet.TisLifetimeTracker.removed(entity, "mob_pickup", fun.bm.lophine.carpet.TisLifetimeTracker.related(this, "pickerType"));
++                fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(entity, "mob_pickup", fun.bm.lophine.carpet.tis.TisLifetimeTracker.related(this, "pickerType"));
                  entity.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.PICKUP); // CraftBukkit - add Bukkit remove cause
              }
          }
@@ -1899,19 +1899,19 @@ index 13e38d0c9b28c2a8ba10ac146e0fd62494fb6ffb..b12b22efbf76cc58ba145bf768e4103f
                      0.3F * Mth.sin(Dolphin.this.getXRot() * Mth.DEG_TO_RAD) * 1.5F,
                      0.3F * Mth.cos(Dolphin.this.getYRot() * Mth.DEG_TO_RAD) * Mth.cos(Dolphin.this.getXRot() * Mth.DEG_TO_RAD) + Mth.sin(dir) * pow2
                  );
-+                fun.bm.lophine.carpet.TisLifetimeTracker.markSpawn(thrownItem, "mob_throw", fun.bm.lophine.carpet.TisLifetimeTracker.related(Dolphin.this, "throwerType"));
++                fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(thrownItem, "mob_throw", fun.bm.lophine.carpet.tis.TisLifetimeTracker.related(Dolphin.this, "throwerType"));
                  Dolphin.this.spawnAtLocation(getServerLevel(Dolphin.this), thrownItem); // Paper - Call EntityDropItemEvent
              }
          }
 diff --git a/net/minecraft/world/entity/animal/equine/SkeletonTrapGoal.java b/net/minecraft/world/entity/animal/equine/SkeletonTrapGoal.java
-index 9f9e7b6b40f0cf12fd5fca848dc223553857b9a0..9f9e42648d874ba85dc0e716f2bc7ae132e55728 100644
+index 9f9e7b6b40f0cf12fd5fca848dc223553857b9a0..14c3922ac66415b78badd39115330cf0f4734ded 100644
 --- a/net/minecraft/world/entity/animal/equine/SkeletonTrapGoal.java
 +++ b/net/minecraft/world/entity/animal/equine/SkeletonTrapGoal.java
 @@ -46,6 +46,7 @@ public class SkeletonTrapGoal extends Goal {
              Skeleton skeleton = this.createSkeleton(difficulty, this.horse);
              if (skeleton != null) {
                  skeleton.startRiding(this.horse);
-+                fun.bm.lophine.carpet.TisLifetimeTracker.markSpawn(skeleton, "jockey");
++                fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(skeleton, "jockey");
                  level.addFreshEntityWithPassengers(skeleton, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.TRAP); // CraftBukkit
  
                  for (int i = 0; i < 3; i++) {
@@ -1919,7 +1919,7 @@ index 9f9e7b6b40f0cf12fd5fca848dc223553857b9a0..9f9e42648d874ba85dc0e716f2bc7ae1
                          if (otherSkeleton != null) {
                              otherSkeleton.startRiding(otherHorse);
                              otherHorse.push(this.horse.getRandom().triangle(0.0, 1.1485), 0.0, this.horse.getRandom().triangle(0.0, 1.1485));
-+                            fun.bm.lophine.carpet.TisLifetimeTracker.markSpawnWithPassengers(otherHorse, "jockey");
++                            fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawnWithPassengers(otherHorse, "jockey");
                              level.addFreshEntityWithPassengers(otherHorse, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.JOCKEY); // CraftBukkit
                          }
                      }
@@ -1938,21 +1938,21 @@ index 608118a7388c834924bb0309f02e7f32fa764884..ef8ba708d2ba9d546e9c24253560b716
              this.setOrderedToSit(true);
              this.level().broadcastEntityEvent(this, EntityEvent.TAMING_SUCCEEDED);
 diff --git a/net/minecraft/world/entity/animal/fox/Fox.java b/net/minecraft/world/entity/animal/fox/Fox.java
-index 8f2cd8975625beacdad077b8d31a33dab4145624..c10f585e781d9d00e644a927c851cdcec78fc6b0 100644
+index 8f2cd8975625beacdad077b8d31a33dab4145624..b39ea6884d2fc7edba1bfad4f15616ca50fd1034 100644
 --- a/net/minecraft/world/entity/animal/fox/Fox.java
 +++ b/net/minecraft/world/entity/animal/fox/Fox.java
 @@ -534,12 +534,14 @@ public class Fox extends Animal {
              thrownItem.setPickUpDelay(40);
              thrownItem.setThrower(this);
              this.playSound(SoundEvents.FOX_SPIT, 1.0F, 1.0F);
-+            fun.bm.lophine.carpet.TisLifetimeTracker.markSpawn(thrownItem, "mob_throw", fun.bm.lophine.carpet.TisLifetimeTracker.related(this, "throwerType"));
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(thrownItem, "mob_throw", fun.bm.lophine.carpet.tis.TisLifetimeTracker.related(this, "throwerType"));
              this.spawnAtLocation((ServerLevel) this.level(), thrownItem); // Paper - Call EntityDropItemEvent
          }
      }
  
      private void dropItemStack(final ItemStack itemStack) {
          ItemEntity itemEntity = new ItemEntity(this.level(), this.getX(), this.getY(), this.getZ(), itemStack);
-+        fun.bm.lophine.carpet.TisLifetimeTracker.markSpawn(itemEntity, "mob_throw", fun.bm.lophine.carpet.TisLifetimeTracker.related(this, "throwerType"));
++        fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(itemEntity, "mob_throw", fun.bm.lophine.carpet.tis.TisLifetimeTracker.related(this, "throwerType"));
          this.spawnAtLocation((ServerLevel) this.level(), itemEntity); // Paper - Call EntityDropItemEvent
      }
  
@@ -1960,7 +1960,7 @@ index 8f2cd8975625beacdad077b8d31a33dab4145624..c10f585e781d9d00e644a927c851cdce
              this.setItemSlot(EquipmentSlot.MAINHAND, itemStack.split(1));
              this.setGuaranteedDrop(EquipmentSlot.MAINHAND);
              this.take(entity, itemStack.getCount());
-+            fun.bm.lophine.carpet.TisLifetimeTracker.removed(entity, "mob_pickup", fun.bm.lophine.carpet.TisLifetimeTracker.related(this, "pickerType"));
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(entity, "mob_pickup", fun.bm.lophine.carpet.tis.TisLifetimeTracker.related(this, "pickerType"));
              entity.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.PICKUP); // CraftBukkit - add Bukkit remove cause
              this.ticksSinceEaten = 0;
          }
@@ -1979,14 +1979,14 @@ index 83ed62f150c1023bc8ad8b4de476365be8b6d573..729b8ced474e89e06ab10fefa904024e
                      this.level().broadcastEntityEvent(this, EntityEvent.TAMING_SUCCEEDED);
                  } else {
 diff --git a/net/minecraft/world/entity/animal/pig/Pig.java b/net/minecraft/world/entity/animal/pig/Pig.java
-index 9ff021a13a2c654d7edf9bf202fcbc2494b22100..f55ceac3dd2a776b58b96b41b8e1742f31accff4 100644
+index 9ff021a13a2c654d7edf9bf202fcbc2494b22100..caac42cece0f064ae06d911c7c0caaa3098877fd 100644
 --- a/net/minecraft/world/entity/animal/pig/Pig.java
 +++ b/net/minecraft/world/entity/animal/pig/Pig.java
 @@ -210,6 +210,7 @@ public class Pig extends Animal implements ItemSteerable {
                  return;
              }
              level.addFreshEntity(zombifiedPiglin, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.LIGHTNING);
-+            if (zombifiedPiglin != null) fun.bm.lophine.carpet.TisLifetimeTracker.removed(this, "mob_conversion", fun.bm.lophine.carpet.TisLifetimeTracker.related(zombifiedPiglin, "toType"));
++            if (zombifiedPiglin != null) fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(this, "mob_conversion", fun.bm.lophine.carpet.tis.TisLifetimeTracker.related(zombifiedPiglin, "toType"));
              this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.TRANSFORMATION); // CraftBukkit - add Bukkit remove cause
              // CraftBukkit end
              if (zombifiedPiglin == null) {
@@ -2038,14 +2038,14 @@ index e0cd79707a180918a1b4c97a41f70831b186d770..38fbdeb7efeab7c51b0686699c59a6f5
      public int findClosestNode() {
          if (this.nodes[0] == null) {
 diff --git a/net/minecraft/world/entity/boss/wither/WitherBoss.java b/net/minecraft/world/entity/boss/wither/WitherBoss.java
-index c66417222e97692a95563cad60edc1d02d40437a..f3f3ecd554b8368892e8e4373e6449e38d262884 100644
+index c66417222e97692a95563cad60edc1d02d40437a..6e9e0c637eec5b2e045b7b530525ebe24d8030ca 100644
 --- a/net/minecraft/world/entity/boss/wither/WitherBoss.java
 +++ b/net/minecraft/world/entity/boss/wither/WitherBoss.java
 @@ -533,6 +533,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
          if (this.level().getDifficulty() == Difficulty.PEACEFUL && !this.getType().isAllowedInPeaceful()
              && !(fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.disableMobPeacefulDespawn
                  && (this.isPersistenceRequired() || this.requiresCustomPersistence()))) {
-+            fun.bm.lophine.carpet.TisLifetimeTracker.removed(this, "despawn_difficulty");
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(this, "despawn_difficulty");
              this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
          } else {
              this.noActionTime = 0;
@@ -2087,14 +2087,14 @@ index 18ac4d9684668fa8ca69b82f98ab238865f1f44a..0e2d3d1856732c378c623fc8e80c1562
                  boolean isConcrete = this.blockState.getBlock() instanceof ConcretePowderBlock;
                  boolean isStuckInWater = isConcrete && this.level().getFluidState(pos).is(FluidTags.WATER);
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index da87cd9099d050f437eb3292ff35552465696a66..c74df43ed794366ee9dcc837d52c8b780f762231 100644
+index 94c0d5a61a44b945ee7b76fbbf9d43538b2567cb..c1e799350a4b87d00767a3255e4ca71231789bff 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
 @@ -143,6 +143,7 @@ public class ItemEntity extends Entity implements TraceableEntity, net.caffeinem
                  return;
              }
              // CraftBukkit end
-+            fun.bm.lophine.carpet.TisLifetimeTracker.removed(this, "despawn_timeout");
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(this, "despawn_timeout");
              this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
          }
      }
@@ -2112,7 +2112,7 @@ index da87cd9099d050f437eb3292ff35552465696a66..c74df43ed794366ee9dcc837d52c8b78
                      return;
                  }
                  // CraftBukkit end
-+                fun.bm.lophine.carpet.TisLifetimeTracker.removed(this, "despawn_timeout");
++                fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(this, "despawn_timeout");
                  this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
              }
          }
@@ -2128,7 +2128,7 @@ index da87cd9099d050f437eb3292ff35552465696a66..c74df43ed794366ee9dcc837d52c8b78
                  if (flyAtPlayer) // Paper - PlayerPickupItemEvent
                  player.take(this, orgCount);
                  if (itemStack.isEmpty()) {
-+                    fun.bm.lophine.carpet.TisLifetimeTracker.removedAmount(this, "mob_pickup", fun.bm.lophine.carpet.TisLifetimeTracker.related(player, "pickerType"), orgCount);
++                    fun.bm.lophine.carpet.tis.TisLifetimeTracker.removedAmount(this, "mob_pickup", fun.bm.lophine.carpet.tis.TisLifetimeTracker.related(player, "pickerType"), orgCount);
                      this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.PICKUP); // CraftBukkit - add Bukkit remove cause
                      itemStack.setCount(orgCount);
                  }
@@ -2150,7 +2150,7 @@ index be538470c76cdb2975942b45d717e79e7ccb1bab..30d63b6114b4bfcb8a1e3b34b2ec36e7
          return this.entityData.get(DATA_FUSE_ID);
      }
 diff --git a/net/minecraft/world/entity/monster/Enderman.java b/net/minecraft/world/entity/monster/Enderman.java
-index 995679bc63dca277d67728af2221427c31c41fc2..eab02d30f84dbf95a3a16dba5c7477d8a09ab712 100644
+index 995679bc63dca277d67728af2221427c31c41fc2..aaef292b4b4cf3db4fd064d0319a5400873e9c58 100644
 --- a/net/minecraft/world/entity/monster/Enderman.java
 +++ b/net/minecraft/world/entity/monster/Enderman.java
 @@ -408,6 +408,10 @@ public class Enderman extends Monster implements NeutralMob {
@@ -2158,8 +2158,8 @@ index 995679bc63dca277d67728af2221427c31c41fc2..eab02d30f84dbf95a3a16dba5c7477d8
      public void setCarriedBlock(final @Nullable BlockState carryingBlock) {
          this.entityData.set(DATA_CARRY_STATE, Optional.ofNullable(carryingBlock));
 +        if (!this.hasNullCallback() && !this.isRemoved()) {
-+            if (carryingBlock == null) fun.bm.lophine.carpet.TisLifetimeTracker.returnedToCap(this, "place_block");
-+            else fun.bm.lophine.carpet.TisLifetimeTracker.removedFromCap(this, "pickup_block");
++            if (carryingBlock == null) fun.bm.lophine.carpet.tis.TisLifetimeTracker.returnedToCap(this, "place_block");
++            else fun.bm.lophine.carpet.tis.TisLifetimeTracker.removedFromCap(this, "pickup_block");
 +        }
      }
  
@@ -2316,19 +2316,19 @@ index 803adf7f637ef6c3916de0d54c748d4df8a76cbc..707dd8f8b645298311eedb717a0969e0
  
      }
 diff --git a/net/minecraft/world/entity/npc/InventoryCarrier.java b/net/minecraft/world/entity/npc/InventoryCarrier.java
-index 6e4aa90e43b963a98f8f8d449283a1d4eb6fa7bb..4fd678da4471dc5b71bc063ade2158b6a99dffa9 100644
+index 6e4aa90e43b963a98f8f8d449283a1d4eb6fa7bb..5286706e91dabb778e02d18b3ccd80797248a903 100644
 --- a/net/minecraft/world/entity/npc/InventoryCarrier.java
 +++ b/net/minecraft/world/entity/npc/InventoryCarrier.java
 @@ -34,6 +34,7 @@ public interface InventoryCarrier {
              ItemStack remainder = inventory.addItem(itemStack);
              mob.take(itemEntity, count - remainder.getCount());
              if (remainder.isEmpty()) {
-+                fun.bm.lophine.carpet.TisLifetimeTracker.removed(itemEntity, "mob_pickup", fun.bm.lophine.carpet.TisLifetimeTracker.related(mob, "pickerType"));
++                fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(itemEntity, "mob_pickup", fun.bm.lophine.carpet.tis.TisLifetimeTracker.related(mob, "pickerType"));
                  itemEntity.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.PICKUP); // CraftBukkit - add Bukkit remove cause
              } else {
                  itemStack.setCount(remainder.getCount());
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index 2a6c1568b3e81e90d0516b1ebfdc03934de7ecf5..05a4a3f90ef1f08beb73bd0646f6e8df9022cc2e 100644
+index bfa6831ef10763abc44f67b9508da0180460497d..39bcee76110b5a7f86d089f8ed767b839199181f 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -1202,6 +1202,11 @@ public abstract class Player extends Avatar implements ContainerUser {
@@ -2353,14 +2353,14 @@ index 2a6c1568b3e81e90d0516b1ebfdc03934de7ecf5..05a4a3f90ef1f08beb73bd0646f6e8df
                          return carpet.script.external.ScarpetNativeDeathActors.entity(this,()->{
                              float base=this.isAutoSpinAttack()?this.autoSpinAttackDmg:(float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
 diff --git a/net/minecraft/world/entity/projectile/Projectile.java b/net/minecraft/world/entity/projectile/Projectile.java
-index bab0c45e7189143bd873a8bae3966ad1e6c300fc..fe6f355e9b97dbbea145f4b6a7a84c3e15d39b2c 100644
+index bab0c45e7189143bd873a8bae3966ad1e6c300fc..048bf206668eabdad9d99f085a2b1abfe8ae1c93 100644
 --- a/net/minecraft/world/entity/projectile/Projectile.java
 +++ b/net/minecraft/world/entity/projectile/Projectile.java
 @@ -59,6 +59,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
  
      protected Projectile(final EntityType<? extends Projectile> type, final Level level) {
          super(type, level);
-+        fun.bm.lophine.carpet.TisProjectileVisualizer.constructing(this);
++        fun.bm.lophine.carpet.tis.TisProjectileVisualizer.constructing(this);
      }
  
      @Override
@@ -2368,12 +2368,12 @@ index bab0c45e7189143bd873a8bae3966ad1e6c300fc..fe6f355e9b97dbbea145f4b6a7a84c3e
  
      protected java.util.concurrent.CompletableFuture<Void> carpetOnHitAsync(final HitResult hitResult) {
          return carpet.script.external.ScarpetNativeDeathActors.entity(this, () -> {
-+            fun.bm.lophine.carpet.TisProjectileVisualizer.hit(this, hitResult);
++            fun.bm.lophine.carpet.tis.TisProjectileVisualizer.hit(this, hitResult);
              return hitResult.getType();
          }).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(type -> {
              if (type == HitResult.Type.ENTITY) {
 diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/Snowball.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/Snowball.java
-index 1511c1cbde5897391f1bcb4af47a5cd12481494d..76eb6dfd12b5464b4e71ba3ed5287e5679e7e9bc 100644
+index 1511c1cbde5897391f1bcb4af47a5cd12481494d..3d9b238880a19ad5828d83bbbc309fc4fcf52653 100644
 --- a/net/minecraft/world/entity/projectile/throwableitemprojectile/Snowball.java
 +++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/Snowball.java
 @@ -30,6 +30,21 @@ public class Snowball extends ThrowableItemProjectile {
@@ -2382,31 +2382,31 @@ index 1511c1cbde5897391f1bcb4af47a5cd12481494d..76eb6dfd12b5464b4e71ba3ed5287e56
  
 +    @Override
 +    public void tick() {
-+        if (!fun.bm.lophine.carpet.TisProjectileVisualizer.tick(this)) super.tick();
++        if (!fun.bm.lophine.carpet.tis.TisProjectileVisualizer.tick(this)) super.tick();
 +    }
 +
 +    @Override
 +    public boolean isIgnoringBlockTriggers() {
-+        return fun.bm.lophine.carpet.TisProjectileVisualizer.isVisualizer(this) || super.isIgnoringBlockTriggers();
++        return fun.bm.lophine.carpet.tis.TisProjectileVisualizer.isVisualizer(this) || super.isIgnoringBlockTriggers();
 +    }
 +
 +    @Override
 +    public boolean ignoreExplosion(final net.minecraft.world.level.Explosion explosion) {
-+        return fun.bm.lophine.carpet.TisProjectileVisualizer.isVisualizer(this) || super.ignoreExplosion(explosion);
++        return fun.bm.lophine.carpet.tis.TisProjectileVisualizer.isVisualizer(this) || super.ignoreExplosion(explosion);
 +    }
 +
      @Override
      protected Item getDefaultItem() {
          return Items.SNOWBALL;
 diff --git a/net/minecraft/world/entity/raid/Raid.java b/net/minecraft/world/entity/raid/Raid.java
-index be833c92bffac5ad062476775435c1d1d424ddd4..a2078fca2b36046d12a00d011e2aaba0099d23f7 100644
+index be833c92bffac5ad062476775435c1d1d424ddd4..7ae4023ffab58e55c135a761e8289acd6ca9ccfb 100644
 --- a/net/minecraft/world/entity/raid/Raid.java
 +++ b/net/minecraft/world/entity/raid/Raid.java
 @@ -148,6 +148,7 @@ public class Raid {
          this.numGroups = this.getNumGroups(difficulty);
          this.status = Raid.RaidStatus.ONGOING;
          this.persistentDataContainer = new org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer(PDC_TYPE_REGISTRY); // Paper - add persistent data container
-+        fun.bm.lophine.carpet.TisRaidCommand.onGenerated();
++        fun.bm.lophine.carpet.tis.TisRaidCommand.onGenerated();
      }
  
      private Raid(
@@ -2415,7 +2415,7 @@ index be833c92bffac5ad062476775435c1d1d424ddd4..a2078fca2b36046d12a00d011e2aaba0
          this.raidOmenLevel = this.raidOmenLevel + effect.getAmplifier() + 1;
          this.raidOmenLevel = Mth.clamp(this.raidOmenLevel, 0, this.getMaxRaidOmenLevel());
 +        if (this.raidOmenLevel > 1 && this.raidOmenLevel > previousRaidOmenLevel) {
-+            fun.bm.lophine.carpet.TisRaidCommand.onOmenIncreased(player.level(), this, this.raidOmenLevel);
++            fun.bm.lophine.carpet.tis.TisRaidCommand.onOmenIncreased(player.level(), this, this.raidOmenLevel);
 +        }
          if (!this.hasFirstWaveSpawned()) {
              player.awardStat(Stats.RAID_TRIGGER);
@@ -2424,7 +2424,7 @@ index be833c92bffac5ad062476775435c1d1d424ddd4..a2078fca2b36046d12a00d011e2aaba0
                  boolean oldActive = this.active;
                  this.active = level.hasChunkAt(this.center);
                  if (level.getDifficulty() == Difficulty.PEACEFUL) {
-+                    fun.bm.lophine.carpet.TisRaidCommand.onInvalidated(level, this, "difficulty_peaceful");
++                    fun.bm.lophine.carpet.tis.TisRaidCommand.onInvalidated(level, this, "difficulty_peaceful");
                      org.bukkit.craftbukkit.event.CraftEventFactory.callRaidStopEvent(level, this, org.bukkit.event.raid.RaidStopEvent.Reason.PEACE); // CraftBukkit
                      this.stop();
                      return;
@@ -2432,14 +2432,14 @@ index be833c92bffac5ad062476775435c1d1d424ddd4..a2078fca2b36046d12a00d011e2aaba0
                          org.bukkit.craftbukkit.event.CraftEventFactory.callRaidFinishEvent(level, this, new java.util.ArrayList<>()); // CraftBukkit
                      } else {
                          org.bukkit.craftbukkit.event.CraftEventFactory.callRaidStopEvent(level, this, org.bukkit.event.raid.RaidStopEvent.Reason.NOT_IN_VILLAGE); // CraftBukkit
-+                        fun.bm.lophine.carpet.TisRaidCommand.onInvalidated(level, this, "poi_removed_before_spawn");
++                        fun.bm.lophine.carpet.tis.TisRaidCommand.onInvalidated(level, this, "poi_removed_before_spawn");
                          this.stop();
                      }
                  }
  
                  this.ticksActive++;
                  if (this.ticksActive >= 48000L) {
-+                    fun.bm.lophine.carpet.TisRaidCommand.onInvalidated(level, this, "time_out");
++                    fun.bm.lophine.carpet.tis.TisRaidCommand.onInvalidated(level, this, "time_out");
                      org.bukkit.craftbukkit.event.CraftEventFactory.callRaidStopEvent(level, this, org.bukkit.event.raid.RaidStopEvent.Reason.TIMEOUT); // CraftBukkit
                      this.stop();
                      return;
@@ -2447,7 +2447,7 @@ index be833c92bffac5ad062476775435c1d1d424ddd4..a2078fca2b36046d12a00d011e2aaba0
                      }
  
                      if (attempt > (fun.bm.lophine.config.modules.function.OldFeatureConfig.oldRaidBehavior.get() ? 3 : 5)) { // Leaves - old FindSpawnPosition
-+                        fun.bm.lophine.carpet.TisRaidCommand.onInvalidated(level, this, "raider_cannot_spawn");
++                        fun.bm.lophine.carpet.tis.TisRaidCommand.onInvalidated(level, this, "raider_cannot_spawn");
                          org.bukkit.craftbukkit.event.CraftEventFactory.callRaidStopEvent(level, this, org.bukkit.event.raid.RaidStopEvent.Reason.UNSPAWNABLE); // CraftBukkit
                          this.stop();
                          break;
@@ -2455,7 +2455,7 @@ index be833c92bffac5ad062476775435c1d1d424ddd4..a2078fca2b36046d12a00d011e2aaba0
              } else if (this.isOver()) {
                  this.celebrationTicks++;
                  if (this.celebrationTicks >= 600) {
-+                    fun.bm.lophine.carpet.TisRaidCommand.onInvalidated(level, this, this.isVictory() ? "raid_victory" : "raid_defeat");
++                    fun.bm.lophine.carpet.tis.TisRaidCommand.onInvalidated(level, this, this.isVictory() ? "raid_victory" : "raid_defeat");
                      org.bukkit.craftbukkit.event.CraftEventFactory.callRaidStopEvent(level, this, org.bukkit.event.raid.RaidStopEvent.Reason.FINISHED); // CraftBukkit
                      this.stop();
                      return;
@@ -2466,7 +2466,7 @@ index be833c92bffac5ad062476775435c1d1d424ddd4..a2078fca2b36046d12a00d011e2aaba0
 -            .ifPresent(this::setCenter);
 +            .ifPresent(newCenter -> {
 +                this.setCenter(newCenter);
-+                fun.bm.lophine.carpet.TisRaidCommand.onCenterMoved(level, this, newCenter);
++                fun.bm.lophine.carpet.tis.TisRaidCommand.onCenterMoved(level, this, newCenter);
 +            });
      }
  
@@ -2476,20 +2476,20 @@ index be833c92bffac5ad062476775435c1d1d424ddd4..a2078fca2b36046d12a00d011e2aaba0
                  level.addFreshEntityWithPassengers(raider, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.RAID); // CraftBukkit
              }
 +            if (!exists && !raider.isRemoved()) {
-+                fun.bm.lophine.carpet.TisRaidCommand.onNewRaider(raider);
++                fun.bm.lophine.carpet.tis.TisRaidCommand.onNewRaider(raider);
 +            }
          }
      }
  
 diff --git a/net/minecraft/world/entity/raid/Raids.java b/net/minecraft/world/entity/raid/Raids.java
-index 9c874214d04ea72f75d1f738796fae6f3f4086c0..2f7b5db274fe54a89250a6a37d1c5e6cf3507280 100644
+index 9c874214d04ea72f75d1f738796fae6f3f4086c0..0c2b55501943014a0c3ffa63ecb14e9d4c24e10c 100644
 --- a/net/minecraft/world/entity/raid/Raids.java
 +++ b/net/minecraft/world/entity/raid/Raids.java
 @@ -92,6 +92,7 @@ public class Raids extends SavedData {
              }
              // Folia end - make raids thread-safe
              if (!level.getGameRules().get(GameRules.RAIDS)) {
-+                fun.bm.lophine.carpet.TisRaidCommand.onInvalidated(level, raid, "gamerule_disable");
++                fun.bm.lophine.carpet.tis.TisRaidCommand.onInvalidated(level, raid, "gamerule_disable");
                  raid.stop();
              }
  
@@ -2497,7 +2497,7 @@ index 9c874214d04ea72f75d1f738796fae6f3f4086c0..2f7b5db274fe54a89250a6a37d1c5e6c
              if (!raid.isStarted() && !this.raidMap.containsValue(raid)) {
                  int id = this.getUniqueId(); this.raidMap.put(id, raid); // Folia - region threading
                  raid.idOrNegativeOne = id; // Paper - expose id of raids while method is kept around as deprecated for removal // Folia - region threading
-+                fun.bm.lophine.carpet.TisRaidCommand.onCreated(level, raid);
++                fun.bm.lophine.carpet.tis.TisRaidCommand.onCreated(level, raid);
              }
              // CraftBukkit end
              raid.absorbRaidOmen(player);
@@ -2716,19 +2716,19 @@ index 558a812cefe215985363fe9daf35ec6793920910..9618a56b7dcb63856482d69d569feafd
                          level.playSound(null, player, SoundEvents.LEAD_BREAK, SoundSource.NEUTRAL, 1.0F, 1.0F);
                      }
 diff --git a/net/minecraft/world/item/ItemUtils.java b/net/minecraft/world/item/ItemUtils.java
-index beb13c435ad1b3b23fcc0f0d9a2fd37b1d3d1581..4ea716d18076f20b6ac2149ceb0f975333e596fc 100644
+index beb13c435ad1b3b23fcc0f0d9a2fd37b1d3d1581..54fdc51ebd1fb30c9f396c86bd4c3a2c934fddec 100644
 --- a/net/minecraft/world/item/ItemUtils.java
 +++ b/net/minecraft/world/item/ItemUtils.java
 @@ -50,6 +50,7 @@ public class ItemUtils {
                  ItemEntity droppedItem = new ItemEntity(level, container.getX(), container.getY(), container.getZ(), stack);
                  org.bukkit.event.entity.EntityDropItemEvent event = new org.bukkit.event.entity.EntityDropItemEvent(container.getBukkitEntity(), (org.bukkit.entity.Item) droppedItem.getBukkitEntity());
                  if (event.callEvent()) {
-+                    fun.bm.lophine.carpet.TisLifetimeTracker.markMobDrop(droppedItem, container);
++                    fun.bm.lophine.carpet.tis.TisLifetimeTracker.markMobDrop(droppedItem, container);
                      level.addFreshEntity(droppedItem);
                  }
              });
 diff --git a/net/minecraft/world/item/MinecartItem.java b/net/minecraft/world/item/MinecartItem.java
-index 225ef0e80ae7edad0124ac0c74b5404a6c4a9a18..45cfe542f6ade576f409199f825d5135fb2ba76b 100644
+index 225ef0e80ae7edad0124ac0c74b5404a6c4a9a18..bed2cdd9bf5bd54e1bd9d2e43926a36cbb523053 100644
 --- a/net/minecraft/world/item/MinecartItem.java
 +++ b/net/minecraft/world/item/MinecartItem.java
 @@ -29,7 +29,8 @@ public class MinecartItem extends Item {
@@ -2765,7 +2765,7 @@ index 225ef0e80ae7edad0124ac0c74b5404a6c4a9a18..45cfe542f6ade576f409199f825d5135
              // CraftBukkit end
 -            if (!serverLevel.addFreshEntity(cart)) return InteractionResult.PASS; // CraftBukkit
 -            serverLevel.gameEvent(GameEvent.ENTITY_PLACE, pos, GameEvent.Context.of(context.getPlayer(), serverLevel.getBlockState(pos.below())));
-+            fun.bm.lophine.carpet.TisLifetimeTracker.markSpawn(cart, "item");
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(cart, "item");
 +            boolean added = serverLevel.addFreshEntity(cart);
 +            if (!added && !groundPlacement) return InteractionResult.PASS; // CraftBukkit
 +            serverLevel.gameEvent(GameEvent.ENTITY_PLACE, pos, groundPlacement ? GameEvent.Context.of(context.getPlayer())
@@ -2811,14 +2811,14 @@ index 6c90ed953c9bdc1aff4832fedfcd108a97fcf0ae..078d34449d80c8475625ff5ea124e7ed
                      player.awardStat(Stats.ITEM_USED.get(this));
                  }
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index b24427d1d7fac988eb011c278707116d0a07d098..c6000c62c8f2c82da30fc76169ef7669523fcaee 100644
+index b24427d1d7fac988eb011c278707116d0a07d098..1a688c04955b293fbd311a29da762666c3f0d873 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -1078,13 +1078,15 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
  
      @Override
      public boolean setBlock(final BlockPos pos, final BlockState blockState, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.setBlock(this, pos, blockState, updateFlags);
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.setBlock(this, pos, blockState, updateFlags);
 +        try {
          ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread((ServerLevel)this, pos, "Updating block asynchronously"); // Folia - region threading
          final io.papermc.paper.threadedregions.RegionizedWorldData worldData = this.getCurrentWorldData(); // Folia - region threading
@@ -2876,7 +2876,7 @@ index b24427d1d7fac988eb011c278707116d0a07d098..c6000c62c8f2c82da30fc76169ef7669
              } else if (tickBlockEntities && this.shouldTickBlocksAt(ticker.getPos())) {
 -                ticker.tick();
 +                int carpetTimer = profiler.getOrCreateTimerAndStart(() -> "Block Entity Tick: " + ticker.getType());
-+                try (var carpetMicroPhase = fun.bm.lophine.carpet.TisMicroTiming.active() ? fun.bm.lophine.carpet.TisMicroTiming.phase(this, "tile_entity", ticker.getType() + "@" + ticker.getPos() + "; index=" + tickedEntities) : fun.bm.lophine.carpet.TisMicroTiming.noop()) {
++                try (var carpetMicroPhase = fun.bm.lophine.carpet.tis.TisMicroTiming.active() ? fun.bm.lophine.carpet.tis.TisMicroTiming.phase(this, "tile_entity", ticker.getType() + "@" + ticker.getPos() + "; index=" + tickedEntities) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop()) {
 +                    ticker.tick();
 +                } finally {
 +                    profiler.stopTimer(carpetTimer);
@@ -2885,7 +2885,7 @@ index b24427d1d7fac988eb011c278707116d0a07d098..c6000c62c8f2c82da30fc76169ef7669
                  if ((++tickedEntities & 7) == 0) {
                      ((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemLevel)(Level)(Object)this).moonrise$midTickTasks();
 diff --git a/net/minecraft/world/level/NaturalSpawner.java b/net/minecraft/world/level/NaturalSpawner.java
-index 86d9f48c2bb1232e5697dbe3e01f7aaf5acbacdf..840218b476295b6a14f3750a7a48f56dfca529f5 100644
+index 86d9f48c2bb1232e5697dbe3e01f7aaf5acbacdf..7dd7f1b0c91bac3cc7ed81c7820753dfe51aec9b 100644
 --- a/net/minecraft/world/level/NaturalSpawner.java
 +++ b/net/minecraft/world/level/NaturalSpawner.java
 @@ -191,9 +191,15 @@ public final class NaturalSpawner {
@@ -2911,7 +2911,7 @@ index 86d9f48c2bb1232e5697dbe3e01f7aaf5acbacdf..840218b476295b6a14f3750a7a48f56d
          final int maxSpawns,
          final Consumer<Entity> trackEntity
      ) {
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.phase(level, "spawning", mobCategory.getName() + "; chunk=" + chunk.getPos());
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.phase(level, "spawning", mobCategory.getName() + "; chunk=" + chunk.getPos());
 +        try {
          // Paper end - Optional per player mob spawns
          BlockPos start = getRandomPosWithin(level, chunk);
@@ -3064,14 +3064,14 @@ index e327275c3d7ffc0185204674f423f9b48a06f03b..480b85566dce3b10b7f0be35ad304181
      }
  
 diff --git a/net/minecraft/world/level/block/BasePressurePlateBlock.java b/net/minecraft/world/level/block/BasePressurePlateBlock.java
-index 810744dbaaf601a1910e142d82ce302f39b44403..90e62b55f97bf2d71cd1f4898d6c3ca7f2640c34 100644
+index 810744dbaaf601a1910e142d82ce302f39b44403..d63a7eb2a07474f3bdc5c929d91f65b46b2d2580 100644
 --- a/net/minecraft/world/level/block/BasePressurePlateBlock.java
 +++ b/net/minecraft/world/level/block/BasePressurePlateBlock.java
 @@ -151,8 +151,12 @@ public abstract class BasePressurePlateBlock extends Block {
      }
  
      protected void updateNeighbours(final Level level, final BlockPos pos) {
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.active() ? fun.bm.lophine.carpet.TisMicroTiming.begin(level, pos, this, "emit_block_update", "method=updateNeighbors", false, false) : fun.bm.lophine.carpet.TisMicroTiming.noop();
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.active() ? fun.bm.lophine.carpet.tis.TisMicroTiming.begin(level, pos, this, "emit_block_update", "method=updateNeighbors", false, false) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop();
 +        try {
          level.updateNeighborsAt(pos, this);
          level.updateNeighborsAt(pos.below(), this);
@@ -3081,14 +3081,14 @@ index 810744dbaaf601a1910e142d82ce302f39b44403..90e62b55f97bf2d71cd1f4898d6c3ca7
  
      @Override
 diff --git a/net/minecraft/world/level/block/Block.java b/net/minecraft/world/level/block/Block.java
-index 1243490b910854046776d171dff9e511e42d14b4..589eba5c6bdd3feb6a58aa480fb3e401d967516f 100644
+index 9750c54e6c7d993b6e6d25d25ca0d3f28e02d4db..f574cb3201877a5af402488bd88cc44bb2d8579c 100644
 --- a/net/minecraft/world/level/block/Block.java
 +++ b/net/minecraft/world/level/block/Block.java
 @@ -481,6 +481,7 @@ public class Block extends BlockBehaviour implements ItemLike {
          if (level instanceof ServerLevel serverLevel && !itemStack.isEmpty() && serverLevel.getGameRules().get(GameRules.BLOCK_DROPS)) {
              ItemEntity entity = entityFactory.get();
              entity.setDefaultPickUpDelay();
-+            fun.bm.lophine.carpet.TisLifetimeTracker.markSpawn(entity, "block_drop");
++            fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(entity, "block_drop");
              // CraftBukkit start
              if (level.getCurrentWorldData().captureDrops != null) { // Folia - region threading
                  level.getCurrentWorldData().captureDrops.add(entity); // Folia - region threading
@@ -3096,19 +3096,19 @@ index 1243490b910854046776d171dff9e511e42d14b4..589eba5c6bdd3feb6a58aa480fb3e401
                  net.minecraft.world.entity.item.ItemEntity dropped = new net.minecraft.world.entity.item.ItemEntity(level,
                      pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, item);
                  dropped.setDefaultPickUpDelay();
-+                fun.bm.lophine.carpet.TisLifetimeTracker.markSpawn(dropped, "block_drop");
++                fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(dropped, "block_drop");
                  level.addFreshEntity(dropped);
              }
              if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.cakeBlockDropOnBreak
 diff --git a/net/minecraft/world/level/block/ButtonBlock.java b/net/minecraft/world/level/block/ButtonBlock.java
-index f0c3ba0077c2948e2db12859a7f9dfad103758e8..bce1d363ce77a768a45236e7f76b67f28113c13f 100644
+index f0c3ba0077c2948e2db12859a7f9dfad103758e8..7d24684aeedbb5d0769cbbf8b31dea192e8d7277 100644
 --- a/net/minecraft/world/level/block/ButtonBlock.java
 +++ b/net/minecraft/world/level/block/ButtonBlock.java
 @@ -206,12 +206,16 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
      }
  
      private void updateNeighbours(final BlockState state, final Level level, final BlockPos pos) {
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.active() ? fun.bm.lophine.carpet.TisMicroTiming.begin(level, pos, this, "emit_block_update", "method=updateNeighbors", false, false) : fun.bm.lophine.carpet.TisMicroTiming.noop();
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.active() ? fun.bm.lophine.carpet.tis.TisMicroTiming.begin(level, pos, this, "emit_block_update", "method=updateNeighbors", false, false) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop();
 +        try {
          Direction front = getConnectedDirection(state).getOpposite();
          Orientation orientation = ExperimentalRedstoneUtils.initialOrientation(
@@ -3178,14 +3178,14 @@ index 87c23ac2f7a73ef6ad3170a2da42baf5d09b7094..59220d050df0db1f0c4db2e07acde267
          return directionToNeighbour == Direction.DOWN && !canSurvive
              ? Blocks.AIR.defaultBlockState()
 diff --git a/net/minecraft/world/level/block/DiodeBlock.java b/net/minecraft/world/level/block/DiodeBlock.java
-index 5310f933fab9595e167e05e01556641e38729453..680f8717a164d32e5a8204dd2e23789a10fe8a77 100644
+index 5310f933fab9595e167e05e01556641e38729453..6b61fdb1a7ad53e802bccc242a10dc4d400d4224 100644
 --- a/net/minecraft/world/level/block/DiodeBlock.java
 +++ b/net/minecraft/world/level/block/DiodeBlock.java
 @@ -197,11 +197,15 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
      }
  
      protected void updateNeighborsInFront(final Level level, final BlockPos pos, final BlockState state) {
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.active() ? fun.bm.lophine.carpet.TisMicroTiming.begin(level, pos, this, "emit_block_update", "method=updateTarget", false, false) : fun.bm.lophine.carpet.TisMicroTiming.noop();
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.active() ? fun.bm.lophine.carpet.tis.TisMicroTiming.begin(level, pos, this, "emit_block_update", "method=updateTarget", false, false) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop();
 +        try {
          Direction direction = state.getValue(FACING);
          BlockPos oppositePos = pos.relative(direction.getOpposite());
@@ -3213,7 +3213,7 @@ index 5310f933fab9595e167e05e01556641e38729453..680f8717a164d32e5a8204dd2e23789a
      protected abstract int getDelay(BlockState state);
  }
 diff --git a/net/minecraft/world/level/block/DispenserBlock.java b/net/minecraft/world/level/block/DispenserBlock.java
-index 209f9299201a47ee1e662fbeee4f4467a433a657..251d521f21f8835f2f8d7893bdca041b1ed7135e 100644
+index ca45b18654cf3e7386807a689b147a7f157d34d1..4047031333052beed112675bc5077c7ee647f9c6 100644
 --- a/net/minecraft/world/level/block/DispenserBlock.java
 +++ b/net/minecraft/world/level/block/DispenserBlock.java
 @@ -105,7 +105,7 @@ public class DispenserBlock extends BaseEntityBlock {
@@ -3318,14 +3318,14 @@ index 15c61a5a61594d9fedf069ef6d63a0103c6f2bf1..8db5a7992714dbf7c6b3e8475f200e8c
          }
  
 diff --git a/net/minecraft/world/level/block/LeverBlock.java b/net/minecraft/world/level/block/LeverBlock.java
-index 27ff550c5a9936df1e5633d531298d4f3e496ce0..cec667adc699d1517e2fe5bb9dee8dc39a9209c2 100644
+index 27ff550c5a9936df1e5633d531298d4f3e496ce0..0a22291b11a525fa13829e02edd3f99dc503a7bf 100644
 --- a/net/minecraft/world/level/block/LeverBlock.java
 +++ b/net/minecraft/world/level/block/LeverBlock.java
 @@ -157,12 +157,16 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
      }
  
      private void updateNeighbours(final BlockState state, final Level level, final BlockPos pos) {
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.active() ? fun.bm.lophine.carpet.TisMicroTiming.begin(level, pos, this, "emit_block_update", "method=updateNeighbors", false, false) : fun.bm.lophine.carpet.TisMicroTiming.noop();
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.active() ? fun.bm.lophine.carpet.tis.TisMicroTiming.begin(level, pos, this, "emit_block_update", "method=updateNeighbors", false, false) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop();
 +        try {
          Direction front = getConnectedDirection(state).getOpposite();
          Orientation orientation = ExperimentalRedstoneUtils.initialOrientation(
@@ -3339,7 +3339,7 @@ index 27ff550c5a9936df1e5633d531298d4f3e496ce0..cec667adc699d1517e2fe5bb9dee8dc3
  
      @Override
 diff --git a/net/minecraft/world/level/block/ObserverBlock.java b/net/minecraft/world/level/block/ObserverBlock.java
-index b23be67e703dabbe4d29f78470d2d36e89ff2c2c..ec1253072f62e78b41d6305e92fd3df53000fb49 100644
+index b23be67e703dabbe4d29f78470d2d36e89ff2c2c..e55e16ab9dad0779dfa00057f806e01cd72b2a7f 100644
 --- a/net/minecraft/world/level/block/ObserverBlock.java
 +++ b/net/minecraft/world/level/block/ObserverBlock.java
 @@ -110,17 +110,27 @@ public class ObserverBlock extends DirectionalBlock {
@@ -3358,7 +3358,7 @@ index b23be67e703dabbe4d29f78470d2d36e89ff2c2c..ec1253072f62e78b41d6305e92fd3df5
      }
  
      protected void updateNeighborsInFront(final Level level, final BlockPos pos, final BlockState state) {
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.active() ? fun.bm.lophine.carpet.TisMicroTiming.begin(level, pos, this, "emit_block_update", "method=updateNeighbors", false, false) : fun.bm.lophine.carpet.TisMicroTiming.noop();
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.active() ? fun.bm.lophine.carpet.tis.TisMicroTiming.begin(level, pos, this, "emit_block_update", "method=updateNeighbors", false, false) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop();
 +        try {
          Direction direction = state.getValue(FACING);
          BlockPos oppositePos = pos.relative(direction.getOpposite());
@@ -3371,7 +3371,7 @@ index b23be67e703dabbe4d29f78470d2d36e89ff2c2c..ec1253072f62e78b41d6305e92fd3df5
  
      @Override
 diff --git a/net/minecraft/world/level/block/PoweredRailBlock.java b/net/minecraft/world/level/block/PoweredRailBlock.java
-index 8641e3b59753732f938b3189293cb063aa7d650f..76b3e73ca8f65f8d2e5291effeea272299a95ffd 100644
+index 8641e3b59753732f938b3189293cb063aa7d650f..35cdc442c94b441139edfc95b85c751206d56dd0 100644
 --- a/net/minecraft/world/level/block/PoweredRailBlock.java
 +++ b/net/minecraft/world/level/block/PoweredRailBlock.java
 @@ -119,11 +119,25 @@ public class PoweredRailBlock extends BaseRailBlock {
@@ -3387,11 +3387,11 @@ index 8641e3b59753732f938b3189293cb063aa7d650f..76b3e73ca8f65f8d2e5291effeea2722
 +                    return;
 +                }
 +                if (level.getBlockState(pos.below()).is(net.minecraft.world.level.block.Blocks.LAPIS_ORE)) {
-+                    fun.bm.lophine.carpet.TisSimulationRules.suppress(level, pos);
++                    fun.bm.lophine.carpet.tis.TisSimulationRules.suppress(level, pos);
 +                }
 +            }
              level.setBlockAndUpdate(pos, state.setValue(POWERED, shouldPower));
-+            try (var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.active() ? fun.bm.lophine.carpet.TisMicroTiming.begin(level, pos, this, "emit_block_update", "method=updateBlockState", false, false) : fun.bm.lophine.carpet.TisMicroTiming.noop()) {
++            try (var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.active() ? fun.bm.lophine.carpet.tis.TisMicroTiming.begin(level, pos, this, "emit_block_update", "method=updateBlockState", false, false) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop()) {
              level.updateNeighborsAt(pos.below(), this);
              if (state.getValue(SHAPE).isSlope()) {
                  level.updateNeighborsAt(pos.above(), this);
@@ -3444,7 +3444,7 @@ index a9c5754ad15d96a6d5a35e3ef3afcf92dfd263c6..069d419cdd1413f6c63368b701a10365
          if (directionToNeighbour == Direction.DOWN && !canSurvive) {
              return Blocks.AIR.defaultBlockState();
 diff --git a/net/minecraft/world/level/block/ShulkerBoxBlock.java b/net/minecraft/world/level/block/ShulkerBoxBlock.java
-index 0f8d4f49bb62aec89600de09049d8b580561eee4..1f2880076e422ebd21f2e45ed046d30c7f51d507 100644
+index 88d1e4ca258f474f8ae6893e09ff58b33b607351..32ffcf28f829ffc4376dd2e8cde4351651a0a492 100644
 --- a/net/minecraft/world/level/block/ShulkerBoxBlock.java
 +++ b/net/minecraft/world/level/block/ShulkerBoxBlock.java
 @@ -73,7 +73,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
@@ -3460,7 +3460,7 @@ index 0f8d4f49bb62aec89600de09049d8b580561eee4..1f2880076e422ebd21f2e45ed046d30c
                  itemStack.applyComponents(blockEntity.collectComponents());
                  ItemEntity entity = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, itemStack);
                  entity.setDefaultPickUpDelay();
-+                fun.bm.lophine.carpet.TisLifetimeTracker.markSpawn(entity, "block_drop");
++                fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(entity, "block_drop");
                  level.addFreshEntity(entity);
              } else {
                  shulkerBoxBlockEntity.unpackLootTable(player, true); // Paper - force clear loot table so replenish data isn't persisted in the stack
@@ -3505,14 +3505,14 @@ index caa6dfdf67029dad3a0a13af5dfb2977d835505a..e1b9951829355f0175e0ff42e10d87b8
      // Lophine end - Carpet features
  }
 diff --git a/net/minecraft/world/level/block/TripWireHookBlock.java b/net/minecraft/world/level/block/TripWireHookBlock.java
-index 4d37fe65014937f1d36f50aa757ab4e0c16877bb..6ca3e40ef87f72982d0d630d525d96425b77dad0 100644
+index 4d37fe65014937f1d36f50aa757ab4e0c16877bb..2553ab2dbd4f3703052b14e02b51d8189a734580 100644
 --- a/net/minecraft/world/level/block/TripWireHookBlock.java
 +++ b/net/minecraft/world/level/block/TripWireHookBlock.java
 @@ -236,10 +236,14 @@ public class TripWireHookBlock extends Block {
      }
  
      private static void notifyNeighbors(final Block block, final Level level, final BlockPos pos, final Direction direction) {
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.active() ? fun.bm.lophine.carpet.TisMicroTiming.begin(level, pos, block, "emit_block_update", "method=updateNeighborsOnAxis", false, false) : fun.bm.lophine.carpet.TisMicroTiming.noop();
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.active() ? fun.bm.lophine.carpet.tis.TisMicroTiming.begin(level, pos, block, "emit_block_update", "method=updateNeighborsOnAxis", false, false) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop();
 +        try {
          Direction front = direction.getOpposite();
          Orientation orientation = ExperimentalRedstoneUtils.initialOrientation(level, front, Direction.UP);
@@ -3551,14 +3551,14 @@ index d662c99d5688c13e91739203a4eabf79425bb584..1ff781c23f2db2ee11d46d1f94bb8286
  
      @Override
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index f2f66fd89da2d42603a579ffd233ebf91b261480..ff46dc06bbed2a4df72ef4e9f2c11f409e398d79 100644
+index 9897110139a77a44e3577e3b5be23df8d2fb9bdd..ed48f57bb11f643f909e559d1be33b5deffbc073 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -248,6 +248,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
              public Integer begin() {
                  if(level.isClientSide() || fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.hopperSuctionDisabled
                      || entity.isOnCooldown() || !state.getValue(HopperBlock.ENABLED))return null;
-+                if(fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.hopperXpCounters)fun.bm.lophine.carpet.TisXpCounter.tickHopper(entity);
++                if(fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.hopperXpCounters)fun.bm.lophine.carpet.tis.TisXpCounter.tickHopper(entity);
                  return getFullState(entity);
              }
              public boolean eject(){return ejectItems(level,pos,entity);}
@@ -3578,7 +3578,7 @@ index f2f66fd89da2d42603a579ffd233ebf91b261480..ff46dc06bbed2a4df72ef4e9f2c11f40
  
          if (!entity.isOnCooldown() && state.getValue(HopperBlock.ENABLED)) {
 +            if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.hopperXpCounters) {
-+                fun.bm.lophine.carpet.TisXpCounter.tickHopper(entity);
++                fun.bm.lophine.carpet.tis.TisXpCounter.tickHopper(entity);
 +            }
              boolean changed = false;
              final int fullState = getFullState(entity); // Paper - Perf: Optimize Hoppers
@@ -3599,14 +3599,14 @@ index f2f66fd89da2d42603a579ffd233ebf91b261480..ff46dc06bbed2a4df72ef4e9f2c11f40
  
      public static boolean addItem(final Container container, final ItemEntity entity) {
 +        if(fun.bm.lophine.carpet.config.modules.WoolHopperCounterConfig.hopperCountersUnlimitedSpeed&&entity.isRemoved())return false;
-         if (!fun.bm.lophine.carpet.OrgItemShadowGroups.any(entity.getItem(), container)) {
-             return fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> carpetAddItem(container, entity));
+         if (!fun.bm.lophine.carpet.org.OrgItemShadowGroups.any(entity.getItem(), container)) {
+             return fun.bm.lophine.carpet.org.OrgGameplayHelper.withoutShulkerStacking(() -> carpetAddItem(container, entity));
          }
 @@ -753,6 +764,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
          }
          if (result.isEmpty()) {
              changed = true;
-+            if (!entity.isRemoved()) fun.bm.lophine.carpet.TisLifetimeTracker.removed(entity, "hopper");
++            if (!entity.isRemoved()) fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(entity, "hopper");
              entity.setItem(ItemStack.EMPTY);
              entity.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.PICKUP); // CraftBukkit - add Bukkit remove cause
          } else {
@@ -3624,11 +3624,11 @@ index f2f66fd89da2d42603a579ffd233ebf91b261480..ff46dc06bbed2a4df72ef4e9f2c11f40
      private boolean shouldCheckSleep;
  
      private void checkSleepingConditions() {
-+        if (fun.bm.lophine.carpet.TisXpCounter.isCounterHopper(this)) {
++        if (fun.bm.lophine.carpet.tis.TisXpCounter.isCounterHopper(this)) {
 +            return;
 +        }
-         if (fun.bm.lophine.carpet.OrgItemShadowGroups.any(fun.bm.lophine.carpet.OrgItemShadowGroups.container(this))) return;
-         if (!fun.bm.lophine.carpet.OrgItemShadowGroups.owned(this.extractBlockInventory) || !fun.bm.lophine.carpet.OrgItemShadowGroups.owned(this.insertBlockInventory)) return;
+         if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.any(fun.bm.lophine.carpet.org.OrgItemShadowGroups.container(this))) return;
+         if (!fun.bm.lophine.carpet.org.OrgItemShadowGroups.owned(this.extractBlockInventory) || !fun.bm.lophine.carpet.org.OrgItemShadowGroups.owned(this.insertBlockInventory)) return;
          if (this.extractStackList != null && this.extractStackList.carpetOrgHasShadows() || this.insertStackList != null && this.insertStackList.carpetOrgHasShadows()) return;
 @@ -1369,6 +1387,10 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
@@ -3657,7 +3657,7 @@ index f2f66fd89da2d42603a579ffd233ebf91b261480..ff46dc06bbed2a4df72ef4e9f2c11f40
          if (this.insertionMode == net.caffeinemc.mods.lithium.common.hopper.HopperCachingState.BlockInventory.NO_BLOCK_INVENTORY) {
              return null;
 diff --git a/net/minecraft/world/level/block/entity/SculkSensorBlockEntity.java b/net/minecraft/world/level/block/entity/SculkSensorBlockEntity.java
-index e364f3c2ca52ae7ac4a5f39c8a74219aed44ca00..83468b478dc22c0d288ffba063f52708688391eb 100644
+index e364f3c2ca52ae7ac4a5f39c8a74219aed44ca00..f6f6bb4a933aea157a7ced4d4538b062ecc7a144 100644
 --- a/net/minecraft/world/level/block/entity/SculkSensorBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/SculkSensorBlockEntity.java
 @@ -182,6 +182,14 @@ public class SculkSensorBlockEntity extends BlockEntity implements GameEventList
@@ -3667,7 +3667,7 @@ index e364f3c2ca52ae7ac4a5f39c8a74219aed44ca00..83468b478dc22c0d288ffba063f52708
 +        private boolean carpetCanActivate(final ServerLevel level, final BlockState state) {
 +            if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.soundSuppressionSimulator
 +                && level.getBlockState(this.blockPos.below()).is(net.minecraft.world.level.block.Blocks.LAPIS_ORE)) {
-+                fun.bm.lophine.carpet.TisSimulationRules.sound(level, this.blockPos);
++                fun.bm.lophine.carpet.tis.TisSimulationRules.sound(level, this.blockPos);
 +            }
 +            return SculkSensorBlock.canActivate(state);
 +        }
@@ -3740,7 +3740,7 @@ index 13797ac0c866ec4bdea0cb597800634cbbea3586..80e2fd2f43dbf8c0ba04f08ee0cb8185
      }
  
 diff --git a/net/minecraft/world/level/block/piston/PistonBaseBlock.java b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
-index 6953698f5dcea2651bc519a64ce416d9c8512e81..d0dbb3897f906a141a8fcca1588737335c3d808a 100644
+index 6aba262baae449375a916f866778276de55710de..c9db95c97cad5224e707f4d5cd191ce292a59d39 100644
 --- a/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 +++ b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 @@ -287,6 +287,10 @@ public class PistonBaseBlock extends DirectionalBlock {
@@ -3808,12 +3808,12 @@ index 6953698f5dcea2651bc519a64ce416d9c8512e81..d0dbb3897f906a141a8fcca158873733
 +                pos, actualState, toPushShapes.get(i), direction, extending, false);
 +            movingEntity.carpetSetCarriedBlockEntity(carpetCarriedEntities.get(i));
 +            level.setBlockEntity(movingEntity);
-+            fun.bm.lophine.carpet.TisMicroTimingMarkers.move(level, oldPos, pushDirection);
++            fun.bm.lophine.carpet.tis.TisMicroTimingMarkers.move(level, oldPos, pushDirection);
              toUpdate[updateIndex++] = blockState;
          }
  
 diff --git a/net/minecraft/world/level/block/piston/PistonStructureResolver.java b/net/minecraft/world/level/block/piston/PistonStructureResolver.java
-index f8caa43fb203f54a33b31174badca940cfdbb90c..db307b2b8d9b9d3e844e1a6ddf91254677daa0ef 100644
+index f8caa43fb203f54a33b31174badca940cfdbb90c..46e12c148096fa0c91c9b04b64a99b2f9634b9f7 100644
 --- a/net/minecraft/world/level/block/piston/PistonStructureResolver.java
 +++ b/net/minecraft/world/level/block/piston/PistonStructureResolver.java
 @@ -42,24 +42,24 @@ public class PistonStructureResolver {
@@ -3821,15 +3821,15 @@ index f8caa43fb203f54a33b31174badca940cfdbb90c..db307b2b8d9b9d3e844e1a6ddf912546
              if (this.extending && nextState.getPistonPushReaction() == PushReaction.POPPED) {
                  this.toDestroy.add(this.startPos);
 -                return true;
-+                return fun.bm.lophine.carpet.TisMicroTiming.pistonResult(this.level, this.pistonPos, true, this.toPush, this.toDestroy);
++                return fun.bm.lophine.carpet.tis.TisMicroTiming.pistonResult(this.level, this.pistonPos, true, this.toPush, this.toDestroy);
              } else {
 -                return false;
-+                return fun.bm.lophine.carpet.TisMicroTiming.pistonResult(this.level, this.pistonPos, false, this.toPush, this.toDestroy);
++                return fun.bm.lophine.carpet.tis.TisMicroTiming.pistonResult(this.level, this.pistonPos, false, this.toPush, this.toDestroy);
              }
          } else {
              if (!this.addBlockLine(this.startPos, this.pushDirection)) {
 -                return false;
-+                return fun.bm.lophine.carpet.TisMicroTiming.pistonResult(this.level, this.pistonPos, false, this.toPush, this.toDestroy);
++                return fun.bm.lophine.carpet.tis.TisMicroTiming.pistonResult(this.level, this.pistonPos, false, this.toPush, this.toDestroy);
              }
  
              for (int i = 0; i < this.toPush.size(); i++) {
@@ -3837,17 +3837,17 @@ index f8caa43fb203f54a33b31174badca940cfdbb90c..db307b2b8d9b9d3e844e1a6ddf912546
                  if (!this.carpetOwns(pos)) return false;
                  if (isSticky(this.level.getBlockState(pos)) && !this.addBranchingBlocks(pos)) {
 -                    return false;
-+                    return fun.bm.lophine.carpet.TisMicroTiming.pistonResult(this.level, this.pistonPos, false, this.toPush, this.toDestroy);
++                    return fun.bm.lophine.carpet.tis.TisMicroTiming.pistonResult(this.level, this.pistonPos, false, this.toPush, this.toDestroy);
                  }
              }
  
 -            return true;
-+            return fun.bm.lophine.carpet.TisMicroTiming.pistonResult(this.level, this.pistonPos, true, this.toPush, this.toDestroy);
++            return fun.bm.lophine.carpet.tis.TisMicroTiming.pistonResult(this.level, this.pistonPos, true, this.toPush, this.toDestroy);
          }
      }
  
 diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
-index 24b58f697800770ca7e87af33669ad450af9f29f..ffa2b3b6f5868c5ca155394fdc57bd844eeae165 100644
+index 3060e29c68d8dc1105fe5b6e99330d2cd33e80f5..28b9b6f91609c6d7a22950dd6afb04cfa4197f06 100644
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
 @@ -193,7 +193,7 @@ public abstract class BlockBehaviour implements FeatureElement, net.caffeinemc.m
@@ -3872,7 +3872,7 @@ index 24b58f697800770ca7e87af33669ad450af9f29f..ffa2b3b6f5868c5ca155394fdc57bd84
          }
  
          public InteractionResult useWithoutItem(final Level level, final Player player, final BlockHitResult hitResult) {
-+            if (fun.bm.lophine.carpet.TisMicroTimingMarkers.rightClick(player, hitResult.getBlockPos())) return InteractionResult.CONSUME;
++            if (fun.bm.lophine.carpet.tis.TisMicroTimingMarkers.rightClick(player, hitResult.getBlockPos())) return InteractionResult.CONSUME;
              return this.getBlock().useWithoutItem(this.asState(), level, hitResult.getBlockPos(), player, hitResult);
          }
  
@@ -3887,7 +3887,7 @@ index 24b58f697800770ca7e87af33669ad450af9f29f..ffa2b3b6f5868c5ca155394fdc57bd84
          }
  
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index 1a3d401b4cd6285a49a50a5371be5bb79c345632..bd9edf4c8863ab99def62bf6f5655fa53b801805 100644
+index 8b7f404eaa44dadacad745de092eb8bf26d7f103..d58e47fe7d655a720f3f415d986853e5ff2eec4d 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -1144,4 +1144,49 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
@@ -3897,7 +3897,7 @@ index 1a3d401b4cd6285a49a50a5371be5bb79c345632..bd9edf4c8863ab99def62bf6f5655fa5
 +
 +    /** TIS's explicitly requested chunk erasure, called only by the chunk owner. Biomes are preserved. */
 +    public java.util.concurrent.CompletableFuture<int[]> carpetEraseContentsAsync() {
-+        return fun.bm.lophine.carpet.TisChunkEraseContinuations.erase(this, this.level);
++        return fun.bm.lophine.carpet.tis.TisChunkEraseContinuations.erase(this, this.level);
 +    }
 +
 +    public java.util.List<Entity> carpetEraseEntitySnapshot() {
@@ -4093,7 +4093,7 @@ index 9e926165d8de070511a962fab0243ac9ccb953a1..301417269511734393b08c2110766d86
  
      // CraftBukkit start - return boolean, add entity
 diff --git a/net/minecraft/world/level/redstone/CollectingNeighborUpdater.java b/net/minecraft/world/level/redstone/CollectingNeighborUpdater.java
-index 8cbf239b555f0f055a9285652cfcadf2e738e06f..a65754999f3515a248b259839455256556a0d67e 100644
+index 8cbf239b555f0f055a9285652cfcadf2e738e06f..9d6c8445ee7053fcd00507dcee1fc15af5b55261 100644
 --- a/net/minecraft/world/level/redstone/CollectingNeighborUpdater.java
 +++ b/net/minecraft/world/level/redstone/CollectingNeighborUpdater.java
 @@ -72,11 +72,13 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
@@ -4115,7 +4115,7 @@ index 8cbf239b555f0f055a9285652cfcadf2e738e06f..a65754999f3515a248b2598394552565
      }
  
 +    private void carpetMicroSchedule(BlockPos pos, NeighborUpdates update, boolean accepted) {
-+        if (!fun.bm.lophine.carpet.TisMicroTiming.active()) return;
++        if (!fun.bm.lophine.carpet.tis.TisMicroTiming.active()) return;
 +        Block source;
 +        String data;
 +        if (update instanceof ShapeUpdate shape) {
@@ -4128,14 +4128,14 @@ index 8cbf239b555f0f055a9285652cfcadf2e738e06f..a65754999f3515a248b2598394552565
 +        } else if (update instanceof MultiNeighborUpdate multi) {
 +            source = multi.sourceBlock; data = "block_update; except=" + multi.skipDirection;
 +        } else return;
-+        fun.bm.lophine.carpet.TisMicroTiming.event(this.level, pos, source, "schedule_block_update", data + "; success=" + accepted, true);
++        fun.bm.lophine.carpet.tis.TisMicroTiming.event(this.level, pos, source, "schedule_block_update", data + "; success=" + accepted, true);
 +    }
 +
      private void runUpdates() {
          try {
              while (!this.stack.isEmpty() || !this.addedThisLayer.isEmpty()) {
 diff --git a/net/minecraft/world/level/redstone/DefaultRedstoneWireEvaluator.java b/net/minecraft/world/level/redstone/DefaultRedstoneWireEvaluator.java
-index 9027dfa971e3d3b83d4647691e3332f1e851c760..c34666655acd664376fc8d0c984a723b897b1f57 100644
+index 9027dfa971e3d3b83d4647691e3332f1e851c760..4ec6041e6dca8fec5aa0f4d6f0efac8870f98e20 100644
 --- a/net/minecraft/world/level/redstone/DefaultRedstoneWireEvaluator.java
 +++ b/net/minecraft/world/level/redstone/DefaultRedstoneWireEvaluator.java
 @@ -11,6 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
@@ -4157,7 +4157,7 @@ index 9027dfa971e3d3b83d4647691e3332f1e851c760..c34666655acd664376fc8d0c984a723b
 +                java.util.Collections.shuffle(shuffled, carpetUpdateOrderRandom);
 +                orderedUpdates = shuffled;
 +            }
-+            try (var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.active() ? fun.bm.lophine.carpet.TisMicroTiming.begin(level, pos, this.wireBlock, "emit_block_update_redstone_dust", "method=update; order=" + orderedUpdates, false, false) : fun.bm.lophine.carpet.TisMicroTiming.noop()) {
++            try (var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.active() ? fun.bm.lophine.carpet.tis.TisMicroTiming.begin(level, pos, this.wireBlock, "emit_block_update_redstone_dust", "method=update; order=" + orderedUpdates, false, false) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop()) {
 +            for (BlockPos blockPos : orderedUpdates) {
                  level.updateNeighborsAt(blockPos, this.wireBlock);
              }
@@ -4192,14 +4192,14 @@ index ee8c768107d0139b5cc4a483a59307f43b80de24..a2375737bf93c10e0d9cb3316a303bae
      }
  }
 diff --git a/net/minecraft/world/level/redstone/NeighborUpdater.java b/net/minecraft/world/level/redstone/NeighborUpdater.java
-index 90145a3ea384b568897ee665b80b24cccba1b6c5..1c2719965f402d284b6e98e780c80d5fc087aa18 100644
+index 90145a3ea384b568897ee665b80b24cccba1b6c5..c163c40c716612f13fd813e474794bd2b969be0f 100644
 --- a/net/minecraft/world/level/redstone/NeighborUpdater.java
 +++ b/net/minecraft/world/level/redstone/NeighborUpdater.java
 @@ -42,6 +42,8 @@ public interface NeighborUpdater {
          final @Block.UpdateFlags int updateFlags,
          final int updateLimit
      ) {
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.active() && level instanceof Level live ? fun.bm.lophine.carpet.TisMicroTiming.begin(live, pos, neighborState.getBlock(), "detect_block_update", "state_update; from=" + neighborPos + "; side=" + direction + "; flags=" + updateFlags + "; limit=" + updateLimit, true, true) : fun.bm.lophine.carpet.TisMicroTiming.noop();
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.active() && level instanceof Level live ? fun.bm.lophine.carpet.tis.TisMicroTiming.begin(live, pos, neighborState.getBlock(), "detect_block_update", "state_update; from=" + neighborPos + "; side=" + direction + "; flags=" + updateFlags + "; limit=" + updateLimit, true, true) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop();
 +        try {
          BlockState currentState = level.getBlockState(pos);
          if ((updateFlags & Block.UPDATE_SKIP_SHAPE_UPDATE_ON_WIRE) == 0 || !currentState.is(Blocks.REDSTONE_WIRE)) {
@@ -4217,7 +4217,7 @@ index 90145a3ea384b568897ee665b80b24cccba1b6c5..1c2719965f402d284b6e98e780c80d5f
      }
  
      static void executeUpdate(Level level, BlockState state, BlockPos pos, Block changedBlock, @Nullable Orientation orientation, boolean movedByPiston, BlockPos sourcePos) {
-+        var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.active() ? fun.bm.lophine.carpet.TisMicroTiming.begin(level, pos, changedBlock, "detect_block_update", "block_update; from=" + sourcePos + "; orientation=" + orientation + "; movedByPiston=" + movedByPiston, true, true) : fun.bm.lophine.carpet.TisMicroTiming.noop();
++        var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.active() ? fun.bm.lophine.carpet.tis.TisMicroTiming.begin(level, pos, changedBlock, "detect_block_update", "block_update; from=" + sourcePos + "; orientation=" + orientation + "; movedByPiston=" + movedByPiston, true, true) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop();
 +        try {
          // Paper end - Add source block to BlockPhysicsEvent
          try {
@@ -4231,19 +4231,19 @@ index 90145a3ea384b568897ee665b80b24cccba1b6c5..1c2719965f402d284b6e98e780c80d5f
      }
  }
 diff --git a/net/minecraft/world/ticks/LevelTicks.java b/net/minecraft/world/ticks/LevelTicks.java
-index 52a7da01ce84b93a4444a002effa261d20e1a707..d03e5f9004ab65d9435e2bf6896e7727e3108ef5 100644
+index 52a7da01ce84b93a4444a002effa261d20e1a707..67420f19b561927c15178c410f44511ccf923af4 100644
 --- a/net/minecraft/world/ticks/LevelTicks.java
 +++ b/net/minecraft/world/ticks/LevelTicks.java
 @@ -140,9 +140,12 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
          long chunkKey = ChunkPos.pack(tick.pos());
          LevelChunkTicks<T> tickContainer = this.allContainers.get(chunkKey);
          if (tickContainer == null) {
-+            fun.bm.lophine.carpet.TisMicroTiming.scheduleTick(this.world, tick, false);
++            fun.bm.lophine.carpet.tis.TisMicroTiming.scheduleTick(this.world, tick, false);
              Util.logAndPauseIfInIde("Trying to schedule tick in not loaded position " + tick.pos());
          } else {
-+            boolean carpetMicroAccepted = fun.bm.lophine.carpet.TisMicroTiming.active() && !tickContainer.hasScheduledTick(tick.pos(), tick.type());
++            boolean carpetMicroAccepted = fun.bm.lophine.carpet.tis.TisMicroTiming.active() && !tickContainer.hasScheduledTick(tick.pos(), tick.type());
              tickContainer.schedule(tick);
-+            fun.bm.lophine.carpet.TisMicroTiming.scheduleTick(this.world, tick, carpetMicroAccepted);
++            fun.bm.lophine.carpet.tis.TisMicroTiming.scheduleTick(this.world, tick, carpetMicroAccepted);
          }
      }
  
@@ -4252,8 +4252,8 @@ index 52a7da01ce84b93a4444a002effa261d20e1a707..d03e5f9004ab65d9435e2bf6896e7727
  
              this.alreadyRunThisTick.add(entry);
 -            output.accept(entry.pos(), entry.type());
-+            try (var carpetMicroPhase = fun.bm.lophine.carpet.TisMicroTiming.active() ? fun.bm.lophine.carpet.TisMicroTiming.phase(this.world, "tile_tick", (this.isBlock ? "block" : "fluid") + " #" + this.alreadyRunThisTick.size()) : fun.bm.lophine.carpet.TisMicroTiming.noop();
-+                 var carpetMicroScope = fun.bm.lophine.carpet.TisMicroTiming.executeTick(this.world, entry, this.alreadyRunThisTick.size(), this.isBlock)) {
++            try (var carpetMicroPhase = fun.bm.lophine.carpet.tis.TisMicroTiming.active() ? fun.bm.lophine.carpet.tis.TisMicroTiming.phase(this.world, "tile_tick", (this.isBlock ? "block" : "fluid") + " #" + this.alreadyRunThisTick.size()) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop();
++                 var carpetMicroScope = fun.bm.lophine.carpet.tis.TisMicroTiming.executeTick(this.world, entry, this.alreadyRunThisTick.size(), this.isBlock)) {
 +                output.accept(entry.pos(), entry.type());
 +            }
          }

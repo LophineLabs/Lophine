@@ -18,11 +18,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-final class CarpetPlayerTracer {
+public final class CarpetPlayerTracer {
     private CarpetPlayerTracer() {
     }
 
-    static List<Entity> nearby(final ServerPlayer player, final AABB box, final Predicate<Entity> predicate) {
+    public static List<Entity> nearby(final ServerPlayer player, final AABB box, final Predicate<Entity> predicate) {
         TickThread.ensureTickThread(player, "Carpet action query must own its player");
         if (!CarpetPlayerTargetArea.Bounds.query(box).loaded(player.level()))
             throw new CarpetPlayerTargetArea.Pending();
@@ -32,7 +32,7 @@ final class CarpetPlayerTracer {
         });
     }
 
-    static HitResult rayTrace(final ServerPlayer player, final float partialTicks, final double reach, final boolean fluids) {
+    public static HitResult rayTrace(final ServerPlayer player, final float partialTicks, final double reach, final boolean fluids) {
         final Vec3 start = player.getEyePosition(partialTicks);
         final Vec3 end = start.add(player.getViewVector(partialTicks).scale(reach));
         final ServerLevel level = player.level();

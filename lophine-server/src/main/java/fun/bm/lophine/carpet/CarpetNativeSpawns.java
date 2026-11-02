@@ -3,6 +3,7 @@ package fun.bm.lophine.carpet;
 
 import carpet.script.external.ScarpetLootActors;
 import carpet.script.external.ScarpetLootConditions;
+import fun.bm.lophine.carpet.tis.TisCommandContinuations;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntitySpawnReason;

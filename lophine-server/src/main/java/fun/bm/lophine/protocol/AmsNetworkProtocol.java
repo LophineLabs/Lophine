@@ -2,8 +2,8 @@
 // AMS network/v1 server wire contract from 750310179368b2569dd6121a2769b2fb1bbc7343.
 package fun.bm.lophine.protocol;
 
-import fun.bm.lophine.carpet.AmsManagementSettings;
-import fun.bm.lophine.carpet.AmsTranslations;
+import fun.bm.lophine.carpet.ams.AmsManagementSettings;
+import fun.bm.lophine.carpet.ams.AmsTranslations;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.FriendlyByteBuf;
@@ -142,16 +142,16 @@ public final class AmsNetworkProtocol implements LeavesProtocol {
             case "handshake_c2s" -> {
                 Handshake handshake = readClientHandshake(buffer, connectionPlayer.getUUID());
                 if (handshake == null) return true;
-                var actual = fun.bm.lophine.carpet.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(connectionPlayer, () -> {
+                var actual = fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.owned(connectionPlayer, () -> {
                     if (!GeneralCompatConfig.amsNetworkProtocol) return false;
                     Client client = new Client(connectionPlayer.getGameProfile().name(), handshake.version(), handshake.packets());
                     synchronized (CLIENT_LIFECYCLE) {
                         CLIENTS.put(connectionPlayer.getUUID(), client);
                     }
                     return true;
-                }), accepted -> accepted ? fun.bm.lophine.carpet.AmsNativeCommandEffects.then(handshake(connectionPlayer), ignored ->
-                        fun.bm.lophine.carpet.AmsNativeCommandEffects.then(syncHardness(connectionPlayer), unused ->
-                                fun.bm.lophine.carpet.AmsNativeCommandEffects.then(syncPoses(connectionPlayer, connectionPlayer.getUUID()), done -> syncLazy(connectionPlayer)))) : java.util.concurrent.CompletableFuture.completedFuture(null));
+                }), accepted -> accepted ? fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(handshake(connectionPlayer), ignored ->
+                        fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(syncHardness(connectionPlayer), unused ->
+                                fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(syncPoses(connectionPlayer, connectionPlayer.getUUID()), done -> syncLazy(connectionPlayer)))) : java.util.concurrent.CompletableFuture.completedFuture(null));
                 carpet.script.external.ScarpetNativeWork.record(actual);
             }
             case "client_player_fps_c2s" -> {
@@ -160,7 +160,7 @@ public final class AmsNetworkProtocol implements LeavesProtocol {
                 Client admitted = CLIENTS.get(claimed);
                 if (!claimed.equals(connectionPlayer.getUUID()) || fps < 0 || admitted == null)
                     return true;
-                var actual = fun.bm.lophine.carpet.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(connectionPlayer, () -> {
+                var actual = fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.owned(connectionPlayer, () -> {
                     CommandSourceStack source;
                     synchronized (CLIENT_LIFECYCLE) {
                         if (CLIENTS.get(claimed) != admitted) return null;
@@ -175,7 +175,7 @@ public final class AmsNetworkProtocol implements LeavesProtocol {
                 UUID claimed = buffer.readUUID();
                 Client admitted = CLIENTS.get(claimed);
                 if (!claimed.equals(connectionPlayer.getUUID()) || admitted == null) return true;
-                carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.AmsNativeCommandEffects.global(connectionPlayer.carpetSpawnServer(), () -> {
+                carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.global(connectionPlayer.carpetSpawnServer(), () -> {
                     // A queued reply from a denied/disconnected session cannot populate
                     // a replacement session that happens to use the same player UUID.
                     synchronized (CLIENT_LIFECYCLE) {
@@ -249,7 +249,7 @@ public final class AmsNetworkProtocol implements LeavesProtocol {
     }
 
     private static java.util.concurrent.CompletableFuture<Void> feedback(CommandSourceStack source, net.minecraft.ChatFormatting color, String key, Object... args) {
-        return fun.bm.lophine.carpet.AmsNativeCommandEffects.source(source, () -> {
+        return fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.source(source, () -> {
             send(source, AmsTranslations.message(source, key, args).withStyle(color));
             return (Void) null;
         });
@@ -269,32 +269,32 @@ public final class AmsNetworkProtocol implements LeavesProtocol {
         synchronized (CLIENT_LIFECYCLE) {
             CLIENT_VERSIONS.remove(target.getUUID());
         }
-        var actual = fun.bm.lophine.carpet.AmsNativeCommandEffects.then(sendPacket(target, "request_client_mod_version_s2c", false, buffer -> buffer.writeUUID(target.getUUID())), ignored ->
-                fun.bm.lophine.carpet.AmsNativeCommandEffects.then(feedback(source, net.minecraft.ChatFormatting.GREEN, "command.amsp.get_client_version_waiting"), unused -> versionCheck(source, target, 0)));
+        var actual = fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(sendPacket(target, "request_client_mod_version_s2c", false, buffer -> buffer.writeUUID(target.getUUID())), ignored ->
+                fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(feedback(source, net.minecraft.ChatFormatting.GREEN, "command.amsp.get_client_version_waiting"), unused -> versionCheck(source, target, 0)));
         carpet.script.external.ScarpetNativeWork.record(actual);
         return 1;
     }
 
     private static java.util.concurrent.CompletableFuture<Void> versionCheck(CommandSourceStack source, ServerPlayer target, int retries) {
-        return fun.bm.lophine.carpet.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.AmsNativeCommandEffects.pause(source.getServer(), 3000L), ignored ->
-                fun.bm.lophine.carpet.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.AmsNativeCommandEffects.global(source.getServer(), () -> CLIENT_VERSIONS.remove(target.getUUID())), version -> {
+        return fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.pause(source.getServer(), 3000L), ignored ->
+                fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.global(source.getServer(), () -> CLIENT_VERSIONS.remove(target.getUUID())), version -> {
                     if (version != null)
-                        return fun.bm.lophine.carpet.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(target, () -> target.getGameProfile().name()), name -> feedback(source, net.minecraft.ChatFormatting.AQUA, "command.amsp.client_mod_version_success_feedback", name, version));
+                        return fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.owned(target, () -> target.getGameProfile().name()), name -> feedback(source, net.minecraft.ChatFormatting.AQUA, "command.amsp.client_mod_version_success_feedback", name, version));
                     if (retries >= 5)
                         return feedback(source, net.minecraft.ChatFormatting.RED, "command.amsp.client_mod_version_failed_feedback", "5");
-                    return fun.bm.lophine.carpet.AmsNativeCommandEffects.then(feedback(source, net.minecraft.ChatFormatting.YELLOW, "command.amsp.request_client_version", Integer.toString(retries + 1)), unused ->
-                            fun.bm.lophine.carpet.AmsNativeCommandEffects.then(sendPacket(target, "request_client_mod_version_s2c", false, buffer -> buffer.writeUUID(target.getUUID())), done -> versionCheck(source, target, retries + 1)));
+                    return fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(feedback(source, net.minecraft.ChatFormatting.YELLOW, "command.amsp.request_client_version", Integer.toString(retries + 1)), unused ->
+                            fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(sendPacket(target, "request_client_mod_version_s2c", false, buffer -> buffer.writeUUID(target.getUUID())), done -> versionCheck(source, target, retries + 1)));
                 }));
     }
 
     private static void broadcast(Consumer<ServerPlayer> operation) {
         MinecraftServer server = MinecraftServer.getServer();
         if (server == null) return;
-        carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.AmsNativeCommandEffects.broadcast(server, operation));
+        carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.broadcast(server, operation));
     }
 
     private static java.util.concurrent.CompletableFuture<Void> sendPacket(ServerPlayer player, String packet, boolean force, Consumer<FriendlyByteBuf> data) {
-        var actual = fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(player, () -> {
+        var actual = fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.owned(player, () -> {
             ServerPlayer scheduled = player;
             if (!force && !supports(scheduled.getUUID(), packet)) return (Void) null;
             var buffer = ProtocolUtils.decorate(io.netty.buffer.Unpooled.buffer());
@@ -302,7 +302,7 @@ public final class AmsNetworkProtocol implements LeavesProtocol {
                 buffer.writeUtf(packet);
                 data.accept(buffer);
                 var payload = new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(new net.minecraft.network.protocol.common.custom.DiscardedPayload(CHANNEL, io.netty.buffer.ByteBufUtil.getBytes(buffer)));
-                fun.bm.lophine.carpet.AmsNativeCommandEffects.packet(scheduled, payload);
+                fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.packet(scheduled, payload);
             } finally {
                 buffer.release();
             }
@@ -319,7 +319,7 @@ public final class AmsNetworkProtocol implements LeavesProtocol {
 
     public static java.util.concurrent.CompletableFuture<Void> sendAsync(CommandSourceStack source, Component message) {
         var immutable = message.copy();
-        return fun.bm.lophine.carpet.AmsNativeCommandEffects.source(source, () -> {
+        return fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.source(source, () -> {
             source.sendSuccess(() -> immutable, false);
             return (Void) null;
         });

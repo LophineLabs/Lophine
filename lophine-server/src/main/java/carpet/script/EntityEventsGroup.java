@@ -47,7 +47,7 @@ public class EntityEventsGroup {
         List<Value> values = List.copyOf(capturedArguments);
         Map<EventKey, CarpetEventServer.Callback> calls = Map.copyOf(actionSet);
         return carpet.script.external.ScarpetRuntime.of(captured.getServer()).<Void>submit(() -> {
-            try (var phase = fun.bm.lophine.carpet.TisMicroTiming.phase(captured.getLevel(), "scarpet", type.id); var damageScope = carpet.script.external.ScarpetRuntime.damageCallback(type == Event.ON_DAMAGE ? entity : null)) {
+            try (var phase = fun.bm.lophine.carpet.tis.TisMicroTiming.phase(captured.getLevel(), "scarpet", type.id); var damageScope = carpet.script.external.ScarpetRuntime.damageCallback(type == Event.ON_DAMAGE ? entity : null)) {
                 CarpetScriptServer scriptServer = Vanilla.MinecraftServer_getScriptServer(captured.getServer());
                 if (scriptServer.stopAll) return null;
                 for (Map.Entry<EventKey, CarpetEventServer.Callback> action : calls.entrySet()) {

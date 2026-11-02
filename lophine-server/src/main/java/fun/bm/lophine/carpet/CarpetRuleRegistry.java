@@ -3,6 +3,7 @@ package fun.bm.lophine.carpet;
 import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import fun.bm.lophine.carpet.config.modules.WoolHopperCounterConfig;
+import fun.bm.lophine.carpet.org.OrgHiddenPlayerActions;
 import me.earthme.luminol.api.config.annotation.ConfigClassInfo;
 import me.earthme.luminol.api.config.annotation.ConfigInfo;
 import me.earthme.luminol.config.ConfigManager;

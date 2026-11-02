@@ -143,12 +143,12 @@ public class CarpetServerProtocol implements LeavesProtocol {
                 ).withCallback(output::returned);
                 server.getCommands().performPrefixedCommand(commandSource, command);
             });
-            fun.bm.lophine.carpet.AmsNativeCommandEffects.then(actual, result ->
-                    fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(player, () -> {
+            fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(actual, result ->
+                    fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.owned(player, () -> {
                         if (player.hasDisconnected() || player.isRemoved() || !hasClient(player)) return null;
                         CompoundTag response = new CompoundTag();
                         response.put("clientCommand", result);
-                        fun.bm.lophine.carpet.AmsNativeCommandEffects.packet(player,
+                        fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.packet(player,
                                 new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(new CarpetPayload(response)));
                         return (Void) null;
                     }));
@@ -178,7 +178,7 @@ public class CarpetServerProtocol implements LeavesProtocol {
         if (server == null) return;
         ClientSession session = clients.get(playerId);
         if (session == null) return;
-        fun.bm.lophine.carpet.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.AmsNativeCommandEffects.global(server, () -> {
+        fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.global(server, () -> {
             ServerPlayer player = server.getPlayerList().getPlayer(playerId);
             if (player != session.player()) {
                 clients.remove(playerId, session);
@@ -188,9 +188,9 @@ public class CarpetServerProtocol implements LeavesProtocol {
             CarpetRules.write(data);
             return new ServerData(player, data);
         }), snapshot -> snapshot == null ? java.util.concurrent.CompletableFuture.completedFuture(null)
-                : fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(snapshot.player(), () -> {
+                : fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.owned(snapshot.player(), () -> {
             if (clients.get(playerId) == session && !snapshot.player().isRemoved() && !snapshot.player().hasDisconnected())
-                fun.bm.lophine.carpet.AmsNativeCommandEffects.packet(snapshot.player(), new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(new CarpetPayload(snapshot.data())));
+                fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.packet(snapshot.player(), new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(new CarpetPayload(snapshot.data())));
             return (Void) null;
         }));
     }

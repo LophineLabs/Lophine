@@ -4,6 +4,7 @@ package fun.bm.lophine.carpet;
 import carpet.script.external.ScarpetDamageContinuations;
 import carpet.script.external.ScarpetNativeWork;
 import carpet.script.external.ScarpetRuntime;
+import fun.bm.lophine.carpet.tis.TisCommandContinuations;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;

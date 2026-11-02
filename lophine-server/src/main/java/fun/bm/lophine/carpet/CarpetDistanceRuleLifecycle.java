@@ -1,5 +1,6 @@
 package fun.bm.lophine.carpet;
 
+import fun.bm.lophine.carpet.ams.AmsNativeCommandEffects;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import net.minecraft.server.MinecraftServer;
 

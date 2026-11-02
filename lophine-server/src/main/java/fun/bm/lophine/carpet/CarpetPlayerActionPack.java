@@ -2,6 +2,7 @@
 // Adapted from Fabric Carpet revision f358000b175ddbcf1dd0bc59641c715fb0545664.
 package fun.bm.lophine.carpet;
 
+import fun.bm.lophine.carpet.tis.TisCommandContinuations;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -367,7 +368,7 @@ public class CarpetPlayerActionPack {
     }
 
     public void onUpdate() {
-        try (var carpetMicroPhase = fun.bm.lophine.carpet.TisMicroTiming.active() ? fun.bm.lophine.carpet.TisMicroTiming.phase(player.level(), "async_task", "action_pack/" + player.getScoreboardName()) : fun.bm.lophine.carpet.TisMicroTiming.noop()) {
+        try (var carpetMicroPhase = fun.bm.lophine.carpet.tis.TisMicroTiming.active() ? fun.bm.lophine.carpet.tis.TisMicroTiming.phase(player.level(), "async_task", "action_pack/" + player.getScoreboardName()) : fun.bm.lophine.carpet.tis.TisMicroTiming.noop()) {
             ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(player, "Carpet player actions must own their player");
             if (completion.paused() || carpet.script.external.ScarpetPlayerInventoryGate.paused(player)) {
                 player.zza = 0;
@@ -693,7 +694,7 @@ public class CarpetPlayerActionPack {
     public enum ActionType {
         USE(true) {
             @Override
-            boolean execute(ServerPlayer player, Action action) {
+            public boolean execute(ServerPlayer player, Action action) {
                 throw new IllegalStateException("USE actions require their native result continuation");
             }
 
@@ -721,7 +722,7 @@ public class CarpetPlayerActionPack {
         },
         ATTACK(true) {
             @Override
-            boolean execute(ServerPlayer player, Action action) {
+            public boolean execute(ServerPlayer player, Action action) {
                 throw new IllegalStateException("ATTACK actions require their native completion observation");
             }
 
@@ -827,7 +828,7 @@ public class CarpetPlayerActionPack {
         },
         JUMP(true) {
             @Override
-            boolean execute(ServerPlayer player, Action action) {
+            public boolean execute(ServerPlayer player, Action action) {
                 if (action.limit == 1) {
                     if (player.onGround()) player.jumpFromGround();
                     else if (!player.onClimbable()) player.tryToStartFallFlying();
@@ -844,7 +845,7 @@ public class CarpetPlayerActionPack {
         },
         DROP_ITEM(true) {
             @Override
-            boolean execute(ServerPlayer player, Action action) {
+            public boolean execute(ServerPlayer player, Action action) {
                 player.resetLastActionTime();
                 player.drop(false); // dropSelectedItem
                 return false;
@@ -852,7 +853,7 @@ public class CarpetPlayerActionPack {
         },
         DROP_STACK(true) {
             @Override
-            boolean execute(ServerPlayer player, Action action) {
+            public boolean execute(ServerPlayer player, Action action) {
                 player.resetLastActionTime();
                 player.drop(true); // dropSelectedItem
                 return false;
@@ -860,7 +861,7 @@ public class CarpetPlayerActionPack {
         },
         SWAP_HANDS(true) {
             @Override
-            boolean execute(ServerPlayer player, Action action) {
+            public boolean execute(ServerPlayer player, Action action) {
                 player.resetLastActionTime();
                 ItemStack itemStack_1 = player.getItemInHand(InteractionHand.OFF_HAND);
                 player.setItemInHand(InteractionHand.OFF_HAND, player.getItemInHand(InteractionHand.MAIN_HAND));
@@ -878,7 +879,7 @@ public class CarpetPlayerActionPack {
         void start(ServerPlayer player, Action action) {
         }
 
-        abstract boolean execute(ServerPlayer player, Action action);
+        public abstract boolean execute(ServerPlayer player, Action action);
 
         java.util.concurrent.CompletableFuture<Boolean> executeAsync(ServerPlayer player, Action action) {
             return completed(execute(player, action));

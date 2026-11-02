@@ -5,6 +5,7 @@ import carpet.script.external.ScarpetLootActors;
 import carpet.script.external.ScarpetLootConditions;
 import carpet.script.external.ScarpetNativeWork;
 import carpet.script.external.WeakIdentityMap;
+import fun.bm.lophine.carpet.tis.TisCommandContinuations;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LightningBolt;

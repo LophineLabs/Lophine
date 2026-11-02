@@ -1736,7 +1736,7 @@ public class GeneralCompatConfig {
 
     @NeedRun(when = EnumRunnableType.ON_LOADED)
     public void refreshTisDebugConfig() {
-        ultraSecretSetting = fun.bm.lophine.carpet.TisDebugSettings.validateUltra(ultraSecretSetting, appliedUltra, null);
+        ultraSecretSetting = fun.bm.lophine.carpet.tis.TisDebugSettings.validateUltra(ultraSecretSetting, appliedUltra, null);
         appliedUltra = ultraSecretSetting;
     }
 
@@ -1767,13 +1767,13 @@ public class GeneralCompatConfig {
 
     @NeedRun(when = EnumRunnableType.ON_LOADED)
     public void refreshMicroTiming() {
-        String accepted = fun.bm.lophine.carpet.TisMicroTimingMarkers.validateDyeRule(microTimingDyeMarker, appliedMicroDye, null);
+        String accepted = fun.bm.lophine.carpet.tis.TisMicroTimingMarkers.validateDyeRule(microTimingDyeMarker, appliedMicroDye, null);
         microTimingDyeMarker = accepted == null ? appliedMicroDye : accepted;
         if (appliedMicroTiming != microTiming || !appliedMicroDye.equals(microTimingDyeMarker) || !appliedMicroTarget.equals(microTimingTarget)) {
             appliedMicroTiming = microTiming;
             appliedMicroDye = microTimingDyeMarker;
             appliedMicroTarget = microTimingTarget;
-            fun.bm.lophine.carpet.TisMicroTiming.ruleChanged();
+            fun.bm.lophine.carpet.tis.TisMicroTiming.ruleChanged();
         }
     }
 
@@ -1790,7 +1790,7 @@ public class GeneralCompatConfig {
             var server = net.minecraft.server.MinecraftServer.getServer();
             if (server != null && server.isReady()) fun.bm.lophine.carpet.CarpetRuleObservers.enderChestEnabled(server);
         }
-        fun.bm.lophine.carpet.AmsFakePlayers.refresh();
+        fun.bm.lophine.carpet.ams.AmsFakePlayers.refresh();
         fun.bm.lophine.carpet.CarpetDistanceRuleLifecycle.refresh();
         fun.bm.lophine.carpet.CarpetInventoryRuleLifecycle.refresh();
         List<Boolean> recipes = recipeRuleValues();
@@ -1798,7 +1798,7 @@ public class GeneralCompatConfig {
             appliedRecipeRules = recipes;
             net.minecraft.server.MinecraftServer server = net.minecraft.server.MinecraftServer.getServer();
             if (server != null && server.isRunning()) {
-                carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.AmsRecipeLifecycle.changed(server));
+                carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.ams.AmsRecipeLifecycle.changed(server));
             }
         }
         if (appliedStackableDiscounts == null || appliedStackableDiscounts != stackableDiscounts) {

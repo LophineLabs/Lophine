@@ -5,7 +5,7 @@ Subject: [PATCH] Restore vanilla ender pearl loading
 
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 2c8142adcf8827f615a1748ba59ac6da43b3b870..f6877a587a66ec0f78286bb5a16314863bca9645 100644
+index 4a1f464b6e250549f954deb609a9b14cddef677a..0c88741c02622a2e00deb8c8e89af8d8cc2dd1c2 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -281,7 +281,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -75,7 +75,7 @@ index 2c8142adcf8827f615a1748ba59ac6da43b3b870..f6877a587a66ec0f78286bb5a1631486
  
      public Set<ThrownEnderpearl> getEnderPearls() {
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 4a56aa5b4353564ed9a0ca7812b7c9246eda777e..5dd2f820f9b77954422aa66e68921100407c8745 100644
+index cea15af47041ef0c3f79a9b0d2df79e568953d31..09432be8006f8b515386098f003d49e77a1edb1d 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -785,11 +785,13 @@ public abstract class PlayerList {
@@ -245,7 +245,7 @@ index 98001b04d9c7b252fb9fac803ff9cdfafb838d58..53acb2b4de9f7aa1fe35eb408f03d674
                      itemStack.consume(1, player);
                  } else {
 diff --git a/net/minecraft/world/level/block/piston/PistonBaseBlock.java b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
-index d0dbb3897f906a141a8fcca1588737335c3d808a..a5e5f9ac9faab4bf606d4a4ba514578172e1f4bb 100644
+index c9db95c97cad5224e707f4d5cd191ce292a59d39..758982c48559ed1e728cdd9be5373492b3da88ee 100644
 --- a/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 +++ b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 @@ -142,7 +142,7 @@ public class PistonBaseBlock extends DirectionalBlock {

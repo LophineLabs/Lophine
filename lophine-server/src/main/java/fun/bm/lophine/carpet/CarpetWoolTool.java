@@ -3,6 +3,9 @@ package fun.bm.lophine.carpet;
 
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import fun.bm.lophine.carpet.config.modules.WoolHopperCounterConfig;
+import fun.bm.lophine.carpet.org.OrgCommandNativeEffects;
+import fun.bm.lophine.carpet.org.OrgMenuNativeEffects;
+import fun.bm.lophine.carpet.tis.TisCommandContinuations;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;

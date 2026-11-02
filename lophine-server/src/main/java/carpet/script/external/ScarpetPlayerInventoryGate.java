@@ -23,11 +23,11 @@ public final class ScarpetPlayerInventoryGate {
     }
 
     public static boolean paused(ServerPlayer player) {
-        return !ACCEPTED.get().contains(player) && (of(player).paused() || fun.bm.lophine.carpet.CarpetPlayerBirths.playerPending(player) || fun.bm.lophine.carpet.OrgInventoryTransfers.participantBlocked(player));
+        return !ACCEPTED.get().contains(player) && (of(player).paused() || fun.bm.lophine.carpet.CarpetPlayerBirths.playerPending(player) || fun.bm.lophine.carpet.org.OrgInventoryTransfers.participantBlocked(player));
     }
 
     public static CompletableFuture<Void> whenOpen(ServerPlayer player) {
-        return CompletableFuture.allOf(of(player).whenOpen(), fun.bm.lophine.carpet.OrgInventoryTransfers.participantCompletion(player), fun.bm.lophine.carpet.CarpetPlayerBirths.playerCompletion(player));
+        return CompletableFuture.allOf(of(player).whenOpen(), fun.bm.lophine.carpet.org.OrgInventoryTransfers.participantCompletion(player), fun.bm.lophine.carpet.CarpetPlayerBirths.playerCompletion(player));
     }
 
     /**

@@ -5,32 +5,32 @@ Subject: [PATCH] Carpet AMS features
 
 
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java b/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
-index ebec3e3100da251e881ff0562308dfd333f77e9a..34d858aa737127d280d9dcfc3a35836b890c2cef 100644
+index ebec3e3100da251e881ff0562308dfd333f77e9a..8dc55bb7bebd51535df255fd4eb8bd7fcfb874e2 100644
 --- a/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
 @@ -946,6 +946,7 @@ public final class RegionizedPlayerChunkLoader {
              final int sendViewDistance = getSendViewDistance(loadViewDistance, clientViewDistance, playerDistances.sendViewDistance, worldDistances.sendViewDistance);
  
              final ChunkPos playerPos = this.player.chunkPosition();
-+            final boolean carpetLoadsChunks = fun.bm.lophine.carpet.AmsPlayerChunkLoading.loadsChunks(this.player);
++            final boolean carpetLoadsChunks = fun.bm.lophine.carpet.ams.AmsPlayerChunkLoading.loadsChunks(this.player);
              final boolean canGenerateChunks = this.canPlayerGenerateChunks();
              final int currentChunkX = playerPos.x();
              final int currentChunkZ = playerPos.z();
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index a3d5f0211cf9e3b96523e70de6b4365a873c2606..a92792df38a4b21056dc056aa04fbe8cd7d1656c 100644
+index a3d5f0211cf9e3b96523e70de6b4365a873c2606..441a22c296f7f64d77391e9fbf69bfc76a6f237e 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -344,7 +344,13 @@ public class Commands {
          java.util.List<CommandNode<CommandSourceStack>> minecraftNodes = new java.util.ArrayList<>(this.dispatcher.getRoot().getChildren());
  
          fun.bm.lophine.carpet.CarpetCompatCommand.register(this.dispatcher, context);
-+        fun.bm.lophine.carpet.AmsPlayerChunkLoading.register(this.dispatcher);
++        fun.bm.lophine.carpet.ams.AmsPlayerChunkLoading.register(this.dispatcher);
          fun.bm.lophine.carpet.CarpetPlayerCommand.register(this.dispatcher, context);
-+        fun.bm.lophine.carpet.AmsClientQueryCommands.register(this.dispatcher);
-+        fun.bm.lophine.carpet.AmsManagementCommands.register(this.dispatcher, context);
-+        fun.bm.lophine.carpet.AmsAdministratorProtection.apply(this.dispatcher);
-+        fun.bm.lophine.carpet.AmsUpdateSuppressor.register(this.dispatcher);
-+        fun.bm.lophine.carpet.AmsCommandPermissionLevels.apply(this.dispatcher);
++        fun.bm.lophine.carpet.ams.AmsClientQueryCommands.register(this.dispatcher);
++        fun.bm.lophine.carpet.ams.AmsManagementCommands.register(this.dispatcher, context);
++        fun.bm.lophine.carpet.ams.AmsAdministratorProtection.apply(this.dispatcher);
++        fun.bm.lophine.carpet.ams.AmsUpdateSuppressor.register(this.dispatcher);
++        fun.bm.lophine.carpet.ams.AmsCommandPermissionLevels.apply(this.dispatcher);
  
          java.util.List<CommandNode<CommandSourceStack>> carpetNodes = new java.util.ArrayList<>(this.dispatcher.getRoot().getChildren());
          carpetNodes.removeAll(minecraftNodes);
@@ -46,7 +46,7 @@ index a3d5f0211cf9e3b96523e70de6b4365a873c2606..a92792df38a4b21056dc056aa04fbe8c
 +        };
 +        carpet.script.external.ScarpetNativeWork.record(actual);
 +        carpet.script.external.ScarpetNativeWork.trackNative(player.carpetSpawnServer(), actual);
-+        var prepared = fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(player, () -> {
++        var prepared = fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.owned(player, () -> {
 +            RootCommandNode<CommandSourceStack> root = new RootCommandNode<>();
 +            if (org.spigotmc.SpigotConfig.tabComplete < 0) return new CarpetPreparedCommands(root, java.util.List.of(), true);
 +            var children = new java.util.ArrayList<>(this.dispatcher.getRoot().getChildren());
@@ -59,7 +59,7 @@ index a3d5f0211cf9e3b96523e70de6b4365a873c2606..a92792df38a4b21056dc056aa04fbe8c
 +            for (var node : root.getChildren()) labels.add(node.getName());
 +            return new CarpetPreparedCommands(root, labels, false);
 +        });
-+        var built = fun.bm.lophine.carpet.AmsNativeCommandEffects.then(prepared, ready -> {
++        var built = fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(prepared, ready -> {
 +            if (ready.empty()) return java.util.concurrent.CompletableFuture.completedFuture(ready);
 +            var event = new java.util.concurrent.CompletableFuture<Void>();
 +            carpet.script.external.ScarpetNativeWork.record(event);
@@ -76,16 +76,16 @@ index a3d5f0211cf9e3b96523e70de6b4365a873c2606..a92792df38a4b21056dc056aa04fbe8c
 +            try {
 +                COMMAND_SENDING_POOL.execute(new CarpetReloadCommandTask(captured, event));
 +            } catch (Throwable failure) { event.completeExceptionally(failure); }
-+            return fun.bm.lophine.carpet.AmsNativeCommandEffects.then(event, ignored -> java.util.concurrent.CompletableFuture.completedFuture(ready));
++            return fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(event, ignored -> java.util.concurrent.CompletableFuture.completedFuture(ready));
 +        });
-+        var packet = fun.bm.lophine.carpet.AmsNativeCommandEffects.then(built, ready -> fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(player, () -> {
++        var packet = fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(built, ready -> fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.owned(player, () -> {
 +            if (player.hasDisconnected()) return null;
 +            return ready.empty() ? new ClientboundCommandsPacket(ready.root(), COMMAND_NODE_INSPECTOR)
 +                : this.carpetBuildCommandsPacket(player, ready.labels(), ready.root());
 +        }));
-+        var sent = fun.bm.lophine.carpet.AmsNativeCommandEffects.then(packet, ready -> ready == null ? java.util.concurrent.CompletableFuture.<Void>completedFuture(null)
-+            : fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(player, () -> {
-+                if (!player.hasDisconnected()) fun.bm.lophine.carpet.AmsNativeCommandEffects.packet(player, ready);
++        var sent = fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(packet, ready -> ready == null ? java.util.concurrent.CompletableFuture.<Void>completedFuture(null)
++            : fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.owned(player, () -> {
++                if (!player.hasDisconnected()) fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.packet(player, ready);
 +                return (Void)null;
 +            }));
 +        carpet.script.external.ScarpetNativeWork.aliasDependency(actual, sent);
@@ -106,7 +106,7 @@ index a3d5f0211cf9e3b96523e70de6b4365a873c2606..a92792df38a4b21056dc056aa04fbe8c
      public static final java.util.concurrent.ExecutorService COMMAND_SENDING_POOL = new java.util.concurrent.ThreadPoolExecutor(
          2, 2, 0, java.util.concurrent.TimeUnit.MILLISECONDS,
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index cf1d6bb90289f907f342567889f75c434b9134bc..d17329fff3a87db4c7bc7052829103b17fe66416 100644
+index cf1d6bb90289f907f342567889f75c434b9134bc..2404fa6687fc71df8505c87e4f0d1c3c3e1ea74e 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -630,7 +630,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -115,9 +115,9 @@ index cf1d6bb90289f907f342567889f75c434b9134bc..d17329fff3a87db4c7bc7052829103b1
  
 -    protected void loadLevel(final String levelId) { // CraftBukkit
 +    protected void loadLevel(final String levelId) {
-+        fun.bm.lophine.carpet.AmsUpdateSuppressor.load(this);
-+        fun.bm.lophine.carpet.AmsManagementSettings.load(this);
-+        fun.bm.lophine.carpet.AmsCommandPermissionLevels.apply(this.getCommands().getDispatcher()); // CraftBukkit
++        fun.bm.lophine.carpet.ams.AmsUpdateSuppressor.load(this);
++        fun.bm.lophine.carpet.ams.AmsManagementSettings.load(this);
++        fun.bm.lophine.carpet.ams.AmsCommandPermissionLevels.apply(this.getCommands().getDispatcher()); // CraftBukkit
          boolean startedWorldLoadProfiling = !JvmProfiler.INSTANCE.isRunning()
              && SharedConstants.DEBUG_JFR_PROFILING_ENABLE_LEVEL_LOADING
              && JvmProfiler.INSTANCE.start(Environment.from(this));
@@ -125,8 +125,8 @@ index cf1d6bb90289f907f342567889f75c434b9134bc..d17329fff3a87db4c7bc7052829103b1
          fun.bm.lophine.carpet.CarpetProfileService.reset();
          fun.bm.lophine.carpet.CarpetSpawnReporter.reset();
          fun.bm.lophine.carpet.CarpetMobAI.resetTrackers();
-+        fun.bm.lophine.carpet.AmsClientQueryCommands.stopAtShutdown();
-+        fun.bm.lophine.carpet.AmsManagementCommands.reset();
++        fun.bm.lophine.carpet.ams.AmsClientQueryCommands.stopAtShutdown();
++        fun.bm.lophine.carpet.ams.AmsManagementCommands.reset();
          // Folia start - region threading
          // halt scheduler
          // don't wait, we may be on a scheduler thread
@@ -135,7 +135,7 @@ index cf1d6bb90289f907f342567889f75c434b9134bc..d17329fff3a87db4c7bc7052829103b1
          if (!this.hasLoggedStop && this.isDebugging()) io.papermc.paper.util.TraceUtil.dumpTraceForThread("Server stopped"); // Paper - Debugging
          this.shutdownThread = Thread.currentThread(); // Paper - Improved watchdog support
 +        fun.bm.lophine.carpet.CarpetLoggerStorage.flushAtShutdown();
-+        fun.bm.lophine.carpet.AmsManagementSettings.flushAtShutdown();
++        fun.bm.lophine.carpet.ams.AmsManagementSettings.flushAtShutdown();
          org.spigotmc.WatchdogThread.doStop(); // Paper - Improved watchdog support
          // CraftBukkit end
          //this.packetProcessor.close(); // Folia - region threading
@@ -149,7 +149,7 @@ index cf1d6bb90289f907f342567889f75c434b9134bc..d17329fff3a87db4c7bc7052829103b1
          if (false && emptyTickThreshold > 0) { // Folia - region threading - this is complicated to implement, and even if done correctly is messy
              if (this.playerList.getPlayerCount() == 0 && this.botList.bots.isEmpty() && !this.tickRateManager.isSprinting() && this.pluginsBlockingSleep.isEmpty()) { // Paper - API to allow/disallow tick sleeping // Leaves - fakeplayer
 diff --git a/net/minecraft/server/commands/AttributeCommand.java b/net/minecraft/server/commands/AttributeCommand.java
-index 55ca9994b01366dac21903dc8251691c03f1a899..41e34ecc17cf238698f0268e91fb1b56f8b9af2f 100644
+index 55ca9994b01366dac21903dc8251691c03f1a899..553d5db4d117cad52d67d82a14a2dd39f25202b9 100644
 --- a/net/minecraft/server/commands/AttributeCommand.java
 +++ b/net/minecraft/server/commands/AttributeCommand.java
 @@ -344,6 +344,13 @@ public class AttributeCommand {
@@ -160,7 +160,7 @@ index 55ca9994b01366dac21903dc8251691c03f1a899..41e34ecc17cf238698f0268e91fb1b56
 +            &&fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.maxPlayerBlockInteractionRange!=-1D?"maxPlayerBlockInteractionRange":
 +            attribute.equals(net.minecraft.world.entity.ai.attributes.Attributes.ENTITY_INTERACTION_RANGE)
 +            &&fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.maxPlayerEntityInteractionRange!=-1D?"maxPlayerEntityInteractionRange":null;
-+        if(controlled!=null)return fun.bm.lophine.carpet.AmsNativeRangeCommand.controlledSet(source,target,controlled,()->{
++        if(controlled!=null)return fun.bm.lophine.carpet.ams.AmsNativeRangeCommand.controlledSet(source,target,controlled,()->{
 +            try{getAttributeInstance(target,attribute);}catch(CommandSyntaxException failure){throw new java.util.concurrent.CompletionException(failure);}
 +        },getAttributeDescription(attribute),value);
          // Folia start - region threading
@@ -188,14 +188,14 @@ index 2f274eb98a8a46f4e95e1ed1dd1d78d1b6340487..824602c421affc4ea25fec62464f3a17
          GameRules gameRules = source.getLevel().getGameRules();
          String seralizedValue = gameRule.serialize(value);
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
-index 8e7029b560a99003858f09319f89a04f9c458bbb..7bb7ff1c116d25138b853b1a3d3cbd738f264bcd 100644
+index 8e7029b560a99003858f09319f89a04f9c458bbb..03b4614473addb5777434657a51e4865992d7e23 100644
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
 @@ -896,6 +896,9 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
      }
  
      private boolean skipPlayer(final ServerPlayer player) {
-+        if (!fun.bm.lophine.carpet.AmsPlayerChunkLoading.loadsChunks(player)) {
++        if (!fun.bm.lophine.carpet.ams.AmsPlayerChunkLoading.loadsChunks(player)) {
 +            return true;
 +        }
          return player.isSpectator() && !this.level.getGameRules().get(GameRules.SPECTATORS_GENERATE_CHUNKS);
@@ -216,7 +216,7 @@ index fc1b61311c9558905bbb2fc951792251cd0d7d8c..102f8d9b70bec950dd1331b51ed97fc2
          // Lophine start - Global Entities Counter
          if (fun.bm.lophine.config.modules.experiment.GlobalEntitiesCounter.isEnabled()) {
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index ae97dbf23c6f9a32ce1a96158be9a40fb4a537fc..e3e3fcc0248d7daf8c8f375335f229b651af8897 100644
+index ae97dbf23c6f9a32ce1a96158be9a40fb4a537fc..e5a656665c092228b825d15458890ce852721411 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -1358,6 +1358,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -235,7 +235,7 @@ index ae97dbf23c6f9a32ce1a96158be9a40fb4a537fc..e3e3fcc0248d7daf8c8f375335f229b6
          this.getCombatTracker().recheckStatus();
          this.setLastDeathLocation(Optional.of(GlobalPos.of(this.level().dimension(), this.blockPosition())));
          this.connection.markClientUnloadedAfterDeath();
-+        fun.bm.lophine.carpet.AmsServerMessages.deathLocation(this);
++        fun.bm.lophine.carpet.ams.AmsServerMessages.deathLocation(this);
      }
  
      // Lophine Start - Cross Region Damage trace
@@ -256,7 +256,7 @@ index ae97dbf23c6f9a32ce1a96158be9a40fb4a537fc..e3e3fcc0248d7daf8c8f375335f229b6
          this.setShoulderEntityRight(oldPlayer.getShoulderEntityRight());
          this.setLastDeathLocation(oldPlayer.getLastDeathLocation());
          this.waypointIcon().copyFrom(oldPlayer.waypointIcon());
-+        fun.bm.lophine.carpet.AmsManagementCommands.onRespawn(this, restoreAll);
++        fun.bm.lophine.carpet.ams.AmsManagementCommands.onRespawn(this, restoreAll);
          // Lophine start - Carpet features
          // Lophine end - Carpet features
      }
@@ -266,7 +266,7 @@ index ae97dbf23c6f9a32ce1a96158be9a40fb4a537fc..e3e3fcc0248d7daf8c8f375335f229b6
  
 -    public void sendSystemMessage(final Component message, final boolean overlay) {
 +    public void sendSystemMessage(final Component rawMessage, final boolean overlay) {
-+        final Component message = fun.bm.lophine.carpet.AmsTranslations.translate(rawMessage, this);
++        final Component message = fun.bm.lophine.carpet.ams.AmsTranslations.translate(rawMessage, this);
          if (this.acceptsSystemMessages(overlay)) {
              this.connection
                  .send(
@@ -297,19 +297,19 @@ index f8b169dca169b8ba301d8633c8c9f856a9a9418d..2c50a8109d49306eb11f5960e9b359b6
              LOGGER.warn(
                  "Player {} tried to change game mode to {} without required permissions",
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 8eb098cf0f18c1f13154b73f0a43affe2bdc9ead..6260decba5783cb3ed7408bd04755a1ebaeb2f66 100644
+index 8eb098cf0f18c1f13154b73f0a43affe2bdc9ead..0c36efdfae748b8ec8d92d97f7900e39d41ebdb6 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -577,6 +577,7 @@ public abstract class PlayerList {
              );
          }
          // Luminol end
-+        carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.AmsPlayerJoin.join(player, true));
++        carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.ams.AmsPlayerJoin.join(player, true));
      }
  
      public void updateEntireScoreboard(final ServerScoreboard scoreboard, final ServerPlayer player) {
 diff --git a/net/minecraft/stats/ServerRecipeBook.java b/net/minecraft/stats/ServerRecipeBook.java
-index ac3fbaf20c3ed8ca981c9071f1bf95f2ad169f85..bd293da56f78bc7581fcd26f058c79d31f7e1bb3 100644
+index ac3fbaf20c3ed8ca981c9071f1bf95f2ad169f85..03f232bb0e24c530e91e5b6d8a8e75fcaf489bfa 100644
 --- a/net/minecraft/stats/ServerRecipeBook.java
 +++ b/net/minecraft/stats/ServerRecipeBook.java
 @@ -85,6 +85,37 @@ public class ServerRecipeBook extends RecipeBook {
@@ -318,29 +318,29 @@ index ac3fbaf20c3ed8ca981c9071f1bf95f2ad169f85..bd293da56f78bc7581fcd26f058c79d3
  
 +    /** AMS grants one recipe at a time, awaiting each real event, criterion and physical packet. */
 +    public java.util.concurrent.CompletableFuture<Integer> carpetAddRecipeNative(final RecipeHolder<?> recipe, final ServerPlayer player) {
-+        var prepared = fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(player, () -> {
++        var prepared = fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.owned(player, () -> {
 +            ResourceKey<Recipe<?>> id = recipe.id();
 +            if (this.known.contains(id) || recipe.value().isSpecial()) return null;
 +            return org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerRecipeListUpdateEvent(player, recipe);
 +        });
-+        return fun.bm.lophine.carpet.AmsNativeCommandEffects.then(prepared, event -> {
++        return fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(prepared, event -> {
 +            if (event == null) return java.util.concurrent.CompletableFuture.completedFuture(0);
-+            var entries = fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(player, () -> {
++            var entries = fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.owned(player, () -> {
 +                if (event.isCancelled()) return null;
 +                this.add(recipe.id()); this.addHighlight(recipe.id());
 +                List<ClientboundRecipeBookAddPacket.Entry> result = new ArrayList<>();
 +                this.displayResolver.displaysForRecipe(recipe.id(), display -> result.add(new ClientboundRecipeBookAddPacket.Entry(display, event.shouldShowNotification(), true)));
 +                return result;
 +            });
-+            return fun.bm.lophine.carpet.AmsNativeCommandEffects.then(entries, result -> {
++            return fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(entries, result -> {
 +                if (result == null) return java.util.concurrent.CompletableFuture.completedFuture(0);
-+                var criterion = fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(player, () -> {
++                var criterion = fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.owned(player, () -> {
 +                    CriteriaTriggers.RECIPE_UNLOCKED.trigger(player, recipe); return (Void)null;
 +                });
-+                return fun.bm.lophine.carpet.AmsNativeCommandEffects.then(criterion, ignored ->
-+                    fun.bm.lophine.carpet.AmsNativeCommandEffects.owned(player, () -> {
++                return fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.then(criterion, ignored ->
++                    fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.owned(player, () -> {
 +                        if (!result.isEmpty() && player.connection != null)
-+                            return fun.bm.lophine.carpet.AmsNativeCommandEffects.packet(player, new ClientboundRecipeBookAddPacket(result, false)).thenApply(sent -> result.size());
++                            return fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.packet(player, new ClientboundRecipeBookAddPacket(result, false)).thenApply(sent -> result.size());
 +                        return java.util.concurrent.CompletableFuture.completedFuture(result.size());
 +                    }).thenCompose(value -> value));
 +            });
@@ -367,7 +367,7 @@ index 6541fe108f60d2c55a47f0bb5ba3b17f270cd5fa..9ce50c3771e7f4c087245b500dc0432d
              return this.entityData.get(DATA_BABY_ID) ? -1 : 1;
          } else {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index a5a29c08228e88a5ab07bd11480d2b50c1ce28a6..9d43bb7fd0a1b9a4746d4847231656cfd2562f4e 100644
+index a5a29c08228e88a5ab07bd11480d2b50c1ce28a6..d96029a879af52e197dde9d39d5705da51979485 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -807,7 +807,7 @@ public abstract class Entity
@@ -375,7 +375,7 @@ index a5a29c08228e88a5ab07bd11480d2b50c1ce28a6..9d43bb7fd0a1b9a4746d4847231656cf
  
      public Pose getPose() {
 -        return this.entityData.get(DATA_POSE);
-+        return fun.bm.lophine.carpet.AmsManagementSettings.pose(this, this.entityData.get(DATA_POSE));
++        return fun.bm.lophine.carpet.ams.AmsManagementSettings.pose(this, this.entityData.get(DATA_POSE));
      }
  
      public boolean hasPose(final Pose pose) {
@@ -765,7 +765,7 @@ index afb901d6db59ea20ee073970d52f64d16ae23fe1..504e92d575cf87dfb15019e06e6788d0
          }
  
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index c3c5a57829f7cdbefc6a2e4f8cf2b8f0d4b3a40c..6c93cb565becb0a993d55729cf3d5ffaa5f1ef32 100644
+index c3c5a57829f7cdbefc6a2e4f8cf2b8f0d4b3a40c..99f7841a0574a102e423f87905a46793008dd3c4 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
 @@ -331,7 +331,7 @@ public class ItemEntity extends Entity implements TraceableEntity, net.caffeinem
@@ -773,7 +773,7 @@ index c3c5a57829f7cdbefc6a2e4f8cf2b8f0d4b3a40c..6c93cb565becb0a993d55729cf3d5ffa
      @Override
      public boolean fireImmune() {
 -        return !this.getItem().canBeHurtBy(this.damageSources().inFire()) || super.fireImmune();
-+        return fun.bm.lophine.carpet.AmsManagementSettings.antiFire(this.getItem()) || !this.getItem().canBeHurtBy(this.damageSources().inFire()) || super.fireImmune();
++        return fun.bm.lophine.carpet.ams.AmsManagementSettings.antiFire(this.getItem()) || !this.getItem().canBeHurtBy(this.damageSources().inFire()) || super.fireImmune();
      }
  
      @Override
@@ -1192,15 +1192,15 @@ index e12ce879f955e0be98badfade8884663b027fbd0..a943fdf46a23bc17a3c97da7566665ae
  
      public ShulkerBoxMenu(final int containerId, final Inventory inventory, final Container container) {
 diff --git a/net/minecraft/world/inventory/Slot.java b/net/minecraft/world/inventory/Slot.java
-index 1873b9376df57ff73d2a1583b60a512cfff7b998..9132bac5e8aec4cf5cc30d8a1bf8edb0e200c061 100644
+index 1873b9376df57ff73d2a1583b60a512cfff7b998..1879c8f142b7c560a9205f7c130dedfe3cc8b472 100644
 --- a/net/minecraft/world/inventory/Slot.java
 +++ b/net/minecraft/world/inventory/Slot.java
 @@ -42,6 +42,9 @@ public class Slot {
      }
  
      public boolean mayPlace(final ItemStack itemStack) {
-+        if (this.container instanceof fun.bm.lophine.carpet.AmsLargeBundleContainer) {
-+            return fun.bm.lophine.carpet.AmsLargeBundleContainer.canInsert(itemStack);
++        if (this.container instanceof fun.bm.lophine.carpet.ams.AmsLargeBundleContainer) {
++            return fun.bm.lophine.carpet.ams.AmsLargeBundleContainer.canInsert(itemStack);
 +        }
          return true;
      }
@@ -1222,7 +1222,7 @@ index 88de6142f66f158a4425a4cc5d093fdda80b6ebb..a0e29af7a87de56adfc7792b0670f862
                      int y = pos.getY();
                      int z = pos.getZ();
 diff --git a/net/minecraft/world/item/BundleItem.java b/net/minecraft/world/item/BundleItem.java
-index a9f29eb86784c1b846ef7540f1229dcdd76c662c..96fdd4542bea6fd18cbc97cf549785c2662ab438 100644
+index a9f29eb86784c1b846ef7540f1229dcdd76c662c..929a9db2173935e98f1eff5934d66d7cb75f8e68 100644
 --- a/net/minecraft/world/item/BundleItem.java
 +++ b/net/minecraft/world/item/BundleItem.java
 @@ -58,6 +58,9 @@ public class BundleItem extends Item {
@@ -1254,9 +1254,9 @@ index a9f29eb86784c1b846ef7540f1229dcdd76c662c..96fdd4542bea6fd18cbc97cf549785c2
 +                final ItemStack stack = player.getItemInHand(hand);
 +                if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer && level instanceof net.minecraft.server.level.ServerLevel serverLevel
 +                    && carpet.script.external.ScarpetNativeWork.capture() != null) {
-+                    fun.bm.lophine.carpet.AmsNativeCommandEffects.receipt(fun.bm.lophine.carpet.AmsLargeBundleContainer.open(serverLevel, serverPlayer, stack));
++                    fun.bm.lophine.carpet.ams.AmsNativeCommandEffects.receipt(fun.bm.lophine.carpet.ams.AmsLargeBundleContainer.open(serverLevel, serverPlayer, stack));
 +                } else {
-+                    var provider = fun.bm.lophine.carpet.AmsLargeBundleContainer.menuProvider(stack);
++                    var provider = fun.bm.lophine.carpet.ams.AmsLargeBundleContainer.menuProvider(stack);
 +                    level.playSound(player, player.blockPosition(), SoundEvents.BUNDLE_DROP_CONTENTS, SoundSource.PLAYERS, 1.5F, 1.35F);
 +                    player.openMenu(provider);
 +                }
@@ -1611,14 +1611,14 @@ index 6e7fb55543a21c7f48180c7bfb26e13861631d80..589373357284f565c6b6485f0cc7dd97
                              projectile.setOwner(this.damageSource.getEntity());
                          } else if (entity instanceof Player player && !player.isSpectator() && (!player.isCreative() || !player.getAbilities().flying) && !level.paperConfig().environment.disableExplosionKnockback) { // Paper - Option to disable explosion knockback
 diff --git a/net/minecraft/world/level/block/AnvilBlock.java b/net/minecraft/world/level/block/AnvilBlock.java
-index c29881fe5c1652a61cd269fb904285ff686df265..223b572d8defec4e0795ee36f883e4a7579295a0 100644
+index c29881fe5c1652a61cd269fb904285ff686df265..d91f549191c310d49d1ca67837db8469546a926d 100644
 --- a/net/minecraft/world/level/block/AnvilBlock.java
 +++ b/net/minecraft/world/level/block/AnvilBlock.java
 @@ -51,6 +51,7 @@ public class AnvilBlock extends FallingBlock {
      protected InteractionResult useWithoutItem(
          final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult
      ) {
-+        if (fun.bm.lophine.carpet.AmsManagementSettings.anvilDisabled()) return InteractionResult.FAIL;
++        if (fun.bm.lophine.carpet.ams.AmsManagementSettings.anvilDisabled()) return InteractionResult.FAIL;
          if (!level.isClientSide()) {
              if (player.openMenu(state.getMenuProvider(level, pos)).isPresent()) { // Paper - Fix InventoryOpenEvent cancellation
              player.awardStat(Stats.INTERACT_WITH_ANVIL);
@@ -1668,7 +1668,7 @@ index b9ee73d8670c11dc0d62282eead1872647fb3881..893ac9e72619b6882cf47c302a1860be
              ticks.scheduleTick(pos, this, 60 + random.nextInt(40));
          }
 diff --git a/net/minecraft/world/level/block/BellBlock.java b/net/minecraft/world/level/block/BellBlock.java
-index 529445ea1376fe969cde377f8f2f5c1704a076b8..12c139537888b411613db0da289d4eeec5b19720 100644
+index 529445ea1376fe969cde377f8f2f5c1704a076b8..bbd19971f2937c2f7afce841503b899c89179ffa 100644
 --- a/net/minecraft/world/level/block/BellBlock.java
 +++ b/net/minecraft/world/level/block/BellBlock.java
 @@ -132,6 +132,9 @@ public class BellBlock extends BaseEntityBlock {
@@ -1676,13 +1676,13 @@ index 529445ea1376fe969cde377f8f2f5c1704a076b8..12c139537888b411613db0da289d4eee
  
      public boolean attemptToRing(final @Nullable Entity ringingEntity, final Level level, final BlockPos pos, @Nullable Direction direction) {
 +        if (level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
-+            fun.bm.lophine.carpet.AmsBlockChunkLoaders.bell(serverLevel, pos);
++            fun.bm.lophine.carpet.ams.AmsBlockChunkLoaders.bell(serverLevel, pos);
 +        }
          if (!level.isClientSide() && level.getBlockEntity(pos) instanceof BellBlockEntity bellBlockEntity) {
              if (direction == null) {
                  direction = level.getBlockState(pos).getValue(FACING);
 diff --git a/net/minecraft/world/level/block/Block.java b/net/minecraft/world/level/block/Block.java
-index 52f020db6064a09ba2f81bb4930d11b3dd23c005..0890bc59c10fc154651762852721ea3f2869c58b 100644
+index 52f020db6064a09ba2f81bb4930d11b3dd23c005..be7b57a638bbc53a1cd7bc49861aa807b055243e 100644
 --- a/net/minecraft/world/level/block/Block.java
 +++ b/net/minecraft/world/level/block/Block.java
 @@ -504,7 +504,13 @@ public class Block extends BlockBehaviour implements ItemLike {
@@ -1696,7 +1696,7 @@ index 52f020db6064a09ba2f81bb4930d11b3dd23c005..0890bc59c10fc154651762852721ea3f
 +            && this != Blocks.END_PORTAL_FRAME && this != Blocks.END_PORTAL && this != Blocks.END_GATEWAY) {
 +            return (float) fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.enhancedWorldEater;
 +        }
-+        return fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.blowUpEverything ? original : fun.bm.lophine.carpet.AmsManagementSettings.resistance(this.defaultBlockState(), original);
++        return fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.blowUpEverything ? original : fun.bm.lophine.carpet.ams.AmsManagementSettings.resistance(this.defaultBlockState(), original);
      }
  
      public void wasExploded(final ServerLevel level, final BlockPos pos, final Explosion explosion) {
@@ -1771,7 +1771,7 @@ index fabf3dca600862410aa0cafd396dbf1905975b83..1f2fe6f6b9b8e990f86cc6df3f37614f
      }
  
 diff --git a/net/minecraft/world/level/block/CarvedPumpkinBlock.java b/net/minecraft/world/level/block/CarvedPumpkinBlock.java
-index 5f08034e9fba6c00ff6ce8d0a0a2605cc74e67a1..f9ff6e40214dff51feea4e172489f252f5611222 100644
+index 5f08034e9fba6c00ff6ce8d0a0a2605cc74e67a1..40545d4825c9859f1cde856c21c0e3f8b1d174b9 100644
 --- a/net/minecraft/world/level/block/CarvedPumpkinBlock.java
 +++ b/net/minecraft/world/level/block/CarvedPumpkinBlock.java
 @@ -161,6 +161,13 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
@@ -1781,7 +1781,7 @@ index 5f08034e9fba6c00ff6ce8d0a0a2605cc74e67a1..f9ff6e40214dff51feea4e172489f252
 +    // Lophine start - Carpet features
 +    private void trySpawnShulkerGolem(Level level, BlockPos pos) {
 +        if(fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.shulkerGolem)
-+            fun.bm.lophine.carpet.AmsNativeShulkerGolem.spawn((net.minecraft.server.level.ServerLevel)level,pos);
++            fun.bm.lophine.carpet.ams.AmsNativeShulkerGolem.spawn((net.minecraft.server.level.ServerLevel)level,pos);
 +    }
 +
 +    // Lophine end - Carpet features
@@ -1919,7 +1919,7 @@ index b4e69859f4b71b7a8f35f9671a9d2679e7a80129..ce68f8f723cf24b5a3d8c57bc2bb1d88
  
      protected boolean canAttachTo(final BlockState state) {
 diff --git a/net/minecraft/world/level/block/NetherPortalBlock.java b/net/minecraft/world/level/block/NetherPortalBlock.java
-index 8233ff519692cb827d797c534015ed62937731bc..9a98a8d0438e9e541cf2350372c60ee4a9353373 100644
+index 8233ff519692cb827d797c534015ed62937731bc..852735a6fbd3af4974f5b3d8c450c981a18d43ab 100644
 --- a/net/minecraft/world/level/block/NetherPortalBlock.java
 +++ b/net/minecraft/world/level/block/NetherPortalBlock.java
 @@ -103,6 +103,7 @@ public class NetherPortalBlock extends Block implements Portal {
@@ -1935,7 +1935,7 @@ index 8233ff519692cb827d797c534015ed62937731bc..9a98a8d0438e9e541cf2350372c60ee4
      ) {
          if (!new io.papermc.paper.event.entity.EntityInsideBlockEvent(entity.getBukkitEntity(), org.bukkit.craftbukkit.block.CraftBlock.at(level, pos)).callEvent()) { return; } // Paper - Add EntityInsideBlockEvent
 -        if (entity.canUsePortal(false)) {
-+        if (!fun.bm.lophine.carpet.AmsManagementSettings.noPortal(entity) && entity.canUsePortal(false)) {
++        if (!fun.bm.lophine.carpet.ams.AmsManagementSettings.noPortal(entity) && entity.canUsePortal(false)) {
              // CraftBukkit start - Entity in portal
              org.bukkit.event.entity.EntityPortalEnterEvent event = new org.bukkit.event.entity.EntityPortalEnterEvent(entity.getBukkitEntity(), org.bukkit.craftbukkit.util.CraftLocation.toBukkit(pos, level), org.bukkit.PortalType.NETHER); // Paper - add portal type
              level.getCraftServer().getPluginManager().callEvent(event);
@@ -1953,7 +1953,7 @@ index 8233ff519692cb827d797c534015ed62937731bc..9a98a8d0438e9e541cf2350372c60ee4
              Optional<BlockUtil.FoundRectangle> createdExit = newLevel.getPortalForcer().createPortal(approximateExitPos, sourcePortalAxis, entity, result.createRadius()); // CraftBukkit
              if (createdExit.isEmpty()) {
 diff --git a/net/minecraft/world/level/block/NoteBlock.java b/net/minecraft/world/level/block/NoteBlock.java
-index fab033a193debf323d198abcca347ef71e7c2b7b..33436b2201ba53f24c77bbf3f6648199950c3dfd 100644
+index fab033a193debf323d198abcca347ef71e7c2b7b..ad3d74b994340b8766cdf8544a522b16adef6ecd 100644
 --- a/net/minecraft/world/level/block/NoteBlock.java
 +++ b/net/minecraft/world/level/block/NoteBlock.java
 @@ -101,6 +101,9 @@ public class NoteBlock extends Block {
@@ -1961,7 +1961,7 @@ index fab033a193debf323d198abcca347ef71e7c2b7b..33436b2201ba53f24c77bbf3f6648199
  
      private void playNote(final @Nullable Entity source, final BlockState state, final Level level, final BlockPos pos) {
 +        if (level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
-+            fun.bm.lophine.carpet.AmsBlockChunkLoaders.note(serverLevel, pos);
++            fun.bm.lophine.carpet.ams.AmsBlockChunkLoaders.note(serverLevel, pos);
 +        }
          if (state.getValue(INSTRUMENT).worksAboveNoteBlock() || level.getBlockState(pos.above()).isAir()) {
              level.blockEvent(pos, this, 0, 0);
@@ -2140,7 +2140,7 @@ index 87e20e38ccff1a28ee65c2489e17e881fc123324..adb808a8e6c9c898f7a030a21f6dcb22
      private ShulkerBoxBlockEntity.AnimationStatus animationStatus = ShulkerBoxBlockEntity.AnimationStatus.CLOSED;
      private float progress;
 diff --git a/net/minecraft/world/level/block/piston/PistonBaseBlock.java b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
-index 437cb20fcf26f1bb6e4dd6f82796bf32b2b7ba9f..a27a55c8bd57178917d5f3dae74a8f460bafae96 100644
+index 437cb20fcf26f1bb6e4dd6f82796bf32b2b7ba9f..5f08a011dd6bdd0191db6d1ef11336714bc266ce 100644
 --- a/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 +++ b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 @@ -134,6 +134,9 @@ public class PistonBaseBlock extends DirectionalBlock {
@@ -2148,7 +2148,7 @@ index 437cb20fcf26f1bb6e4dd6f82796bf32b2b7ba9f..a27a55c8bd57178917d5f3dae74a8f46
      @Override
      protected boolean triggerEvent(final BlockState state, final Level level, final BlockPos pos, final int b0, final int b1) {
 +        if (level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
-+            fun.bm.lophine.carpet.AmsBlockChunkLoaders.piston(serverLevel, pos, state);
++            fun.bm.lophine.carpet.ams.AmsBlockChunkLoaders.piston(serverLevel, pos, state);
 +        }
          Direction direction = state.getValue(FACING);
          // Paper start - Protect Bedrock and End Portal/Frames from being destroyed; prevent retracting when we're facing the wrong way (we were replaced before retraction could occur)
@@ -2158,7 +2158,7 @@ index 437cb20fcf26f1bb6e4dd6f82796bf32b2b7ba9f..a27a55c8bd57178917d5f3dae74a8f46
          final Direction connectionDirection
      ) {
 +        if (!carpetOwns(level, pos) || !carpetOwns(level, pos.relative(direction))) return false;
-+        if (fun.bm.lophine.carpet.AmsManagementSettings.customMovable(state)
++        if (fun.bm.lophine.carpet.ams.AmsManagementSettings.customMovable(state)
 +            && !(level.getBlockEntity(pos) instanceof net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity)) {
 +            return !(direction == Direction.DOWN && pos.getY() == level.getMinY())
 +                && !(direction == Direction.UP && pos.getY() == level.getMaxY());
@@ -2171,7 +2171,7 @@ index 437cb20fcf26f1bb6e4dd6f82796bf32b2b7ba9f..a27a55c8bd57178917d5f3dae74a8f46
  
          if (!state.is(Blocks.PISTON) && !state.is(Blocks.STICKY_PISTON)) {
 -            if (state.is(Blocks.BEDROCK) || state.getDestroySpeed(level, pos) == -1.0F
-+            if (state.is(Blocks.BEDROCK) || (fun.bm.lophine.carpet.AmsManagementSettings.enabledHardness() ? state.getBlock().defaultDestroyTime() : state.getDestroySpeed(level, pos)) == -1.0F
++            if (state.is(Blocks.BEDROCK) || (fun.bm.lophine.carpet.ams.AmsManagementSettings.enabledHardness() ? state.getBlock().defaultDestroyTime() : state.getDestroySpeed(level, pos)) == -1.0F
                  && !(fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.movableBlockEntities && state.getBlock() instanceof net.minecraft.world.level.block.CommandBlock)) {
                  return false;
              }
@@ -2180,19 +2180,19 @@ index 437cb20fcf26f1bb6e4dd6f82796bf32b2b7ba9f..a27a55c8bd57178917d5f3dae74a8f46
          for (int i = 0; i < toPush.size(); i++) {
              BlockPos sourcePos = toPush.get(i);
 -            BlockEntity carried = carpetCarry && toPushShapes.get(i).hasBlockEntity() ? level.getBlockEntity(sourcePos) : null;
-+            BlockEntity carried = (carpetCarry || fun.bm.lophine.carpet.AmsManagementSettings.customMovable(toPushShapes.get(i))) && toPushShapes.get(i).hasBlockEntity() ? level.getBlockEntity(sourcePos) : null;
++            BlockEntity carried = (carpetCarry || fun.bm.lophine.carpet.ams.AmsManagementSettings.customMovable(toPushShapes.get(i))) && toPushShapes.get(i).hasBlockEntity() ? level.getBlockEntity(sourcePos) : null;
              carpetCarriedEntities.add(carried);
              if (carried != null) {
                  level.removeBlockEntity(sourcePos);
 diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
-index c716c0d5760b1dbda035f420003e83e3b61dee14..47ae74113ae21e51a83fa62d552d7646fe48a7dc 100644
+index c716c0d5760b1dbda035f420003e83e3b61dee14..df11661c5c3d9a0e880b585b1933e9fb9ae097c6 100644
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
 @@ -157,6 +157,7 @@ public abstract class BlockBehaviour implements FeatureElement, net.caffeinemc.m
      protected void neighborChanged(
          final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston
      ) {
-+        fun.bm.lophine.carpet.AmsUpdateSuppressor.neighborChanged(state, level, pos, block);
++        fun.bm.lophine.carpet.ams.AmsUpdateSuppressor.neighborChanged(state, level, pos, block);
      }
  
      protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
@@ -2201,7 +2201,7 @@ index c716c0d5760b1dbda035f420003e83e3b61dee14..47ae74113ae21e51a83fa62d552d7646
  
          public float getDestroySpeed(final BlockGetter level, final BlockPos pos) {
 -            return this.destroySpeed;
-+            if (fun.bm.lophine.carpet.AmsManagementSettings.hasHardness(this.asState())) return fun.bm.lophine.carpet.AmsManagementSettings.hardness(this.asState(), this.destroySpeed);
++            if (fun.bm.lophine.carpet.ams.AmsManagementSettings.hasHardness(this.asState())) return fun.bm.lophine.carpet.ams.AmsManagementSettings.hardness(this.asState(), this.destroySpeed);
 +            if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.customizedNetherPortal && this.getBlock() instanceof net.minecraft.world.level.block.NetherPortalBlock) {
 +                return 0.518F;
 +            }
@@ -2351,14 +2351,14 @@ index 9c58323e78c889d299a264a5774277eba08ba56d..007bdc63b15cd5801ff027a2708fb452
              }
              if (eggEvent.callEvent()) {
 diff --git a/net/minecraft/world/level/levelgen/PhantomSpawner.java b/net/minecraft/world/level/levelgen/PhantomSpawner.java
-index ec3a437bd8a7d0e95e1e5fa0ff4462a70391ecf9..d32152b1289922abc6f29feb55cc8c0f8ab954a3 100644
+index ec3a437bd8a7d0e95e1e5fa0ff4462a70391ecf9..adc4f77d8d362da78aee3ce0598e8a34c2fa316c 100644
 --- a/net/minecraft/world/level/levelgen/PhantomSpawner.java
 +++ b/net/minecraft/world/level/levelgen/PhantomSpawner.java
 @@ -78,6 +78,7 @@ public class PhantomSpawner implements CustomSpawner {
                                                          phantom.spawningEntity = player.getUUID(); // Paper - PhantomPreSpawnEvent
                                                          phantom.snapTo(spawnPos, 0.0F, 0.0F);
                                                          groupData = phantom.finalizeSpawn(level, difficulty, EntitySpawnReason.NATURAL, groupData);
-+                                                        fun.bm.lophine.carpet.AmsServerMessages.phantomSpawn(level.getServer(), player.getGameProfile().name(), phantom.getX(), phantom.getY(), phantom.getZ());
++                                                        fun.bm.lophine.carpet.ams.AmsServerMessages.phantomSpawn(level.getServer(), player.getGameProfile().name(), phantom.getX(), phantom.getY(), phantom.getZ());
                                                          level.addFreshEntityWithPassengers(phantom, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.NATURAL); // CraftBukkit
                                                      }
                                                  }
@@ -2427,7 +2427,7 @@ index e4bd972f63b5b2c90ad77fce8d1325f7f69589e4..c5065b469884b27ab1ec98b26d9c9773
          BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
  
 diff --git a/net/minecraft/world/level/material/FluidState.java b/net/minecraft/world/level/material/FluidState.java
-index 385408597bff901e8017dd224a34e016dfd16488..f0ed92d46a743e4dfc2b817e3d7819a5a3d4b29f 100644
+index 385408597bff901e8017dd224a34e016dfd16488..97bbcb7f8dcf41aa36272ec317c7abbc33decf1b 100644
 --- a/net/minecraft/world/level/material/FluidState.java
 +++ b/net/minecraft/world/level/material/FluidState.java
 @@ -187,7 +187,7 @@ public final class FluidState extends StateHolder<Fluid, FluidState> implements
@@ -2435,7 +2435,7 @@ index 385408597bff901e8017dd224a34e016dfd16488..f0ed92d46a743e4dfc2b817e3d7819a5
  
      public float getExplosionResistance() {
 -        return this.getType().getExplosionResistance();
-+        return fun.bm.lophine.carpet.AmsManagementSettings.resistance(this.createLegacyBlock(), this.getType().getExplosionResistance());
++        return fun.bm.lophine.carpet.ams.AmsManagementSettings.resistance(this.createLegacyBlock(), this.getType().getExplosionResistance());
      }
  
      public boolean canBeReplacedWith(final BlockGetter level, final BlockPos pos, final Fluid other, final Direction direction) {

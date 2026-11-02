@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 package fun.bm.lophine.carpet;
 
+import fun.bm.lophine.carpet.org.OrgCommandNativeEffects;
+import fun.bm.lophine.carpet.org.OrgMenuNativeEffects;
+import fun.bm.lophine.carpet.tis.TisCommandContinuations;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;

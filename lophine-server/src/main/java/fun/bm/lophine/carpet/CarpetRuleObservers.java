@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 package fun.bm.lophine.carpet;
 
+import fun.bm.lophine.carpet.ams.AmsNativeCommandEffects;
+import fun.bm.lophine.carpet.ams.AmsTranslations;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;

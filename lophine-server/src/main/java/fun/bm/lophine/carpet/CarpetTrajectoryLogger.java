@@ -2,6 +2,7 @@
 // Adapted from fabric-carpet f358000, carpet.logging.logHelpers.TrajectoryLogHelper.
 package fun.bm.lophine.carpet;
 
+import fun.bm.lophine.carpet.tis.TisProjectileVisualizer;
 import fun.bm.lophine.protocol.CarpetLoggerProtocol;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;

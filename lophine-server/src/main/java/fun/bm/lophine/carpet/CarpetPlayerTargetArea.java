@@ -28,14 +28,14 @@ public final class CarpetPlayerTargetArea implements AutoCloseable {
     /**
      * The caller retries on its next real owner tick without consuming an action attempt.
      */
-    static final class Pending extends RuntimeException {
-        Pending() {
+    public static final class Pending extends RuntimeException {
+        public Pending() {
             super("Player action footprint is not owned and loaded yet", null, false, false);
         }
     }
 
     public record Bounds(int minX, int minZ, int maxX, int maxZ) {
-        static Bounds query(AABB box) {
+        public static Bounds query(AABB box) {
             // Exact extra chunk search used by native Moonrise EntityLookup.getEntities.
             return new Bounds((Mth.floor(box.minX) - 2) >> 4, (Mth.floor(box.minZ) - 2) >> 4,
                     (Mth.floor(box.maxX) + 2) >> 4, (Mth.floor(box.maxZ) + 2) >> 4);

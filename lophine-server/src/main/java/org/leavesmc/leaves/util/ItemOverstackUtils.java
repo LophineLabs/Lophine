@@ -145,7 +145,7 @@ public class ItemOverstackUtils {
 
         public static boolean shulkerBoxNoItem(@NotNull ItemStack stack) {
             // Leaves - Paper 26.1: ItemContainerContents#stream() removed, use nonEmptyItemCopyStream()
-            return fun.bm.lophine.carpet.OrgGameplayHelper.emptyContainer(stack.getComponents().getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY));
+            return fun.bm.lophine.carpet.org.OrgGameplayHelper.emptyContainer(stack.getComponents().getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY));
         }
 
         @Override

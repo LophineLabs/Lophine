@@ -2,7 +2,7 @@
 package carpet.script.external;
 
 import ca.spottedleaf.moonrise.common.util.TickThread;
-import fun.bm.lophine.carpet.OrgItemShadowGroups;
+import fun.bm.lophine.carpet.org.OrgItemShadowGroups;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;

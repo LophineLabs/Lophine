@@ -38,14 +38,14 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
         registerLogger("tnt", "brief", List.of("brief", "full"), true);
         registerLogger("projectiles", "brief", List.of("brief", "full", "visualize"), false);
         registerLogger("fallingBlocks", "brief", List.of("brief", "full"), false);
-        fun.bm.lophine.carpet.TisRaidCommand.registerLogger();
-        fun.bm.lophine.carpet.TisXpCounter.registerLogger();
-        fun.bm.lophine.carpet.TisSamplingLoggers.registerLoggers();
-        fun.bm.lophine.carpet.TisMovementLogger.registerLogger();
-        fun.bm.lophine.carpet.TisLifetimeTracker.registerLogger();
-        fun.bm.lophine.carpet.TisMicroTiming.registerLogger();
+        fun.bm.lophine.carpet.tis.TisRaidCommand.registerLogger();
+        fun.bm.lophine.carpet.tis.TisXpCounter.registerLogger();
+        fun.bm.lophine.carpet.tis.TisSamplingLoggers.registerLoggers();
+        fun.bm.lophine.carpet.tis.TisMovementLogger.registerLogger();
+        fun.bm.lophine.carpet.tis.TisLifetimeTracker.registerLogger();
+        fun.bm.lophine.carpet.tis.TisMicroTiming.registerLogger();
         fun.bm.lophine.carpet.CarpetPathfindingLogger.registerLogger();
-        fun.bm.lophine.carpet.OrgHiddenPathProtocol.registerLogger();
+        fun.bm.lophine.carpet.org.OrgHiddenPathProtocol.registerLogger();
         fun.bm.lophine.carpet.CarpetExplosionLogger.registerLogger();
         registerLogger("mobcaps", "dynamic", List.of("dynamic", "overworld", "nether", "end"), false);
         registerLogger("counter", "white", Arrays.stream(DyeColor.values()).map(DyeColor::getName).toList(), false);
@@ -67,7 +67,7 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
 
     public static LoggerOptions loggerOptions(String name) {
         if ("lifetime".equals(name))
-            return new LoggerOptions("", fun.bm.lophine.carpet.TisLifetimeTracker.loggerOptions(), false);
+            return new LoggerOptions("", fun.bm.lophine.carpet.tis.TisLifetimeTracker.loggerOptions(), false);
         LoggerOptions options = LOGGERS.get(name);
         if (options == null) throw new IllegalArgumentException("Unknown logger: " + name);
         return options;
@@ -162,14 +162,14 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
     }
 
     private static void refreshMicroShapes(String name) {
-        fun.bm.lophine.carpet.OrgHiddenPathProtocol.subscriptionChanged(name);
+        fun.bm.lophine.carpet.org.OrgHiddenPathProtocol.subscriptionChanged(name);
         MinecraftServer server = MinecraftServer.getServer();
         if (server == null || server.getPlayerList() == null) return;
         ServerPlayer player = server.getPlayerList().getPlayerByName(name);
         if (player != null) player.getBukkitEntity().taskScheduler.schedule(entity -> {
             if (subscriptions(name).containsKey("microTiming"))
-                fun.bm.lophine.carpet.TisMicroTimingMarkers.subscribed((ServerPlayer) entity);
-            else fun.bm.lophine.carpet.TisMicroTimingMarkers.unsubscribed((ServerPlayer) entity);
+                fun.bm.lophine.carpet.tis.TisMicroTimingMarkers.subscribed((ServerPlayer) entity);
+            else fun.bm.lophine.carpet.tis.TisMicroTimingMarkers.unsubscribed((ServerPlayer) entity);
         }, null, 1L);
     }
 
@@ -219,7 +219,7 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
                 restored.forEach((logger, option) -> {
                     LoggerOptions definition = LOGGERS.get(logger);
                     if (definition == null) return;
-                    if (logger.equals("movement") && !fun.bm.lophine.carpet.TisMovementLogger.canSubscribe(player.createCommandSourceStack()))
+                    if (logger.equals("movement") && !fun.bm.lophine.carpet.tis.TisMovementLogger.canSubscribe(player.createCommandSourceStack()))
                         return;
                     String value = option.isEmpty() ? definition.defaultOption() : option;
                     if (!definition.strict() || definition.options().contains(value)) accepted.put(logger, value);
@@ -232,30 +232,30 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
         }
         // Join hooks can execute before the entity tick begins; capture on its owner.
         player.getBukkitEntity().taskScheduler.schedule(entity -> {
-            fun.bm.lophine.carpet.TisMovementLogger.capture((ServerPlayer) entity);
+            fun.bm.lophine.carpet.tis.TisMovementLogger.capture((ServerPlayer) entity);
             if (subscriptions(name).containsKey("microTiming"))
-                fun.bm.lophine.carpet.TisMicroTimingMarkers.subscribed((ServerPlayer) entity);
+                fun.bm.lophine.carpet.tis.TisMicroTimingMarkers.subscribed((ServerPlayer) entity);
         }, null, 1L);
     }
 
     @ProtocolHandler.PlayerLeave
     public static void onPlayerLeave(ServerPlayer player) {
         ONLINE_PLAYERS.remove(player.getScoreboardName());
-        fun.bm.lophine.carpet.TisMicroTimingMarkers.playerLeft(player.getUUID());
-        fun.bm.lophine.carpet.TisMovementLogger.remove(player);
+        fun.bm.lophine.carpet.tis.TisMicroTimingMarkers.playerLeft(player.getUUID());
+        fun.bm.lophine.carpet.tis.TisMovementLogger.remove(player);
         clearHud(player);
     }
 
     public static void onGlobalTick(long tick) {
-        fun.bm.lophine.carpet.OrgPlayerManagerLifecycle.tick(MinecraftServer.getServer());
+        fun.bm.lophine.carpet.org.OrgPlayerManagerLifecycle.tick(MinecraftServer.getServer());
         carpet.script.external.ScarpetRuntime.globalTick(MinecraftServer.getServer());
         fun.bm.lophine.carpet.CarpetServerClock.refresh(MinecraftServer.getServer());
         fun.bm.lophine.carpet.CarpetMobcaps.globalTick(MinecraftServer.getServer());
-        fun.bm.lophine.carpet.TisSamplingLoggers.globalTick(MinecraftServer.getServer());
-        fun.bm.lophine.carpet.TisMovementLogger.globalTick(MinecraftServer.getServer());
-        fun.bm.lophine.carpet.TisMicroTimingMarkers.globalTick(MinecraftServer.getServer());
-        fun.bm.lophine.carpet.AmsManagementCommands.tick(MinecraftServer.getServer(), tick);
-        fun.bm.lophine.carpet.AmsCommandPermissionLevels.tick(MinecraftServer.getServer(), tick);
+        fun.bm.lophine.carpet.tis.TisSamplingLoggers.globalTick(MinecraftServer.getServer());
+        fun.bm.lophine.carpet.tis.TisMovementLogger.globalTick(MinecraftServer.getServer());
+        fun.bm.lophine.carpet.tis.TisMicroTimingMarkers.globalTick(MinecraftServer.getServer());
+        fun.bm.lophine.carpet.ams.AmsManagementCommands.tick(MinecraftServer.getServer(), tick);
+        fun.bm.lophine.carpet.ams.AmsCommandPermissionLevels.tick(MinecraftServer.getServer(), tick);
         int interval = Math.clamp(GeneralCompatConfig.HUDLoggerUpdateInterval, 1, 1000);
         if (tick % interval == 0L) onHudTick();
     }
@@ -305,10 +305,11 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
                     }
                 }
                 case "counter" -> lines.addAll(buildCounterLines(server, option));
-                case "entityIdCounter" -> lines.addAll(fun.bm.lophine.carpet.TisSamplingLoggers.entityHud(option));
-                case "lightQueue" -> lines.addAll(fun.bm.lophine.carpet.TisSamplingLoggers.lightHud(option, player));
-                case "xcounter" -> lines.addAll(fun.bm.lophine.carpet.TisXpCounter.hud(option, server));
-                case "lifetime" -> lines.addAll(fun.bm.lophine.carpet.TisLifetimeTracker.hud(option, player));
+                case "entityIdCounter" -> lines.addAll(fun.bm.lophine.carpet.tis.TisSamplingLoggers.entityHud(option));
+                case "lightQueue" ->
+                        lines.addAll(fun.bm.lophine.carpet.tis.TisSamplingLoggers.lightHud(option, player));
+                case "xcounter" -> lines.addAll(fun.bm.lophine.carpet.tis.TisXpCounter.hud(option, server));
+                case "lifetime" -> lines.addAll(fun.bm.lophine.carpet.tis.TisLifetimeTracker.hud(option, player));
                 default -> {
                 }
             }
@@ -327,7 +328,7 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
             footer.append(scriptFooter);
         }
         var header = carpet.script.external.ScarpetRuntime.HEADERS.getOrDefault(player.getScoreboardName(), net.minecraft.network.chat.Component.empty());
-        player.connection.send(new ClientboundTabListPacket(fun.bm.lophine.carpet.TisTranslations.translate(header, player), fun.bm.lophine.carpet.TisTranslations.translate(footer, player)));
+        player.connection.send(new ClientboundTabListPacket(fun.bm.lophine.carpet.tis.TisTranslations.translate(header, player), fun.bm.lophine.carpet.tis.TisTranslations.translate(footer, player)));
     }
 
     public static void sendScarpetHud(ServerPlayer player) {

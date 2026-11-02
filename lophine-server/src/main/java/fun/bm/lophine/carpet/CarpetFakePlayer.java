@@ -19,6 +19,8 @@ package fun.bm.lophine.carpet;
 
 import com.mojang.authlib.GameProfile;
 import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
+import fun.bm.lophine.carpet.org.OrgFakePlayerInventory;
+import fun.bm.lophine.carpet.org.OrgPlayerInventoryMenus;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -123,7 +125,7 @@ public class CarpetFakePlayer extends ServerPlayer {
                 this.carpetShutdownActions == null ? this.carpetActionPack.save() : this.carpetShutdownActions.copy());
     }
 
-    void preserveShutdownActions(CompoundTag actions) {
+    public void preserveShutdownActions(CompoundTag actions) {
         ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(this, "Shutdown action metadata requires its owner");
         if (!carpet.script.external.ScarpetNativeWork.isDraining(this.level().getServer()))
             throw new IllegalStateException("Resumable shutdown actions can only be frozen while draining");

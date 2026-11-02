@@ -71,8 +71,8 @@ public class TISCMProtocol implements LeavesProtocol {
             case HI -> handleHi(player, payload.nbt());
             case SUPPORTED_S2C_PACKETS -> handleSupportedS2CPackets(player, payload.nbt());
             case SPEED_TEST_UPLOAD_PAYLOAD ->
-                    fun.bm.lophine.carpet.TisSpeedTestCommand.handleUpload(player, payload.nbt());
-            case SPEED_TEST_PING -> fun.bm.lophine.carpet.TisSpeedTestCommand.handlePing(player, payload.nbt());
+                    fun.bm.lophine.carpet.tis.TisSpeedTestCommand.handleUpload(player, payload.nbt());
+            case SPEED_TEST_PING -> fun.bm.lophine.carpet.tis.TisSpeedTestCommand.handlePing(player, payload.nbt());
             default -> {
             }
         }
@@ -81,7 +81,7 @@ public class TISCMProtocol implements LeavesProtocol {
     @ProtocolHandler.PlayerLeave
     public static void onPlayerLeave(ServerPlayer player) {
         CLIENT_SUPPORTED_PACKETS.remove(player.getStringUUID());
-        fun.bm.lophine.carpet.TisSpeedTestCommand.disconnected(player);
+        fun.bm.lophine.carpet.tis.TisSpeedTestCommand.disconnected(player);
     }
 
     private static void handleHi(ServerPlayer player, CompoundTag payload) {

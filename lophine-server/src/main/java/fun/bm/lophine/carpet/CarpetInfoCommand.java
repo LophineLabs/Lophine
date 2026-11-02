@@ -3,6 +3,8 @@ package fun.bm.lophine.carpet;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import fun.bm.lophine.carpet.org.OrgCommandNativeEffects;
+import fun.bm.lophine.carpet.tis.TisCommandContinuations;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;

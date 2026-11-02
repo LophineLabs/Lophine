@@ -7,6 +7,7 @@ import carpet.script.external.ScarpetNativeWork;
 import carpet.script.external.ScarpetRetiredActors;
 import carpet.script.external.ScarpetRuntime;
 import com.mojang.serialization.*;
+import fun.bm.lophine.carpet.tis.TisLifetimeTracker;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.UUIDUtil;

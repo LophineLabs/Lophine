@@ -3,6 +3,7 @@ package fun.bm.lophine.carpet;
 import fun.bm.lophine.carpet.config.modules.FakePlayerCompatConfig;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import fun.bm.lophine.carpet.config.modules.WoolHopperCounterConfig;
+import fun.bm.lophine.carpet.org.OrgHiddenPlayerActions;
 import fun.bm.lophine.config.modules.function.protocol.PcaSyncProtocolConfig;
 import fun.bm.lophine.protocol.CarpetLoggerProtocol;
 import org.leavesmc.leaves.protocol.CarpetServerProtocol;

@@ -1,6 +1,8 @@
 package fun.bm.lophine.carpet;
 
+import fun.bm.lophine.carpet.ams.AmsNativeCommandEffects;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
+import fun.bm.lophine.carpet.tis.TisCommandContinuations;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 

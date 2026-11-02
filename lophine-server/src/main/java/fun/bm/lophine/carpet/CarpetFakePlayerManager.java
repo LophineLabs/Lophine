@@ -21,6 +21,8 @@ import ca.spottedleaf.moonrise.common.util.TickThread;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.logging.LogUtils;
+import fun.bm.lophine.carpet.org.OrgNativePlayerMessages;
+import fun.bm.lophine.carpet.org.OrgNavigation;
 import fun.bm.lophine.config.modules.function.OldFeatureConfig;
 import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.profile.MutablePropertyMap;
@@ -184,7 +186,7 @@ public final class CarpetFakePlayerManager {
                                     }));
                                     var joinedPhase = restores.thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored ->
                                             fun.bm.lophine.carpet.CarpetPlayerBirthPhase.run(bot, () -> {
-                                                boolean orgSilence = fun.bm.lophine.carpet.OrgNativePlayerMessages.consumeJoin(bot);
+                                                boolean orgSilence = fun.bm.lophine.carpet.org.OrgNativePlayerMessages.consumeJoin(bot);
                                                 bot.initInventoryMenu();
                                                 this.server.getCustomBossEvents().onPlayerConnect(bot);
                                                 this.carpetPublishJoinMessage(bot, orgSilence);
@@ -193,7 +195,7 @@ public final class CarpetFakePlayerManager {
                                                 bot.suppressTrackerForLogin = false;
 
                                                 bot.level().getChunkSource().chunkMap.addEntity(bot);
-                                                fun.bm.lophine.carpet.AmsFakePlayers.added(bot);
+                                                fun.bm.lophine.carpet.ams.AmsFakePlayers.added(bot);
                                                 if (!orgSilence)
                                                     LOGGER.info("{}[Local] logged in with entity id {} at ([{}]{}, {}, {})", bot.getName().getString(), bot.getId(), targetWorld.getWorld().getName(), location.x, location.y, location.z);
                                                 bot.carpetPlacementInitializer.run();
@@ -203,7 +205,7 @@ public final class CarpetFakePlayerManager {
                                                 carpet.script.external.ScarpetPlayerInventoryGate.trackAccepted(bot,
                                                         carpet.script.external.ScarpetNativeWork.completionOf(carpet.script.external.ScarpetNativeWork.capture()));
                                                 try (var joined = carpet.script.external.ScarpetPlayerInventoryGate.acceptedScope(bot)) {
-                                                    carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.AmsPlayerJoin.join(bot, true));
+                                                    carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.ams.AmsPlayerJoin.join(bot, true));
                                                     if (!bot.carpetShadow)
                                                         fun.bm.lophine.carpet.CarpetFakePlayerPersistence.recordOnline(bot);
                                                 }
@@ -351,18 +353,18 @@ public final class CarpetFakePlayerManager {
     private boolean carpetFinishBotRemoval(CarpetFakePlayer bot, Removal event) {
         bot.level().getCurrentWorldData().connections.remove(bot.connection.connection);
         CarpetSyntheticPlayerChannel.close(bot.connection.connection);
-        fun.bm.lophine.carpet.AmsFakePlayers.removed(bot);
-        fun.bm.lophine.carpet.OrgPlayerManager.retired(bot);
-        fun.bm.lophine.carpet.OrgMailService.retired(bot);
-        fun.bm.lophine.carpet.OrgPlayerInventoryMenus.retired(bot);
-        fun.bm.lophine.carpet.OrgHiddenPlayerActions.onRetired(bot);
+        fun.bm.lophine.carpet.ams.AmsFakePlayers.removed(bot);
+        fun.bm.lophine.carpet.org.OrgPlayerManager.retired(bot);
+        fun.bm.lophine.carpet.org.OrgMailService.retired(bot);
+        fun.bm.lophine.carpet.org.OrgPlayerInventoryMenus.retired(bot);
+        fun.bm.lophine.carpet.org.OrgHiddenPlayerActions.onRetired(bot);
         this.carpetClearPlayerServices(bot);
         bot.retireScheduler();
 
         this.players.removeIf(value -> value == bot);
         this.carpetRegistrations.remove(bot.getUUID(), bot.getScoreboardName(), bot);
 
-        if (!fun.bm.lophine.carpet.OrgNativePlayerMessages.keepTab(event)) bot.removeTab();
+        if (!fun.bm.lophine.carpet.org.OrgNativePlayerMessages.keepTab(event)) bot.removeTab();
         ClientboundRemoveEntitiesPacket packet = new ClientboundRemoveEntitiesPacket(bot.getId());
         for (ServerPlayer player : bot.level().players()) {
             if (!(player instanceof CarpetFakePlayer)) {

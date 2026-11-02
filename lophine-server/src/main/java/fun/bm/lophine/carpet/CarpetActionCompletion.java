@@ -12,35 +12,35 @@ import java.util.function.Supplier;
 /**
  * Accepted actions remain visible until their native effects and owner state commit terminate.
  */
-final class CarpetActionCompletion {
+public final class CarpetActionCompletion {
     private final Set<CompletableFuture<Void>> accepted = Collections.newSetFromMap(new IdentityHashMap<>());
     private int pauses;
 
-    synchronized boolean paused() {
+    public synchronized boolean paused() {
         return pauses != 0;
     }
 
-    synchronized boolean hasPending() {
+    public synchronized boolean hasPending() {
         return !accepted.isEmpty();
     }
 
-    synchronized Accepted begin() {
+    public synchronized Accepted begin() {
         if (pauses != 0) throw new IllegalStateException("New actions cannot start during a player snapshot");
         var result = new Accepted();
         accepted.add(result.terminal);
         return result;
     }
 
-    synchronized CompletableFuture<Void> pendingCompletion() {
+    public synchronized CompletableFuture<Void> pendingCompletion() {
         // Each entry already includes every dynamic native child and its owner commit.
         return CompletableFuture.allOf(accepted.toArray(CompletableFuture[]::new));
     }
 
-    <T> CompletableFuture<T> whenIdle(Function<Supplier<T>, CompletableFuture<T>> owner, Supplier<T> snapshot) {
+    public <T> CompletableFuture<T> whenIdle(Function<Supplier<T>, CompletableFuture<T>> owner, Supplier<T> snapshot) {
         return whenIdle(owner, snapshot, false);
     }
 
-    <T> CompletableFuture<T> whenIdleAfterTermination(Function<Supplier<T>, CompletableFuture<T>> owner, Supplier<T> snapshot) {
+    public <T> CompletableFuture<T> whenIdleAfterTermination(Function<Supplier<T>, CompletableFuture<T>> owner, Supplier<T> snapshot) {
         return whenIdle(owner, snapshot, true);
     }
 
@@ -83,19 +83,19 @@ final class CarpetActionCompletion {
         return result;
     }
 
-    final class Accepted {
+    public final class Accepted {
         private final CompletableFuture<Void> terminal = new CompletableFuture<>();
         private final AtomicBoolean ended = new AtomicBoolean();
 
-        CompletableFuture<Void> future() {
+        public CompletableFuture<Void> future() {
             return terminal;
         }
 
-        void finish() {
+        public void finish() {
             finish(null);
         }
 
-        void finish(Throwable failure) {
+        public void finish(Throwable failure) {
             if (!ended.compareAndSet(false, true)) return;
             // Complete before removal: a racing snapshot observes either this terminal future or
             // the state after its real owner commit. A failed retired owner cannot be serialized.

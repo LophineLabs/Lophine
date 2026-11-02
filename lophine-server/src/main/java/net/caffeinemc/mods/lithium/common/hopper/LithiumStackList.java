@@ -60,7 +60,7 @@ public class LithiumStackList extends NonNullList<ItemStack> implements LithiumD
             ItemStack stack = this.get(i);
             if (!stack.isEmpty()) {
                 this.occupiedSlots++;
-                if (fun.bm.lophine.carpet.OrgGameplayHelper.vanillaMaxStackSize(stack) <= stack.getCount()) {
+                if (fun.bm.lophine.carpet.org.OrgGameplayHelper.vanillaMaxStackSize(stack) <= stack.getCount()) {
                     this.fullSlots++;
                 }
                 stack.lithium$subscribe(this, i);
@@ -80,8 +80,8 @@ public class LithiumStackList extends NonNullList<ItemStack> implements LithiumD
     public long getModCount() {
         long result = this.modCount;
         for (ItemStack stack : this)
-            if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(stack))
-                result = 31L * result + fun.bm.lophine.carpet.OrgItemShadowGroups.revision(stack);
+            if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(stack))
+                result = 31L * result + fun.bm.lophine.carpet.org.OrgItemShadowGroups.revision(stack);
         return result;
     }
 
@@ -97,7 +97,7 @@ public class LithiumStackList extends NonNullList<ItemStack> implements LithiumD
             ItemStack stack = this.get(i);
             if (!stack.isEmpty()) {
                 this.occupiedSlots++;
-                if (fun.bm.lophine.carpet.OrgGameplayHelper.vanillaMaxStackSize(stack) <= stack.getCount()) {
+                if (fun.bm.lophine.carpet.org.OrgGameplayHelper.vanillaMaxStackSize(stack) <= stack.getCount()) {
                     this.fullSlots++;
                 }
                 stack.lithium$unsubscribe(this);
@@ -152,12 +152,12 @@ public class LithiumStackList extends NonNullList<ItemStack> implements LithiumD
             }
 
             this.occupiedSlots += (previous.isEmpty() ? 1 : 0) - (element.isEmpty() ? 1 : 0);
-            this.fullSlots += (element.getCount() >= fun.bm.lophine.carpet.OrgGameplayHelper.vanillaMaxStackSize(element) ? 1 : 0)
-                    - (previous.getCount() >= fun.bm.lophine.carpet.OrgGameplayHelper.vanillaMaxStackSize(previous) ? 1 : 0);
+            this.fullSlots += (element.getCount() >= fun.bm.lophine.carpet.org.OrgGameplayHelper.vanillaMaxStackSize(element) ? 1 : 0)
+                    - (previous.getCount() >= fun.bm.lophine.carpet.org.OrgGameplayHelper.vanillaMaxStackSize(previous) ? 1 : 0);
             this.changed();
         }
 
-        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(previous) || fun.bm.lophine.carpet.OrgItemShadowGroups.managed(element))
+        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(previous) || fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(element))
             this.changedALot();
         return previous;
     }
@@ -271,7 +271,7 @@ public class LithiumStackList extends NonNullList<ItemStack> implements LithiumD
         if (this.carpetOrgHasShadows()) {
             int full = 0;
             for (ItemStack stack : this)
-                if (!stack.isEmpty() && stack.getCount() >= fun.bm.lophine.carpet.OrgGameplayHelper.vanillaMaxStackSize(stack))
+                if (!stack.isEmpty() && stack.getCount() >= fun.bm.lophine.carpet.org.OrgGameplayHelper.vanillaMaxStackSize(stack))
                     full++;
             return full;
         }
@@ -279,7 +279,7 @@ public class LithiumStackList extends NonNullList<ItemStack> implements LithiumD
     }
 
     public boolean carpetOrgHasShadows() {
-        for (ItemStack stack : this) if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(stack)) return true;
+        for (ItemStack stack : this) if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(stack)) return true;
         return false;
     }
 
@@ -322,7 +322,7 @@ public class LithiumStackList extends NonNullList<ItemStack> implements LithiumD
         if (newCount <= 0) {
             stack.lithium$unsubscribeWithData(this, index);
         }
-        int maxCount = fun.bm.lophine.carpet.OrgGameplayHelper.vanillaMaxStackSize(stack);
+        int maxCount = fun.bm.lophine.carpet.org.OrgGameplayHelper.vanillaMaxStackSize(stack);
         this.occupiedSlots -= newCount <= 0 ? 1 : 0;
         this.fullSlots += (newCount >= maxCount ? 1 : 0) - (count >= maxCount ? 1 : 0);
 

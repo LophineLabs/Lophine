@@ -5,6 +5,8 @@ import carpet.script.external.ScarpetDamageContinuations;
 import carpet.script.external.ScarpetNativeWork;
 import carpet.script.external.ScarpetPlayerInventoryGate;
 import carpet.script.external.ScarpetRuntime;
+import fun.bm.lophine.carpet.org.OrgMenuNativeEffects;
+import fun.bm.lophine.carpet.tis.TisCommandContinuations;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 

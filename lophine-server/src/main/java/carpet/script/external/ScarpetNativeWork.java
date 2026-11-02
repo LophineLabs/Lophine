@@ -182,7 +182,7 @@ public final class ScarpetNativeWork {
      */
     public static void beginDrain(net.minecraft.server.MinecraftServer server) {
         DRAINING.put(server, Boolean.TRUE);
-        fun.bm.lophine.carpet.OrgPlayerInventoryMenus.beginDrain(server);
+        fun.bm.lophine.carpet.org.OrgPlayerInventoryMenus.beginDrain(server);
         fun.bm.lophine.carpet.CarpetPlayerBirths.beginDrain(server);
     }
 

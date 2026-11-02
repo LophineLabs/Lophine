@@ -322,7 +322,7 @@ public final class ScarpetRuntime {
         var submittedWork = ScarpetNativeWork.capture();
         var submittedAttribution = ScarpetAttribution.capture();
         var submittedAccepted = ScarpetPlayerInventoryGate.captureAccepted();
-        var submittedRules = fun.bm.lophine.carpet.OrgGameplayHelper.captureNativeRuleScopes();
+        var submittedRules = fun.bm.lophine.carpet.org.OrgGameplayHelper.captureNativeRuleScopes();
         ScarpetNativeWork.recordGuest(result);
         try {
             this.interpreter.execute(() -> {
@@ -425,7 +425,7 @@ public final class ScarpetRuntime {
     public static CompletableFuture<Boolean> ownerEventDecision(CarpetEventServer.CallbackList callbacks, List<Value> arguments, Entity owner, Entity damageTarget) {
         List<Value> captured = ActorFunctions.snapshotArguments(arguments);
         return entitySourceFuture(owner).thenCompose(source -> of(source.getServer()).submit(() -> {
-            try (var phase = fun.bm.lophine.carpet.TisMicroTiming.phase(source.getLevel(), "scarpet", "owner_event"); var damageScope = damageCallback(damageTarget)) {
+            try (var phase = fun.bm.lophine.carpet.tis.TisMicroTiming.phase(source.getLevel(), "scarpet", "owner_event"); var damageScope = damageCallback(damageTarget)) {
                 return callbacks.call(() -> captured, () -> source);
             }
         }));
@@ -480,7 +480,7 @@ public final class ScarpetRuntime {
         CompletableFuture<Boolean> captured = EVENT_CAPTURE.get();
         if (captured != null) EVENT_CAPTURE.remove();
         of(source.getServer()).submit(() -> {
-            try (var phase = fun.bm.lophine.carpet.TisMicroTiming.phase(source.getLevel(), "scarpet", "event")) {
+            try (var phase = fun.bm.lophine.carpet.tis.TisMicroTiming.phase(source.getLevel(), "scarpet", "event")) {
                 return callbacks.call(() -> args, () -> source);
             }
         }).whenComplete((cancelled, failure) -> {
@@ -587,7 +587,7 @@ public final class ScarpetRuntime {
     public static CompletableFuture<Boolean> worldEventDecision(CarpetEventServer.CallbackList callbacks, List<Value> arguments, ServerLevel world) {
         List<Value> captured = ActorFunctions.snapshotArguments(arguments);
         return atGlobalFuture(world.getServer(), () -> world.getServer().createCommandSourceStack().withLevel(world)).thenCompose(source -> of(source.getServer()).submit(() -> {
-            try (var phase = fun.bm.lophine.carpet.TisMicroTiming.phase(world, "scarpet", "world_event")) {
+            try (var phase = fun.bm.lophine.carpet.tis.TisMicroTiming.phase(world, "scarpet", "world_event")) {
                 return callbacks.call(() -> captured, () -> source);
             }
         }));
@@ -668,7 +668,7 @@ public final class ScarpetRuntime {
         DAMAGE_CALLBACK.remove();
         NATIVE_DECISION.remove();
         try (var accepted = ScarpetPlayerInventoryGate.inheritAccepted(java.util.Set.of())) {
-            return fun.bm.lophine.carpet.OrgItemShadowGroups.withoutNativeBorrowScopes(() -> fun.bm.lophine.carpet.OrgGameplayHelper.withoutPhysicalRouting(() -> ScarpetNativeWork.without(() -> ScarpetAttribution.with(null, operation))));
+            return fun.bm.lophine.carpet.org.OrgItemShadowGroups.withoutNativeBorrowScopes(() -> fun.bm.lophine.carpet.org.OrgGameplayHelper.withoutPhysicalRouting(() -> ScarpetNativeWork.without(() -> ScarpetAttribution.with(null, operation))));
         } finally {
             if (previousFrame == null) CONTEXT.remove();
             else CONTEXT.set(previousFrame);
@@ -759,8 +759,8 @@ public final class ScarpetRuntime {
         var capturedWork = ScarpetNativeWork.capture();
         var capturedAttribution = ScarpetAttribution.capture();
         var capturedAccepted = ScarpetPlayerInventoryGate.captureAccepted();
-        var capturedRules = fun.bm.lophine.carpet.OrgGameplayHelper.captureNativeRuleScopes();
-        var capturedBorrows = fun.bm.lophine.carpet.OrgItemShadowGroups.captureNativeBorrowScopes();
+        var capturedRules = fun.bm.lophine.carpet.org.OrgGameplayHelper.captureNativeRuleScopes();
+        var capturedBorrows = fun.bm.lophine.carpet.org.OrgItemShadowGroups.captureNativeBorrowScopes();
         boolean eventsDisabled = EVENT_DISABLED.get() || runtime != null && runtime.scripts != null && !runtime.scripts.events.handleEvents.get();
         return operation -> {
             boolean oldFill = FILL_SKIP_UPDATES.get(), oldGeneration = SKIP_GENERATION_CHECKS.get(), oldEvents = EVENT_DISABLED.get();
@@ -1058,7 +1058,7 @@ public final class ScarpetRuntime {
         CompletableFuture<Boolean> captured = EVENT_CAPTURE.get();
         if (captured != null) EVENT_CAPTURE.remove();
         of(server).submit(() -> {
-            try (var phase = fun.bm.lophine.carpet.TisMicroTiming.phase(null, "scarpet", "callback")) {
+            try (var phase = fun.bm.lophine.carpet.tis.TisMicroTiming.phase(null, "scarpet", "callback")) {
                 return callback.get();
             }
         }).whenComplete((cancelled, failure) -> {

@@ -5,7 +5,7 @@ Subject: [PATCH] Add Vanilla-like experience Config
 
 
 diff --git a/net/minecraft/CrashReport.java b/net/minecraft/CrashReport.java
-index aad550288b63f7bdedab72e2c94a011a3566986d..ea0ad9988966a8a25542798b1b406b17b7e7f5c5 100644
+index aad550288b63f7bdedab72e2c94a011a3566986d..35e095d8020a0bc4c4d6af466a55d65bc8c74ff9 100644
 --- a/net/minecraft/CrashReport.java
 +++ b/net/minecraft/CrashReport.java
 @@ -57,6 +57,9 @@ public class CrashReport {
@@ -13,7 +13,7 @@ index aad550288b63f7bdedab72e2c94a011a3566986d..ea0ad9988966a8a25542798b1b406b17
  
          if (this.uncategorizedStackTrace.length > 0) {
 +            if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.deobfuscateCrashReportStackTrace) {
-+                this.uncategorizedStackTrace = fun.bm.lophine.carpet.TisStackTraces.rebuild(this.uncategorizedStackTrace);
++                this.uncategorizedStackTrace = fun.bm.lophine.carpet.tis.TisStackTraces.rebuild(this.uncategorizedStackTrace);
 +            }
              builder.append("-- Head --\n");
              builder.append("Thread: ").append(Thread.currentThread().getName()).append("\n");
@@ -23,13 +23,13 @@ index aad550288b63f7bdedab72e2c94a011a3566986d..ea0ad9988966a8a25542798b1b406b17
  
          try {
 +            if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.deobfuscateCrashReportStackTrace) {
-+                fun.bm.lophine.carpet.TisStackTraces.rebuildCauseChain(exception);
++                fun.bm.lophine.carpet.tis.TisStackTraces.rebuildCauseChain(exception);
 +            }
              writer = new StringWriter();
              printWriter = new PrintWriter(writer);
              exception.printStackTrace(printWriter);
 diff --git a/net/minecraft/CrashReportCategory.java b/net/minecraft/CrashReportCategory.java
-index ac8753e19ee60d34cad8090a6c3c9f931b1f2aa4..37748bf492efbe0ccac0a3e05c40e7f36bf7c4e1 100644
+index ac8753e19ee60d34cad8090a6c3c9f931b1f2aa4..d50089ae373f5577e7e27f50c9d4124826d198c7 100644
 --- a/net/minecraft/CrashReportCategory.java
 +++ b/net/minecraft/CrashReportCategory.java
 @@ -169,6 +169,9 @@ public class CrashReportCategory {
@@ -37,7 +37,7 @@ index ac8753e19ee60d34cad8090a6c3c9f931b1f2aa4..37748bf492efbe0ccac0a3e05c40e7f3
  
      public void getDetails(final StringBuilder builder) {
 +        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.deobfuscateCrashReportStackTrace && this.stackTrace != null) {
-+            this.stackTrace = fun.bm.lophine.carpet.TisStackTraces.rebuild(this.stackTrace);
++            this.stackTrace = fun.bm.lophine.carpet.tis.TisStackTraces.rebuild(this.stackTrace);
 +        }
          builder.append("-- ").append(this.title).append(" --\n");
          builder.append("Details:");

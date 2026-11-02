@@ -5,7 +5,7 @@ Subject: [PATCH] Carpet ORG features
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 4ac4169e13b4605daf16676f29294be256f91b0c..79f7b5a0237e8215bce7a997e53c2a702fb4c800 100644
+index 4ac4169e13b4605daf16676f29294be256f91b0c..cb4ab180fdb836408854499d0a888f4b4fca5db7 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -228,6 +228,8 @@ public final class RegionizedWorldData {
@@ -13,7 +13,7 @@ index 4ac4169e13b4605daf16676f29294be256f91b0c..79f7b5a0237e8215bce7a997e53c2a70
                  if (into != null) {
                      into.blockEvents.add(blockEventData);
 +                } else {
-+                    fun.bm.lophine.carpet.OrgHiddenBedrockSignals.consumed(from.world,blockEventData);
++                    fun.bm.lophine.carpet.org.OrgHiddenBedrockSignals.consumed(from.world,blockEventData);
                  }
              }
  
@@ -21,7 +21,7 @@ index 4ac4169e13b4605daf16676f29294be256f91b0c..79f7b5a0237e8215bce7a997e53c2a70
      public void pushBlockEvent(final BlockEventData blockEventData) {
          TickThread.ensureTickThread(this.world, blockEventData.pos(), "Cannot queue block even data async");
          boolean carpetMicroAccepted = this.blockEvents.add(blockEventData);
-+        if (carpetMicroAccepted) fun.bm.lophine.carpet.OrgHiddenBedrockSignals.queued(this.world,blockEventData);
++        if (carpetMicroAccepted) fun.bm.lophine.carpet.org.OrgHiddenBedrockSignals.queued(this.world,blockEventData);
      }
  
      public void pushBlockEvents(final Collection<? extends BlockEventData> blockEvents) {
@@ -29,7 +29,7 @@ index 4ac4169e13b4605daf16676f29294be256f91b0c..79f7b5a0237e8215bce7a997e53c2a70
              final BlockEventData blockEventData = iterator.next();
              if (predicate.test(blockEventData)) {
                  iterator.remove();
-+                fun.bm.lophine.carpet.OrgHiddenBedrockSignals.consumed(this.world,blockEventData);
++                fun.bm.lophine.carpet.org.OrgHiddenBedrockSignals.consumed(this.world,blockEventData);
              }
          }
      }
@@ -37,29 +37,29 @@ index 4ac4169e13b4605daf16676f29294be256f91b0c..79f7b5a0237e8215bce7a997e53c2a70
              if (TickThread.isTickThreadFor(this.world, ret.pos())) {
                  return ret;
              } // else: chunk must have been unloaded
-+            fun.bm.lophine.carpet.OrgHiddenBedrockSignals.consumed(this.world,ret);
++            fun.bm.lophine.carpet.org.OrgHiddenBedrockSignals.consumed(this.world,ret);
          }
  
          return null;
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index a92792df38a4b21056dc056aa04fbe8cd7d1656c..ccba2e040fa5742f4c90a8e97181343b5473c77f 100644
+index 441a22c296f7f64d77391e9fbf69bfc76a6f237e..9a72aed3ff9859e35c23fcc034a198dc48928b94 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
 @@ -345,7 +345,14 @@ public class Commands {
  
          fun.bm.lophine.carpet.CarpetCompatCommand.register(this.dispatcher, context);
-         fun.bm.lophine.carpet.AmsPlayerChunkLoading.register(this.dispatcher);
-+        fun.bm.lophine.carpet.OrgUtilityCommands.register(this.dispatcher);
-+        fun.bm.lophine.carpet.OrgExperienceTransfers.register(this.dispatcher);
+         fun.bm.lophine.carpet.ams.AmsPlayerChunkLoading.register(this.dispatcher);
++        fun.bm.lophine.carpet.org.OrgUtilityCommands.register(this.dispatcher);
++        fun.bm.lophine.carpet.org.OrgExperienceTransfers.register(this.dispatcher);
          fun.bm.lophine.carpet.CarpetPlayerCommand.register(this.dispatcher, context);
-+        fun.bm.lophine.carpet.OrgItemShadowingCommand.register(this.dispatcher);
-+        fun.bm.lophine.carpet.OrgLocationsCommand.register(this.dispatcher);
-+        fun.bm.lophine.carpet.OrgNavigation.register(this.dispatcher);
-+        fun.bm.lophine.carpet.OrgPlayerInventoryMenus.register(this.dispatcher);
-+        fun.bm.lophine.carpet.OrgCommandSettings.apply(this.dispatcher);
-         fun.bm.lophine.carpet.AmsClientQueryCommands.register(this.dispatcher);
-         fun.bm.lophine.carpet.AmsManagementCommands.register(this.dispatcher, context);
-         fun.bm.lophine.carpet.AmsAdministratorProtection.apply(this.dispatcher);
++        fun.bm.lophine.carpet.org.OrgItemShadowingCommand.register(this.dispatcher);
++        fun.bm.lophine.carpet.org.OrgLocationsCommand.register(this.dispatcher);
++        fun.bm.lophine.carpet.org.OrgNavigation.register(this.dispatcher);
++        fun.bm.lophine.carpet.org.OrgPlayerInventoryMenus.register(this.dispatcher);
++        fun.bm.lophine.carpet.org.OrgCommandSettings.apply(this.dispatcher);
+         fun.bm.lophine.carpet.ams.AmsClientQueryCommands.register(this.dispatcher);
+         fun.bm.lophine.carpet.ams.AmsManagementCommands.register(this.dispatcher, context);
+         fun.bm.lophine.carpet.ams.AmsAdministratorProtection.apply(this.dispatcher);
 @@ -425,6 +432,9 @@ public class Commands {
          }
          try {
@@ -71,7 +71,7 @@ index a92792df38a4b21056dc056aa04fbe8cd7d1656c..ccba2e040fa5742f4c90a8e97181343b
                      sender,
                      executionContext -> ExecutionContext.queueInitialCommandExecution(
 diff --git a/net/minecraft/core/component/PatchedDataComponentMap.java b/net/minecraft/core/component/PatchedDataComponentMap.java
-index 5ed9cec1827455b399f486b5d26834ff5b56330e..38d94632e62a716ae20857b08d970a2ebfcf1f85 100644
+index 5ed9cec1827455b399f486b5d26834ff5b56330e..5219b97e7fb8f812c6108f891fe00e66e3b492f1 100644
 --- a/net/minecraft/core/component/PatchedDataComponentMap.java
 +++ b/net/minecraft/core/component/PatchedDataComponentMap.java
 @@ -14,6 +14,8 @@ import java.util.stream.Collectors;
@@ -87,17 +87,17 @@ index 5ed9cec1827455b399f486b5d26834ff5b56330e..38d94632e62a716ae20857b08d970a2e
  
      @Override
      public <T> @Nullable T get(final DataComponentType<? extends T> type) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.components(this).get(type);
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.components(this).get(type);
          return DataComponentPatch.getFromPatchAndPrototype(this.patch, this.prototype, type);
      }
  
      public boolean hasNonDefault(final DataComponentType<?> type) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.components(this).hasNonDefault(type);
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.components(this).hasNonDefault(type);
          return this.patch.containsKey(type);
      }
  
      public <T> @Nullable T set(final DataComponentType<T> type, final @Nullable T value) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.mutate(this, map -> map.set(type, value));
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.mutate(this, map -> map.set(type, value));
          this.ensureMapOwnership();
          T defaultValue = this.prototype.get(type);
          Object lastValue;
@@ -105,12 +105,12 @@ index 5ed9cec1827455b399f486b5d26834ff5b56330e..38d94632e62a716ae20857b08d970a2e
      }
  
      public <T> @Nullable T set(final TypedDataComponent<T> value) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.mutate(this, map -> map.set(value));
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.mutate(this, map -> map.set(value));
          return this.set(value.type(), value.value());
      }
  
      public <T> T remove(final DataComponentType<? extends T> type) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.mutate(this, map -> map.remove(type));
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.mutate(this, map -> map.remove(type));
          this.ensureMapOwnership();
          T defaultValue = this.prototype.get(type);
          Object lastValue;
@@ -118,7 +118,7 @@ index 5ed9cec1827455b399f486b5d26834ff5b56330e..38d94632e62a716ae20857b08d970a2e
      }
  
      public void applyPatch(final DataComponentPatch patch) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) { fun.bm.lophine.carpet.OrgItemShadowGroups.mutate(this, map -> { map.applyPatch(patch); return null; }); return; }
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) { fun.bm.lophine.carpet.org.OrgItemShadowGroups.mutate(this, map -> { map.applyPatch(patch); return null; }); return; }
          this.ensureMapOwnership();
  
          for (Entry<DataComponentType<?>, Object> entry : Reference2ObjectMaps.fastIterable(patch.map)) {
@@ -126,20 +126,20 @@ index 5ed9cec1827455b399f486b5d26834ff5b56330e..38d94632e62a716ae20857b08d970a2e
      }
  
      public void restorePatch(final DataComponentPatch patch) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) { fun.bm.lophine.carpet.OrgItemShadowGroups.mutate(this, map -> { map.restorePatch(patch); return null; }); return; }
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) { fun.bm.lophine.carpet.org.OrgItemShadowGroups.mutate(this, map -> { map.restorePatch(patch); return null; }); return; }
          this.ensureMapOwnership();
          this.patch.clear();
          this.patch.putAll(patch.map);
      }
  
      public void clearPatch() {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) { fun.bm.lophine.carpet.OrgItemShadowGroups.mutate(this, map -> { map.clearPatch(); return null; }); return; }
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) { fun.bm.lophine.carpet.org.OrgItemShadowGroups.mutate(this, map -> { map.clearPatch(); return null; }); return; }
          this.ensureMapOwnership();
          this.patch.clear();
      }
  
      public void setAll(final DataComponentMap components) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) { fun.bm.lophine.carpet.OrgItemShadowGroups.mutate(this, map -> { map.setAll(components); return null; }); return; }
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) { fun.bm.lophine.carpet.org.OrgItemShadowGroups.mutate(this, map -> { map.setAll(components); return null; }); return; }
          for (TypedDataComponent<?> entry : components) {
              entry.applyTo(this);
          }
@@ -147,7 +147,7 @@ index 5ed9cec1827455b399f486b5d26834ff5b56330e..38d94632e62a716ae20857b08d970a2e
  
      @Override
      public Set<DataComponentType<?>> keySet() {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.components(this).keySet();
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.components(this).keySet();
          if (this.patch.isEmpty()) {
              return this.prototype.keySet();
          }
@@ -155,7 +155,7 @@ index 5ed9cec1827455b399f486b5d26834ff5b56330e..38d94632e62a716ae20857b08d970a2e
  
      @Override
      public Iterator<TypedDataComponent<?>> iterator() {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.components(this).iterator();
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.components(this).iterator();
          if (this.patch.isEmpty()) {
              return this.prototype.iterator();
          }
@@ -163,7 +163,7 @@ index 5ed9cec1827455b399f486b5d26834ff5b56330e..38d94632e62a716ae20857b08d970a2e
  
      @Override
      public int size() {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.components(this).size();
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.components(this).size();
          int size = this.prototype.size();
  
          for (it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry<DataComponentType<?>, Object> entry : Reference2ObjectMaps.fastIterable(this.patch)) {
@@ -171,7 +171,7 @@ index 5ed9cec1827455b399f486b5d26834ff5b56330e..38d94632e62a716ae20857b08d970a2e
      }
  
      public DataComponentPatch asPatch() {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.components(this).asPatch();
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.components(this).asPatch();
          if (this.patch.isEmpty()) {
              return DataComponentPatch.EMPTY;
          }
@@ -179,13 +179,13 @@ index 5ed9cec1827455b399f486b5d26834ff5b56330e..38d94632e62a716ae20857b08d970a2e
      }
  
      public PatchedDataComponentMap copy() {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.components(this).copy();
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.components(this).copy();
          this.copyOnWrite = true;
          return new PatchedDataComponentMap(this.prototype, this.patch, true);
      }
  
      public DataComponentMap toImmutableMap() {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.components(this).toImmutableMap();
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.components(this).toImmutableMap();
          return this.patch.isEmpty() ? this.prototype : this.copy();
      }
  
@@ -193,8 +193,8 @@ index 5ed9cec1827455b399f486b5d26834ff5b56330e..38d94632e62a716ae20857b08d970a2e
  
      @Override
      public boolean equals(final Object obj) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.components(this).equals(obj instanceof PatchedDataComponentMap other && fun.bm.lophine.carpet.OrgItemShadowGroups.managed(other) ? fun.bm.lophine.carpet.OrgItemShadowGroups.components(other) : obj);
-+        if (obj instanceof PatchedDataComponentMap other && fun.bm.lophine.carpet.OrgItemShadowGroups.managed(other)) return this.equals(fun.bm.lophine.carpet.OrgItemShadowGroups.components(other));
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.components(this).equals(obj instanceof PatchedDataComponentMap other && fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(other) ? fun.bm.lophine.carpet.org.OrgItemShadowGroups.components(other) : obj);
++        if (obj instanceof PatchedDataComponentMap other && fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(other)) return this.equals(fun.bm.lophine.carpet.org.OrgItemShadowGroups.components(other));
          // return this == obj || obj instanceof PatchedDataComponentMap otherMap && this.prototype.equals(otherMap.prototype) && this.patch.equals(otherMap.patch); // Leaf - Optimize PatchedDataComponentMap equals
          // Leaf start - Optimize PatchedDataComponentMap equals
          if (this == obj) return true;
@@ -202,12 +202,12 @@ index 5ed9cec1827455b399f486b5d26834ff5b56330e..38d94632e62a716ae20857b08d970a2e
  
      @Override
      public int hashCode() {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.components(this).hashCode();
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.components(this).hashCode();
          return this.prototype.hashCode() + this.patch.hashCode() * 31;
      }
  
 diff --git a/net/minecraft/core/dispenser/ShulkerBoxDispenseBehavior.java b/net/minecraft/core/dispenser/ShulkerBoxDispenseBehavior.java
-index 83e2f7cf70bcfd76417a6568cceb56d34d9f3662..23914f0a1c0ad06201477b936a453379d84f7e3a 100644
+index 83e2f7cf70bcfd76417a6568cceb56d34d9f3662..75c8db6f8326cde9fe64e0798847a2a44119f7e1 100644
 --- a/net/minecraft/core/dispenser/ShulkerBoxDispenseBehavior.java
 +++ b/net/minecraft/core/dispenser/ShulkerBoxDispenseBehavior.java
 @@ -43,7 +43,12 @@ public class ShulkerBoxDispenseBehavior extends OptionalDispenseItemBehavior {
@@ -217,7 +217,7 @@ index 83e2f7cf70bcfd76417a6568cceb56d34d9f3662..23914f0a1c0ad06201477b936a453379
 -                this.setSuccess(blockItem.place(new DirectionalPlaceContext(source.level(), relativePos, facing, org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(event.getItem()), clickedFace)).consumesAction());
 +                ItemStack placed = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(event.getItem());
 +                net.minecraft.network.chat.Component name = placed.get(net.minecraft.core.component.DataComponents.CUSTOM_NAME);
-+                if (name != null && fun.bm.lophine.carpet.OrgUpdateSuppression.namedSuppressor(name.getString())) {
++                if (name != null && fun.bm.lophine.carpet.org.OrgUpdateSuppression.namedSuppressor(name.getString())) {
 +                    placed.remove(net.minecraft.core.component.DataComponents.CUSTOM_NAME);
 +                }
 +                this.setSuccess(blockItem.place(new DirectionalPlaceContext(source.level(), relativePos, facing, placed, clickedFace)).consumesAction());
@@ -225,7 +225,7 @@ index 83e2f7cf70bcfd76417a6568cceb56d34d9f3662..23914f0a1c0ad06201477b936a453379
                      dispensed.shrink(1); // vanilla shrink is in the place function above, manually handle it here
                  }
 diff --git a/net/minecraft/network/PacketProcessor.java b/net/minecraft/network/PacketProcessor.java
-index 1a95ccd745f4789225d711ab6fe497c677c203d6..49d647b753e0fa9c596422692cfa474afa171e45 100644
+index 1a95ccd745f4789225d711ab6fe497c677c203d6..737026031e774971b9189e2f5a44fdb4d7f0a01e 100644
 --- a/net/minecraft/network/PacketProcessor.java
 +++ b/net/minecraft/network/PacketProcessor.java
 @@ -103,7 +103,12 @@ public class PacketProcessor implements AutoCloseable {
@@ -236,21 +236,21 @@ index 1a95ccd745f4789225d711ab6fe497c677c203d6..49d647b753e0fa9c596422692cfa474a
 +                    try {
 +                        this.packet.handle(this.listener);
 +                    } catch (RuntimeException exception) {
-+                        fun.bm.lophine.carpet.OrgUpdateSuppression.packetFailure(exception, this.packet, this.listener);
++                        fun.bm.lophine.carpet.org.OrgUpdateSuppression.packetFailure(exception, this.packet, this.listener);
 +                        throw exception;
 +                    }
                      } finally { profiler.stopTimer(packetTimerId); } // Folia - profiler
                  // Lophine start - catch update suppression crash
                  } catch (org.leavesmc.leaves.util.UpdateSuppressionException exception) {
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index d17329fff3a87db4c7bc7052829103b17fe66416..75b76f9fd26a78b843a6e7765fc4e97069142ac6 100644
+index 2404fa6687fc71df8505c87e4f0d1c3c3e1ea74e..0991bd3897c9b81e580b645231fb1e44940e2729 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -942,6 +942,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          //level.entityManager.tick(); // SPIGOT-6526: Load pending entities so they are available to the API // Paper - rewrite chunk system
          io.papermc.paper.threadedregions.RegionizedServer.getInstance().addWorld(level); // Folia - region threading
          new org.bukkit.event.world.WorldLoadEvent(level.getWorld()).callEvent(); // Paper - call WorldLoadEvent
-+        fun.bm.lophine.carpet.OrgPlayerManagerLifecycle.worldLoaded(this, level);
++        fun.bm.lophine.carpet.org.OrgPlayerManagerLifecycle.worldLoaded(this, level);
      }
  
      protected GlobalPos selectLevelLoadFocusPos() {
@@ -258,9 +258,9 @@ index d17329fff3a87db4c7bc7052829103b17fe66416..75b76f9fd26a78b843a6e7765fc4e970
          fun.bm.lophine.carpet.CarpetRegionLease.beginShutdown(this);
          fun.bm.lophine.carpet.CarpetResourceReloadCoordinator.shutdown();
          fun.bm.lophine.carpet.CarpetPlayerTargetArea.closeAtShutdown(this);
-+        fun.bm.lophine.carpet.OrgPlayerStatusSync.reset(this);
++        fun.bm.lophine.carpet.org.OrgPlayerStatusSync.reset(this);
          if (carpet.script.external.ScarpetRuntime.beginShutdown(this, this::stopServer)) return;
-+        if (fun.bm.lophine.carpet.OrgPlayerManagerLifecycle.beforeStop(this, this::stopServer)) return;
++        if (fun.bm.lophine.carpet.org.OrgPlayerManagerLifecycle.beforeStop(this, this::stopServer)) return;
          carpet.script.external.ScarpetInteractionContinuations.shutdown(this);
          fun.bm.lophine.carpet.CarpetCommandContextContinuations.shutdown(this);
          fun.bm.lophine.carpet.CarpetRegionLease.close(this);
@@ -268,7 +268,7 @@ index d17329fff3a87db4c7bc7052829103b17fe66416..75b76f9fd26a78b843a6e7765fc4e970
          carpet.script.external.ScarpetNativeWork.beginDrain(this);
          fun.bm.lophine.carpet.CarpetRegionLease.beginShutdown(this);
          if (carpet.script.external.ScarpetRuntime.beginShutdown(this, () -> this.halt(wait, isRestarting, force))) return;
-+        if (fun.bm.lophine.carpet.OrgPlayerManagerLifecycle.beforeStop(this, () -> this.halt(wait, isRestarting, force))) return;
++        if (fun.bm.lophine.carpet.org.OrgPlayerManagerLifecycle.beforeStop(this, () -> this.halt(wait, isRestarting, force))) return;
          if (!force && !this.carpetFakePlayers.forceShutdown && !this.carpetFakePlayers.removeAll()) return;
          if (!force && !this.getBotList().forceShutdown && !this.getBotList().removeAll()) { // Leaves - save or remove bot
              this.getPlayerList().broadcastSystemMessage(Component.literal("Bot Still need to save, please wait! If you want to shuntdown without bot data saving, please use /stop force"), false);
@@ -277,8 +277,8 @@ index d17329fff3a87db4c7bc7052829103b17fe66416..75b76f9fd26a78b843a6e7765fc4e970
                  }
  
 +                if (carpet.script.external.ScarpetNativeWork.isDraining(this) && handle instanceof net.minecraft.server.level.ServerPlayer player) {
-+                    fun.bm.lophine.carpet.OrgInventoryTransfers.tick(player);
-+                    fun.bm.lophine.carpet.OrgExperienceTransfers.tick(player);
++                    fun.bm.lophine.carpet.org.OrgInventoryTransfers.tick(player);
++                    fun.bm.lophine.carpet.org.OrgExperienceTransfers.tick(player);
 +                }
 +
                  ++tickedEntitySchedulers; // Folia - profiler
@@ -342,7 +342,7 @@ index a3257b552c7e76269a00cc7416f630e41cf2b3c5..0ff0f5ea29aa3c07a0eae77210a864ec
  
      private static int teleportToEntity(final CommandSourceStack source, final Collection<? extends Entity> entities, final Entity destination) throws CommandSyntaxException {
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 102f8d9b70bec950dd1331b51ed97fc2cb41a069..cb049466a25d7c78d958bcccdba6eb73f83e6270 100644
+index 102f8d9b70bec950dd1331b51ed97fc2cb41a069..a1bd3294a839bb70e021a3322e9b4eef9f058f85 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -1935,10 +1935,38 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -350,10 +350,10 @@ index 102f8d9b70bec950dd1331b51ed97fc2cb41a069..cb049466a25d7c78d958bcccdba6eb73
              // CraftBukkit end
  
 -            return this.moonrise$getEntityLookup().addNewEntity(entity); // Paper - rewrite chunk system
-+            net.minecraft.server.level.ServerPlayer breaker = fun.bm.lophine.carpet.OrgGameplayHelper.blockBreaker();
++            net.minecraft.server.level.ServerPlayer breaker = fun.bm.lophine.carpet.org.OrgGameplayHelper.blockBreaker();
 +            if (breaker != null && entity instanceof net.minecraft.world.entity.item.ItemEntity itemEntity
 +                && !"false".equals(fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.blockDropsDirectlyEnterInventory)) {
-+                var actual = fun.bm.lophine.carpet.OrgBlockDropRouting.routeNative(this, itemEntity, breaker,
++                var actual = fun.bm.lophine.carpet.org.OrgBlockDropRouting.routeNative(this, itemEntity, breaker,
 +                    () -> this.carpetAddEntityAfterBlockDrop(entity, spawnReason));
 +                // Queued work has no boolean result yet. Typed consumers read its private actual receipt.
 +                return actual.isDone() && !actual.isCompletedExceptionally() && actual.getNow(false);
@@ -368,15 +368,15 @@ index 102f8d9b70bec950dd1331b51ed97fc2cb41a069..cb049466a25d7c78d958bcccdba6eb73
 +
 +    /** Internal actual add result includes block-drop routing and all native add callbacks. */
 +    public java.util.concurrent.CompletableFuture<Boolean> carpetAddFreshEntityNativeAsync(final Entity entity, final org.bukkit.event.entity.CreatureSpawnEvent.@Nullable SpawnReason reason) {
-+        return fun.bm.lophine.carpet.OrgBlockDropRouting.addNative(this, entity, () -> this.addEntity(entity, reason));
++        return fun.bm.lophine.carpet.org.OrgBlockDropRouting.addNative(this, entity, () -> this.addEntity(entity, reason));
 +    }
 +
 +    public java.util.concurrent.CompletableFuture<Boolean> carpetAddWithUUIDNativeAsync(final Entity entity, final org.bukkit.event.entity.CreatureSpawnEvent.@Nullable SpawnReason reason) {
-+        return fun.bm.lophine.carpet.OrgBlockDropRouting.addNative(this, entity, () -> this.addEntity(entity, reason));
++        return fun.bm.lophine.carpet.org.OrgBlockDropRouting.addNative(this, entity, () -> this.addEntity(entity, reason));
 +    }
 +
 +    public java.util.concurrent.CompletableFuture<Boolean> carpetTryAddFreshEntityWithPassengersNativeAsync(final Entity entity, final org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason reason) {
-+        return fun.bm.lophine.carpet.OrgBlockDropRouting.addTreeNative(this, reason, () -> {
++        return fun.bm.lophine.carpet.org.OrgBlockDropRouting.addTreeNative(this, reason, () -> {
 +            java.util.List<Entity> tree = entity.getSelfAndPassengers().toList();
 +            return tree.stream().map(Entity::getUUID).anyMatch(this.moonrise$getEntityLookup()::hasEntity) ? null : tree;
 +        });
@@ -389,7 +389,7 @@ index 102f8d9b70bec950dd1331b51ed97fc2cb41a069..cb049466a25d7c78d958bcccdba6eb73
          BlockEventData eventData;
          while ((eventData = worldRegionData.removeFirstBlockEvent()) != null) {
              // Folia end - regionised ticking
-+            if (fun.bm.lophine.carpet.OrgHiddenBedrockSignals.defer(this,eventData)) {
++            if (fun.bm.lophine.carpet.org.OrgHiddenBedrockSignals.defer(this,eventData)) {
 +                blockEventsToReschedule.add(eventData);
 +                continue;
 +            }
@@ -400,25 +400,25 @@ index 102f8d9b70bec950dd1331b51ed97fc2cb41a069..cb049466a25d7c78d958bcccdba6eb73
      }
  
      private boolean doBlockEvent(final BlockEventData eventData) {
-+        try (var carpetOrgEvent = fun.bm.lophine.carpet.OrgHiddenBedrockSignals.executing(this,eventData)) {
++        try (var carpetOrgEvent = fun.bm.lophine.carpet.org.OrgHiddenBedrockSignals.executing(this,eventData)) {
          BlockState state = this.getBlockState(eventData.pos());
 -        return state.is(eventData.block()) && state.triggerEvent(this, eventData.pos(), eventData.paramA(), eventData.paramB());
 +        boolean carpetMicroResult = state.is(eventData.block()) && state.triggerEvent(this, eventData.pos(), eventData.paramA(), eventData.paramB());
 +        return carpetMicroResult;
 +
-+        } finally { fun.bm.lophine.carpet.OrgHiddenBedrockSignals.consumed(this,eventData); }
++        } finally { fun.bm.lophine.carpet.org.OrgHiddenBedrockSignals.consumed(this,eventData); }
      }
  
      @Override
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index e3e3fcc0248d7daf8c8f375335f229b651af8897..c492b76a28560e441ba413900a3deac4cd746c4b 100644
+index e5a656665c092228b825d15458890ce852721411..46ee9c047b21c990663dd87586df2c9170571497 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -667,6 +667,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      @Override
      protected void readAdditionalSaveData(final ValueInput input) {
          super.readAdditionalSaveData(input);
-+        fun.bm.lophine.carpet.OrgInventoryTransfers.loadCursor(this, input);
++        fun.bm.lophine.carpet.org.OrgInventoryTransfers.loadCursor(this, input);
          this.wardenSpawnTracker = input.read("warden_spawn_tracker", WardenSpawnTracker.CODEC).orElseGet(WardenSpawnTracker::new);
          this.enteredNetherPosition = input.read("entered_nether_pos", Vec3.CODEC).orElse(null);
          this.currentExplosionImpactPos = input.read("last_explosion_impact_pos", Vec3.CODEC).orElse(null);
@@ -426,7 +426,7 @@ index e3e3fcc0248d7daf8c8f375335f229b651af8897..c492b76a28560e441ba413900a3deac4
      @Override
      protected void addAdditionalSaveData(final ValueOutput output) {
          super.addAdditionalSaveData(output);
-+        fun.bm.lophine.carpet.OrgInventoryTransfers.saveCursor(this, output);
++        fun.bm.lophine.carpet.org.OrgInventoryTransfers.saveCursor(this, output);
          output.store("warden_spawn_tracker", WardenSpawnTracker.CODEC, this.wardenSpawnTracker);
          this.storeGameTypes(output);
          output.putBoolean("seenCredits", this.seenCredits);
@@ -456,15 +456,15 @@ index e3e3fcc0248d7daf8c8f375335f229b651af8897..c492b76a28560e441ba413900a3deac4
 +                }
 +            }
 +        }
-+        fun.bm.lophine.carpet.OrgPlayerStatusSync.tick(this);
-+        fun.bm.lophine.carpet.OrgExperienceTransfers.tick(this);
-+        fun.bm.lophine.carpet.OrgInventoryTransfers.tick(this);
-+        fun.bm.lophine.carpet.OrgNavigation.tick(this);
++        fun.bm.lophine.carpet.org.OrgPlayerStatusSync.tick(this);
++        fun.bm.lophine.carpet.org.OrgExperienceTransfers.tick(this);
++        fun.bm.lophine.carpet.org.OrgInventoryTransfers.tick(this);
++        fun.bm.lophine.carpet.org.OrgNavigation.tick(this);
          this.carpetActionPack.onUpdate();
-+        fun.bm.lophine.carpet.OrgHiddenPlayerActions.tick(this);
-+        fun.bm.lophine.carpet.OrgFakePlayerActions.tick(this);
-+        fun.bm.lophine.carpet.OrgPlayerManager.observe(this);
-+        fun.bm.lophine.carpet.OrgMailService.observe(this);
++        fun.bm.lophine.carpet.org.OrgHiddenPlayerActions.tick(this);
++        fun.bm.lophine.carpet.org.OrgFakePlayerActions.tick(this);
++        fun.bm.lophine.carpet.org.OrgPlayerManager.observe(this);
++        fun.bm.lophine.carpet.org.OrgMailService.observe(this);
          // Luminol start - Status bars
          this.statusBarList.tick();
          // Luminol end - Status bars
@@ -486,7 +486,7 @@ index e3e3fcc0248d7daf8c8f375335f229b651af8897..c492b76a28560e441ba413900a3deac4
 +                return; // Lophine - an already drained death tail needs no live inventory admission
 +            var tail = this.carpetReleaseShoulderNativeAsync(true).thenCompose(
 +                carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored ->
-+                    fun.bm.lophine.carpet.OrgBlockDropRouting.playerNative(this,
++                    fun.bm.lophine.carpet.org.OrgBlockDropRouting.playerNative(this,
 +                        () -> this.carpetReleaseShoulderNativeAsync(false)).thenCompose(value -> value)));
 +            carpet.script.external.ScarpetNativeWork.record(tail);
 +            carpet.script.external.ScarpetNativeWork.trackNative(this.server, tail);
@@ -519,12 +519,12 @@ index e3e3fcc0248d7daf8c8f375335f229b651af8897..c492b76a28560e441ba413900a3deac4
 +        carpet.script.external.ScarpetNativeWork.record(actual);
 +        carpet.script.external.ScarpetNativeWork.trackNative(this.server, actual);
 +        try {
-+            var body = fun.bm.lophine.carpet.OrgBlockDropRouting.playerNative(this, () -> {
++            var body = fun.bm.lophine.carpet.org.OrgBlockDropRouting.playerNative(this, () -> {
 +                // The whole accepted spawn/clear tail owns inventory custody, even if a snapshot is requested meanwhile.
 +                carpet.script.external.ScarpetPlayerInventoryGate.trackAccepted(this, actual);
 +                var spawn = this.carpetRespawnShoulderNativeAsync(snapshot);
 +                var tail = spawn.thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(entity ->
-+                    fun.bm.lophine.carpet.OrgBlockDropRouting.playerNative(this, () -> {
++                    fun.bm.lophine.carpet.org.OrgBlockDropRouting.playerNative(this, () -> {
 +                        if (entity != null && original == (left ? this.getShoulderEntityLeft() : this.getShoulderEntityRight())) {
 +                            if (left) this.setShoulderEntityLeft(new CompoundTag()); else this.setShoulderEntityRight(new CompoundTag());
 +                        }
@@ -548,7 +548,7 @@ index e3e3fcc0248d7daf8c8f375335f229b651af8897..c492b76a28560e441ba413900a3deac4
          }
          List<DefaultDrop> loot = new java.util.ArrayList<>(this.getInventory().getContainerSize()); // Paper - Restore vanilla drops behavior
 -        boolean keepInventory = this.level().getGameRules().get(GameRules.KEEP_INVENTORY) || this.isSpectator();
-+        boolean keepInventory = this.level().getGameRules().get(GameRules.KEEP_INVENTORY) || this.isSpectator() || this instanceof fun.bm.lophine.carpet.CarpetFakePlayer bot && fun.bm.lophine.carpet.OrgFakePlayerInventory.shouldKeepInventory(bot,source);
++        boolean keepInventory = this.level().getGameRules().get(GameRules.KEEP_INVENTORY) || this.isSpectator() || this instanceof fun.bm.lophine.carpet.CarpetFakePlayer bot && fun.bm.lophine.carpet.org.OrgFakePlayerInventory.shouldKeepInventory(bot,source);
          if (!keepInventory) {
              for (ItemStack item : this.getInventory().getContents()) {
                  if (!item.isEmpty() && !EnchantmentHelper.has(item, net.minecraft.world.item.enchantment.EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
@@ -557,8 +557,8 @@ index e3e3fcc0248d7daf8c8f375335f229b651af8897..c492b76a28560e441ba413900a3deac4
      public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
          if (carpet.script.external.ScarpetDamageContinuations.deferPaused(this, () -> this.hurtServer(level, source, damage))) return false;
 -        return this.carpetHurtServerNative(level, source, damage);
-+        return fun.bm.lophine.carpet.OrgShadowDamageContinuations.hurt(this,
-+            () -> fun.bm.lophine.carpet.OrgSafeAfk.withDamageOuter(this, source, damage, () -> this.carpetHurtServerNative(level, source, damage)));
++        return fun.bm.lophine.carpet.org.OrgShadowDamageContinuations.hurt(this,
++            () -> fun.bm.lophine.carpet.org.OrgSafeAfk.withDamageOuter(this, source, damage, () -> this.carpetHurtServerNative(level, source, damage)));
      }
  
      private boolean carpetHurtServerNative(final ServerLevel level, final DamageSource source, final float damage) {
@@ -572,7 +572,7 @@ index e3e3fcc0248d7daf8c8f375335f229b651af8897..c492b76a28560e441ba413900a3deac4
 +            this.carpetFinishedItemHand = this.getUsedItemHand();
 +            this.carpetFinishedItemStartTime = this.eatStartTime;
 +        }
-+        var attempt = fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(java.util.List.of(this.useItem), () -> {
++        var attempt = fun.bm.lophine.carpet.org.OrgItemShadowGroups.attempt(java.util.List.of(this.useItem), () -> {
 +            this.carpetCompleteUsingItem(); return true;
 +        });
 +        if (!attempt.completed()) this.useItemRemaining = 1;
@@ -595,9 +595,9 @@ index e3e3fcc0248d7daf8c8f375335f229b651af8897..c492b76a28560e441ba413900a3deac4
              super.completeUsingItem();
 @@ -2936,6 +3022,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.waypointIcon().copyFrom(oldPlayer.waypointIcon());
-         fun.bm.lophine.carpet.AmsManagementCommands.onRespawn(this, restoreAll);
+         fun.bm.lophine.carpet.ams.AmsManagementCommands.onRespawn(this, restoreAll);
          // Lophine start - Carpet features
-+        fun.bm.lophine.carpet.OrgNavigation.copyFrom(this, oldPlayer);
++        fun.bm.lophine.carpet.org.OrgNavigation.copyFrom(this, oldPlayer);
          // Lophine end - Carpet features
      }
  
@@ -605,19 +605,19 @@ index e3e3fcc0248d7daf8c8f375335f229b651af8897..c492b76a28560e441ba413900a3deac4
  
      @Override
      public @Nullable ItemEntity drop(final ItemStack itemStack, final boolean thrownFromHand, final Prediction prediction, final boolean callEvent, final java.util.function.@Nullable Consumer<org.bukkit.entity.Item> entityOperation) { // Paper - Extend dropItem API
-+        if (fun.bm.lophine.carpet.OrgInventoryTransfers.captureDrop(itemStack)) return null;
++        if (fun.bm.lophine.carpet.org.OrgInventoryTransfers.captureDrop(itemStack)) return null;
          ItemEntity entity = super.drop(itemStack, thrownFromHand, prediction, callEvent, entityOperation); // Paper - Extend dropItem API
          ItemStack droppedItemStack = entity != null ? entity.getItem() : ItemStack.EMPTY; // Paper - move up
          if (thrownFromHand) {
 diff --git a/net/minecraft/server/level/ServerPlayerGameMode.java b/net/minecraft/server/level/ServerPlayerGameMode.java
-index 6e7f1b8cda82d6a7b80961f1d0e8e85f21607505..37ce56dcb15dc3d42fa740857ac6fc9ae2b29aa9 100644
+index 6e7f1b8cda82d6a7b80961f1d0e8e85f21607505..f2871f400d6efef33a05a4028eca317ff73fcf05 100644
 --- a/net/minecraft/server/level/ServerPlayerGameMode.java
 +++ b/net/minecraft/server/level/ServerPlayerGameMode.java
 @@ -132,6 +132,10 @@ public class ServerPlayerGameMode {
      }
  
      public void tick() {
-+        fun.bm.lophine.carpet.OrgGameplayHelper.withTool(this.player, this.player.getMainHandItem(), this::carpetTick);
++        fun.bm.lophine.carpet.org.OrgGameplayHelper.withTool(this.player, this.player.getMainHandItem(), this::carpetTick);
 +    }
 +
 +    private void carpetTick() {
@@ -629,7 +629,7 @@ index 6e7f1b8cda82d6a7b80961f1d0e8e85f21607505..37ce56dcb15dc3d42fa740857ac6fc9a
      public void handleBlockBreakAction(
          final BlockPos pos, final ServerboundPlayerActionPacket.Action action, final Direction direction, final int maxY, final int sequence
 +    ) {
-+        fun.bm.lophine.carpet.OrgGameplayHelper.withTool(this.player, this.player.getMainHandItem(),
++        fun.bm.lophine.carpet.org.OrgGameplayHelper.withTool(this.player, this.player.getMainHandItem(),
 +            () -> this.carpetHandleBlockBreakAction(pos, action, direction, maxY, sequence));
 +    }
 +
@@ -654,7 +654,7 @@ index 6e7f1b8cda82d6a7b80961f1d0e8e85f21607505..37ce56dcb15dc3d42fa740857ac6fc9a
  
      public boolean destroyBlock(final BlockPos pos) {
 +        if (carpet.script.external.ScarpetNativeContinuations.breakBlock(this, pos)) return false;
-+        return fun.bm.lophine.carpet.OrgGameplayHelper.withBlockBreaker(this.player, () -> this.carpetDestroyBlock(pos));
++        return fun.bm.lophine.carpet.org.OrgGameplayHelper.withBlockBreaker(this.player, () -> this.carpetDestroyBlock(pos));
 +    }
 +
 +    private boolean carpetDestroyBlock(final BlockPos pos) {
@@ -672,13 +672,13 @@ index 6e7f1b8cda82d6a7b80961f1d0e8e85f21607505..37ce56dcb15dc3d42fa740857ac6fc9a
 +
 +    private InteractionResult carpetScopedUseItem(final ServerPlayer player, final Level level, final ItemStack itemStack, final InteractionHand hand) {
 +        ItemStack before = itemStack.copy();
-+        InteractionResult result = fun.bm.lophine.carpet.OrgGameplayHelper.withTool(player, itemStack,
-+            () -> this.carpetUseItem(player, level, fun.bm.lophine.carpet.OrgGameplayHelper.toolNoBreakActive() ? ItemStack.EMPTY : itemStack, hand));
++        InteractionResult result = fun.bm.lophine.carpet.org.OrgGameplayHelper.withTool(player, itemStack,
++            () -> this.carpetUseItem(player, level, fun.bm.lophine.carpet.org.OrgGameplayHelper.toolNoBreakActive() ? ItemStack.EMPTY : itemStack, hand));
 +        if (result instanceof InteractionResult.Deferred pending) return carpet.script.external.ScarpetInteractionContinuations.map(pending, completed -> {
-+            if (completed.consumesAction()) fun.bm.lophine.carpet.OrgFakePlayerInventory.restock(player, before, itemStack, hand);
++            if (completed.consumesAction()) fun.bm.lophine.carpet.org.OrgFakePlayerInventory.restock(player, before, itemStack, hand);
 +            return completed;
 +        });
-+        if (result.consumesAction()) fun.bm.lophine.carpet.OrgFakePlayerInventory.restock(player, before, itemStack, hand);
++        if (result.consumesAction()) fun.bm.lophine.carpet.org.OrgFakePlayerInventory.restock(player, before, itemStack, hand);
 +        return result;
 +    }
 +
@@ -690,7 +690,7 @@ index 6e7f1b8cda82d6a7b80961f1d0e8e85f21607505..37ce56dcb15dc3d42fa740857ac6fc9a
          int oldCount = itemStack.getCount();
          int oldDamage = itemStack.getDamageValue();
          final ItemStack stackBeforeUse = itemStack.copy(); // Paper - Store stack before use for interact prediction check
-+        if (fun.bm.lophine.carpet.OrgQuickShulker.open(player, itemStack, null)) return InteractionResult.SUCCESS;
++        if (fun.bm.lophine.carpet.org.OrgQuickShulker.open(player, itemStack, null)) return InteractionResult.SUCCESS;
          InteractionResult result = itemStack.use(level, player, hand);
          if (result instanceof InteractionResult.Deferred pending) return carpet.script.external.ScarpetInteractionContinuations.map(pending, completed ->
              this.carpetFinishUseItem(player, itemStack, hand, oldCount, oldDamage, stackBeforeUse, completed));
@@ -708,13 +708,13 @@ index 6e7f1b8cda82d6a7b80961f1d0e8e85f21607505..37ce56dcb15dc3d42fa740857ac6fc9a
 +        final ServerPlayer player, final Level level, final ItemStack itemStack, final InteractionHand hand, final BlockHitResult hitResult
 +    ) {
 +        ItemStack before = itemStack.copy();
-+        InteractionResult result = fun.bm.lophine.carpet.OrgGameplayHelper.withTool(player, itemStack,
-+            () -> this.carpetUseItemOn(player, level, fun.bm.lophine.carpet.OrgGameplayHelper.toolNoBreakActive() ? ItemStack.EMPTY : itemStack, hand, hitResult));
++        InteractionResult result = fun.bm.lophine.carpet.org.OrgGameplayHelper.withTool(player, itemStack,
++            () -> this.carpetUseItemOn(player, level, fun.bm.lophine.carpet.org.OrgGameplayHelper.toolNoBreakActive() ? ItemStack.EMPTY : itemStack, hand, hitResult));
 +        if (result instanceof InteractionResult.Deferred pending) return carpet.script.external.ScarpetInteractionContinuations.map(pending, completed -> {
-+            if (completed.consumesAction()) fun.bm.lophine.carpet.OrgFakePlayerInventory.restock(player, before, itemStack, hand);
++            if (completed.consumesAction()) fun.bm.lophine.carpet.org.OrgFakePlayerInventory.restock(player, before, itemStack, hand);
 +            return completed;
 +        });
-+        if (result.consumesAction()) fun.bm.lophine.carpet.OrgFakePlayerInventory.restock(player, before, itemStack, hand);
++        if (result.consumesAction()) fun.bm.lophine.carpet.org.OrgFakePlayerInventory.restock(player, before, itemStack, hand);
 +        return result;
 +    }
 +
@@ -724,7 +724,7 @@ index 6e7f1b8cda82d6a7b80961f1d0e8e85f21607505..37ce56dcb15dc3d42fa740857ac6fc9a
          BlockPos pos = hitResult.getBlockPos();
          BlockState state = level.getBlockState(pos);
 diff --git a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
-index 279b5072596c062a7c800510ed914a9df8ce0698..56cb4738c5d7bf2545ff841dc4ac34bca67293dd 100644
+index 279b5072596c062a7c800510ed914a9df8ce0698..c625c12d85d81ec0c5447a9b6b4944bcf6786c00 100644
 --- a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
 @@ -226,6 +226,10 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
@@ -732,14 +732,14 @@ index 279b5072596c062a7c800510ed914a9df8ce0698..56cb4738c5d7bf2545ff841dc4ac34bc
      public void handleCustomClickAction(final ServerboundCustomClickActionPacket packet) {
          PacketUtils.ensureRunningOnSameThread(packet, this, this.server.packetProcessor());
 +        if (this instanceof ServerGamePacketListenerImpl game) {
-+            fun.bm.lophine.carpet.OrgPages.customClick(game.player, packet.id(), packet.payload());
-+            fun.bm.lophine.carpet.OrgFinderFiles.customClick(game.player, packet.id(), packet.payload());
++            fun.bm.lophine.carpet.org.OrgPages.customClick(game.player, packet.id(), packet.payload());
++            fun.bm.lophine.carpet.org.OrgFinderFiles.customClick(game.player, packet.id(), packet.payload());
 +        }
          this.server.handleCustomClickAction(packet.id(), packet.payload());
          // Paper start - Implement click callbacks with custom click action
          final io.papermc.paper.event.player.PaperPlayerCustomClickEvent event = new io.papermc.paper.event.player.PaperPlayerCustomClickEvent(io.papermc.paper.adventure.PaperAdventure.asAdventure(packet.id()), this.getApiConnection(), packet.payload().orElse(null));
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 2c50a8109d49306eb11f5960e9b359b64442b75b..d7e197359b1a623e85ebecb634110ff7d12f91d8 100644
+index 2c50a8109d49306eb11f5960e9b359b64442b75b..3d7bac7c7bd24fef7744f93bdf7204a5b0ac4d57 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -890,7 +890,10 @@ public class ServerGamePacketListenerImpl
@@ -748,7 +748,7 @@ index 2c50a8109d49306eb11f5960e9b359b64442b75b..d7e197359b1a623e85ebecb634110ff7
          CraftEventFactory.callPlayerBundleItemSelectEvent(this.player, packet.slotId(), packet.selectedItemIndex()); // Paper - PlayerBundleItemSelectEvent
 -        this.player.containerMenu.setSelectedBundleItemIndex(packet.slotId(), packet.selectedItemIndex());
 +        var menu = this.player.containerMenu;
-+        fun.bm.lophine.carpet.OrgItemShadowGroups.actor(this.player, () -> fun.bm.lophine.carpet.OrgItemShadowGroups.inventory(this.player, menu.slots),
++        fun.bm.lophine.carpet.org.OrgItemShadowGroups.actor(this.player, () -> fun.bm.lophine.carpet.org.OrgItemShadowGroups.inventory(this.player, menu.slots),
 +            () -> { menu.setSelectedBundleItemIndex(packet.slotId(), packet.selectedItemIndex()); return true; }, false,
 +            owner -> this.player.containerMenu == menu && menu.stillValid(this.player), ignored -> menu.broadcastChanges());
      }
@@ -764,7 +764,7 @@ index 2c50a8109d49306eb11f5960e9b359b64442b75b..d7e197359b1a623e85ebecb634110ff7
 -                }
 -                if (io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.updateEquipmentOnPlayerActions) this.player.detectEquipmentUpdates(); // Paper - Force update attributes.
 +                var menu = this.player.containerMenu;
-+                fun.bm.lophine.carpet.OrgItemShadowGroups.actor(this.player, () -> fun.bm.lophine.carpet.OrgItemShadowGroups.inventory(this.player, menu.slots), () -> {
++                fun.bm.lophine.carpet.org.OrgItemShadowGroups.actor(this.player, () -> fun.bm.lophine.carpet.org.OrgItemShadowGroups.inventory(this.player, menu.slots), () -> {
 +                    boolean clickAccepted = menu.clickMenuButton(this.player, packet.buttonId());
 +                    if (clickAccepted) menu.broadcastChanges();
 +                    if (io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.updateEquipmentOnPlayerActions) this.player.detectEquipmentUpdates();
@@ -774,14 +774,14 @@ index 2c50a8109d49306eb11f5960e9b359b64442b75b..d7e197359b1a623e85ebecb634110ff7
          }
      }
 diff --git a/net/minecraft/server/network/config/PrepareSpawnTask.java b/net/minecraft/server/network/config/PrepareSpawnTask.java
-index 44f6e716afbd4ac6b543802fdd0fb2113dc7f98f..3758bb2186ade87f1f64a91d9ab7785123a00938 100644
+index 44f6e716afbd4ac6b543802fdd0fb2113dc7f98f..c1e5c993386081fbe2518f8d9987088f62c320ed 100644
 --- a/net/minecraft/server/network/config/PrepareSpawnTask.java
 +++ b/net/minecraft/server/network/config/PrepareSpawnTask.java
 @@ -56,6 +56,13 @@ public class PrepareSpawnTask implements ConfigurationTask {
  
      @Override
      public void start(final Consumer<Packet<?>> connection) {
-+        this.carpetLogin.start(() -> fun.bm.lophine.carpet.OrgPlayerInventoryMenus.recoverOfflineBeforeRead(this.server,this.nameAndId.id()).thenRunAsync(() -> {
++        this.carpetLogin.start(() -> fun.bm.lophine.carpet.org.OrgPlayerInventoryMenus.recoverOfflineBeforeRead(this.server,this.nameAndId.id()).thenRunAsync(() -> {
 +            if (!this.carpetLogin.closed()) this.carpetStartNative(connection);
 +        }, io.papermc.paper.connection.PaperConfigurationTask.CONFIGURATION_POOL));
 +        this.carpetLogin.completion().whenComplete((ignored, failure) -> { if (failure != null) this.carpetStartFailure = failure; });
@@ -792,7 +792,7 @@ index 44f6e716afbd4ac6b543802fdd0fb2113dc7f98f..3758bb2186ade87f1f64a91d9ab77851
              Optional<ValueInput> loadedData = this.server
                  .getPlayerList()
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 6260decba5783cb3ed7408bd04755a1ebaeb2f66..4a56aa5b4353564ed9a0ca7812b7c9246eda777e 100644
+index 0c36efdfae748b8ec8d92d97f7900e39d41ebdb6..cea15af47041ef0c3f79a9b0d2df79e568953d31 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -793,6 +793,14 @@ public abstract class PlayerList {
@@ -804,23 +804,23 @@ index 6260decba5783cb3ed7408bd04755a1ebaeb2f66..4a56aa5b4353564ed9a0ca7812b7c924
 +    }
 +
 +    private net.kyori.adventure.text.@Nullable Component carpetFinishPlayerRemoval(final ServerPlayer player, net.kyori.adventure.text.@Nullable Component quitMessage) {
-+        fun.bm.lophine.carpet.OrgNavigation.disconnected(player);
-+        fun.bm.lophine.carpet.OrgMailService.retired(player);
-+        fun.bm.lophine.carpet.OrgPlayerInventoryMenus.retired(player);
++        fun.bm.lophine.carpet.org.OrgNavigation.disconnected(player);
++        fun.bm.lophine.carpet.org.OrgMailService.retired(player);
++        fun.bm.lophine.carpet.org.OrgPlayerInventoryMenus.retired(player);
          player.retireScheduler(); // Paper - Folia schedulers
          player.getBukkitEntity().packetProcessor.close(); // Folia - region threading
          player.getAdvancements().clearTriggers();
 diff --git a/net/minecraft/world/Containers.java b/net/minecraft/world/Containers.java
-index 6370f0eb9039941687d37a0fe387fbd676ec151b..c6a729a9c952cc694b9aff854b3291fc38d7c9fd 100644
+index 6370f0eb9039941687d37a0fe387fbd676ec151b..b001d5a608f5fa1c1e904961710f0333cc276787 100644
 --- a/net/minecraft/world/Containers.java
 +++ b/net/minecraft/world/Containers.java
 @@ -30,6 +30,16 @@ public class Containers {
      }
  
      public static void dropItemStack(final Level level, final double x, final double y, final double z, final ItemStack itemStack) {
-+        net.minecraft.server.level.ServerPlayer breaker = fun.bm.lophine.carpet.OrgGameplayHelper.blockBreaker();
++        net.minecraft.server.level.ServerPlayer breaker = fun.bm.lophine.carpet.org.OrgGameplayHelper.blockBreaker();
 +        if (level instanceof net.minecraft.server.level.ServerLevel serverWorld) {
-+            fun.bm.lophine.carpet.OrgBlockDropRouting.scatterNative(serverWorld, BlockPos.containing(x, y, z), itemStack, breaker,
++            fun.bm.lophine.carpet.org.OrgBlockDropRouting.scatterNative(serverWorld, BlockPos.containing(x, y, z), itemStack, breaker,
 +                () -> { carpetDropItemStackOriginal(level, x, y, z, itemStack); return null; });
 +            return;
 +        }
@@ -832,22 +832,22 @@ index 6370f0eb9039941687d37a0fe387fbd676ec151b..c6a729a9c952cc694b9aff854b3291fc
          double centerRange = 1.0 - size;
          double halfSize = size / 2.0;
 diff --git a/net/minecraft/world/damagesource/CombatTracker.java b/net/minecraft/world/damagesource/CombatTracker.java
-index 75c4e1966008826060047eead980b7b0f6e09ae4..d2579f833d44571c3d878f00fad11b720e1e4d78 100644
+index 75c4e1966008826060047eead980b7b0f6e09ae4..15172777006c6116b50145850775ac6d9fb7d1aa 100644
 --- a/net/minecraft/world/damagesource/CombatTracker.java
 +++ b/net/minecraft/world/damagesource/CombatTracker.java
 @@ -104,6 +104,10 @@ public class CombatTracker {
      }
  
      public Component getDeathMessage() {
-+        if (!this.entries.isEmpty() && fun.bm.lophine.carpet.OrgSuicideCommand.committing(this.mob, this.entries.getLast().source())) {
-+            return Component.literal(String.format(fun.bm.lophine.carpet.OrgRuleTranslations.text(
++        if (!this.entries.isEmpty() && fun.bm.lophine.carpet.org.OrgSuicideCommand.committing(this.mob, this.entries.getLast().source())) {
++            return Component.literal(String.format(fun.bm.lophine.carpet.org.OrgRuleTranslations.text(
 +                "carpet-org-addition.command.killMe.suicide", "%s brutally ended their own life"), this.mob.getDisplayName().getString()));
 +        }
          if (this.entries.isEmpty()) {
              return Component.translatable("death.attack.generic", this.mob.getDisplayName());
          } else {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 9d43bb7fd0a1b9a4746d4847231656cfd2562f4e..4685ee6ef4d2e248b7d02c369e8de85622cb2c35 100644
+index d96029a879af52e197dde9d39d5705da51979485..3081881669c0afd6ca192b66f88c010ba7c71f62 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -6524,6 +6524,11 @@ public abstract class Entity
@@ -868,7 +868,7 @@ index 9d43bb7fd0a1b9a4746d4847231656cfd2562f4e..4685ee6ef4d2e248b7d02c369e8de856
          final boolean alreadyRemoved = this.removalReason != null; // Paper - Folia schedulers
 +        if (!alreadyRemoved && this instanceof net.minecraft.server.level.ServerPlayer player) {
 +            player.carpetActionPack.detachTargetArea();
-+            fun.bm.lophine.carpet.OrgPlayerStatusSync.removed(player);
++            fun.bm.lophine.carpet.org.OrgPlayerStatusSync.removed(player);
 +        }
          // Folia start - region threading
          this.preRemove(reason);
@@ -890,7 +890,7 @@ index c609d9c4d6b7e0670025f13cbe8d956694f3c1b5..1ded07d0477483da6489e1e603bd3565
          long carpetTotal = (long) this.getValue() * this.count + (long) orb.getValue() * orb.count;
          if (carpetCombineDifferentValues(this) && carpetTotal > Short.MAX_VALUE) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..01da1d222ec7c0a947373686c3ccfd70a31a9bc1 100644
+index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..a54f5ba7b74e25bbd5430175b67cd0a1e2fb3a11 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -360,7 +360,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -898,7 +898,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..01da1d222ec7c0a947373686c3ccfd70
      @Override
      public void kill(final ServerLevel level) {
 -        this.hurtServer(level, this.damageSources().genericKill(), Float.MAX_VALUE);
-+        this.hurtServer(level, fun.bm.lophine.carpet.OrgSuicideCommand.source(this, this.damageSources().genericKill()), Float.MAX_VALUE);
++        this.hurtServer(level, fun.bm.lophine.carpet.org.OrgSuicideCommand.source(this, this.damageSources().genericKill()), Float.MAX_VALUE);
      }
  
      @Override
@@ -921,7 +921,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..01da1d222ec7c0a947373686c3ccfd70
 +
 +    private boolean carpetContinueHurt(ServerLevel level, DamageSource source, float damage, float originalDamage, ItemStack itemInUse,
 +            float damageBlocked, boolean blocked, EntityDamageEvent event, boolean tookFullDamage, boolean cancelledInnerDamage, boolean deferred) {
-+        if (this instanceof ServerPlayer player) return fun.bm.lophine.carpet.OrgSafeAfk.withDamage(player, source, originalDamage,
++        if (this instanceof ServerPlayer player) return fun.bm.lophine.carpet.org.OrgSafeAfk.withDamage(player, source, originalDamage,
 +            () -> this.carpetApplyHurt(level, source, damage, originalDamage, itemInUse, damageBlocked, blocked, event, tookFullDamage, cancelledInnerDamage, deferred));
 +        return this.carpetApplyHurt(level, source, damage, originalDamage, itemInUse, damageBlocked, blocked, event, tookFullDamage, cancelledInnerDamage, deferred);
 +    }
@@ -938,7 +938,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..01da1d222ec7c0a947373686c3ccfd70
          // CraftBukkit start
          InteractionHand usedHand = null;
          ItemStack itemStack = ItemStack.EMPTY;
-+        fun.bm.lophine.carpet.OrgGameplayHelper.InventoryDeathProtection inventoryProtection = null;
++        fun.bm.lophine.carpet.org.OrgGameplayHelper.InventoryDeathProtection inventoryProtection = null;
          for (InteractionHand hand : InteractionHand.values()) {
              itemStack = this.getItemInHand(hand);
              protection = itemStack.get(DataComponents.DEATH_PROTECTION);
@@ -947,7 +947,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..01da1d222ec7c0a947373686c3ccfd70
          }
  
 +        if (protectionItem == null && this instanceof Player player) {
-+            inventoryProtection = fun.bm.lophine.carpet.OrgGameplayHelper.findInventoryDeathProtection(player);
++            inventoryProtection = fun.bm.lophine.carpet.org.OrgGameplayHelper.findInventoryDeathProtection(player);
 +            if (inventoryProtection != null) {
 +                itemStack = inventoryProtection.stack();
 +                protection = itemStack.get(DataComponents.DEATH_PROTECTION);
@@ -966,7 +966,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..01da1d222ec7c0a947373686c3ccfd70
 +                else {
 +                    ItemStack before = itemStack.copy();
 +                    itemStack.shrink(1);
-+                    if (this instanceof Player player) fun.bm.lophine.carpet.OrgFakePlayerInventory.restock(player, before, itemStack, usedHand);
++                    if (this instanceof Player player) fun.bm.lophine.carpet.org.OrgFakePlayerInventory.restock(player, before, itemStack, usedHand);
 +                }
              }
              // Paper start - fix NPE when pre-cancelled EntityResurrectEvent is uncancelled
@@ -979,7 +979,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..01da1d222ec7c0a947373686c3ccfd70
 +                this.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 40, 4));
 +            }
              this.level().broadcastEntityEvent(this, EntityEvent.PROTECTED_FROM_DEATH);
-+            if (this instanceof ServerPlayer player) fun.bm.lophine.carpet.OrgSafeAfk.markTotemUsed(player);
++            if (this instanceof ServerPlayer player) fun.bm.lophine.carpet.org.OrgSafeAfk.markTotemUsed(player);
          }
  
          return protection != null;
@@ -987,7 +987,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..01da1d222ec7c0a947373686c3ccfd70
      }
  
      public ItemStack getMainHandItem() {
-+        if (this instanceof Player && fun.bm.lophine.carpet.OrgGameplayHelper.toolNoBreakActive()) return ItemStack.EMPTY;
++        if (this instanceof Player && fun.bm.lophine.carpet.org.OrgGameplayHelper.toolNoBreakActive()) return ItemStack.EMPTY;
          return this.getItemBySlot(EquipmentSlot.MAINHAND);
      }
  
@@ -995,7 +995,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..01da1d222ec7c0a947373686c3ccfd70
      }
  
      public ItemStack getItemInHand(final InteractionHand hand) {
-+        if (this instanceof Player && fun.bm.lophine.carpet.OrgGameplayHelper.toolNoBreakActive()) return ItemStack.EMPTY;
++        if (this instanceof Player && fun.bm.lophine.carpet.org.OrgGameplayHelper.toolNoBreakActive()) return ItemStack.EMPTY;
          if (hand == InteractionHand.MAIN_HAND) {
              return this.getItemBySlot(EquipmentSlot.MAINHAND);
          } else if (hand == InteractionHand.OFF_HAND) {
@@ -1006,7 +1006,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..01da1d222ec7c0a947373686c3ccfd70
 -            if (this.equipmentHasChanged(previous, current)) {
 +            boolean equipmentChanged = this.equipmentHasChanged(previous, current);
 +            if (this instanceof Player player) {
-+                boolean blocked = fun.bm.lophine.carpet.OrgGameplayHelper.suppressToolAttributes(current, player);
++                boolean blocked = fun.bm.lophine.carpet.org.OrgGameplayHelper.suppressToolAttributes(current, player);
 +                boolean previouslyBlocked = this.carpetNoBreakEquipment.getOrDefault(slot, false);
 +                this.carpetNoBreakEquipment.put(slot, blocked);
 +                if (!equipmentChanged && blocked != previouslyBlocked) {
@@ -1029,7 +1029,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..01da1d222ec7c0a947373686c3ccfd70
                  ItemStack current = entry.getValue();
                  if (!current.isEmpty() && !current.isBroken()) {
 -                    current.forEachModifier(slot, (attribute, modifier) -> {
-+                    ItemStack attributeItem = this instanceof Player player && fun.bm.lophine.carpet.OrgGameplayHelper.suppressToolAttributes(current, player)
++                    ItemStack attributeItem = this instanceof Player player && fun.bm.lophine.carpet.org.OrgGameplayHelper.suppressToolAttributes(current, player)
 +                        ? ItemStack.EMPTY : current;
 +                    attributeItem.forEachModifier(slot, (attribute, modifier) -> {
                          AttributeInstance instance = this.attributes.getInstance(attribute);
@@ -1048,12 +1048,12 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..01da1d222ec7c0a947373686c3ccfd70
      }
  
      public void completeUsingItem() {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this.useItem)) {
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this.useItem)) {
 +            var stacks = this instanceof Player player
-+                ? fun.bm.lophine.carpet.OrgItemShadowGroups.inventory(player, player.containerMenu.slots)
-+                : fun.bm.lophine.carpet.OrgItemShadowGroups.equipment(this);
++                ? fun.bm.lophine.carpet.org.OrgItemShadowGroups.inventory(player, player.containerMenu.slots)
++                : fun.bm.lophine.carpet.org.OrgItemShadowGroups.equipment(this);
 +            stacks.add(this.useItem);
-+            var attempt = fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(stacks, () -> { this.carpetOrgCompleteUsingItem(); return true; });
++            var attempt = fun.bm.lophine.carpet.org.OrgItemShadowGroups.attempt(stacks, () -> { this.carpetOrgCompleteUsingItem(); return true; });
 +            if (!attempt.completed()) this.useItemRemaining = 1; // Native use tick retries without firing consume/stop tails early.
 +            return;
 +        }
@@ -1070,8 +1070,8 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..01da1d222ec7c0a947373686c3ccfd70
                      if (result != this.useItem) {
 -                        this.setItemInHand(hand, result);
 +                        if (this instanceof fun.bm.lophine.carpet.CarpetFakePlayer bot
-+                            && fun.bm.lophine.carpet.OrgFakePlayerInventory.restock(bot, carpetUseBefore, this.getItemInHand(hand), hand)) {
-+                            fun.bm.lophine.carpet.OrgFakePlayerInventory.insert(bot, result);
++                            && fun.bm.lophine.carpet.org.OrgFakePlayerInventory.restock(bot, carpetUseBefore, this.getItemInHand(hand), hand)) {
++                            fun.bm.lophine.carpet.org.OrgFakePlayerInventory.insert(bot, result);
 +                        } else {
 +                            this.setItemInHand(hand, result);
 +                        }
@@ -1079,7 +1079,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..01da1d222ec7c0a947373686c3ccfd70
                      }
  
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
-index 86c2e063908dbf704a365ee3521dcdee28ed5cf6..03b2f0fa6387426c8d85bf4ed686999b001bf2d0 100644
+index 86c2e063908dbf704a365ee3521dcdee28ed5cf6..a9daffbe79d7a96c4c98fab57c54211d0e56c24e 100644
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
 @@ -280,6 +280,9 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
@@ -1097,8 +1097,8 @@ index 86c2e063908dbf704a365ee3521dcdee28ed5cf6..03b2f0fa6387426c8d85bf4ed686999b
  
      protected void pickUpItem(final ServerLevel level, final ItemEntity entity) {
 +        if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(entity)) return;
-+        var stacks = fun.bm.lophine.carpet.OrgItemShadowGroups.equipment(this); stacks.add(entity.getItem());
-+        fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(stacks, () -> { this.carpetOrgPickUpItem(level, entity); return true; });
++        var stacks = fun.bm.lophine.carpet.org.OrgItemShadowGroups.equipment(this); stacks.add(entity.getItem());
++        fun.bm.lophine.carpet.org.OrgItemShadowGroups.attempt(stacks, () -> { this.carpetOrgPickUpItem(level, entity); return true; });
 +    }
 +
 +    private void carpetOrgPickUpItem(final ServerLevel level, final ItemEntity entity) {
@@ -1149,7 +1149,7 @@ index 504e92d575cf87dfb15019e06e6788d02cd99b44..c66417222e97692a95563cad60edc1d0
          } else {
              this.noActionTime = 0;
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index 6c93cb565becb0a993d55729cf3d5ffaa5f1ef32..da87cd9099d050f437eb3292ff35552465696a66 100644
+index 99f7841a0574a102e423f87905a46793008dd3c4..94c0d5a61a44b945ee7b76fbbf9d43538b2567cb 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
 @@ -282,6 +282,11 @@ public class ItemEntity extends Entity implements TraceableEntity, net.caffeinem
@@ -1157,7 +1157,7 @@ index 6c93cb565becb0a993d55729cf3d5ffaa5f1ef32..da87cd9099d050f437eb3292ff355524
  
      private void tryToMerge(final ItemEntity other) {
 +        if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(other)) return;
-+        fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(java.util.List.of(this.getItem(), other.getItem()), () -> { this.carpetOrgTryToMerge(other); return true; });
++        fun.bm.lophine.carpet.org.OrgItemShadowGroups.attempt(java.util.List.of(this.getItem(), other.getItem()), () -> { this.carpetOrgTryToMerge(other); return true; });
 +    }
 +
 +    private void carpetOrgTryToMerge(final ItemEntity other) {
@@ -1170,9 +1170,9 @@ index 6c93cb565becb0a993d55729cf3d5ffaa5f1ef32..da87cd9099d050f437eb3292ff355524
      public void playerTouch(final Player player) {
 -        this.carpetOrgPlayerTouch(player);
 +        if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(player)) return;
-+        var shadowStacks = fun.bm.lophine.carpet.OrgItemShadowGroups.container(player.getInventory());
++        var shadowStacks = fun.bm.lophine.carpet.org.OrgItemShadowGroups.container(player.getInventory());
 +        shadowStacks.add(this.getItem());
-+        fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(shadowStacks, () -> { this.carpetOrgPlayerTouch(player); return true; });
++        fun.bm.lophine.carpet.org.OrgItemShadowGroups.attempt(shadowStacks, () -> { this.carpetOrgPlayerTouch(player); return true; });
      }
  
      private void carpetOrgPlayerTouch(final Player player) {
@@ -1286,7 +1286,7 @@ index 0e94bbe9c1ef0e8053f033c0c7c63f5e1977e5e0..e839120f15768dc900b0136ed88c4e80
      }
  }
 diff --git a/net/minecraft/world/entity/npc/villager/Villager.java b/net/minecraft/world/entity/npc/villager/Villager.java
-index 434b5be8d2c4fb39a87e7c504ecbdc46fd8f3a7b..246b2d1439ecf692a84186158d343b382219d8ac 100644
+index 434b5be8d2c4fb39a87e7c504ecbdc46fd8f3a7b..cf971f5b2ce764a0a52697b3931644415366b4bd 100644
 --- a/net/minecraft/world/entity/npc/villager/Villager.java
 +++ b/net/minecraft/world/entity/npc/villager/Villager.java
 @@ -424,6 +424,9 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
@@ -1307,21 +1307,21 @@ index 434b5be8d2c4fb39a87e7c504ecbdc46fd8f3a7b..246b2d1439ecf692a84186158d343b38
 +        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.openVillagerInventory && player.isShiftKeyDown()
 +            && ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(this)) {
 +            player.openMenu(new net.minecraft.world.SimpleMenuProvider(
-+                (id, inventory, ignored) -> new fun.bm.lophine.carpet.OrgVillagerMenu(id, inventory, this), this.getName()));
++                (id, inventory, ignored) -> new fun.bm.lophine.carpet.org.OrgVillagerMenu(id, inventory, this), this.getName()));
 +            return InteractionResult.SUCCESS;
 +        }
          ItemStack itemStack = player.getItemInHand(hand);
          if (itemStack.is(Items.VILLAGER_SPAWN_EGG) || !this.isAlive() || this.isTrading() || this.isSleeping()) {
              return super.mobInteract(player, hand);
 diff --git a/net/minecraft/world/entity/player/Inventory.java b/net/minecraft/world/entity/player/Inventory.java
-index 2ea8a969d96f38f0021cc2c04df9950373f113b5..e257291b9e28eac9455e26e39ff91af8690a2f3e 100644
+index 2ea8a969d96f38f0021cc2c04df9950373f113b5..970f15f746a156714edcb007a1a4a68495758293 100644
 --- a/net/minecraft/world/entity/player/Inventory.java
 +++ b/net/minecraft/world/entity/player/Inventory.java
 @@ -152,6 +152,7 @@ public class Inventory implements Container, Nameable {
      }
  
      public ItemStack getSelectedItem() {
-+        if (fun.bm.lophine.carpet.OrgGameplayHelper.toolNoBreakActive()) return ItemStack.EMPTY;
++        if (fun.bm.lophine.carpet.org.OrgGameplayHelper.toolNoBreakActive()) return ItemStack.EMPTY;
          return this.items.get(this.selected);
      }
  
@@ -1329,10 +1329,10 @@ index 2ea8a969d96f38f0021cc2c04df9950373f113b5..e257291b9e28eac9455e26e39ff91af8
      }
  
      public boolean add(int slot, final ItemStack itemStack) {
-+        java.util.List<ItemStack> shadowStacks = fun.bm.lophine.carpet.OrgItemShadowGroups.container(this);
++        java.util.List<ItemStack> shadowStacks = fun.bm.lophine.carpet.org.OrgItemShadowGroups.container(this);
 +        shadowStacks.add(itemStack);
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.any(shadowStacks)) {
-+            var result = fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(shadowStacks, () -> this.carpetOrgAdd(slot, itemStack));
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.any(shadowStacks)) {
++            var result = fun.bm.lophine.carpet.org.OrgItemShadowGroups.attempt(shadowStacks, () -> this.carpetOrgAdd(slot, itemStack));
 +            return result.completed() && result.value();
 +        }
 +        return this.carpetOrgAdd(slot, itemStack);
@@ -1346,10 +1346,10 @@ index 2ea8a969d96f38f0021cc2c04df9950373f113b5..e257291b9e28eac9455e26e39ff91af8
      }
  
      public void placeItemBackInInventory(final ItemStack itemStack, final boolean shouldSendSetSlotPacket, final Prediction prediction) {
-+        var shadowStacks = fun.bm.lophine.carpet.OrgItemShadowGroups.container(this);
++        var shadowStacks = fun.bm.lophine.carpet.org.OrgItemShadowGroups.container(this);
 +        shadowStacks.add(itemStack);
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.any(shadowStacks)) {
-+            fun.bm.lophine.carpet.OrgInventoryTransfers.deferReturn((ServerPlayer) this.player, itemStack, () -> this.carpetOrgPlaceItemBackInInventory(itemStack, shouldSendSetSlotPacket, prediction));
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.any(shadowStacks)) {
++            fun.bm.lophine.carpet.org.OrgInventoryTransfers.deferReturn((ServerPlayer) this.player, itemStack, () -> this.carpetOrgPlaceItemBackInInventory(itemStack, shouldSendSetSlotPacket, prediction));
 +            return;
 +        }
 +        this.carpetOrgPlaceItemBackInInventory(itemStack, shouldSendSetSlotPacket, prediction);
@@ -1400,7 +1400,7 @@ index 2ea8a969d96f38f0021cc2c04df9950373f113b5..e257291b9e28eac9455e26e39ff91af8
      public void setChanged() {
          this.timesChanged++;
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index f4a904564685504f078fcc6e1eb8df32d6051392..2a6c1568b3e81e90d0516b1ebfdc03934de7ecf5 100644
+index f4a904564685504f078fcc6e1eb8df32d6051392..bfa6831ef10763abc44f67b9508da0180460497d 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -566,6 +566,9 @@ public abstract class Player extends Avatar implements ContainerUser {
@@ -1408,7 +1408,7 @@ index f4a904564685504f078fcc6e1eb8df32d6051392..2a6c1568b3e81e90d0516b1ebfdc0393
              }
  
 +            if (this instanceof ServerPlayer player) {
-+                fun.bm.lophine.carpet.OrgExpandedItemPickup.expand(player, pickupArea);
++                fun.bm.lophine.carpet.org.OrgExpandedItemPickup.expand(player, pickupArea);
 +            }
              if (!orbs.isEmpty()) {
                  // Lophine start - Carpet features
@@ -1442,7 +1442,7 @@ index f4a904564685504f078fcc6e1eb8df32d6051392..2a6c1568b3e81e90d0516b1ebfdc0393
 +                ItemStack equipped = carpetLiving.getItemBySlot(slot);
 +                carpetEquipment.put(slot, equipped); carpetItems.add(equipped);
 +            }
-+            if (fun.bm.lophine.carpet.OrgItemShadowGroups.any(carpetItems) || carpet.script.external.ScarpetPlayerInventoryGate.paused(carpetPlayer)) return carpet.script.external.ScarpetInteractionContinuations.managed(carpetPlayer, carpetItems,
++            if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.any(carpetItems) || carpet.script.external.ScarpetPlayerInventoryGate.paused(carpetPlayer)) return carpet.script.external.ScarpetInteractionContinuations.managed(carpetPlayer, carpetItems,
 +                () -> !entity.isRemoved() && entity.level() == carpetPlayer.level()
 +                    && ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(entity)
 +                    && this.getItemInHand(hand) == carpetHeld && carpetPlayer.isWithinEntityInteractionRange(entity, 1.0)
@@ -1471,11 +1471,11 @@ index f4a904564685504f078fcc6e1eb8df32d6051392..2a6c1568b3e81e90d0516b1ebfdc0393
 +
 +    private InteractionResult carpetInteractOnNative(final Entity entity, final InteractionHand hand, final Vec3 location) {
 +        if (this instanceof ServerPlayer viewer) {
-+            var menu=fun.bm.lophine.carpet.OrgFakePlayerRecipeMenus.interactAsync(viewer, entity, hand);
++            var menu=fun.bm.lophine.carpet.org.OrgFakePlayerRecipeMenus.interactAsync(viewer, entity, hand);
 +            if (menu != null) return carpet.script.external.ScarpetInteractionContinuations.after(viewer, menu, () -> InteractionResult.SUCCESS);
 +        }
 +        if (!this.isSpectator() && this instanceof ServerPlayer viewer && entity instanceof ServerPlayer target) {
-+            var menu=fun.bm.lophine.carpet.OrgPlayerInventoryMenus.interactAsync(viewer, target);
++            var menu=fun.bm.lophine.carpet.org.OrgPlayerInventoryMenus.interactAsync(viewer, target);
 +            if (menu != null) return carpet.script.external.ScarpetInteractionContinuations.after(viewer, menu, () -> InteractionResult.SUCCESS);
 +        }
          if (this.isSpectator()) {
@@ -1493,7 +1493,7 @@ index f4a904564685504f078fcc6e1eb8df32d6051392..2a6c1568b3e81e90d0516b1ebfdc0393
 +
 +    private void carpetScopedAttack(final Entity entity) {
 +        if (this instanceof ServerPlayer carpetPlayer && carpet.script.external.ScarpetNativeContinuations.attack(carpetPlayer, entity)) return;
-+        fun.bm.lophine.carpet.OrgGameplayHelper.withTool(this, this.getMainHandItem(), () -> this.carpetAttack(entity));
++        fun.bm.lophine.carpet.org.OrgGameplayHelper.withTool(this, this.getMainHandItem(), () -> this.carpetAttack(entity));
 +    }
 +
 +    private void carpetAttack(final Entity entity) {
@@ -1576,16 +1576,16 @@ index 471cf214cfdcf27bd14317ba9d8081da90439809..b38a4b84a98dae51587883d3da8d9976
  
                          this.playSound(level, teleportPos);
 diff --git a/net/minecraft/world/inventory/AbstractContainerMenu.java b/net/minecraft/world/inventory/AbstractContainerMenu.java
-index 691bc128a1e11a7638ca372464733c3f1249d405..86b148a7cc4e8c2357e6d85a5c90429d78b20a73 100644
+index 691bc128a1e11a7638ca372464733c3f1249d405..de2dfbe12c104619d954c54007a9ca13778850cf 100644
 --- a/net/minecraft/world/inventory/AbstractContainerMenu.java
 +++ b/net/minecraft/world/inventory/AbstractContainerMenu.java
 @@ -392,6 +392,22 @@ public abstract class AbstractContainerMenu {
      }
  
      public void clicked(final int slotIndex, final int buttonNum, final ContainerInput containerInput, final Player player) {
-+        java.util.List<ItemStack> shadowStacks = fun.bm.lophine.carpet.OrgItemShadowGroups.inventory(player, this.slots);
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.any(shadowStacks)) {
-+            fun.bm.lophine.carpet.OrgItemShadowGroups.actor(player, () -> fun.bm.lophine.carpet.OrgItemShadowGroups.inventory(player, this.slots), () -> { this.carpetOrgClicked(slotIndex, buttonNum, containerInput, player); return true; }, false,
++        java.util.List<ItemStack> shadowStacks = fun.bm.lophine.carpet.org.OrgItemShadowGroups.inventory(player, this.slots);
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.any(shadowStacks)) {
++            fun.bm.lophine.carpet.org.OrgItemShadowGroups.actor(player, () -> fun.bm.lophine.carpet.org.OrgItemShadowGroups.inventory(player, this.slots), () -> { this.carpetOrgClicked(slotIndex, buttonNum, containerInput, player); return true; }, false,
 +                owned -> player.containerMenu == this && this.stillValid(player), ignored -> this.broadcastChanges());
 +            return;
 +        }
@@ -1596,7 +1596,7 @@ index 691bc128a1e11a7638ca372464733c3f1249d405..86b148a7cc4e8c2357e6d85a5c90429d
 +        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.quickShulker && slotIndex >= 0 && slotIndex < this.slots.size()
 +            && containerInput == ContainerInput.PICKUP && buttonNum == 1 && this.getCarried().isEmpty()
 +            && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
-+            && fun.bm.lophine.carpet.OrgQuickShulker.open(serverPlayer, this.slots.get(slotIndex).getItem(), this.slots.get(slotIndex))) {
++            && fun.bm.lophine.carpet.org.OrgQuickShulker.open(serverPlayer, this.slots.get(slotIndex).getItem(), this.slots.get(slotIndex))) {
 +            return;
 +        }
          try {
@@ -1606,7 +1606,7 @@ index 691bc128a1e11a7638ca372464733c3f1249d405..86b148a7cc4e8c2357e6d85a5c90429d
      }
  
      public static int getRedstoneSignalFromContainer(final @Nullable Container container) {
-+        return fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> carpetRedstoneSignalFromContainer(container));
++        return fun.bm.lophine.carpet.org.OrgGameplayHelper.withoutShulkerStacking(() -> carpetRedstoneSignalFromContainer(container));
 +    }
 +
 +    private static int carpetRedstoneSignalFromContainer(final @Nullable Container container) {
@@ -1725,26 +1725,26 @@ index ee8b4a9bf35b77c1f7d3232584a45577a9ea66b4..558a812cefe215985363fe9daf35ec67
                          itemStack.shrink(1); // Moved up from below
                      } else {
 diff --git a/net/minecraft/world/item/Item.java b/net/minecraft/world/item/Item.java
-index b07f8d725e8397e7329dec7c935916b9a0a579b8..4d4942660ea07bc16b16826f7eb046bd29ac429e 100644
+index b07f8d725e8397e7329dec7c935916b9a0a579b8..9e023fd7fc2b55e3358a7d6ef6e29da981de1589 100644
 --- a/net/minecraft/world/item/Item.java
 +++ b/net/minecraft/world/item/Item.java
 @@ -258,12 +258,14 @@ public class Item implements ItemLike, FeatureElement {
      }
  
      public boolean overrideStackedOnOther(final ItemStack self, final Slot slot, final ClickAction clickAction, final Player player) {
-+        if (fun.bm.lophine.carpet.OrgQuickShulker.stackedOnOther(self, slot, clickAction, player)) return true;
++        if (fun.bm.lophine.carpet.org.OrgQuickShulker.stackedOnOther(self, slot, clickAction, player)) return true;
          return false;
      }
  
      public boolean overrideOtherStackedOnMe(
          final ItemStack self, final ItemStack other, final Slot slot, final ClickAction clickAction, final Player player, final SlotAccess carriedItem
      ) {
-+        if (fun.bm.lophine.carpet.OrgQuickShulker.otherStackedOnMe(self, other, slot, clickAction, player, carriedItem)) return true;
++        if (fun.bm.lophine.carpet.org.OrgQuickShulker.otherStackedOnMe(self, other, slot, clickAction, player, carriedItem)) return true;
          return false;
      }
  
 diff --git a/net/minecraft/world/item/ItemInstance.java b/net/minecraft/world/item/ItemInstance.java
-index 0d8be525a9fc63532015af552fdce6698369d652..d165c1fb59bba0fb5ba2e80f37da764798ab1759 100644
+index 0d8be525a9fc63532015af552fdce6698369d652..0ab3f4b2c9ef7d9290b423bb43150112b8bb8b42 100644
 --- a/net/minecraft/world/item/ItemInstance.java
 +++ b/net/minecraft/world/item/ItemInstance.java
 @@ -16,11 +16,15 @@ public interface ItemInstance extends TypedInstance<Item>, DataComponentGetter {
@@ -1752,20 +1752,20 @@ index 0d8be525a9fc63532015af552fdce6698369d652..d165c1fb59bba0fb5ba2e80f37da7647
              && blockItem.getBlock() instanceof net.minecraft.world.level.block.ShulkerBoxBlock) {
              int carpetStackSize = fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.shulkerBoxStackSize();
 -            if (carpetStackSize > 1 && itemStack.getOrDefault(DataComponents.CONTAINER, net.minecraft.world.item.component.ItemContainerContents.EMPTY).stream().allMatch(ItemStack::isEmpty)) {
-+            if (carpetStackSize > 1 && fun.bm.lophine.carpet.OrgGameplayHelper.emptyContainer(itemStack.getOrDefault(DataComponents.CONTAINER,
++            if (carpetStackSize > 1 && fun.bm.lophine.carpet.org.OrgGameplayHelper.emptyContainer(itemStack.getOrDefault(DataComponents.CONTAINER,
 +                net.minecraft.world.item.component.ItemContainerContents.EMPTY))) {
                  return carpetStackSize;
              }
          }
          int ordinaryLimit = this.getOrDefault(DataComponents.MAX_STACK_SIZE, 1);
 +        if (ordinaryLimit == 1 && this instanceof ItemStack stack
-+            && fun.bm.lophine.carpet.OrgGameplayHelper.allowShulkerStacking()
-+            && fun.bm.lophine.carpet.OrgGameplayHelper.stackableShulker(stack)) return 64;
++            && fun.bm.lophine.carpet.org.OrgGameplayHelper.allowShulkerStacking()
++            && fun.bm.lophine.carpet.org.OrgGameplayHelper.stackableShulker(stack)) return 64;
          return ordinaryLimit;
      }
  }
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da67512569ade 100644
+index 5692f352a1c34ed2061458c3be698691f8be5cbc..06522bb89bdd2508026487b77efbba37bb3ec7a7 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
 @@ -118,10 +118,14 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
@@ -1774,13 +1774,13 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
          )
 -    );
 -    public static final Codec<ItemStack> CODEC = Codec.lazyInitialized(MAP_CODEC::codec);
-+    ).xmap(stack -> stack, stack -> fun.bm.lophine.carpet.OrgItemShadowGroups.managed(stack) ? fun.bm.lophine.carpet.OrgItemShadowGroups.copy(stack, true) : stack);
++    ).xmap(stack -> stack, stack -> fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(stack) ? fun.bm.lophine.carpet.org.OrgItemShadowGroups.copy(stack, true) : stack);
 +    public static final Codec<ItemStack> CODEC = Codec.lazyInitialized(MAP_CODEC::codec).xmap(stack -> stack,
-+        stack -> fun.bm.lophine.carpet.OrgItemShadowGroups.managed(stack) ? fun.bm.lophine.carpet.OrgItemShadowGroups.copy(stack, true) : stack);
++        stack -> fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(stack) ? fun.bm.lophine.carpet.org.OrgItemShadowGroups.copy(stack, true) : stack);
      public static final Codec<ItemStack> OPTIONAL_CODEC = ExtraCodecs.optionalEmptyMap(CODEC)
 -        .xmap(itemStack -> itemStack.orElse(ItemStack.EMPTY), itemStack -> itemStack.isEmpty() ? Optional.empty() : Optional.of(itemStack));
 +        .xmap(itemStack -> itemStack.orElse(ItemStack.EMPTY), itemStack -> {
-+            ItemStack stable = fun.bm.lophine.carpet.OrgItemShadowGroups.managed(itemStack) ? fun.bm.lophine.carpet.OrgItemShadowGroups.copy(itemStack, true) : itemStack;
++            ItemStack stable = fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(itemStack) ? fun.bm.lophine.carpet.org.OrgItemShadowGroups.copy(itemStack, true) : itemStack;
 +            return stable.isEmpty() ? Optional.empty() : Optional.of(stable);
 +        });
      public static final StreamCodec<RegistryFriendlyByteBuf, ItemStack> OPTIONAL_STREAM_CODEC = createOptionalStreamCodec(DataComponentPatch.STREAM_CODEC);
@@ -1805,7 +1805,7 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
              @Override
              public void encode(final RegistryFriendlyByteBuf output, final ItemStack itemStack) {
 -                if (itemStack.isEmpty()) {
-+                final ItemStack stable = fun.bm.lophine.carpet.OrgItemShadowGroups.managed(itemStack) ? fun.bm.lophine.carpet.OrgItemShadowGroups.copy(itemStack, true) : itemStack;
++                final ItemStack stable = fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(itemStack) ? fun.bm.lophine.carpet.org.OrgItemShadowGroups.copy(itemStack, true) : itemStack;
 +                if (stable.isEmpty()) {
                      output.writeVarInt(0);
                  } else {
@@ -1814,7 +1814,7 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
      }
  
      public boolean isEmpty() {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.empty(this);
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.empty(this);
          return this == EMPTY || this.item.value() == Items.AIR || this.count <= 0;
      }
  
@@ -1822,7 +1822,7 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
      }
  
      public ItemStack split(final int amount) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.split(this, amount);
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.split(this, amount);
          int realAmount = Math.min(amount, this.getCount());
          ItemStack result = this.copyWithCount(realAmount);
          this.shrink(realAmount);
@@ -1830,7 +1830,7 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
      }
  
      public ItemStack copyAndClear() {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.clear(this);
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.clear(this);
          if (this.isEmpty()) {
              return EMPTY;
          }
@@ -1838,7 +1838,7 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
  
      @Override
      public Holder<Item> typeHolder() {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.item(this);
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.item(this);
          return this.isEmpty() ? Items.AIR.builtInRegistryHolder() : this.item;
      }
  
@@ -1853,15 +1853,15 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
 +
 +    private InteractionResult carpetScopedUseOn(final UseOnContext context) {
 +        Player player = context.getPlayer();
-+        if (player instanceof net.minecraft.server.level.ServerPlayer carpetPlayer && (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this) || carpet.script.external.ScarpetPlayerInventoryGate.paused(carpetPlayer))) {
++        if (player instanceof net.minecraft.server.level.ServerPlayer carpetPlayer && (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this) || carpet.script.external.ScarpetPlayerInventoryGate.paused(carpetPlayer))) {
 +            return carpet.script.external.ScarpetInteractionContinuations.managed(carpetPlayer, java.util.List.of(this),
-+                () -> carpetPlayer.level() == context.getLevel() && fun.bm.lophine.carpet.OrgItemShadowGroups.holds(carpetPlayer, this)
++                () -> carpetPlayer.level() == context.getLevel() && fun.bm.lophine.carpet.org.OrgItemShadowGroups.holds(carpetPlayer, this)
 +                    && ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor((ServerLevel)context.getLevel(), context.getClickedPos()),
 +                () -> this.carpetOrgUseOn(context), result -> carpetPlayer.containerMenu.broadcastChanges());
 +        }
-+        if (player != null && fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) {
-+            return fun.bm.lophine.carpet.OrgItemShadowGroups.actor(player, java.util.List.of(this), () -> this.carpetOrgUseOn(context), InteractionResult.FAIL,
-+                owned -> owned.level() == context.getLevel() && fun.bm.lophine.carpet.OrgItemShadowGroups.holds(owned, this)
++        if (player != null && fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) {
++            return fun.bm.lophine.carpet.org.OrgItemShadowGroups.actor(player, java.util.List.of(this), () -> this.carpetOrgUseOn(context), InteractionResult.FAIL,
++                owned -> owned.level() == context.getLevel() && fun.bm.lophine.carpet.org.OrgItemShadowGroups.holds(owned, this)
 +                    && ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor((ServerLevel) context.getLevel(), context.getClickedPos()),
 +                result -> player.containerMenu.broadcastChanges());
 +        }
@@ -1877,15 +1877,15 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
  
      private InteractionResult carpetScopedUse(final Level level, final Player player, final InteractionHand hand) {
 -        if (player instanceof net.minecraft.server.level.ServerPlayer carpetPlayer && (carpet.script.external.ScarpetPlayerInventoryGate.paused(carpetPlayer))) {
-+        if (player instanceof net.minecraft.server.level.ServerPlayer carpetPlayer && (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this) || carpet.script.external.ScarpetPlayerInventoryGate.paused(carpetPlayer))) {
++        if (player instanceof net.minecraft.server.level.ServerPlayer carpetPlayer && (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this) || carpet.script.external.ScarpetPlayerInventoryGate.paused(carpetPlayer))) {
              return carpet.script.external.ScarpetInteractionContinuations.managed(carpetPlayer, java.util.List.of(this),
                  () -> carpetPlayer.level() == level && carpetPlayer.getItemInHand(hand) == this,
                  () -> this.carpetOrgUse(level, player, hand),
                  result -> { if (result instanceof InteractionResult.Success success && success.heldItemTransformedTo() != null)
                      carpetPlayer.setItemInHand(hand, success.heldItemTransformedTo()); carpetPlayer.containerMenu.broadcastChanges(); });
          }
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) {
-+            return fun.bm.lophine.carpet.OrgItemShadowGroups.actor(player, java.util.List.of(this), () -> this.carpetOrgUse(level, player, hand), InteractionResult.FAIL,
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) {
++            return fun.bm.lophine.carpet.org.OrgItemShadowGroups.actor(player, java.util.List.of(this), () -> this.carpetOrgUse(level, player, hand), InteractionResult.FAIL,
 +                owned -> owned.level() == level && player.getItemInHand(hand) == this,
 +                result -> { if (result instanceof InteractionResult.Success success && success.heldItemTransformedTo() != null) player.setItemInHand(hand, success.heldItemTransformedTo()); player.containerMenu.broadcastChanges(); });
 +        }
@@ -1896,9 +1896,9 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
      }
  
      public ItemStack finishUsingItem(final Level level, final LivingEntity livingEntity) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) {
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) {
 +            InteractionHand hand = livingEntity.getUsedItemHand();
-+            return fun.bm.lophine.carpet.OrgItemShadowGroups.actor(livingEntity, java.util.List.of(this), () -> this.carpetOrgFinishUsingItem(level, livingEntity), this,
++            return fun.bm.lophine.carpet.org.OrgItemShadowGroups.actor(livingEntity, java.util.List.of(this), () -> this.carpetOrgFinishUsingItem(level, livingEntity), this,
 +                owned -> owned.level() == level && livingEntity.getItemInHand(hand) == this,
 +                result -> { if (livingEntity.getItemInHand(hand) == this) livingEntity.setItemInHand(hand, result); });
 +        }
@@ -1913,9 +1913,9 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
      }
  
      public void hurtAndBreak(final int amount, final ServerLevel level, final @Nullable LivingEntity player, final Consumer<ItemStack> onBreak, final boolean force) { // Paper - Add EntityDamageItemEvent
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this) && player != null) {
-+            fun.bm.lophine.carpet.OrgItemShadowGroups.actor(player, java.util.List.of(this), () -> { this.carpetOrgHurtAndBreak(amount, level, player, onBreak, force); return true; }, false,
-+                owned -> owned.level() == level && fun.bm.lophine.carpet.OrgItemShadowGroups.holds(owned, this), ignored -> {});
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this) && player != null) {
++            fun.bm.lophine.carpet.org.OrgItemShadowGroups.actor(player, java.util.List.of(this), () -> { this.carpetOrgHurtAndBreak(amount, level, player, onBreak, force); return true; }, false,
++                owned -> owned.level() == level && fun.bm.lophine.carpet.org.OrgItemShadowGroups.holds(owned, this), ignored -> {});
 +            return;
 +        }
 +        this.carpetOrgHurtAndBreak(amount, level, player, onBreak, force);
@@ -1930,14 +1930,14 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
                  amount, serverLevel, owner, brokenItem -> {if (slot != null) owner.onEquippedItemBroken(brokenItem, slot); }, force // Paper - Add EntityDamageItemEvent & itemstack damage API - do not process entity related callbacks when damaging from API
              );
 +            if (this.isEmpty() && owner instanceof net.minecraft.world.entity.player.Player player) {
-+                fun.bm.lophine.carpet.OrgFakePlayerInventory.broken(player, before, slot);
++                fun.bm.lophine.carpet.org.OrgFakePlayerInventory.broken(player, before, slot);
 +            }
          }
      }
  
      public ItemStack hurtAndConvertOnBreak(final int amount, final ItemLike newItem, final LivingEntity owner, final EquipmentSlot slot) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) {
-+            return fun.bm.lophine.carpet.OrgItemShadowGroups.actor(owner, java.util.List.of(this), () -> this.carpetOrgHurtAndConvertOnBreak(amount, newItem, owner, slot), this,
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) {
++            return fun.bm.lophine.carpet.org.OrgItemShadowGroups.actor(owner, java.util.List.of(this), () -> this.carpetOrgHurtAndConvertOnBreak(amount, newItem, owner, slot), this,
 +                owned -> owner.getItemBySlot(slot) == this, result -> { if (owner.getItemBySlot(slot) == this) owner.setItemSlot(slot, result); });
 +        }
 +        return this.carpetOrgHurtAndConvertOnBreak(amount, newItem, owner, slot);
@@ -1951,8 +1951,8 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
      }
  
      public InteractionResult interactLivingEntity(final Player player, final LivingEntity target, final InteractionHand hand) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) {
-+            return fun.bm.lophine.carpet.OrgItemShadowGroups.actor(player, java.util.List.of(this), () -> this.carpetOrgInteractLivingEntity(player, target, hand), InteractionResult.FAIL,
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) {
++            return fun.bm.lophine.carpet.org.OrgItemShadowGroups.actor(player, java.util.List.of(this), () -> this.carpetOrgInteractLivingEntity(player, target, hand), InteractionResult.FAIL,
 +                owned -> player.getItemInHand(hand) == this && target.level() == owned.level() && !target.isRemoved()
 +                    && ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(target),
 +                result -> player.containerMenu.broadcastChanges());
@@ -1968,14 +1968,14 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
      }
  
      public ItemStack copy(final boolean originalItem) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.copy(this, originalItem);
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.copy(this, originalItem);
          if (!originalItem && this.isEmpty()) {
              // Paper end - Perf: Optimize Hoppers
              return EMPTY;
          }
  
 -        ItemStack copy = new ItemStack(originalItem ? this.item : this.typeHolder(), this.count, this.components.copy()); // Paper - Perf: Optimize Hoppers
-+        ItemStack copy = new ItemStack(originalItem ? fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this) ? fun.bm.lophine.carpet.OrgItemShadowGroups.item(this) : this.item : this.typeHolder(), fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this) ? fun.bm.lophine.carpet.OrgItemShadowGroups.rawCount(this) : this.count, this.components.copy()); // Paper - Perf: Optimize Hoppers
++        ItemStack copy = new ItemStack(originalItem ? fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this) ? fun.bm.lophine.carpet.org.OrgItemShadowGroups.item(this) : this.item : this.typeHolder(), fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this) ? fun.bm.lophine.carpet.org.OrgItemShadowGroups.rawCount(this) : this.count, this.components.copy()); // Paper - Perf: Optimize Hoppers
          copy.setPopTime(this.getPopTime());
          return copy;
      }
@@ -1985,8 +1985,8 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
      public void inventoryTick(final Level level, final Entity owner, final @Nullable EquipmentSlot slot) {
 -        if (this.popTime > 0) {
 -            this.popTime--;
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) {
-+            fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(java.util.List.of(this), () -> { this.carpetOrgInventoryTick(level, owner, slot); return true; });
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) {
++            fun.bm.lophine.carpet.org.OrgItemShadowGroups.attempt(java.util.List.of(this), () -> { this.carpetOrgInventoryTick(level, owner, slot); return true; });
 +            return;
 +        }
 +        this.carpetOrgInventoryTick(level, owner, slot);
@@ -2002,9 +2002,9 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
      }
  
      public void releaseUsing(final Level level, final LivingEntity entity, final int remainingTime) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) {
-+            fun.bm.lophine.carpet.OrgItemShadowGroups.actor(entity, java.util.List.of(this), () -> { this.carpetOrgReleaseUsing(level, entity, remainingTime); return true; }, false,
-+                owned -> owned.level() == level && fun.bm.lophine.carpet.OrgItemShadowGroups.holds(owned, this), ignored -> {});
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) {
++            fun.bm.lophine.carpet.org.OrgItemShadowGroups.actor(entity, java.util.List.of(this), () -> { this.carpetOrgReleaseUsing(level, entity, remainingTime); return true; }, false,
++                owned -> owned.level() == level && fun.bm.lophine.carpet.org.OrgItemShadowGroups.holds(owned, this), ignored -> {});
 +            return;
 +        }
 +        this.carpetOrgReleaseUsing(level, entity, remainingTime);
@@ -2018,9 +2018,9 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
  
      // Leaves start - Fakeplayer
      public boolean releaseUsingWithResult(Level level, LivingEntity livingEntity, int timeLeft) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) {
-+            return fun.bm.lophine.carpet.OrgItemShadowGroups.actor(livingEntity, java.util.List.of(this), () -> this.carpetOrgReleaseUsingWithResult(level, livingEntity, timeLeft), false,
-+                owned -> owned.level() == level && fun.bm.lophine.carpet.OrgItemShadowGroups.holds(owned, this), ignored -> {});
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) {
++            return fun.bm.lophine.carpet.org.OrgItemShadowGroups.actor(livingEntity, java.util.List.of(this), () -> this.carpetOrgReleaseUsingWithResult(level, livingEntity, timeLeft), false,
++                owned -> owned.level() == level && fun.bm.lophine.carpet.org.OrgItemShadowGroups.holds(owned, this), ignored -> {});
 +        }
 +        return this.carpetOrgReleaseUsingWithResult(level, livingEntity, timeLeft);
 +    }
@@ -2033,12 +2033,12 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
      }
  
      public <T, U> @Nullable T update(final DataComponentType<T> type, final T defaultValue, final U value, final BiFunction<T, U, T> combiner) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.mutate(this.components, map -> map.set(type, combiner.apply(map.getOrDefault(type, defaultValue), value)));
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.mutate(this.components, map -> map.set(type, combiner.apply(map.getOrDefault(type, defaultValue), value)));
          return this.set(type, combiner.apply(this.getOrDefault(type, defaultValue), value));
      }
  
      public <T> @Nullable T update(final DataComponentType<T> type, final T defaultValue, final UnaryOperator<T> function) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.mutate(this.components, map -> map.set(type, function.apply(map.getOrDefault(type, defaultValue))));
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.mutate(this.components, map -> map.set(type, function.apply(map.getOrDefault(type, defaultValue))));
          T value = this.getOrDefault(type, defaultValue);
          return this.set(type, function.apply(value));
      }
@@ -2046,7 +2046,7 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
              this.components.lithium$unsubscribe(this);
          }
          // Leaf end - Lithium - equipment tracking
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) { fun.bm.lophine.carpet.OrgItemShadowGroups.item(this, item); return; }
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) { fun.bm.lophine.carpet.org.OrgItemShadowGroups.item(this, item); return; }
          this.item = item.builtInRegistryHolder();
          // Paper start - change base component prototype
          final DataComponentPatch patch = this.getComponentsPatch();
@@ -2054,17 +2054,17 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
      }
  
      public int getPopTime() {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.popTime(this);
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.popTime(this);
          return this.popTime;
      }
  
      public void setPopTime(final int popTime) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) { fun.bm.lophine.carpet.OrgItemShadowGroups.popTime(this, popTime); return; }
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) { fun.bm.lophine.carpet.org.OrgItemShadowGroups.popTime(this, popTime); return; }
          this.popTime = popTime;
      }
  
      public int getCount() {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.OrgItemShadowGroups.count(this);
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.count(this);
          return this.isEmpty() ? 0 : this.count;
      }
  
@@ -2072,7 +2072,7 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
      }
  
      public void setCount(final int count) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) { fun.bm.lophine.carpet.OrgItemShadowGroups.count(this, count); return; }
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) { fun.bm.lophine.carpet.org.OrgItemShadowGroups.count(this, count); return; }
          // Leaf start - Lithium - equipment tracking
          if (count != this.count) {
              if (this.subscriber instanceof net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber.CountChangeSubscriber<ItemStack> countChangeSubscriber) {
@@ -2080,15 +2080,15 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
      }
  
      public void limitSize(final int maxStackSize) {
-+        if (!fun.bm.lophine.carpet.OrgGameplayHelper.allowShulkerStacking()
-+            && fun.bm.lophine.carpet.OrgGameplayHelper.stackableShulker(this)) return;
++        if (!fun.bm.lophine.carpet.org.OrgGameplayHelper.allowShulkerStacking()
++            && fun.bm.lophine.carpet.org.OrgGameplayHelper.stackableShulker(this)) return;
          if (!this.isEmpty() && this.getCount() > maxStackSize) {
              this.setCount(maxStackSize);
          }
      }
  
      public void grow(final int amount) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) { fun.bm.lophine.carpet.OrgItemShadowGroups.grow(this, amount); return; }
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) { fun.bm.lophine.carpet.org.OrgItemShadowGroups.grow(this, amount); return; }
          this.setCount(this.getCount() + amount);
      }
  
@@ -2096,15 +2096,15 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
      }
  
      public ItemStack consumeAndReturn(final int amount, final @Nullable LivingEntity owner) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this) && (owner == null || !owner.hasInfiniteMaterials())) return fun.bm.lophine.carpet.OrgItemShadowGroups.consumeAndReturn(this, amount);
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this) && (owner == null || !owner.hasInfiniteMaterials())) return fun.bm.lophine.carpet.org.OrgItemShadowGroups.consumeAndReturn(this, amount);
          ItemStack split = this.copyWithCount(amount);
          this.consume(amount, owner);
          return split;
      }
  
      public void onUseTick(final Level level, final LivingEntity livingEntity, final int ticksRemaining) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) {
-+            fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(java.util.List.of(this), () -> { this.carpetOrgOnUseTick(level, livingEntity, ticksRemaining); return true; });
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) {
++            fun.bm.lophine.carpet.org.OrgItemShadowGroups.attempt(java.util.List.of(this), () -> { this.carpetOrgOnUseTick(level, livingEntity, ticksRemaining); return true; });
 +            return;
 +        }
 +        this.carpetOrgOnUseTick(level, livingEntity, ticksRemaining);
@@ -2118,7 +2118,7 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
      // Leaf start - Lithium - equipment tracking
      @Override
      public void lithium$subscribe(final net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber<ItemStack> subscriber, final int subscriberData) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return;
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return;
          if (this.isEmpty()) {
              throw new IllegalStateException("Cannot subscribe to an empty ItemStack!");
          }
@@ -2126,7 +2126,7 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
  
      @Override
      public int lithium$unsubscribe(final net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber<ItemStack> subscriber) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return 0;
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return 0;
          if (this.isEmpty()) {
              throw new IllegalStateException("Cannot unsubscribe from an empty ItemStack!");
          }
@@ -2134,7 +2134,7 @@ index 5692f352a1c34ed2061458c3be698691f8be5cbc..87815d1bb1777e5f90d16f36954da675
  
      @Override
      public void lithium$unsubscribeWithData(final net.caffeinemc.mods.lithium.common.util.change_tracking.ChangeSubscriber<ItemStack> subscriber, final int subscriberData) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.managed(this)) return;
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.managed(this)) return;
          if (this.isEmpty()) {
              throw new IllegalStateException("Cannot unsubscribe from an empty ItemStack!");
          }
@@ -2161,14 +2161,14 @@ index 078ebe71a4a5648eb3152e218cd4bb7d99f6a6c9..c093dd87cee16c921710ce083e2c87d3
          }
  
 diff --git a/net/minecraft/world/item/context/UseOnContext.java b/net/minecraft/world/item/context/UseOnContext.java
-index 69641bfb04301a28c6b104d50b6d9f3e654b5465..2938717122cb1c86e3033de55f11526a119c1f13 100644
+index 69641bfb04301a28c6b104d50b6d9f3e654b5465..d2ece05a7090fcf40a4f277bd4a2195a2b133e75 100644
 --- a/net/minecraft/world/item/context/UseOnContext.java
 +++ b/net/minecraft/world/item/context/UseOnContext.java
 @@ -52,6 +52,7 @@ public class UseOnContext {
      }
  
      public ItemStack getItemInHand() {
-+        if (fun.bm.lophine.carpet.OrgGameplayHelper.toolNoBreakActive()) return ItemStack.EMPTY;
++        if (fun.bm.lophine.carpet.org.OrgGameplayHelper.toolNoBreakActive()) return ItemStack.EMPTY;
          return this.itemStack;
      }
  
@@ -2308,7 +2308,7 @@ index 63d05bee70be495a3ec993fae6c2b42b7da6f5e5..07b3d61a3aa21b99ea3a708519b5354f
              return false;
          }
 diff --git a/net/minecraft/world/level/block/AbstractBedBlock.java b/net/minecraft/world/level/block/AbstractBedBlock.java
-index b9127f290f2a75380e79f06098cf85ecf2b00b1e..29d39e426a5cb42ab456d7f64f1576259169c257 100644
+index b9127f290f2a75380e79f06098cf85ecf2b00b1e..2c52845352be6e9e1b0f63cea0cbabb77cb66b84 100644
 --- a/net/minecraft/world/level/block/AbstractBedBlock.java
 +++ b/net/minecraft/world/level/block/AbstractBedBlock.java
 @@ -92,6 +92,13 @@ public abstract class AbstractBedBlock extends HorizontalDirectionalBlock {
@@ -2318,7 +2318,7 @@ index b9127f290f2a75380e79f06098cf85ecf2b00b1e..29d39e426a5cb42ab456d7f64f157625
 +            // Lophine start - Carpet features
 +            if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.disableRespawnBlocksExplode && this instanceof BedBlock && bedRule.destroyOnUse()) {
 +                player.sendOverlayMessage(net.minecraft.network.chat.Component.literal(
-+                    fun.bm.lophine.carpet.OrgRuleTranslations.text("carpet-org-addition.rule.message.disableRespawnBlocksExplode", "Respawn blocks explosion is disabled")));
++                    fun.bm.lophine.carpet.org.OrgRuleTranslations.text("carpet-org-addition.rule.message.disableRespawnBlocksExplode", "Respawn blocks explosion is disabled")));
 +                return InteractionResult.SUCCESS_SERVER;
 +            }
 +            // Lophine end - Carpet features
@@ -2335,7 +2335,7 @@ index b9127f290f2a75380e79f06098cf85ecf2b00b1e..29d39e426a5cb42ab456d7f64f157625
                          }
                          // CraftBukkit end
 diff --git a/net/minecraft/world/level/block/Block.java b/net/minecraft/world/level/block/Block.java
-index 0890bc59c10fc154651762852721ea3f2869c58b..1243490b910854046776d171dff9e511e42d14b4 100644
+index be7b57a638bbc53a1cd7bc49861aa807b055243e..9750c54e6c7d993b6e6d25d25ca0d3f28e02d4db 100644
 --- a/net/minecraft/world/level/block/Block.java
 +++ b/net/minecraft/world/level/block/Block.java
 @@ -621,6 +621,18 @@ public class Block extends BlockBehaviour implements ItemLike {
@@ -2387,7 +2387,7 @@ index 7a2dfe146b1205865482d9c6e894de105057172b..87c23ac2f7a73ef6ad3170a2da42baf5
          if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.dustTrapdoorReintroduced && directionToNeighbour == Direction.DOWN) {
              return state;
 diff --git a/net/minecraft/world/level/block/CrafterBlock.java b/net/minecraft/world/level/block/CrafterBlock.java
-index 599175e8155681b24d1085d2d8a82af99d197455..8efc0953866093f1582eee9b84c7b84ebff83300 100644
+index 599175e8155681b24d1085d2d8a82af99d197455..91a83f9ee7215eb98e6908d84127bf0c9fe7a000 100644
 --- a/net/minecraft/world/level/block/CrafterBlock.java
 +++ b/net/minecraft/world/level/block/CrafterBlock.java
 @@ -150,6 +150,16 @@ public class CrafterBlock extends BaseEntityBlock {
@@ -2395,7 +2395,7 @@ index 599175e8155681b24d1085d2d8a82af99d197455..8efc0953866093f1582eee9b84c7b84e
  
      protected void dispenseFrom(final BlockState state, final ServerLevel level, final BlockPos pos) {
 +        if (level.getBlockEntity(pos) instanceof CrafterBlockEntity blockEntity) {
-+            fun.bm.lophine.carpet.OrgItemShadowGroups.block(level, pos, () -> fun.bm.lophine.carpet.OrgItemShadowGroups.container(blockEntity),
++            fun.bm.lophine.carpet.org.OrgItemShadowGroups.block(level, pos, () -> fun.bm.lophine.carpet.org.OrgItemShadowGroups.container(blockEntity),
 +                () -> this.carpetOrgDispenseFrom(level.getBlockState(pos), level, pos),
 +                () -> level.getBlockEntity(pos) == blockEntity && level.getBlockState(pos).is(this));
 +            return;
@@ -2408,7 +2408,7 @@ index 599175e8155681b24d1085d2d8a82af99d197455..8efc0953866093f1582eee9b84c7b84e
              CraftingInput var11 = blockEntity.asCraftInput();
              Optional<RecipeHolder<CraftingRecipe>> recipe = getPotentialResults(level, var11);
 diff --git a/net/minecraft/world/level/block/DispenserBlock.java b/net/minecraft/world/level/block/DispenserBlock.java
-index 8abaed1e28978bc33c4f68f78f7ae7603f2dd527..209f9299201a47ee1e662fbeee4f4467a433a657 100644
+index 8abaed1e28978bc33c4f68f78f7ae7603f2dd527..ca45b18654cf3e7386807a689b147a7f157d34d1 100644
 --- a/net/minecraft/world/level/block/DispenserBlock.java
 +++ b/net/minecraft/world/level/block/DispenserBlock.java
 @@ -91,15 +91,25 @@ public class DispenserBlock extends BaseEntityBlock {
@@ -2420,7 +2420,7 @@ index 8abaed1e28978bc33c4f68f78f7ae7603f2dd527..209f9299201a47ee1e662fbeee4f4467
 -                    if (!org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockPreDispenseEvent(level, pos, itemStack, slot)) return; // Paper - Add BlockPreDispenseEvent
 -                    blockEntity.setItem(slot, behavior.dispense(source, itemStack));
 -                }
-+                fun.bm.lophine.carpet.OrgItemShadowGroups.block(level, pos, () -> fun.bm.lophine.carpet.OrgItemShadowGroups.container(blockEntity),
++                fun.bm.lophine.carpet.org.OrgItemShadowGroups.block(level, pos, () -> fun.bm.lophine.carpet.org.OrgItemShadowGroups.container(blockEntity),
 +                    () -> this.carpetOrgDispenseSelected(source, slot, itemStack),
 +                    () -> level.getBlockEntity(pos) == blockEntity && blockEntity.getItem(slot) == itemStack && !itemStack.isEmpty());
              }
@@ -2551,7 +2551,7 @@ index 8c82e2cac988b53eea40cfb57457f9e0c3991623..a9c5754ad15d96a6d5a35e3ef3afcf92
          if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.dustTrapdoorReintroduced && directionToNeighbour == Direction.DOWN) {
              return state;
 diff --git a/net/minecraft/world/level/block/RespawnAnchorBlock.java b/net/minecraft/world/level/block/RespawnAnchorBlock.java
-index 79bbb3a693c74422512e8e1e1df456d3033c00c2..fcb48b56a0b5eb2e8290a43dac06e8292ce0af4e 100644
+index 79bbb3a693c74422512e8e1e1df456d3033c00c2..319a519c7746644815d22b06d25bae3ffe2037c3 100644
 --- a/net/minecraft/world/level/block/RespawnAnchorBlock.java
 +++ b/net/minecraft/world/level/block/RespawnAnchorBlock.java
 @@ -98,8 +98,18 @@ public class RespawnAnchorBlock extends Block {
@@ -2563,7 +2563,7 @@ index 79bbb3a693c74422512e8e1e1df456d3033c00c2..fcb48b56a0b5eb2e8290a43dac06e829
 +                // Lophine start - Carpet features
 +                if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.disableRespawnBlocksExplode) {
 +                    player.sendOverlayMessage(net.minecraft.network.chat.Component.literal(
-+                    fun.bm.lophine.carpet.OrgRuleTranslations.text("carpet-org-addition.rule.message.disableRespawnBlocksExplode", "Respawn blocks explosion is disabled")));
++                    fun.bm.lophine.carpet.org.OrgRuleTranslations.text("carpet-org-addition.rule.message.disableRespawnBlocksExplode", "Respawn blocks explosion is disabled")));
 +                    return InteractionResult.SUCCESS_SERVER;
 +                }
 +                // Lophine end - Carpet features
@@ -2576,7 +2576,7 @@ index 79bbb3a693c74422512e8e1e1df456d3033c00c2..fcb48b56a0b5eb2e8290a43dac06e829
  
              if (player instanceof ServerPlayer serverPlayer) {
 diff --git a/net/minecraft/world/level/block/ShulkerBoxBlock.java b/net/minecraft/world/level/block/ShulkerBoxBlock.java
-index d5cc9f480ccf360dc80d9b74258dd003b03eb125..0f8d4f49bb62aec89600de09049d8b580561eee4 100644
+index d5cc9f480ccf360dc80d9b74258dd003b03eb125..88d1e4ca258f474f8ae6893e09ff58b33b607351 100644
 --- a/net/minecraft/world/level/block/ShulkerBoxBlock.java
 +++ b/net/minecraft/world/level/block/ShulkerBoxBlock.java
 @@ -64,6 +64,16 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
@@ -2584,10 +2584,10 @@ index d5cc9f480ccf360dc80d9b74258dd003b03eb125..0f8d4f49bb62aec89600de09049d8b58
          final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult
      ) {
 +        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof ShulkerBoxBlockEntity shulker
-+            && fun.bm.lophine.carpet.OrgUpdateSuppression.namedSuppressor(shulker.getDisplayName().getString())) {
++            && fun.bm.lophine.carpet.org.OrgUpdateSuppression.namedSuppressor(shulker.getDisplayName().getString())) {
 +            if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
 +                serverPlayer.connection.send(new net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket(net.minecraft.network.chat.Component.literal(
-+                    fun.bm.lophine.carpet.OrgRuleTranslations.text("carpet-org-addition.rule.message.CCEUpdateSuppression", "You cannot open this update-suppression shulker box"))));
++                    fun.bm.lophine.carpet.org.OrgRuleTranslations.text("carpet-org-addition.rule.message.CCEUpdateSuppression", "You cannot open this update-suppression shulker box"))));
 +            }
 +            return InteractionResult.SUCCESS;
 +        }
@@ -2601,8 +2601,8 @@ index d5cc9f480ccf360dc80d9b74258dd003b03eb125..0f8d4f49bb62aec89600de09049d8b58
          // Lophine start - catch update suppression crash
          try {
 +            if (!level.isClientSide() && level.getBlockEntity(pos) instanceof ShulkerBoxBlockEntity shulker
-+                && fun.bm.lophine.carpet.OrgUpdateSuppression.namedSuppressor(shulker.getDisplayName().getString())) {
-+                throw new fun.bm.lophine.carpet.OrgUpdateSuppression.CCE(pos, level.dimension().identifier().toString());
++                && fun.bm.lophine.carpet.org.OrgUpdateSuppression.namedSuppressor(shulker.getDisplayName().getString())) {
++                throw new fun.bm.lophine.carpet.org.OrgUpdateSuppression.CCE(pos, level.dimension().identifier().toString());
 +            }
              // Lophine start - configurable shulker CCE
              return fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.shulkerBoxCCEReintroduced
@@ -2667,7 +2667,7 @@ index 6f65fb2abf6a3eceed4fafe7cd449c678e0e8cf2..2bb24a763ef7c43cbf094473cb0f302b
          float xpFraction = Mth.frac(amount * value);
          if (xpFraction != 0.0F && level.getRandom().nextFloat() < xpFraction) {
 diff --git a/net/minecraft/world/level/block/entity/BeaconBlockEntity.java b/net/minecraft/world/level/block/entity/BeaconBlockEntity.java
-index be3deb846821af87cfc1b5a0f0efd6651ccf56fa..acb0119b736b51629f291382150adb1a64dab79d 100644
+index be3deb846821af87cfc1b5a0f0efd6651ccf56fa..da2281e86f9a4ab9008aa78b0b257fd1a7b911ea 100644
 --- a/net/minecraft/world/level/block/entity/BeaconBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BeaconBlockEntity.java
 @@ -337,6 +337,18 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
@@ -2680,7 +2680,7 @@ index be3deb846821af87cfc1b5a0f0efd6651ccf56fa..acb0119b736b51629f291382150adb1a
 +                MobEffectInstance primary = new MobEffectInstance(primaryPower, durationTicks, baseAmp, true, true);
 +                MobEffectInstance secondary = hasSecondaryEffect(levels, primaryPower, secondaryPower)
 +                    ? new MobEffectInstance(secondaryPower, durationTicks, 0, true, true) : null;
-+                fun.bm.lophine.carpet.OrgBeaconEffects.applyNative((net.minecraft.server.level.ServerLevel) level, worldPosition,
++                fun.bm.lophine.carpet.org.OrgBeaconEffects.applyNative((net.minecraft.server.level.ServerLevel) level, worldPosition,
 +                    effectBounds, secondary != null, (player, originalWorld, origin, isPrimary) ->
 +                        applyEffectsAndCallEvent(originalWorld, origin, java.util.List.of(player),
 +                            new MobEffectInstance(isPrimary ? primary : secondary), isPrimary));
@@ -2724,27 +2724,27 @@ index be3deb846821af87cfc1b5a0f0efd6651ccf56fa..acb0119b736b51629f291382150adb1a
          return beaconLevel >= 4 && !Objects.equals(primaryEffect, secondaryEffect) && secondaryEffect != null;
      }
 diff --git a/net/minecraft/world/level/block/entity/BlockEntity.java b/net/minecraft/world/level/block/entity/BlockEntity.java
-index 944e59d3a27975fd5c7658ada6f3036670c7b81d..099897b62bddb5a79714a54652bbdc25886f7b10 100644
+index 944e59d3a27975fd5c7658ada6f3036670c7b81d..cbe4f9b522c1238127126bff29438ae2e4e46562 100644
 --- a/net/minecraft/world/level/block/entity/BlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BlockEntity.java
 @@ -221,6 +221,7 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo
      }
  
      public void setChanged() {
-+        fun.bm.lophine.carpet.OrgItemShadowGroups.observe(this);
++        fun.bm.lophine.carpet.org.OrgItemShadowGroups.observe(this);
          if (this.level != null) {
              if (IGNORE_TILE_UPDATES.get().booleanValue()) return; // Paper - Perf: Optimize Hoppers // Folia - region threading
              setChanged(this.level, this.worldPosition, this.blockState);
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index 9c1c8af50e1d592b9eabf1d0a976f8e308ceee14..f2f66fd89da2d42603a579ffd233ebf91b261480 100644
+index 9c1c8af50e1d592b9eabf1d0a976f8e308ceee14..9897110139a77a44e3577e3b5be23df8d2fb9bdd 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -150,6 +150,15 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public static void pushItemsTick(final Level level, final BlockPos pos, final BlockState state, final HopperBlockEntity entity) {
-+        if (fun.bm.lophine.carpet.OrgGameplayHelper.shulkerStackingGuardActive()) {
-+            fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> carpetPushItemsTick(level, pos, state, entity));
++        if (fun.bm.lophine.carpet.org.OrgGameplayHelper.shulkerStackingGuardActive()) {
++            fun.bm.lophine.carpet.org.OrgGameplayHelper.withoutShulkerStacking(() -> carpetPushItemsTick(level, pos, state, entity));
 +            return;
 +        }
 +        carpetPushItemsTick(level, pos, state, entity);
@@ -2760,7 +2760,7 @@ index 9c1c8af50e1d592b9eabf1d0a976f8e308ceee14..f2f66fd89da2d42603a579ffd233ebf9
              empty = false;
  
 -            if (stack.getCount() != stack.getMaxStackSize()) {
-+            if (stack.getCount() != fun.bm.lophine.carpet.OrgGameplayHelper.vanillaMaxStackSize(stack)) {
++            if (stack.getCount() != fun.bm.lophine.carpet.org.OrgGameplayHelper.vanillaMaxStackSize(stack)) {
                  // can't be full or empty
                  return HOPPER_HAS_ITEMS;
              }
@@ -2770,18 +2770,18 @@ index 9c1c8af50e1d592b9eabf1d0a976f8e308ceee14..f2f66fd89da2d42603a579ffd233ebf9
          if (carpetNativeMove(level, pos)) {
 -            var actual = fun.bm.lophine.carpet.CarpetHopperCounters.move(
 -                (net.minecraft.server.level.ServerLevel) level, pos, entity, () -> true, carpetUnlimitedOperations(level, pos, state, entity, action), ignored -> {});
-+            var actual = fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> fun.bm.lophine.carpet.CarpetHopperCounters.move(
++            var actual = fun.bm.lophine.carpet.org.OrgGameplayHelper.withoutShulkerStacking(() -> fun.bm.lophine.carpet.CarpetHopperCounters.move(
 +                (net.minecraft.server.level.ServerLevel) level, pos, entity, () -> true, carpetUnlimitedOperations(level, pos, state, entity, action), ignored -> {}));
              return actual.isDone() ? actual.join() : false;
          }
          if (level instanceof net.minecraft.server.level.ServerLevel) {
 -            return fun.bm.lophine.carpet.CarpetHopperCounters.moveNow(
 -                (net.minecraft.server.level.ServerLevel) level, pos, entity, () -> true, carpetUnlimitedOperations(level, pos, state, entity, action), ignored -> {});
-+            return fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> fun.bm.lophine.carpet.CarpetHopperCounters.moveNow(
++            return fun.bm.lophine.carpet.org.OrgGameplayHelper.withoutShulkerStacking(() -> fun.bm.lophine.carpet.CarpetHopperCounters.moveNow(
 +                (net.minecraft.server.level.ServerLevel) level, pos, entity, () -> true, carpetUnlimitedOperations(level, pos, state, entity, action), ignored -> {}));
          }
 -        return carpetTryMoveItems(level, pos, state, entity, action);
-+        return fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> carpetTryMoveItems(level, pos, state, entity, action));
++        return fun.bm.lophine.carpet.org.OrgGameplayHelper.withoutShulkerStacking(() -> carpetTryMoveItems(level, pos, state, entity, action));
      }
  
      private static boolean carpetNativeMove(Level level, BlockPos pos) {
@@ -2790,7 +2790,7 @@ index 9c1c8af50e1d592b9eabf1d0a976f8e308ceee14..f2f66fd89da2d42603a579ffd233ebf9
      private boolean inventoryFull() {
          for (ItemStack itemStack : this.items) {
 -            if (itemStack.isEmpty() || itemStack.getCount() != itemStack.getMaxStackSize()) {
-+            if (itemStack.isEmpty() || itemStack.getCount() != fun.bm.lophine.carpet.OrgGameplayHelper.vanillaMaxStackSize(itemStack)) {
++            if (itemStack.isEmpty() || itemStack.getCount() != fun.bm.lophine.carpet.org.OrgGameplayHelper.vanillaMaxStackSize(itemStack)) {
                  return false;
              }
          }
@@ -2798,11 +2798,11 @@ index 9c1c8af50e1d592b9eabf1d0a976f8e308ceee14..f2f66fd89da2d42603a579ffd233ebf9
      // Folia - region threading - moved to RegionizedWorldData
  
      private static boolean hopperPush(final Level level, final Container destination, final Direction direction, final HopperBlockEntity hopper) {
-+        if (!fun.bm.lophine.carpet.OrgItemShadowGroups.any(hopper, destination)) {
++        if (!fun.bm.lophine.carpet.org.OrgItemShadowGroups.any(hopper, destination)) {
 +            return carpetOrgHopperPush(level, destination, direction, hopper);
 +        }
-+        var shadowStacks = fun.bm.lophine.carpet.OrgItemShadowGroups.container(hopper, destination);
-+        var result = fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(shadowStacks, () -> carpetOrgHopperPush(level, destination, direction, hopper));
++        var shadowStacks = fun.bm.lophine.carpet.org.OrgItemShadowGroups.container(hopper, destination);
++        var result = fun.bm.lophine.carpet.org.OrgItemShadowGroups.attempt(shadowStacks, () -> carpetOrgHopperPush(level, destination, direction, hopper));
 +        return result.completed() && result.value();
 +    }
 +
@@ -2814,12 +2814,12 @@ index 9c1c8af50e1d592b9eabf1d0a976f8e308ceee14..f2f66fd89da2d42603a579ffd233ebf9
      }
  
      private static boolean hopperPull(final Level level, final Hopper hopper, final Container container, ItemStack origItemStack, final int i) {
-+        if (!fun.bm.lophine.carpet.OrgItemShadowGroups.any(origItemStack, hopper, container)) {
++        if (!fun.bm.lophine.carpet.org.OrgItemShadowGroups.any(origItemStack, hopper, container)) {
 +            return carpetOrgHopperPull(level, hopper, container, origItemStack, i);
 +        }
-+        var shadowStacks = fun.bm.lophine.carpet.OrgItemShadowGroups.container(hopper, container);
++        var shadowStacks = fun.bm.lophine.carpet.org.OrgItemShadowGroups.container(hopper, container);
 +        shadowStacks.add(origItemStack);
-+        var result = fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(shadowStacks, () -> carpetOrgHopperPull(level, hopper, container, origItemStack, i));
++        var result = fun.bm.lophine.carpet.org.OrgItemShadowGroups.attempt(shadowStacks, () -> carpetOrgHopperPull(level, hopper, container, origItemStack, i));
 +        return result.completed() && result.value();
 +    }
 +
@@ -2831,7 +2831,7 @@ index 9c1c8af50e1d592b9eabf1d0a976f8e308ceee14..f2f66fd89da2d42603a579ffd233ebf9
      // Paper end - Perf: Optimize Hoppers
  
      private static boolean ejectItems(final Level level, final BlockPos blockPos, final HopperBlockEntity self) {
-+        return fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> carpetEjectItems(level, blockPos, self));
++        return fun.bm.lophine.carpet.org.OrgGameplayHelper.withoutShulkerStacking(() -> carpetEjectItems(level, blockPos, self));
 +    }
 +
 +    private static boolean carpetEjectItems(final Level level, final BlockPos blockPos, final HopperBlockEntity self) {
@@ -2842,7 +2842,7 @@ index 9c1c8af50e1d592b9eabf1d0a976f8e308ceee14..f2f66fd89da2d42603a579ffd233ebf9
      }
  
      public static boolean suckInItems(final Level level, final Hopper hopper) {
-+        return fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> carpetSuckInItems(level, hopper));
++        return fun.bm.lophine.carpet.org.OrgGameplayHelper.withoutShulkerStacking(() -> carpetSuckInItems(level, hopper));
 +    }
 +
 +    private static boolean carpetSuckInItems(final Level level, final Hopper hopper) {
@@ -2854,12 +2854,12 @@ index 9c1c8af50e1d592b9eabf1d0a976f8e308ceee14..f2f66fd89da2d42603a579ffd233ebf9
  
      public static boolean addItem(final Container container, final ItemEntity entity) {
 -        if (fun.bm.lophine.carpet.config.modules.WoolHopperCounterConfig.hopperCountersUnlimitedSpeed && org.leavesmc.leaves.util.HopperCounter.isEnabled() && entity.isRemoved()) return false; // Leaves - Wool hopper counter
-+        if (!fun.bm.lophine.carpet.OrgItemShadowGroups.any(entity.getItem(), container)) {
-+            return fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> carpetAddItem(container, entity));
++        if (!fun.bm.lophine.carpet.org.OrgItemShadowGroups.any(entity.getItem(), container)) {
++            return fun.bm.lophine.carpet.org.OrgGameplayHelper.withoutShulkerStacking(() -> carpetAddItem(container, entity));
 +        }
-+        var shadowStacks = fun.bm.lophine.carpet.OrgItemShadowGroups.container(container);
++        var shadowStacks = fun.bm.lophine.carpet.org.OrgItemShadowGroups.container(container);
 +        shadowStacks.add(entity.getItem());
-+        var result = fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(shadowStacks, () -> fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> carpetAddItem(container, entity)));
++        var result = fun.bm.lophine.carpet.org.OrgItemShadowGroups.attempt(shadowStacks, () -> fun.bm.lophine.carpet.org.OrgGameplayHelper.withoutShulkerStacking(() -> carpetAddItem(container, entity)));
 +        return result.completed() && result.value();
 +    }
 +
@@ -2873,7 +2873,7 @@ index 9c1c8af50e1d592b9eabf1d0a976f8e308ceee14..f2f66fd89da2d42603a579ffd233ebf9
          ItemStack copy = entity.getItem().copy();
 -        ItemStack result = addItem(null, container, copy, null);
 +        ItemStack result;
-+        if (fun.bm.lophine.carpet.OrgGameplayHelper.stackableShulker(copy)) {
++        if (fun.bm.lophine.carpet.org.OrgGameplayHelper.stackableShulker(copy)) {
 +            ItemStack one = copy.split(copy.getMaxStackSize());
 +            int before = one.getCount();
 +            ItemStack remaining = addItem(null, container, one, null);
@@ -2891,12 +2891,12 @@ index 9c1c8af50e1d592b9eabf1d0a976f8e308ceee14..f2f66fd89da2d42603a579ffd233ebf9
  
      public static ItemStack addItem(final @Nullable Container from, final Container container, ItemStack itemStack, final @Nullable Direction direction) {
 +        final ItemStack transferred = itemStack;
-+        if (!fun.bm.lophine.carpet.OrgItemShadowGroups.any(transferred, from, container)) {
-+            return fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> carpetAddItem(from, container, transferred, direction));
++        if (!fun.bm.lophine.carpet.org.OrgItemShadowGroups.any(transferred, from, container)) {
++            return fun.bm.lophine.carpet.org.OrgGameplayHelper.withoutShulkerStacking(() -> carpetAddItem(from, container, transferred, direction));
 +        }
-+        var shadowStacks = fun.bm.lophine.carpet.OrgItemShadowGroups.container(from, container);
++        var shadowStacks = fun.bm.lophine.carpet.org.OrgItemShadowGroups.container(from, container);
 +        shadowStacks.add(transferred);
-+        var result = fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(shadowStacks, () -> fun.bm.lophine.carpet.OrgGameplayHelper.withoutShulkerStacking(() -> carpetAddItem(from, container, transferred, direction)));
++        var result = fun.bm.lophine.carpet.org.OrgItemShadowGroups.attempt(shadowStacks, () -> fun.bm.lophine.carpet.org.OrgGameplayHelper.withoutShulkerStacking(() -> carpetAddItem(from, container, transferred, direction)));
 +        return result.completed() ? result.value() : transferred;
 +    }
 +
@@ -2908,8 +2908,8 @@ index 9c1c8af50e1d592b9eabf1d0a976f8e308ceee14..f2f66fd89da2d42603a579ffd233ebf9
      private boolean shouldCheckSleep;
  
      private void checkSleepingConditions() {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.any(fun.bm.lophine.carpet.OrgItemShadowGroups.container(this))) return;
-+        if (!fun.bm.lophine.carpet.OrgItemShadowGroups.owned(this.extractBlockInventory) || !fun.bm.lophine.carpet.OrgItemShadowGroups.owned(this.insertBlockInventory)) return;
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.any(fun.bm.lophine.carpet.org.OrgItemShadowGroups.container(this))) return;
++        if (!fun.bm.lophine.carpet.org.OrgItemShadowGroups.owned(this.extractBlockInventory) || !fun.bm.lophine.carpet.org.OrgItemShadowGroups.owned(this.insertBlockInventory)) return;
 +        if (this.extractStackList != null && this.extractStackList.carpetOrgHasShadows() || this.insertStackList != null && this.insertStackList.carpetOrgHasShadows()) return;
          if (this.cooldownTime > 0 || this.getLevel() == null || skipNextSleepCheckAfterCooldown) {
              return;
@@ -2918,7 +2918,7 @@ index 9c1c8af50e1d592b9eabf1d0a976f8e308ceee14..f2f66fd89da2d42603a579ffd233ebf9
  
      @Override
      public boolean lithium$startSleeping() {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.any(fun.bm.lophine.carpet.OrgItemShadowGroups.container(this))) return false;
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.any(fun.bm.lophine.carpet.org.OrgItemShadowGroups.container(this))) return false;
          if (this.isSleeping()) {
              return false;
          }
@@ -2926,7 +2926,7 @@ index 9c1c8af50e1d592b9eabf1d0a976f8e308ceee14..f2f66fd89da2d42603a579ffd233ebf9
      }
  
      private static @Nullable Boolean lithiumInsert(final Level world, final BlockPos pos, final HopperBlockEntity hopperBlockEntity, final @Nullable Container insertInventory) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.any(fun.bm.lophine.carpet.OrgItemShadowGroups.container(hopperBlockEntity, insertInventory))) return null;
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.any(fun.bm.lophine.carpet.org.OrgItemShadowGroups.container(hopperBlockEntity, insertInventory))) return null;
          if (insertInventory == null || hopperBlockEntity instanceof net.minecraft.world.WorldlyContainer) {
              //call the vanilla code to allow other mods inject features
              //e.g. carpet mod allows hoppers to insert items into wool blocks
@@ -2934,19 +2934,19 @@ index 9c1c8af50e1d592b9eabf1d0a976f8e308ceee14..f2f66fd89da2d42603a579ffd233ebf9
      }
  
      private static @Nullable Boolean lithiumExtract(final Level world, final Hopper to, final Container from) {
-+        if (fun.bm.lophine.carpet.OrgItemShadowGroups.any(fun.bm.lophine.carpet.OrgItemShadowGroups.container(to, from))) return null;
++        if (fun.bm.lophine.carpet.org.OrgItemShadowGroups.any(fun.bm.lophine.carpet.org.OrgItemShadowGroups.container(to, from))) return null;
          if (!(to instanceof HopperBlockEntity hopperBlockEntity)) {
              return null; //optimizations not implemented for hopper minecarts
          }
 diff --git a/net/minecraft/world/level/block/piston/PistonBaseBlock.java b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
-index a27a55c8bd57178917d5f3dae74a8f460bafae96..6953698f5dcea2651bc519a64ce416d9c8512e81 100644
+index 5f08a011dd6bdd0191db6d1ef11336714bc266ce..6aba262baae449375a916f866778276de55710de 100644
 --- a/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 +++ b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 @@ -138,12 +138,15 @@ public class PistonBaseBlock extends DirectionalBlock {
-             fun.bm.lophine.carpet.AmsBlockChunkLoaders.piston(serverLevel, pos, state);
+             fun.bm.lophine.carpet.ams.AmsBlockChunkLoaders.piston(serverLevel, pos, state);
          }
          Direction direction = state.getValue(FACING);
-+        boolean carpetOrgBedrock = fun.bm.lophine.carpet.OrgHiddenBedrockSignals.allows(level,pos,b0,b1,direction);
++        boolean carpetOrgBedrock = fun.bm.lophine.carpet.org.OrgHiddenBedrockSignals.allows(level,pos,b0,b1,direction);
 +        if (!carpetOrgBedrock) {
          // Paper start - Protect Bedrock and End Portal/Frames from being destroyed; prevent retracting when we're facing the wrong way (we were replaced before retraction could occur)
          Direction directionQueuedAs = Direction.from3DDataValue(b1 & 7); // Paper - copied from below
@@ -2977,14 +2977,14 @@ index a27a55c8bd57178917d5f3dae74a8f460bafae96..6953698f5dcea2651bc519a64ce416d9
  
              level.playSound(null, pos, SoundEvents.PISTON_CONTRACT, SoundSource.BLOCKS, 0.5F, random.nextFloat() * 0.15F + 0.6F);
 diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
-index 47ae74113ae21e51a83fa62d552d7646fe48a7dc..24b58f697800770ca7e87af33669ad450af9f29f 100644
+index df11661c5c3d9a0e880b585b1933e9fb9ae097c6..3060e29c68d8dc1105fe5b6e99330d2cd33e80f5 100644
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
 @@ -364,6 +364,11 @@ public abstract class BlockBehaviour implements FeatureElement, net.caffeinemc.m
      }
  
      protected float getDestroyProgress(final BlockState state, final Player player, final BlockGetter level, final BlockPos pos) {
-+        return fun.bm.lophine.carpet.OrgGameplayHelper.withTool(player, player.getMainHandItem(),
++        return fun.bm.lophine.carpet.org.OrgGameplayHelper.withTool(player, player.getMainHandItem(),
 +            () -> this.carpetDestroyProgress(state, player, level, pos));
 +    }
 +
@@ -2993,7 +2993,7 @@ index 47ae74113ae21e51a83fa62d552d7646fe48a7dc..24b58f697800770ca7e87af33669ad45
          if (destroySpeed == -1.0F) {
              return 0.0F;
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index b410af1f886d6b744cf05c168524cf35f689cfd7..1a3d401b4cd6285a49a50a5371be5bb79c345632 100644
+index b410af1f886d6b744cf05c168524cf35f689cfd7..8b7f404eaa44dadacad745de092eb8bf26d7f103 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -1021,7 +1021,11 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
@@ -3002,7 +3002,7 @@ index b410af1f886d6b744cf05c168524cf35f689cfd7..1a3d401b4cd6285a49a50a5371be5bb7
                          if (this.blockEntity.getType().isValid(blockState)) {
 -                            this.ticker.tick(LevelChunk.this.level, this.blockEntity.getBlockPos(), blockState, this.blockEntity);
 +                            if (this.blockEntity instanceof net.minecraft.world.Container container) {
-+                                fun.bm.lophine.carpet.OrgItemShadowGroups.attempt(fun.bm.lophine.carpet.OrgItemShadowGroups.container(container), () -> {
++                                fun.bm.lophine.carpet.org.OrgItemShadowGroups.attempt(fun.bm.lophine.carpet.org.OrgItemShadowGroups.container(container), () -> {
 +                                    this.ticker.tick(LevelChunk.this.level, this.blockEntity.getBlockPos(), blockState, this.blockEntity); return true;
 +                                });
 +                            } else this.ticker.tick(LevelChunk.this.level, this.blockEntity.getBlockPos(), blockState, this.blockEntity);
@@ -3010,7 +3010,7 @@ index b410af1f886d6b744cf05c168524cf35f689cfd7..1a3d401b4cd6285a49a50a5371be5bb7
                              // Paper start - Remove the Block Entity if it's invalid
                          } else {
 diff --git a/net/minecraft/world/level/levelgen/PhantomSpawner.java b/net/minecraft/world/level/levelgen/PhantomSpawner.java
-index d32152b1289922abc6f29feb55cc8c0f8ab954a3..ad289188547d36c9c46ccfa3fe05ed8535f8f94a 100644
+index adc4f77d8d362da78aee3ce0598e8a34c2fa316c..4645a5711962fb96c6b0f24ff6f165cf9cf582a9 100644
 --- a/net/minecraft/world/level/levelgen/PhantomSpawner.java
 +++ b/net/minecraft/world/level/levelgen/PhantomSpawner.java
 @@ -59,6 +59,13 @@ public class PhantomSpawner implements CustomSpawner {

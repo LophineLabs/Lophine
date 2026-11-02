@@ -4,6 +4,7 @@ import ca.spottedleaf.moonrise.common.util.TickThread;
 import carpet.script.CarpetEventServer.Event;
 import carpet.script.EntityEventsGroup;
 import carpet.script.external.*;
+import fun.bm.lophine.carpet.org.OrgItemShadowGroups;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
