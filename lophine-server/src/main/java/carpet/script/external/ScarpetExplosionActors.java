@@ -48,12 +48,16 @@ public final class ScarpetExplosionActors {
         return entity(entity, operation, null);
     }
 
-    /** Yield past this tick, then revalidate the entity's current or retired owner. */
+    /**
+     * Yield past this tick, then revalidate the entity's current or retired owner.
+     */
     public static <T> CompletableFuture<T> entityLater(Entity entity, Supplier<T> operation) {
         return entity(entity, operation, null, !TickThread.isShutdownThread());
     }
 
-    /** RegionScheduler.execute may drain again in the same tick; a budget yield needs a delayed task. */
+    /**
+     * RegionScheduler.execute may drain again in the same tick; a budget yield needs a delayed task.
+     */
     public static <T> CompletableFuture<T> worldLater(ServerLevel world, BlockPos position, Supplier<T> operation) {
         if (TickThread.isShutdownThread()) return world(world, position, operation);
         CompletableFuture<T> result = new CompletableFuture<>();
@@ -153,16 +157,18 @@ public final class ScarpetExplosionActors {
                 return;
             }
             Runnable run = () -> {
-                        if (!ScarpetRetiredActors.matchesLastOwner(entity, location)) {
-                            retired(entity, operation, result, attempts + 1);
-                            return;
-                        }
-                        runEntity(entity, operation, result);
-                    };
-            if (later) location.world().getServer().server.getRegionScheduler().runDelayed(MinecraftInternalPlugin.INSTANCE,
-                    location.world().getWorld(), location.position().getX() >> 4, location.position().getZ() >> 4, ignored -> run.run(), 1L);
-            else location.world().getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, location.world().getWorld(),
-                    location.position().getX() >> 4, location.position().getZ() >> 4, run);
+                if (!ScarpetRetiredActors.matchesLastOwner(entity, location)) {
+                    retired(entity, operation, result, attempts + 1);
+                    return;
+                }
+                runEntity(entity, operation, result);
+            };
+            if (later)
+                location.world().getServer().server.getRegionScheduler().runDelayed(MinecraftInternalPlugin.INSTANCE,
+                        location.world().getWorld(), location.position().getX() >> 4, location.position().getZ() >> 4, ignored -> run.run(), 1L);
+            else
+                location.world().getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, location.world().getWorld(),
+                        location.position().getX() >> 4, location.position().getZ() >> 4, run);
         } catch (Throwable failure) {
             result.completeExceptionally(failure);
         }

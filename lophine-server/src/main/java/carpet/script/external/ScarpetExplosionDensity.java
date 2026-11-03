@@ -35,10 +35,13 @@ public final class ScarpetExplosionDensity {
     private static final int OWNER_WORK_BUDGET = 2048;
     private static final long OWNER_TIME_BUDGET_NANOS = 2_000_000L;
     private static final int PREFETCH_BLOCKS = 32;
-    public record Entry(BlockState state, VoxelShape shape) { }
+
+    public record Entry(BlockState state, VoxelShape shape) {
+    }
 
     static final class Missing extends RuntimeException {
         final BlockPos position;
+
         Missing(BlockPos position) {
             super(null, null, false, false);
             this.position = position.immutable();
@@ -50,7 +53,10 @@ public final class ScarpetExplosionDensity {
         final Long2ObjectOpenHashMap<VoxelShape> shapeUpdates = new Long2ObjectOpenHashMap<>();
         final int height, minY;
 
-        Snapshot(int height, int minY) { this.height = height; this.minY = minY; }
+        Snapshot(int height, int minY) {
+            this.height = height;
+            this.minY = minY;
+        }
 
         Entry entry(BlockPos position) {
             Entry found = this.blocks.get(position.asLong());
@@ -63,23 +69,41 @@ public final class ScarpetExplosionDensity {
             BlockState state = entry(position).state();
             return state == null ? Blocks.VOID_AIR.defaultBlockState() : state;
         }
+
         @Override
-        public BlockState getBlockStateIfLoaded(BlockPos position) { return getBlockState(position); }
+        public BlockState getBlockStateIfLoaded(BlockPos position) {
+            return getBlockState(position);
+        }
+
         @Override
-        public FluidState getFluidIfLoaded(BlockPos position) { return getFluidState(position); }
+        public FluidState getFluidIfLoaded(BlockPos position) {
+            return getFluidState(position);
+        }
+
         @Override
-        public FluidState getFluidState(BlockPos position) { return getBlockState(position).getFluidState(); }
+        public FluidState getFluidState(BlockPos position) {
+            return getBlockState(position).getFluidState();
+        }
+
         @Override
         public BlockEntity getBlockEntity(BlockPos position) {
             throw new IllegalStateException("A contextual explosion shape requested a foreign mutable block entity");
         }
+
         @Override
-        public int getHeight() { return this.height; }
+        public int getHeight() {
+            return this.height;
+        }
+
         @Override
-        public int getMinY() { return this.minY; }
+        public int getMinY() {
+            return this.minY;
+        }
     }
 
-    /** Shared across all exposure jobs executed by the same region in one tick. */
+    /**
+     * Shared across all exposure jobs executed by the same region in one tick.
+     */
     static final class Budget {
         final int maxWork;
         final long maxNanos;
@@ -88,21 +112,32 @@ public final class ScarpetExplosionDensity {
         long nanos;
 
         Budget(int maxWork, long maxNanos, LongSupplier clock) {
-            this.maxWork = maxWork; this.maxNanos = maxNanos; this.clock = clock;
+            this.maxWork = maxWork;
+            this.maxNanos = maxNanos;
+            this.clock = clock;
         }
 
-        Slice slice() { return new Slice(); }
+        Slice slice() {
+            return new Slice();
+        }
 
         final class Slice implements AutoCloseable {
             final long start = clock.getAsLong();
-            boolean available() { return work < maxWork && nanos + clock.getAsLong() - this.start < maxNanos; }
+
+            boolean available() {
+                return work < maxWork && nanos + clock.getAsLong() - this.start < maxNanos;
+            }
+
             boolean work() {
                 if (!available()) return false;
                 ++work;
                 return true;
             }
+
             @Override
-            public void close() { nanos += Math.max(0L, clock.getAsLong() - this.start); }
+            public void close() {
+                nanos += Math.max(0L, clock.getAsLong() - this.start);
+            }
         }
     }
 
@@ -111,6 +146,7 @@ public final class ScarpetExplosionDensity {
         long tick;
         Budget budget;
     }
+
     private static final ThreadLocal<OwnerBudget> BUDGETS = ThreadLocal.withInitial(OwnerBudget::new);
 
     private static Budget ownerBudget() {
@@ -133,14 +169,20 @@ public final class ScarpetExplosionDensity {
 
     interface Backend {
         <T> CompletableFuture<T> entity(Supplier<T> action, boolean later);
+
         CompletableFuture<Boolean> read(Snapshot snapshot, List<BlockPos> positions, boolean later);
+
         CompletableFuture<Float> store(Snapshot snapshot, float density);
+
         Budget budget();
     }
 
-    private record Step(boolean done, BlockPos missing) { }
+    private record Step(boolean done, BlockPos missing) {
+    }
 
-    /** Serial trampoline: already-completed owner futures must not build a recursive Java stack. */
+    /**
+     * Serial trampoline: already-completed owner futures must not build a recursive Java stack.
+     */
     static final class Job {
         final CompletableFuture<Float> result = new CompletableFuture<>();
         final ScarpetExplosionSampler sampler;
@@ -151,13 +193,21 @@ public final class ScarpetExplosionDensity {
         private final AtomicInteger draining = new AtomicInteger();
 
         Job(ScarpetExplosionSampler sampler, Snapshot snapshot, Backend backend, ScarpetExplosionSampler.Probe probe) {
-            this.sampler = sampler; this.snapshot = snapshot; this.backend = backend; this.probe = probe;
+            this.sampler = sampler;
+            this.snapshot = snapshot;
+            this.backend = backend;
+            this.probe = probe;
         }
 
-        void start() { enqueue(() -> sample(false)); }
+        void start() {
+            enqueue(() -> sample(false));
+        }
 
         private void enqueue(Runnable action) {
-            Supplier<Void> captured = ScarpetRuntime.captureNativeContinuation(() -> { action.run(); return null; });
+            Supplier<Void> captured = ScarpetRuntime.captureNativeContinuation(() -> {
+                action.run();
+                return null;
+            });
             this.continuations.add(() -> captured.get());
             if (this.draining.getAndIncrement() != 0) return;
             int missed = 1;
@@ -165,8 +215,11 @@ public final class ScarpetExplosionDensity {
                 Runnable next;
                 while ((next = this.continuations.poll()) != null) {
                     if (this.result.isDone()) continue;
-                    try { next.run(); }
-                    catch (Throwable failure) { this.result.completeExceptionally(failure); }
+                    try {
+                        next.run();
+                    } catch (Throwable failure) {
+                        this.result.completeExceptionally(failure);
+                    }
                 }
                 missed = this.draining.addAndGet(-missed);
             } while (missed != 0);
@@ -182,8 +235,11 @@ public final class ScarpetExplosionDensity {
         private void sample(boolean later) {
             follow(this.backend.entity(() -> {
                 try (var slice = this.backend.budget().slice()) {
-                    try { return new Step(this.sampler.advance(slice::work, this.probe), null); }
-                    catch (Missing missing) { return new Step(false, missing.position); }
+                    try {
+                        return new Step(this.sampler.advance(slice::work, this.probe), null);
+                    } catch (Missing missing) {
+                        return new Step(false, missing.position);
+                    }
                 }
             }, later), step -> {
                 if (step.done()) {
@@ -192,7 +248,8 @@ public final class ScarpetExplosionDensity {
                     var requests = new it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap<BlockPos>();
                     requests.put(step.missing().asLong(), step.missing());
                     for (BlockPos position : this.sampler.lookahead(PREFETCH_BLOCKS - 1)) {
-                        if (!this.snapshot.blocks.containsKey(position.asLong())) requests.put(position.asLong(), position);
+                        if (!this.snapshot.blocks.containsKey(position.asLong()))
+                            requests.put(position.asLong(), position);
                     }
                     read(List.copyOf(requests.values()), false);
                 } else sample(true);
@@ -207,7 +264,8 @@ public final class ScarpetExplosionDensity {
         }
     }
 
-    private ScarpetExplosionDensity() { }
+    private ScarpetExplosionDensity() {
+    }
 
     public static CompletableFuture<Float> compute(ServerExplosion explosion, Entity target) {
         // One immutable geometry snapshot, as in the native synchronous getSeenFraction.
@@ -222,7 +280,8 @@ public final class ScarpetExplosionDensity {
                     var job = new Job(new ScarpetExplosionSampler(bounds, explosion.center()), snapshot, backend, (from, to, position) -> {
                         Entry entry = snapshot.entry(position);
                         BlockState state = entry.state();
-                        if (state == null || ((ca.spottedleaf.moonrise.patches.collisions.block.CollisionBlockState) state).moonrise$emptyContextCollisionShape()) return false;
+                        if (state == null || ((ca.spottedleaf.moonrise.patches.collisions.block.CollisionBlockState) state).moonrise$emptyContextCollisionShape())
+                            return false;
                         VoxelShape collision = entry.shape();
                         if (collision == null) {
                             if (context[0] == null) context[0] = new CollisionUtil.LazyEntityCollisionContext(target);
@@ -238,13 +297,18 @@ public final class ScarpetExplosionDensity {
         return ScarpetNativeWork.trackNative(explosion.level().getServer(), actual);
     }
 
-    private record NativeBackend(ServerExplosion explosion, Entity target, net.minecraft.world.phys.AABB bounds) implements Backend {
+    private record NativeBackend(ServerExplosion explosion, Entity target,
+                                 net.minecraft.world.phys.AABB bounds) implements Backend {
         @Override
         public <T> CompletableFuture<T> entity(Supplier<T> action, boolean later) {
             return later ? ScarpetExplosionActors.entityLater(this.target, action) : ScarpetExplosionActors.entity(this.target, action);
         }
+
         @Override
-        public Budget budget() { return ownerBudget(); }
+        public Budget budget() {
+            return ownerBudget();
+        }
+
         @Override
         public CompletableFuture<Float> store(Snapshot snapshot, float density) {
             return ScarpetExplosionActors.world(this.explosion.level(), BlockPos.containing(this.explosion.center()), () -> {
@@ -252,6 +316,7 @@ public final class ScarpetExplosionDensity {
                 return density;
             });
         }
+
         @Override
         public CompletableFuture<Boolean> read(Snapshot snapshot, List<BlockPos> positions, boolean later) {
             if (later) {
@@ -261,8 +326,10 @@ public final class ScarpetExplosionDensity {
             BlockPos center = BlockPos.containing(this.explosion.center());
             int minX = center.getX() >> 4, maxX = minX, minZ = center.getZ() >> 4, maxZ = minZ;
             for (BlockPos position : positions) {
-                minX = Math.min(minX, position.getX() >> 4); maxX = Math.max(maxX, position.getX() >> 4);
-                minZ = Math.min(minZ, position.getZ() >> 4); maxZ = Math.max(maxZ, position.getZ() >> 4);
+                minX = Math.min(minX, position.getX() >> 4);
+                maxX = Math.max(maxX, position.getX() >> 4);
+                minZ = Math.min(minZ, position.getZ() >> 4);
+                maxZ = Math.max(maxZ, position.getZ() >> 4);
             }
             Supplier<Boolean> owned = ScarpetRuntime.captureNativeContinuation(() -> {
                 Budget budget = ownerBudget();
