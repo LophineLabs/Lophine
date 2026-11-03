@@ -8,22 +8,27 @@ import fun.bm.lophine.carpet.CarpetRuleChanges;
 import fun.bm.lophine.carpet.CarpetRuleMetadata;
 import fun.bm.lophine.carpet.CarpetRuleRegistry;
 import io.papermc.paper.threadedregions.RegionizedServer;
+import me.earthme.luminol.api.config.annotation.DoNotLoad;
+import me.earthme.luminol.api.config.enums.EnumLoadType;
+import net.minecraft.server.MinecraftServer;
+import org.bukkit.plugin.Plugin;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
-import me.earthme.luminol.api.config.annotation.DoNotLoad;
-import me.earthme.luminol.api.config.enums.EnumLoadType;
-import net.minecraft.server.MinecraftServer;
-import org.bukkit.plugin.Plugin;
 
-/** The global scheduler owns rule state; the extension registry owns callback admission. */
+/**
+ * The global scheduler owns rule state; the extension registry owns callback admission.
+ */
 public final class LophineCarpetApi implements CarpetApi {
     private static final ConcurrentHashMap<MinecraftServer, LophineCarpetApi> SERVERS = new ConcurrentHashMap<>();
     private static final ThreadLocal<ChangeSource> SOURCE = new ThreadLocal<>();
-    private record ChangeSource(CarpetRuleChangeEvent.Cause cause, String pluginName) { }
+
+    private record ChangeSource(CarpetRuleChangeEvent.Cause cause, String pluginName) {
+    }
 
     private final MinecraftServer server;
     private final ScarpetExtensions extensions = new ScarpetExtensions();
@@ -64,8 +69,9 @@ public final class LophineCarpetApi implements CarpetApi {
     public static <T> T withSource(CarpetRuleChangeEvent.Cause cause, String pluginName, Supplier<T> action) {
         ChangeSource previous = SOURCE.get();
         SOURCE.set(new ChangeSource(cause, pluginName));
-        try { return action.get(); }
-        finally {
+        try {
+            return action.get();
+        } finally {
             if (previous == null) SOURCE.remove();
             else SOURCE.set(previous);
         }
@@ -91,7 +97,9 @@ public final class LophineCarpetApi implements CarpetApi {
                 loading != null && loading.when() == EnumLoadType.RELOAD);
     }
 
-    /** Called only for actual live-value changes; snapshots are built on the global owner. */
+    /**
+     * Called only for actual live-value changes; snapshots are built on the global owner.
+     */
     public static void changed(String name, Object previous, Object current) {
         if (Objects.equals(previous, current)) return;
         MinecraftServer server = MinecraftServer.getServer();
@@ -103,7 +111,10 @@ public final class LophineCarpetApi implements CarpetApi {
         Runnable dispatch = () -> server.server.getPluginManager().callEvent(new CarpetRuleChangeEvent(
                 snapshot(name, oldValue), snapshot(name, newValue), captured.cause(), captured.pluginName()));
         if (RegionizedServer.isGlobalTickThread()) dispatch.run();
-        else get(server).tasks.submit(() -> { dispatch.run(); return null; }).exceptionally(failure -> {
+        else get(server).tasks.submit(() -> {
+            dispatch.run();
+            return null;
+        }).exceptionally(failure -> {
             carpet.script.CarpetScriptServer.LOG.error("Carpet rule event dispatch failed", failure);
             return null;
         });
@@ -124,8 +135,11 @@ public final class LophineCarpetApi implements CarpetApi {
     public CompletableFuture<CarpetRuleUpdate> setRule(Plugin owner, String name, String value, boolean persist) {
         Objects.requireNonNull(name, "name");
         Objects.requireNonNull(value, "value");
-        try { this.extensions.checkOwner(owner); }
-        catch (RuntimeException failure) { return CompletableFuture.failedFuture(failure); }
+        try {
+            this.extensions.checkOwner(owner);
+        } catch (RuntimeException failure) {
+            return CompletableFuture.failedFuture(failure);
+        }
         return this.tasks.submitAsync(() -> {
             this.extensions.checkOwner(owner);
             return CarpetRuleChanges.changeFromApi(this.server, owner.getName(), name, value, persist);
@@ -152,8 +166,9 @@ public final class LophineCarpetApi implements CarpetApi {
                     throw new InternalExpressionException("Plugin Scarpet functions require the interpreter thread");
                 }
                 var result = entry.invoke(new ScarpetValues().arguments(arguments));
-                try { return new ScarpetValues().nativeValue(ScarpetRuntime.await(result)); }
-                catch (RuntimeException failure) {
+                try {
+                    return new ScarpetValues().nativeValue(ScarpetRuntime.await(result));
+                } catch (RuntimeException failure) {
                     throw new InternalExpressionException("Scarpet extension " + entry.functionName() + " failed: " + failure);
                 }
             });

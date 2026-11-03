@@ -3,19 +3,14 @@ package fun.bm.lophine.carpet.api;
 import fun.bm.lophine.api.carpet.ScarpetFunction;
 import fun.bm.lophine.api.carpet.ScarpetRegistration;
 import fun.bm.lophine.api.carpet.ScarpetValue;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.WeakHashMap;
-import java.util.concurrent.CompletableFuture;
 import org.bukkit.plugin.Plugin;
 
-/** Registry locks protect admission only; no plugin callback is invoked while holding them. */
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+
+/**
+ * Registry locks protect admission only; no plugin callback is invoked while holding them.
+ */
 final class ScarpetExtensions {
     private final Map<String, Entry> entries = new HashMap<>();
     private final Set<Plugin> disabling = java.util.Collections.newSetFromMap(new WeakHashMap<>());
@@ -31,9 +26,11 @@ final class ScarpetExtensions {
     synchronized Entry register(Plugin owner, String name, ScarpetFunction function) {
         checkOwner(owner);
         Objects.requireNonNull(function, "function");
-        if (!name.matches("[a-z][a-z0-9_]*")) throw new IllegalArgumentException("Invalid Scarpet function identifier: " + name);
+        if (!name.matches("[a-z][a-z0-9_]*"))
+            throw new IllegalArgumentException("Invalid Scarpet function identifier: " + name);
         String fullName = "plugin_" + owner.getName().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9_]", "_") + "__" + name;
-        if (this.entries.containsKey(fullName)) throw new IllegalArgumentException("Scarpet function already registered: " + fullName);
+        if (this.entries.containsKey(fullName))
+            throw new IllegalArgumentException("Scarpet function already registered: " + fullName);
         Entry entry = new Entry(owner, fullName, function);
         this.entries.put(fullName, entry);
         return entry;
@@ -80,7 +77,9 @@ final class ScarpetExtensions {
             this.function = function;
         }
 
-        synchronized boolean ownedBy(Plugin plugin) { return this.owner == plugin; }
+        synchronized boolean ownedBy(Plugin plugin) {
+            return this.owner == plugin;
+        }
 
         CompletableFuture<ScarpetValue> invoke(List<ScarpetValue> arguments) {
             ScarpetFunction callback;
@@ -93,15 +92,18 @@ final class ScarpetExtensions {
                 this.pending.add(result);
             }
             result.whenComplete((value, failure) -> {
-                synchronized (this) { this.pending.remove(result); }
+                synchronized (this) {
+                    this.pending.remove(result);
+                }
             });
             try {
                 Objects.requireNonNull(callback.apply(List.copyOf(arguments)), "Extension returned null stage")
-                    .whenComplete((value, failure) -> {
-                        if (failure != null) result.completeExceptionally(failure);
-                        else if (value == null) result.completeExceptionally(new NullPointerException("Extension returned null value"));
-                        else result.complete(value);
-                    });
+                        .whenComplete((value, failure) -> {
+                            if (failure != null) result.completeExceptionally(failure);
+                            else if (value == null)
+                                result.completeExceptionally(new NullPointerException("Extension returned null value"));
+                            else result.complete(value);
+                        });
             } catch (Throwable failure) {
                 result.completeExceptionally(failure);
             }
@@ -109,14 +111,20 @@ final class ScarpetExtensions {
         }
 
         @Override
-        public String functionName() { return this.name; }
+        public String functionName() {
+            return this.name;
+        }
 
         @Override
-        public synchronized boolean isRegistered() { return this.function != null && this.owner.isEnabled(); }
+        public synchronized boolean isRegistered() {
+            return this.function != null && this.owner.isEnabled();
+        }
 
         @Override
         public void close() {
-            synchronized (ScarpetExtensions.this) { ScarpetExtensions.this.entries.remove(this.name, this); }
+            synchronized (ScarpetExtensions.this) {
+                ScarpetExtensions.this.entries.remove(this.name, this);
+            }
             revoke();
         }
 

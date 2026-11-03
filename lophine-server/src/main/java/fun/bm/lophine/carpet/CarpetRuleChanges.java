@@ -101,7 +101,9 @@ public final class CarpetRuleChanges {
         });
     }
 
-    /** Shares validators, persistence, Scarpet observers, client sync and command refresh with /carpet. */
+    /**
+     * Shares validators, persistence, Scarpet observers, client sync and command refresh with /carpet.
+     */
     public static CompletableFuture<fun.bm.lophine.api.carpet.CarpetRuleUpdate> changeFromApi(
             net.minecraft.server.MinecraftServer server, String pluginName, String name, String text, boolean persist) {
         var source = server.createCommandSourceStack();
@@ -114,7 +116,8 @@ public final class CarpetRuleChanges {
             Update update = applied.update();
             return TisCommandContinuations.then(finishEffects(source, name, update, false), outcome -> {
                 if (outcome.failure() != null) return CompletableFuture.failedFuture(outcome.failure());
-                if (update.networkBlocked()) return CompletableFuture.failedFuture(new IllegalStateException("Rule blocked by AMS network protocol: " + name));
+                if (update.networkBlocked())
+                    return CompletableFuture.failedFuture(new IllegalStateException("Rule blocked by AMS network protocol: " + name));
                 return CompletableFuture.completedFuture(new fun.bm.lophine.api.carpet.CarpetRuleUpdate(
                         applied.rule(), text,
                         update.restart() ? fun.bm.lophine.api.carpet.CarpetRuleUpdate.Status.SAVED_FOR_RESTART
@@ -124,7 +127,8 @@ public final class CarpetRuleChanges {
         });
     }
 
-    private record ApiUpdate(Update update, fun.bm.lophine.api.carpet.CarpetRule rule) { }
+    private record ApiUpdate(Update update, fun.bm.lophine.api.carpet.CarpetRule rule) {
+    }
 
     private record DefaultValue(CarpetRuleRegistry.Binding binding, ConfigsInstance config, Object value) {
     }

@@ -8,13 +8,17 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-/** Queued operations always settle on shutdown, even if the global task queue stops draining. */
+/**
+ * Queued operations always settle on shutdown, even if the global task queue stops draining.
+ */
 final class CarpetApiTasks {
     private final Executor executor;
     private final Set<CompletableFuture<?>> pending = new HashSet<>();
     private boolean closed;
 
-    CarpetApiTasks(Executor executor) { this.executor = executor; }
+    CarpetApiTasks(Executor executor) {
+        this.executor = executor;
+    }
 
     <T> CompletableFuture<T> submit(Supplier<T> body) {
         return submitAsync(() -> CompletableFuture.completedFuture(body.get()));
@@ -29,11 +33,15 @@ final class CarpetApiTasks {
         }
         actual.whenComplete((value, failure) -> {
             operation.set(null); // A stopped global queue must not retain plugin callbacks.
-            synchronized (this) { this.pending.remove(actual); }
+            synchronized (this) {
+                this.pending.remove(actual);
+            }
         });
         try {
             this.executor.execute(() -> {
-                synchronized (this) { if (this.closed) return; }
+                synchronized (this) {
+                    if (this.closed) return;
+                }
                 var action = operation.getAndSet(null);
                 if (action == null) return;
                 try {
@@ -41,10 +49,13 @@ final class CarpetApiTasks {
                         if (failure == null) actual.complete(value);
                         else actual.completeExceptionally(failure);
                     });
+                } catch (Throwable failure) {
+                    actual.completeExceptionally(failure);
                 }
-                catch (Throwable failure) { actual.completeExceptionally(failure); }
             });
-        } catch (Throwable failure) { actual.completeExceptionally(failure); }
+        } catch (Throwable failure) {
+            actual.completeExceptionally(failure);
+        }
         // A caller's cancellation must not cancel an accepted configuration write.
         return actual.copy();
     }
