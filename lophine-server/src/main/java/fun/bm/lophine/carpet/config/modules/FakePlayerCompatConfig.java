@@ -9,10 +9,6 @@ public class FakePlayerCompatConfig {
     @ConfigInfo(name = "commandPlayer")
     public static volatile String commandPlayer = "ops";
 
-    public static boolean playerCommandEnabled() {
-        return !"false".equalsIgnoreCase(commandPlayer);
-    }
-
     @ConfigInfo(name = "fakePlayerResident")
     public static volatile boolean fakePlayerResident = false;
 

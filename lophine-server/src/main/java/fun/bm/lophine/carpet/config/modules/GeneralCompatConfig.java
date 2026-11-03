@@ -1434,10 +1434,6 @@ public class GeneralCompatConfig {
         return spawnJockeyProbably >= 0.0D ? spawnJockeyProbably > 0.0D && SPAWN_JOCKEY_RANDOM.nextFloat() <= spawnJockeyProbably : original;
     }
 
-    public static boolean spawnLeaderDecision(final boolean original) {
-        return spawnLeaderZombieProbably >= 0.0D ? spawnLeaderZombieProbably > 0.0D && SPAWN_LEADER_RANDOM.nextFloat() <= spawnLeaderZombieProbably : original;
-    }
-
     public static float spawnLeaderChance(final float original) {
         if (spawnLeaderZombieProbably >= 0.0D) {
             double chance = spawnLeaderZombieProbably;
@@ -1462,18 +1458,6 @@ public class GeneralCompatConfig {
             }
             return original;
         }
-    }
-
-    public static int striderJockeyType() {
-        if (!(spawnJockeyProbably >= 0.0D)) {
-            return -1;
-        }
-        boolean ziglin = SPAWN_JOCKEY_RANDOM.nextInt(4) == 0;
-        return spawnJockeyDecision(false) ? (ziglin ? 1 : 2) : 0;
-    }
-
-    public static int striderJockeyRoll(final int original, final int type, final int wanted) {
-        return type < 0 ? original : (type == wanted ? 0 : 1);
     }
 
     @ConfigInfo(name = "breedingCooldownDisabled", section = "tis")
