@@ -51,8 +51,7 @@ public class ToggleCommand extends LiteralNode {
         CommandSender sender = context.getSender();
         for (ServerPlayer player : players) {
             player.getBukkitEntity().taskScheduler.scheduleOrExecute(scheduled -> {
-                ServerPlayer current = scheduled instanceof ServerPlayer serverPlayer ? serverPlayer : player;
-                toggleBar(sender, current);
+                toggleBar(sender, (ServerPlayer) scheduled);
             });
         }
         return true;
