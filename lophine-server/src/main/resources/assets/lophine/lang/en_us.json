@@ -1287,6 +1287,8 @@
   "luminol.command.bar.config.now.false": "Bar type with {0} disabled successfully!",
   "luminol.command.bar.config.now.true": "Bar type with {0} enabled successfully!",
   "luminol.command.bar.toggle.already_disabled": "Bar type with {0} was already disabled!",
+  "luminol.command.bar.toggle.already_false": "Bar type with {0} was already disabled for {1}!",
+  "luminol.command.bar.toggle.already_true": "Bar type with {0} was already enabled for {1}!",
   "luminol.command.bar.toggle.false": "Disabled bar type with {0} for {1}",
   "luminol.command.bar.toggle.player_not_found": "Player {0} was not found!",
   "luminol.command.bar.toggle.true": "Enabled bar type with {0} for {1}",

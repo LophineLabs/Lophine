@@ -1,5 +1,6 @@
 package me.earthme.luminol.commands.bar.sub;
 
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -19,6 +20,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.leavesmc.leaves.command.ArgumentNode;
 import org.leavesmc.leaves.command.CommandContext;
 import org.leavesmc.leaves.command.LiteralNode;
@@ -44,20 +46,26 @@ public class ToggleCommand extends LiteralNode {
             context.getSender().sendMessage(Component.text(ServerI18nUtil.getLocalizedText("general.command.only-player"), NamedTextColor.RED));
             return true;
         }
-        return execute0(context, Set.of(((CraftPlayer) player).getHandle()));
+        return execute0(context, Set.of(((CraftPlayer) player).getHandle()), null);
     }
 
-    public boolean execute0(@NotNull CommandContext context, Collection<ServerPlayer> players) {
+    public boolean execute0(@NotNull CommandContext context, PlayerSelectorArgumentResolver resolver, @Nullable Boolean value) throws CommandSyntaxException {
+        Set<ServerPlayer> players = new HashSet<>();
+        resolver.resolve(context.getSource()).forEach(player -> players.add(((CraftPlayer) player).getHandle()));
+        return execute0(context, players, value);
+    }
+
+    public boolean execute0(@NotNull CommandContext context, Collection<ServerPlayer> players, @Nullable Boolean value) {
         CommandSender sender = context.getSender();
         for (ServerPlayer player : players) {
             player.getBukkitEntity().taskScheduler.scheduleOrExecute(scheduled -> {
-                toggleBar(sender, (ServerPlayer) scheduled);
+                toggleBar(sender, (ServerPlayer) scheduled, value);
             });
         }
         return true;
     }
 
-    private void toggleBar(CommandSender sender, ServerPlayer player) {
+    private void toggleBar(CommandSender sender, ServerPlayer player, @Nullable Boolean value) {
         final TickableStatusBarList barList = player.statusBarList;
 
         if (!barList.isEnabled(this.barType)) {
@@ -65,7 +73,13 @@ public class ToggleCommand extends LiteralNode {
             return;
         }
 
-        boolean newVisible = !barList.isVisible(this.barType);
+        boolean currentValue = barList.isVisible(this.barType);
+        if (value != null && value == currentValue) {
+            sender.sendMessage(Component.text(ServerI18nUtil.getFormatedLocalizedText("luminol.command.bar.toggle.already_" + value, this.barType.getName(), player.getScoreboardName()), NamedTextColor.RED));
+            return;
+        }
+
+        boolean newVisible = value != null ? value : !currentValue;
         barList.setVisible(this.barType, newVisible);
         sender.sendMessage(Component.text(ServerI18nUtil.getFormatedLocalizedText("luminol.command.bar.toggle." + newVisible, this.barType.getName(), player.getScoreboardName()), NamedTextColor.GREEN));
     }
@@ -78,9 +92,21 @@ public class ToggleCommand extends LiteralNode {
         @Override
         protected boolean execute(@NotNull CommandContext context) throws CommandSyntaxException {
             PlayerSelectorArgumentResolver resolver = context.getArgument(PlayerArg.class);
-            Set<ServerPlayer> players = new HashSet<>();
-            resolver.resolve(context.getSource()).forEach(player -> players.add(((CraftPlayer) player).getHandle()));
-            return execute0(context, players);
+            return execute0(context, resolver, null);
+        }
+    }
+
+    private class BoolArg extends ArgumentNode<Boolean> {
+        protected BoolArg() {
+            super("bool", BoolArgumentType.bool());
+        }
+
+        @Override
+        protected boolean execute(@NotNull CommandContext context) throws CommandSyntaxException {
+            PlayerSelectorArgumentResolver resolver = context.getArgument(PlayerArg.class);
+            boolean value = context.getArgument(BoolArg.class);
+            execute0(context, resolver, value);
+            return true;
         }
     }
 

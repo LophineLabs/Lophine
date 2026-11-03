@@ -1287,6 +1287,8 @@
   "luminol.command.bar.config.now.false": "{0} 类型的状态栏已成功禁用！",
   "luminol.command.bar.config.now.true": "{0} 类型的状态栏已成功启用！",
   "luminol.command.bar.toggle.already_disabled": "{0} 类型的状态栏已被禁用！",
+  "luminol.command.bar.toggle.already_false": "玩家 {1} 的 {0} 类型状态栏已经处于禁用状态！",
+  "luminol.command.bar.toggle.already_true": "玩家 {1} 的 {0} 类型状态栏已经处于启用状态！",
   "luminol.command.bar.toggle.false": "已为玩家 {1} 禁用 {0} 类型的状态栏",
   "luminol.command.bar.toggle.player_not_found": "未找到玩家 {0}！",
   "luminol.command.bar.toggle.true": "已为玩家 {1} 启用 {0} 类型的状态栏",
