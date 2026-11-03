@@ -9,10 +9,10 @@ This patch is used with permission from the original author.
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 7609671d12c9af4179989a86049b7298fe0c3ca3..5dd84c3b78ccaf9b15491a6371983e0d39629936 100644
+index bc3f8874d102e7f89105865522b252353a67db8e..a14520f0ebc6c5470b97ac3dee29caf8029f3bda 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-@@ -784,7 +784,7 @@ public final class RegionizedWorldData {
+@@ -720,7 +720,7 @@ public final class RegionizedWorldData {
      }
  
      public void setTickingBlockEntities(final boolean to) {

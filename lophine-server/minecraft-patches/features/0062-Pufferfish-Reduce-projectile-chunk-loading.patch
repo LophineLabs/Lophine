@@ -9,7 +9,7 @@ Original patch: https://github.com/pufferfish-gg/Pufferfish/blob/ver/1.21/puffer
 Original license(GPL-3.0): https://github.com/pufferfish-gg/Pufferfish/blob/ver/1.21/PATCH-LICENSE
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index d50a5a729698ef8b9338c1b3662e68ae1d8990ae..bb1f0d213ac891b304634be81fea792fb2412767 100644
+index d22297ff4e43dca892f1aa757db648a0ca6efa86..8ef48e88b66a5b8f2a9b20de9b816ad4ff28b854 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -333,6 +333,10 @@ public final class RegionizedWorldData {

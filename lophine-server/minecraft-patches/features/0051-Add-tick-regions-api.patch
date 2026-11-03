@@ -5,7 +5,7 @@ Subject: [PATCH] Add tick regions api
 
 
 diff --git a/io/papermc/paper/threadedregions/ThreadedRegionizer.java b/io/papermc/paper/threadedregions/ThreadedRegionizer.java
-index 3449918b5001bb39c541ce1168eac4acf9144e1f..a346b96500ae859e9469c80e2ff6b39c4d3d0b52 100644
+index de5599c712ccc604323392ad12885f1219a12bbe..73e0aeb5a5e9bdd1f275dd64d1fffa32c389052d 100644
 --- a/io/papermc/paper/threadedregions/ThreadedRegionizer.java
 +++ b/io/papermc/paper/threadedregions/ThreadedRegionizer.java
 @@ -43,6 +43,7 @@ public final class ThreadedRegionizer<R extends ThreadedRegionizer.ThreadedRegio

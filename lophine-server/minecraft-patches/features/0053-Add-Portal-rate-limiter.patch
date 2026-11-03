@@ -5,7 +5,7 @@ Subject: [PATCH] Add Portal rate limiter
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index 88014b8c75cf4a804f11f6089ba0dbc5ad67db80..b2e3fb3d92f15f9f2feca9a330a663824a1cc4d9 100644
+index 2e09c9b55502f5e54787e7c9264e320e44b14784..cd507b175671349a61b5a5ab443390cf8417372b 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -154,6 +154,10 @@ public final class RegionizedWorldData {
@@ -142,7 +142,7 @@ index e81a90a0ca727490617cf3a959bdcf408f323899..d3575e2c9c8ac23b8f240fad794f988c
              }
              // Folia end - region threading
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 7bb7addafca8631bcce8b2e061e9ea4d3dd06a75..2da135a0ff2109b3bf54b5f72f0723cc96b2b717 100644
+index e322d54cc5985a58c1d19f767d9090b4791bf171..42abed17558a92f69b3440ddcfb22fe16866fdd1 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -5077,6 +5077,31 @@ public abstract class Entity

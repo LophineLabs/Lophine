@@ -9,7 +9,7 @@ This patch is used with permission from the original author.
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedTaskQueue.java b/io/papermc/paper/threadedregions/RegionizedTaskQueue.java
-index b264dbd13a392cde3f24ff75c0034985fda68ccc..fe0a6bd90cba4869a0ee11723832f2dee5039f62 100644
+index d1a045d47dcd12f246d95ecdfc202da357897cbf..6abaa1e4d0a2b4882535689964dc3be1459a0946 100644
 --- a/io/papermc/paper/threadedregions/RegionizedTaskQueue.java
 +++ b/io/papermc/paper/threadedregions/RegionizedTaskQueue.java
 @@ -289,14 +289,17 @@ public final class RegionizedTaskQueue {

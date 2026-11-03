@@ -174,7 +174,7 @@ index ff6d0b83db376e7cfe0d2a5e61270b76a4c73c49..509f2e6870f5488931e07340434d1180
          public static final NoOpCallback INSTANCE = new NoOpCallback();
  
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index bb1f0d213ac891b304634be81fea792fb2412767..dc279468540f88c3f331771167058206808e2ed0 100644
+index 8ef48e88b66a5b8f2a9b20de9b816ad4ff28b854..760755d377125071483e7148ad6e2e153ba11f34 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -81,6 +81,11 @@ public final class RegionizedWorldData {
@@ -352,7 +352,7 @@ index 6e08d50794c4af4405f3e164a3fd46f376b3f78f..942c985ff067f163b4d4434625e71c90
  
      int getContainerSize();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 2da135a0ff2109b3bf54b5f72f0723cc96b2b717..d8c205ad40d4e23edfd61394e52bddad5314ff0f 100644
+index 42abed17558a92f69b3440ddcfb22fe16866fdd1..b8555e1cf18ccaf7a8eb538d3d80b65a535bb229 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -166,7 +166,7 @@ public abstract class Entity

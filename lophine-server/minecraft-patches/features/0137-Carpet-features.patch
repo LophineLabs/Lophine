@@ -254,7 +254,7 @@ index 8dc428c5508ef6ebea772638db1a607fc914c7eb..ebec3e3100da251e881ff0562308dfd3
              TickThread.ensureTickThread(this.player, "Cannot add player asynchronously");
              if (this.removed) {
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java b/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java
-index 3c29be8be0ae20100a946238bb71aab23240e4ff..96d33462c54489528ec0d9d38035bc1f11c0aebc 100644
+index f5bafc2ba9f626b483475db174e08834fe81b220..32256016391a6f7512444a40a0d8eac8ad84233b 100644
 --- a/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java
 @@ -932,6 +932,9 @@ public final class ChunkHolderManager {

@@ -8,7 +8,7 @@ As part of: Kaiiju (https://github.com/KaiijuMC/Kaiiju/blob/c2b7aec8f7b418a39a2e
 Licensed under: GPL-3.0 (https://github.com/KaiijuMC/Kaiiju/blob/c2b7aec8f7b418a39a2ec408e6411e6f752379da/LICENSE)
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index bc3f8874d102e7f89105865522b252353a67db8e..88014b8c75cf4a804f11f6089ba0dbc5ad67db80 100644
+index a14520f0ebc6c5470b97ac3dee29caf8029f3bda..2e09c9b55502f5e54787e7c9264e320e44b14784 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -349,6 +349,7 @@ public final class RegionizedWorldData {

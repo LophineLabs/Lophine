@@ -19,7 +19,7 @@ index 64a302df677bab6c0e2062d1c26bea58616829c9..14b25b6da8f1308d2221b2fb7e355e41
              int distance = Math.round((float)Math.sqrt(dx * dx + dy * dy + dz * dz) * 100.0F);
              Entity vehicle = this.getVehicle();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index cd98252d6dbbe367e5771b1b1f71eab5570f79e9..fedf2adbd6556ad32e15c01dba88921da3b8f77c 100644
+index 1d13ef2d68f50f29e380462849aa27f6a8d8c638..e2d0afe5c9abfedf2dafc216043aa9e16c843d27 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -4317,7 +4317,13 @@ public abstract class Entity

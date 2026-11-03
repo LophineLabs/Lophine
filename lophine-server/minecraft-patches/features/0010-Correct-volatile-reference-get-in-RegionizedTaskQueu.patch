@@ -5,10 +5,10 @@ Subject: [PATCH] Correct volatile reference get in RegionizedTaskQueue
 
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedTaskQueue.java b/io/papermc/paper/threadedregions/RegionizedTaskQueue.java
-index d1a045d47dcd12f246d95ecdfc202da357897cbf..b264dbd13a392cde3f24ff75c0034985fda68ccc 100644
+index 6abaa1e4d0a2b4882535689964dc3be1459a0946..fe0a6bd90cba4869a0ee11723832f2dee5039f62 100644
 --- a/io/papermc/paper/threadedregions/RegionizedTaskQueue.java
 +++ b/io/papermc/paper/threadedregions/RegionizedTaskQueue.java
-@@ -533,7 +533,7 @@ public final class RegionizedTaskQueue {
+@@ -536,7 +536,7 @@ public final class RegionizedTaskQueue {
              }
  
              private ReferenceCountData getReferenceCounterVolatile() {

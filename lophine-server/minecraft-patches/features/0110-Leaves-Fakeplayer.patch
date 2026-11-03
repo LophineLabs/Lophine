@@ -8,7 +8,7 @@ As a part of : Leaves (https://github.com/LeavesMC/Leaves)
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-index dc279468540f88c3f331771167058206808e2ed0..7609671d12c9af4179989a86049b7298fe0c3ca3 100644
+index 760755d377125071483e7148ad6e2e153ba11f34..5dd84c3b78ccaf9b15491a6371983e0d39629936 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
 @@ -352,7 +352,7 @@ public final class RegionizedWorldData {
@@ -583,7 +583,7 @@ index ed78ba7e95b522570b5955a7197fbeaeb073a53b..b9e3af1868f6a5b3c8101064dde5f916
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 1055fb42af3f5cbb0c814064d1b94b17fc46ecc8..9b0c4853ae040169fef5344b8a468d0cf81ceabe 100644
+index 20fd25f25c7899e0ad616ed5b20276d7db870031..7c17a752b1b56ef41c9c96fb21830b3e1cda9611 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1295,7 +1295,7 @@ public abstract class Entity
