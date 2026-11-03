@@ -41,37 +41,9 @@ public final class CarpetRuleChanges {
         var completion = CarpetAsyncCommandResults.defer(source);
         var observer = ScarpetNativeWork.observeNative(source.getEntity(), () -> {
             ScarpetNativeWork.record(completion.future());
-            var configured = AmsNativeCommandEffects.global(source.getServer(), () -> configure(source, name, text, persist, reset));
-            var effects = TisCommandContinuations.then(configured, update -> {
-                var callbackFailure = new java.util.concurrent.atomic.AtomicReference<Throwable>();
-                CompletableFuture<Void> notification = update.changed()
-                        ? ScarpetNativeWork.recoverGuestValue(ScarpetNativeWork.<Void>observeNative(null, () -> {
-                    var submitted = ScarpetRuntime.of(source.getServer()).submit(() -> {
-                        Carpet.ruleChanged(source, name, update.applied());
-                        return (Void) null;
-                    });
-                    ScarpetNativeWork.record(submitted);
-                    submitted.whenComplete((value, failure) -> {
-                        if (failure != null) callbackFailure.set(failure);
-                    });
-                    return null;
-                }))
-                        : CompletableFuture.completedFuture(null);
-                ScarpetNativeWork.record(notification);
-                return TisCommandContinuations.then(notification, ignored -> {
-                    var published = update.changed() ? AmsNativeCommandEffects.global(source.getServer(), () -> {
-                        CarpetProtocalDataBase.apply();
-                        return (Void) null;
-                    }) : CompletableFuture.<Void>completedFuture(null);
-                    return TisCommandContinuations.then(published, unused -> {
-                        var commands = update.changed() && changesCommands(name) ? refreshCommands(source) : CompletableFuture.<Void>completedFuture(null);
-                        return TisCommandContinuations.then(commands, done -> AmsNativeCommandEffects.source(source, () -> {
-                            if (update.restart()) CarpetRuleObservers.restartRequired(source, name);
-                            return new Outcome(update, callbackFailure.get());
-                        }));
-                    });
-                });
-            });
+            var configured = AmsNativeCommandEffects.global(source.getServer(), () -> fun.bm.lophine.carpet.api.LophineCarpetApi.withSource(
+                    fun.bm.lophine.api.carpet.CarpetRuleChangeEvent.Cause.COMMAND, null, () -> configure(source, name, text, persist, reset)));
+            var effects = TisCommandContinuations.then(configured, update -> finishEffects(source, name, update, true));
             ScarpetNativeWork.record(effects);
             var outcome = effects.handle((value, failure) -> failure == null ? value : new Outcome(null, failure));
             var delivered = TisCommandContinuations.then(outcome, value -> AmsNativeCommandEffects.source(source, () -> {
@@ -97,6 +69,62 @@ public final class CarpetRuleChanges {
         ScarpetNativeWork.trackNative(source.getServer(), observer);
         return 1;
     }
+
+    private static CompletableFuture<Outcome> finishEffects(CommandSourceStack source, String name, Update update, boolean feedback) {
+        var callbackFailure = new java.util.concurrent.atomic.AtomicReference<Throwable>();
+        CompletableFuture<Void> notification = update.changed()
+                ? ScarpetNativeWork.recoverGuestValue(ScarpetNativeWork.<Void>observeNative(null, () -> {
+            var submitted = ScarpetRuntime.of(source.getServer()).submit(() -> {
+                Carpet.ruleChanged(source, name, update.applied());
+                return (Void) null;
+            });
+            ScarpetNativeWork.record(submitted);
+            submitted.whenComplete((value, failure) -> {
+                if (failure != null) callbackFailure.set(failure);
+            });
+            return null;
+        }))
+                : CompletableFuture.completedFuture(null);
+        ScarpetNativeWork.record(notification);
+        return TisCommandContinuations.then(notification, ignored -> {
+            var published = update.changed() ? AmsNativeCommandEffects.global(source.getServer(), () -> {
+                CarpetProtocalDataBase.apply();
+                return (Void) null;
+            }) : CompletableFuture.<Void>completedFuture(null);
+            return TisCommandContinuations.then(published, unused -> {
+                var commands = update.changed() && changesCommands(name) ? refreshCommands(source) : CompletableFuture.<Void>completedFuture(null);
+                return TisCommandContinuations.then(commands, done -> AmsNativeCommandEffects.source(source, () -> {
+                    if (feedback && update.restart()) CarpetRuleObservers.restartRequired(source, name);
+                    return new Outcome(update, callbackFailure.get());
+                }));
+            });
+        });
+    }
+
+    /** Shares validators, persistence, Scarpet observers, client sync and command refresh with /carpet. */
+    public static CompletableFuture<fun.bm.lophine.api.carpet.CarpetRuleUpdate> changeFromApi(
+            net.minecraft.server.MinecraftServer server, String pluginName, String name, String text, boolean persist) {
+        var source = server.createCommandSourceStack();
+        var configured = AmsNativeCommandEffects.global(server, () -> fun.bm.lophine.carpet.api.LophineCarpetApi.withSource(
+                fun.bm.lophine.api.carpet.CarpetRuleChangeEvent.Cause.API, pluginName, () -> {
+                    Update update = configure(source, name, text, persist, false);
+                    return new ApiUpdate(update, fun.bm.lophine.carpet.api.LophineCarpetApi.snapshot(name));
+                }));
+        return TisCommandContinuations.then(configured, applied -> {
+            Update update = applied.update();
+            return TisCommandContinuations.then(finishEffects(source, name, update, false), outcome -> {
+                if (outcome.failure() != null) return CompletableFuture.failedFuture(outcome.failure());
+                if (update.networkBlocked()) return CompletableFuture.failedFuture(new IllegalStateException("Rule blocked by AMS network protocol: " + name));
+                return CompletableFuture.completedFuture(new fun.bm.lophine.api.carpet.CarpetRuleUpdate(
+                        applied.rule(), text,
+                        update.restart() ? fun.bm.lophine.api.carpet.CarpetRuleUpdate.Status.SAVED_FOR_RESTART
+                                : update.changed() ? fun.bm.lophine.api.carpet.CarpetRuleUpdate.Status.UPDATED
+                                : fun.bm.lophine.api.carpet.CarpetRuleUpdate.Status.UNCHANGED, persist));
+            });
+        });
+    }
+
+    private record ApiUpdate(Update update, fun.bm.lophine.api.carpet.CarpetRule rule) { }
 
     private record DefaultValue(CarpetRuleRegistry.Binding binding, ConfigsInstance config, Object value) {
     }

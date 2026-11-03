@@ -26,6 +26,12 @@ public final class CarpetConfigHooks implements ConfigsInstanceHooks {
     }
 
     @Override
+    public void afterValueChanged(@NotNull LuminolConfigsInstance instance, @NotNull Field field, Object previous, Object current) {
+        ConfigInfo info = field.getAnnotation(ConfigInfo.class);
+        if (info != null) fun.bm.lophine.carpet.api.LophineCarpetApi.changed(info.name(), previous, current);
+    }
+
+    @Override
     public Object beforeReload(@NotNull LuminolConfigsInstance instance) {
         return CarpetConfigLifecycle.snapshot();
     }

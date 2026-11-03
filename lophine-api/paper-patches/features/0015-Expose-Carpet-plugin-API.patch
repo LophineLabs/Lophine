@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Bacteriawa <A3167717663@hotmail.com>
+Date: Tue, 3 Nov 2026 17:11:31 +0800
+Subject: [PATCH] Expose Carpet plugin API
+
+Add the public server entry point for immutable Carpet rule queries, asynchronous
+rule mutations and plugin-owned Scarpet extensions. Keep Minecraft types out of
+the API and document global/region scheduling and registration lifetimes.
+
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index b9c6200ee7ee57ede56bf4a5ca817d11c273dc29..c388902bf8763b4e259886dc340545b943140b18 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -2914,4 +2914,12 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+     // Leaves start - Photographer API
+     @NotNull org.leavesmc.leaves.entity.photographer.PhotographerManager getPhotographerManager();
+     // Leaves end - Photographer API
++    // Lophine start - Carpet plugin API
++    /**
++     * Returns the Carpet rules and plugin-owned Scarpet extension API.
++     *
++     * @return the server's Carpet API
++     */
++    @NotNull fun.bm.lophine.api.carpet.CarpetApi getCarpet();
++    // Lophine end - Carpet plugin API
+ }

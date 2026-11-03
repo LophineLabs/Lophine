@@ -881,7 +881,8 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                     saveConfigs();
                     return SingleConfigResult.SAVED_FOR_RESTART;
                 }
-                boolean changed = !Objects.equals(readConfigValue(field), converted);
+                Object previous = readConfigValue(field);
+                boolean changed = !Objects.equals(previous, converted);
                 if (changed) {
                     invokeNeedRunMethods(module, EnumRunnableType.ON_UNLOAD, null);
                     writeConfigValue(field, converted);
@@ -891,6 +892,7 @@ public class ConfigsInstance implements LuminolConfigsInstance {
                     if (isWorldConfig(key)) {
                         ConfigManager.refreshWorldSnapshots();
                     }
+                    hooks.afterValueChanged(this, field, previous, readConfigValue(field));
                 }
                 stagedConfigMap.remove(key);
                 if (persist) {

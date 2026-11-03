@@ -100,6 +100,18 @@ public interface ConfigsInstanceHooks {
     }
 
     /**
+     * Observe an actual single-value runtime application after module callbacks.
+     * File reloads are reported separately through {@link #afterReload}.
+     *
+     * @param instance configuration instance
+     * @param field applied field
+     * @param previous previous live value
+     * @param current resulting live value
+     */
+    default void afterValueChanged(@NotNull LuminolConfigsInstance instance, @NotNull Field field, Object previous, Object current) {
+    }
+
+    /**
      * Whether a missing key on reload should restore the captured default onto the field.
      *
      * @return {@code true} to restore defaults for absent keys

@@ -106,6 +106,10 @@ public final class Carpet {
 
     public static void handleExtensionsAPI(CarpetExpression expression) {
         EXTENSIONS.forEach(extension -> extension.accept(expression));
+        // ScriptCommand builds its static function catalogue without a command source.
+        if (expression.getSource() != null) {
+            fun.bm.lophine.carpet.api.LophineCarpetApi.attach(expression.getSource().getServer(), expression);
+        }
     }
 
     public static boolean getFillUpdates() {

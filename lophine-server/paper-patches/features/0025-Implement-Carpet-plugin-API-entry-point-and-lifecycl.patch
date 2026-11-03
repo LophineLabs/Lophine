@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Bacteriawa <A3167717663@hotmail.com>
+Date: Tue, 3 Nov 2026 17:04:59 +0800
+Subject: [PATCH] Implement Carpet plugin API entry point and lifecycle
+
+Expose the directly maintained Carpet service through CraftServer. Revoke plugin
+extensions before disable listeners, onDisable and classloader closure; reopen
+admission before onEnable so plugin reload cannot reuse stale callbacks.
+
+diff --git a/src/main/java/io/papermc/paper/plugin/manager/PaperPluginInstanceManager.java b/src/main/java/io/papermc/paper/plugin/manager/PaperPluginInstanceManager.java
+index 455e8c24d98fcd0ae0a349737a0e709a05ed9170..c39cdc2f101b32f5f77290d4047b531077014a9a 100644
+--- a/src/main/java/io/papermc/paper/plugin/manager/PaperPluginInstanceManager.java
++++ b/src/main/java/io/papermc/paper/plugin/manager/PaperPluginInstanceManager.java
+@@ -198,6 +198,7 @@ class PaperPluginInstanceManager {
+             } // Paper
+
+             try {
++                fun.bm.lophine.carpet.api.LophineCarpetApi.pluginEnabling(plugin); // Lophine - reopen extension admission before onEnable
+                 jPlugin.setEnabled(true);
+             } catch (Throwable ex) {
+                 this.server.getLogger().log(Level.SEVERE, "Error occurred while enabling " + plugin.getPluginMeta().getDisplayName() + " (Is it up to date?)", ex);
+@@ -226,6 +227,7 @@ class PaperPluginInstanceManager {
+             return;
+         }
+
++        fun.bm.lophine.carpet.api.LophineCarpetApi.pluginDisabling(plugin); // Lophine - revoke callbacks before disable listeners and classloader close
+         String pluginName = plugin.getPluginMeta().getDisplayName();
+
+         try {
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index c5fb14313364cfe93899aa00e46b66abff3ad32b..c2bda79c86eb20e7f771caa2800539774c84b73c 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -3233,4 +3233,11 @@ public final class CraftServer implements Server {
+         }
+     }
+     // Folia end - region TPS API
++
++    // Lophine start - Carpet plugin API
++    @Override
++    public fun.bm.lophine.api.carpet.CarpetApi getCarpet() {
++        return fun.bm.lophine.carpet.api.LophineCarpetApi.get(this.console);
++    }
++    // Lophine end - Carpet plugin API
+ }

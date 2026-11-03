@@ -1074,6 +1074,7 @@ public final class ScarpetRuntime {
      * Shutdown is a continuation, so scheduler threads never wait on guest code.
      */
     public static boolean beginShutdown(MinecraftServer server, Runnable nativeShutdown) {
+        fun.bm.lophine.carpet.api.LophineCarpetApi.shutdown(server);
         ScarpetRuntime runtime = SERVERS.get(server);
         if (runtime == null) return false;
         if (!runtime.shutdownStarted.compareAndSet(false, true)) return !runtime.nativeShutdownReady;

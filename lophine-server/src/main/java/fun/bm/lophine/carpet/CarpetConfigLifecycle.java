@@ -27,6 +27,11 @@ public final class CarpetConfigLifecycle {
         if (server == null || !server.isReady()) return;
         var source = server.createCommandSourceStack();
         Map<String, Object> values = snapshot();
+        fun.bm.lophine.carpet.api.LophineCarpetApi.withSource(
+                fun.bm.lophine.api.carpet.CarpetRuleChangeEvent.Cause.RELOAD, null, () -> {
+            values.forEach((name, value) -> fun.bm.lophine.carpet.api.LophineCarpetApi.changed(name, previous.get(name), value));
+            return null;
+        });
         boolean commandsChanged = values.entrySet().stream().anyMatch(entry -> !Objects.equals(previous.get(entry.getKey()), entry.getValue())
                 && (entry.getKey().startsWith("command") || entry.getKey().startsWith("playerCommand") || entry.getKey().startsWith("tick")
                 || entry.getKey().endsWith("Permission") || entry.getKey().equals("carpetCommandPermissionLevel") || entry.getKey().equals("perfPermissionLevel")));
