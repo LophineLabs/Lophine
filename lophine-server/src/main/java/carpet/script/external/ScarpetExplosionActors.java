@@ -48,6 +48,26 @@ public final class ScarpetExplosionActors {
         return entity(entity, operation, null);
     }
 
+    /** Yield past this tick, then revalidate the entity's current or retired owner. */
+    public static <T> CompletableFuture<T> entityLater(Entity entity, Supplier<T> operation) {
+        return entity(entity, operation, null, !TickThread.isShutdownThread());
+    }
+
+    /** RegionScheduler.execute may drain again in the same tick; a budget yield needs a delayed task. */
+    public static <T> CompletableFuture<T> worldLater(ServerLevel world, BlockPos position, Supplier<T> operation) {
+        if (TickThread.isShutdownThread()) return world(world, position, operation);
+        CompletableFuture<T> result = new CompletableFuture<>();
+        ScarpetNativeWork.record(result);
+        Supplier<T> captured = ScarpetRuntime.captureNativeContinuation(operation);
+        try {
+            world.getServer().server.getRegionScheduler().runDelayed(MinecraftInternalPlugin.INSTANCE, world.getWorld(),
+                    position.getX() >> 4, position.getZ() >> 4, ignored -> completeNow(result, captured), 1L);
+        } catch (Throwable failure) {
+            result.completeExceptionally(failure);
+        }
+        return result;
+    }
+
     /**
      * A leftover bot whose actor has retired cannot accept a new explosion hit.
      */
@@ -57,6 +77,10 @@ public final class ScarpetExplosionActors {
     }
 
     private static <T> CompletableFuture<T> entity(Entity entity, Supplier<T> operation, Supplier<T> unadmittedRetirement) {
+        return entity(entity, operation, unadmittedRetirement, false);
+    }
+
+    private static <T> CompletableFuture<T> entity(Entity entity, Supplier<T> operation, Supplier<T> unadmittedRetirement, boolean later) {
         Supplier<T> captured = ScarpetRuntime.captureNativeContinuation(operation);
         CompletableFuture<T> result = new CompletableFuture<>();
         ScarpetNativeWork.record(result);
@@ -64,7 +88,7 @@ public final class ScarpetExplosionActors {
             result.complete(unadmittedRetirement.get());
             return result;
         }
-        if (TickThread.isTickThreadFor(entity) || TickThread.isShutdownThread()) {
+        if (!later && (TickThread.isTickThreadFor(entity) || TickThread.isShutdownThread())) {
             runEntity(entity, captured, result);
             return result;
         }
@@ -72,7 +96,7 @@ public final class ScarpetExplosionActors {
             Runnable rejected = () -> {
                 if (unadmittedRetirement != null && entity instanceof fun.bm.lophine.carpet.CarpetFakePlayer)
                     result.complete(unadmittedRetirement.get());
-                else retired(entity, captured, result, 0);
+                else retired(entity, captured, result, 0, later);
             };
             boolean scheduled = entity.getBukkitEntity().taskScheduler.schedule(ignored -> runEntity(entity, captured, result),
                     ignored -> rejected.run(), 1L);
@@ -112,6 +136,10 @@ public final class ScarpetExplosionActors {
     }
 
     private static <T> void retired(Entity entity, Supplier<T> operation, CompletableFuture<T> result, int attempts) {
+        retired(entity, operation, result, attempts, false);
+    }
+
+    private static <T> void retired(Entity entity, Supplier<T> operation, CompletableFuture<T> result, int attempts, boolean later) {
         if (result.isDone()) return;
         var location = ScarpetRetiredActors.lastOwner(entity);
         if (location == null || attempts == 8) {
@@ -119,19 +147,22 @@ public final class ScarpetExplosionActors {
             return;
         }
         try {
-            if (TickThread.isTickThreadFor(location.world(), location.position())
+            if (!later && TickThread.isTickThreadFor(location.world(), location.position())
                     && ScarpetRetiredActors.matchesLastOwner(entity, location)) {
                 runEntity(entity, operation, result);
                 return;
             }
-            location.world().getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, location.world().getWorld(),
-                    location.position().getX() >> 4, location.position().getZ() >> 4, () -> {
+            Runnable run = () -> {
                         if (!ScarpetRetiredActors.matchesLastOwner(entity, location)) {
                             retired(entity, operation, result, attempts + 1);
                             return;
                         }
                         runEntity(entity, operation, result);
-                    });
+                    };
+            if (later) location.world().getServer().server.getRegionScheduler().runDelayed(MinecraftInternalPlugin.INSTANCE,
+                    location.world().getWorld(), location.position().getX() >> 4, location.position().getZ() >> 4, ignored -> run.run(), 1L);
+            else location.world().getServer().server.getRegionScheduler().execute(MinecraftInternalPlugin.INSTANCE, location.world().getWorld(),
+                    location.position().getX() >> 4, location.position().getZ() >> 4, run);
         } catch (Throwable failure) {
             result.completeExceptionally(failure);
         }
