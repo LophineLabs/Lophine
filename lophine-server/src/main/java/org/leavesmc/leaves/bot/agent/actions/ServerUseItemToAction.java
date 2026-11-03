@@ -31,7 +31,7 @@ import org.leavesmc.leaves.entity.bot.actions.CraftUseItemToAction;
 public class ServerUseItemToAction extends AbstractUseBotAction<ServerUseItemToAction> {
 
     public ServerUseItemToAction() {
-        super("use_to", null);
+        super("use_to");
     }
 
     @Override

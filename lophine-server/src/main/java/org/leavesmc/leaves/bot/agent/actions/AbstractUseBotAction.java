@@ -17,17 +17,16 @@
 
 package org.leavesmc.leaves.bot.agent.actions;
 
-import fun.bm.lophine.bot.action.gui.GuiNode;
-import fun.bm.lophine.bot.action.gui.GuiRootNode;
-import fun.bm.lophine.bot.action.gui.GuiSubNode;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.bot.ServerBot;
 import org.leavesmc.leaves.bot.agent.ExtraData;
 import org.leavesmc.leaves.command.CommandContext;
 import org.leavesmc.leaves.event.bot.BotActionStopEvent;
+
+import java.util.Map;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 
@@ -36,31 +35,34 @@ public abstract class AbstractUseBotAction<T extends AbstractUseBotAction<T>> ex
     private int alreadyUsedTick = 0;
     private int useItemRemainingTicks = 0;
 
-    public AbstractUseBotAction(String name, GuiRootNode guiData) {
-        super(name, guiData);
-        this.addArgument("use_timeout", integer(-1))
-                .suggests((context, builder) -> {
-                    builder.suggest("-1", Component.literal("no use timeout"));
-                    builder.suggest("3", Component.literal("minimum bow shoot time"));
-                    builder.suggest("10", Component.literal("minimum trident shoot time"));
-                })
-                .setOptional(true);
-        if (guiData == null) return;
+    public AbstractUseBotAction(String name) {
+        super(name);
+        this.addUseTimeoutArgument();
+    }
 
-        for (GuiNode node : guiData.getAllFurthestChildren()) {
-            GuiSubNode node0 = (GuiSubNode) node;
-            node0.child(
-                    new GuiSubNode("-1", "no use timeout", null, node0, "-1"),
-                    new GuiSubNode("3", "minimum bow shoot time", null, node0, "3"),
-                    new GuiSubNode("10", "minimum trident shoot time", null, node0, "10")
-            );
-        }
+    public AbstractUseBotAction(String name, String guiTitle, String guiDescription, Item guiItem) {
+        super(name, guiTitle, guiDescription, guiItem);
+        this.addUseTimeoutArgument();
+    }
+
+    private void addUseTimeoutArgument() {
+        this.addArgument("use_timeout", integer(-1))
+                .guiSuggest("-1", "no use timeout")
+                .guiSuggest("3", "minimum bow shoot time")
+                .guiSuggest("10", "minimum trident shoot time")
+                .setOptional(true);
     }
 
     @Override
     public void loadCommand(@NotNull CommandContext context) {
         super.loadCommand(context);
         this.useTickTimeout = context.getIntegerOrDefault("use_timeout", -1);
+    }
+
+    @Override
+    protected void loadGuiValues(@NotNull Map<String, String> values) {
+        super.loadGuiValues(values);
+        this.useTickTimeout = guiInt(values, "use_timeout", -1);
     }
 
     @Override

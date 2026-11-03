@@ -15,16 +15,18 @@ import net.minecraft.world.item.component.ItemLore;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.leavesmc.leaves.bot.agent.Actions;
 import org.leavesmc.leaves.bot.agent.actions.AbstractBotAction;
 import org.leavesmc.leaves.entity.bot.CraftBot;
 import org.leavesmc.leaves.entity.bot.action.BotAction;
 import org.leavesmc.leaves.entity.bot.actions.CraftBotAction;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
 
 public class BotActionGuiContainer extends SimpleContainer {
-    private static final Map<String, GuiRootNode> GUI_ROOT_NODE_MAP = new LinkedHashMap<>();
-
     private static final int CONTAINER_SIZE = 54;
 
     private static final int[] BORDER_SLOTS = {
@@ -63,22 +65,15 @@ public class BotActionGuiContainer extends SimpleContainer {
     // Pagination state
     private int currentPage = 0;
 
-    public static void registerGuiRootNode(GuiRootNode guiRootNode) {
-        if (!GUI_ROOT_NODE_MAP.containsKey(guiRootNode.getName())) {
-            GUI_ROOT_NODE_MAP.put(guiRootNode.getName(), guiRootNode);
+    public static List<GuiRootNode> getVisibleGuiRootNodes() {
+        List<GuiRootNode> nodes = new ArrayList<>();
+        for (Actions<?> action : Actions.getAll()) {
+            GuiRootNode root = action.getGuiRoot();
+            if (root != null && root.isVisibleInGui()) {
+                nodes.add(root);
+            }
         }
-    }
-
-    public static void unregisterGuiRootNode(String name) {
-        GUI_ROOT_NODE_MAP.remove(name);
-    }
-
-    public static GuiRootNode getGuiRootNode(String name) {
-        return GUI_ROOT_NODE_MAP.get(name);
-    }
-
-    public static Map<String, GuiRootNode> getGuiRootNodes() {
-        return new LinkedHashMap<>(GUI_ROOT_NODE_MAP);
+        return nodes;
     }
 
     public BotActionGuiContainer(@NotNull CraftBot bot, CraftPlayer player) {
@@ -121,7 +116,7 @@ public class BotActionGuiContainer extends SimpleContainer {
         this.isSelectingActionType = false;
         this.currentPage = 0;
 
-        List<GuiRootNode> allNodes = new ArrayList<>(GUI_ROOT_NODE_MAP.values());
+        List<GuiRootNode> allNodes = getVisibleGuiRootNodes();
         if (allNodes.isEmpty()) {
             // No root nodes, go back to action type selection
             this.showActionTypes();
@@ -187,7 +182,7 @@ public class BotActionGuiContainer extends SimpleContainer {
         this.clearContent();
         this.fillBorder();
 
-        Set<GuiNode> children = this.getChildrenOfCurrentNode();
+        List<GuiNode> children = this.getChildrenOfCurrentNode();
         if (children == null || children.isEmpty()) {
             // Empty page: auto-navigate back
             this.navigateBack();
@@ -199,14 +194,11 @@ public class BotActionGuiContainer extends SimpleContainer {
     }
 
     @Nullable
-    private Set<GuiNode> getChildrenOfCurrentNode() {
+    private List<GuiNode> getChildrenOfCurrentNode() {
         if (this.currentNode == null) {
             return null;
         }
-        if (this.currentNode instanceof GuiRootNode rootNode) {
-            return rootNode.getChildren();
-        }
-        return null;
+        return this.currentNode.getGuiChildren();
     }
 
     private void renderActionTypes() {
@@ -220,7 +212,7 @@ public class BotActionGuiContainer extends SimpleContainer {
     }
 
     private void renderRootNodes() {
-        List<GuiRootNode> allNodes = new ArrayList<>(GUI_ROOT_NODE_MAP.values());
+        List<GuiRootNode> allNodes = getVisibleGuiRootNodes();
         this.renderPagedItems(allNodes, (node, slot) -> {
             ItemStack item = createNodeItemWithRunHint(node);
             if (item != null && !item.isEmpty()) {
@@ -230,10 +222,9 @@ public class BotActionGuiContainer extends SimpleContainer {
     }
 
     private void renderCurrentNodeChildren() {
-        Set<GuiNode> children = this.getChildrenOfCurrentNode();
+        List<GuiNode> children = this.getChildrenOfCurrentNode();
         if (children != null && !children.isEmpty()) {
-            List<GuiNode> childList = new ArrayList<>(children);
-            this.renderPagedItems(childList, (node, slot) -> {
+            this.renderPagedItems(children, (node, slot) -> {
                 ItemStack item = createNodeItemWithRunHint(node);
                 if (item != null && !item.isEmpty()) {
                     this.setItem(slot, item);
@@ -285,7 +276,7 @@ public class BotActionGuiContainer extends SimpleContainer {
             }
         }
 
-        Set<GuiNode> nodes = this.getCurrentDisplayNodes();
+        List<GuiNode> nodes = this.getCurrentDisplayNodes();
         if (nodes == null) {
             return null;
         }
@@ -340,14 +331,7 @@ public class BotActionGuiContainer extends SimpleContainer {
     private ItemStack createNodeItemWithRunHint(GuiNode node) {
         ItemStack itemStack = node.getItemStack();
 
-        // Check if this is a last-level node (no children)
-        boolean isLastLevel;
-        if (node instanceof GuiRootNode rootNode) {
-            isLastLevel = rootNode.getChildren().isEmpty();
-        } else {
-            // Non-RootNode is always considered last level
-            isLastLevel = true;
-        }
+        boolean isLastLevel = !node.hasGuiChildren();
 
         // If it's the last level and we have an action type selected, add run hint
         if (isLastLevel && this.selectedActionType != null && !this.isSelectingActionType) {
@@ -441,9 +425,9 @@ public class BotActionGuiContainer extends SimpleContainer {
             return this.bot.getActionSize();
         }
         if (this.currentNode == null) {
-            return GUI_ROOT_NODE_MAP.size();
+            return getVisibleGuiRootNodes().size();
         }
-        Set<GuiNode> children = this.getChildrenOfCurrentNode();
+        List<GuiNode> children = this.getChildrenOfCurrentNode();
         return children != null ? children.size() : 0;
     }
 
@@ -548,9 +532,8 @@ public class BotActionGuiContainer extends SimpleContainer {
 
             String extra = actionPrefix + " " + this.bot.getName() + " " + actionSuffix;
 
-            // If we have a current node and it's a GuiRootNode, build the command
-            if (this.currentNode instanceof GuiRootNode rootNode) {
-                String command = rootNode.buildCommand(extra);
+            if (this.currentNode != null) {
+                String command = this.currentNode.buildCommand(extra);
 
                 // Apply parameter limit based on ActionType
                 if (this.selectedActionType.getMaxAllowedParameters() == 0) {
@@ -570,13 +553,12 @@ public class BotActionGuiContainer extends SimpleContainer {
     }
 
     @Nullable
-    private Set<GuiNode> getCurrentDisplayNodes() {
-        // If selecting action type, return null (handled separately)
+    private List<GuiNode> getCurrentDisplayNodes() {
         if (this.isSelectingActionType) {
             return null;
         }
         if (this.currentNode == null) {
-            return new LinkedHashSet<>(GUI_ROOT_NODE_MAP.values());
+            return new ArrayList<>(getVisibleGuiRootNodes());
         }
         return this.getChildrenOfCurrentNode();
     }

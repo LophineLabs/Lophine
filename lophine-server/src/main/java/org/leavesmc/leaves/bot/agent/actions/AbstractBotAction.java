@@ -23,10 +23,12 @@ import fun.bm.lophine.LophineLogger;
 import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.Item;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.leavesmc.leaves.bot.ServerBot;
+import org.leavesmc.leaves.bot.agent.Actions;
 import org.leavesmc.leaves.bot.agent.ExtraData;
 import org.leavesmc.leaves.command.CommandContext;
 import org.leavesmc.leaves.command.WrappedArgument;
@@ -58,10 +60,31 @@ public abstract class AbstractBotAction<E extends AbstractBotAction<E>> {
     private Consumer<E> onSuccess;
     private Consumer<E> onStop;
 
-    protected GuiRootNode guiData;
+    private final String guiTitle;
+    private final String guiDescription;
+    private final Item guiItem;
+    private final boolean guiConfirmable;
+    private final boolean guiVisible;
 
     public AbstractBotAction(String name) {
+        this(name, name, null, null, true, false);
+    }
+
+    public AbstractBotAction(String name, String guiTitle, String guiDescription, Item guiItem) {
+        this(name, guiTitle, guiDescription, guiItem, true, true);
+    }
+
+    public AbstractBotAction(String name, String guiTitle, String guiDescription, Item guiItem, boolean guiConfirmable) {
+        this(name, guiTitle, guiDescription, guiItem, guiConfirmable, true);
+    }
+
+    protected AbstractBotAction(String name, String guiTitle, String guiDescription, Item guiItem, boolean guiConfirmable, boolean guiVisible) {
         this.name = name;
+        this.guiTitle = guiTitle;
+        this.guiDescription = guiDescription;
+        this.guiItem = guiItem;
+        this.guiConfirmable = guiConfirmable;
+        this.guiVisible = guiVisible;
         this.uuid = UUID.randomUUID();
         this.arguments = new HashMap<>();
 
@@ -199,6 +222,24 @@ public abstract class AbstractBotAction<E extends AbstractBotAction<E>> {
     public void loadCommand(@NotNull CommandContext context) throws CommandSyntaxException {
     }
 
+    public void loadGui(@NotNull List<String> values) throws CommandSyntaxException {
+        List<Pair<String, WrappedArgument<?>>> args = this.arguments.getOrDefault(0, List.of());
+        Map<String, String> named = new LinkedHashMap<>();
+        for (int i = 0; i < values.size() && i < args.size(); i++) {
+            named.put(args.get(i).getLeft(), values.get(i));
+        }
+        this.loadGuiValues(named);
+    }
+
+    @SuppressWarnings("RedundantThrows")
+    protected void loadGuiValues(@NotNull Map<String, String> values) throws CommandSyntaxException {
+    }
+
+    protected static int guiInt(@NotNull Map<String, String> values, String key, int defaultValue) {
+        String raw = values.get(key);
+        return raw == null ? defaultValue : Integer.parseInt(raw);
+    }
+
     public String getName() {
         return this.name;
     }
@@ -259,7 +300,28 @@ public abstract class AbstractBotAction<E extends AbstractBotAction<E>> {
         this.onStop = onStop;
     }
 
+    public String getGuiTitle() {
+        return this.guiTitle;
+    }
+
+    public String getGuiDescription() {
+        return this.guiDescription;
+    }
+
+    public Item getGuiItem() {
+        return this.guiItem;
+    }
+
+    public boolean isGuiConfirmable() {
+        return this.guiConfirmable;
+    }
+
+    public boolean isGuiVisible() {
+        return this.guiVisible;
+    }
+
     public @Nullable GuiRootNode getGuiData() {
-        return this.guiData;
+        Actions<?> holder = Actions.getByName(this.name);
+        return holder == null ? null : holder.getGuiRoot();
     }
 }

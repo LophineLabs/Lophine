@@ -17,56 +17,62 @@
 
 package org.leavesmc.leaves.bot.agent.actions;
 
-import fun.bm.lophine.bot.action.gui.GuiRootNode;
-import fun.bm.lophine.bot.action.gui.GuiSubNode;
-import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.bot.agent.ExtraData;
 import org.leavesmc.leaves.command.CommandContext;
 
+import java.util.List;
+import java.util.Map;
+
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
-import static org.leavesmc.leaves.command.ArgumentNode.ArgumentSuggestions.strings;
 
 public abstract class AbstractTimerBotAction<E extends AbstractTimerBotAction<E>> extends AbstractBotAction<E> {
 
-    public AbstractTimerBotAction(String name, GuiRootNode guiData) {
+    public AbstractTimerBotAction(String name) {
         super(name);
-        String[] delaySuggestions = {"0", "5", "10", "20"};
-        String[] intervalSuggestions = {"20", "0", "5", "10"};
-        this.addArgument("delay", integer(0)).suggests(strings(delaySuggestions)).setOptional(true);
-        this.addArgument("interval", integer(0)).suggests(strings(intervalSuggestions)).setOptional(true);
-        this.addArgument("do_number", integer(-1))
-                .suggests(((context, builder) -> builder.suggest("-1", Component.literal("do infinite times"))))
+        this.addTimerArguments();
+    }
+
+    public AbstractTimerBotAction(String name, String guiTitle, String guiDescription, Item guiItem) {
+        super(name, guiTitle, guiDescription, guiItem);
+        this.addTimerArguments();
+    }
+
+    private void addTimerArguments() {
+        this.addArgument("delay", integer(0))
+                .guiSuggest("Delay for a few ticks", List.of("0", "5", "10", "20"))
                 .setOptional(true);
-
-        if (guiData == null) return;
-
-        this.guiData = guiData;
-        GuiSubNode[] node1 = new GuiSubNode[delaySuggestions.length];
-        for (int i = 0; i < delaySuggestions.length; i++) {
-            node1[i] = new GuiSubNode(delaySuggestions[i], "Delay for a few ticks", null, guiData, delaySuggestions[i]);
-            guiData.child(node1[i]);
-        }
-        GuiSubNode[] node2 = new GuiSubNode[delaySuggestions.length * intervalSuggestions.length];
-        for (int i = 0; i < delaySuggestions.length; i++) {
-            for (int j = 0; j < intervalSuggestions.length; j++) {
-                int id = i * intervalSuggestions.length + j;
-                node2[id] = new GuiSubNode(intervalSuggestions[j], "Interval for a few ticks", null, node1[i], intervalSuggestions[j]);
-                node1[i].child(node2[id]);
-            }
-        }
-
-        for (GuiSubNode node : node2) {
-            GuiSubNode subNode = new GuiSubNode("-1", "Number of times to do", null, node, "-1");
-            node.child(subNode);
-        }
+        this.addArgument("interval", integer(0))
+                .guiSuggest("Interval for a few ticks", List.of("20", "0", "5", "10"))
+                .setOptional(true);
+        this.addArgument("do_number", integer(-1))
+                .guiSuggest("-1", "Number of times to do")
+                .setOptional(true);
     }
 
     @Override
     public void loadCommand(@NotNull CommandContext context) {
-        this.setStartDelayTick(context.getIntegerOrDefault("delay", 0));
-        this.setDoIntervalTick(context.getIntegerOrDefault("interval", 20));
-        this.setDoNumber(context.getIntegerOrDefault("do_number", 1));
+        this.applyTimer(
+                context.getIntegerOrDefault("delay", 0),
+                context.getIntegerOrDefault("interval", 20),
+                context.getIntegerOrDefault("do_number", 1)
+        );
+    }
+
+    @Override
+    protected void loadGuiValues(@NotNull Map<String, String> values) {
+        this.applyTimer(
+                guiInt(values, "delay", 0),
+                guiInt(values, "interval", 20),
+                guiInt(values, "do_number", 1)
+        );
+    }
+
+    private void applyTimer(int delay, int interval, int doNumber) {
+        this.setStartDelayTick(delay);
+        this.setDoIntervalTick(interval);
+        this.setDoNumber(doNumber);
     }
 
     @Override

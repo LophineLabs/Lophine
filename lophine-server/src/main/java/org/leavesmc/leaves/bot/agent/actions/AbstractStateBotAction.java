@@ -17,9 +17,21 @@
 
 package org.leavesmc.leaves.bot.agent.actions;
 
+import net.minecraft.world.item.Item;
+
 public abstract class AbstractStateBotAction<E extends AbstractStateBotAction<E>> extends AbstractBotAction<E> {
     public AbstractStateBotAction(String name) {
         super(name);
+        this.setDoNumber(-1);
+    }
+
+    public AbstractStateBotAction(String name, String guiTitle, String guiDescription, Item guiItem) {
+        super(name, guiTitle, guiDescription, guiItem);
+        this.setDoNumber(-1);
+    }
+
+    public AbstractStateBotAction(String name, String guiTitle, String guiDescription, Item guiItem, boolean guiConfirmable) {
+        super(name, guiTitle, guiDescription, guiItem, guiConfirmable);
         this.setDoNumber(-1);
     }
 }

@@ -17,7 +17,6 @@
 
 package org.leavesmc.leaves.bot.agent.actions;
 
-import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.bot.ServerBot;
@@ -29,22 +28,29 @@ import org.leavesmc.leaves.entity.bot.actions.CraftBotAction;
 import org.leavesmc.leaves.entity.bot.actions.CraftMoveAction;
 import org.leavesmc.leaves.event.bot.BotActionStopEvent;
 
+import java.util.Locale;
+import java.util.Map;
+
 public class ServerMoveAction extends AbstractStateBotAction<ServerMoveAction> {
     private MoveDirection direction = MoveDirection.FORWARD;
 
     public ServerMoveAction() {
-        super("move");
-        this.addArgument("direction", EnumArgumentType.fromEnum(MoveDirection.class));
-
-        this.guiData = new GuiRootNode("Move", "Move", null, "move", false);
-        for (MoveDirection direction : MoveDirection.values()) {
-            this.guiData.child(new GuiRootNode(direction.name, direction.name, Items.LEATHER_BOOTS, "move " + direction.name));
-        }
+        super("move", "Move", "Move", null, false);
+        this.addArgument("direction", EnumArgumentType.fromEnum(MoveDirection.class))
+                .guiItem(Items.LEATHER_BOOTS);
     }
 
     @Override
     public void loadCommand(@NotNull CommandContext context) {
         this.direction = context.getArgument("direction", MoveDirection.class);
+    }
+
+    @Override
+    protected void loadGuiValues(@NotNull Map<String, String> values) {
+        String raw = values.get("direction");
+        if (raw != null) {
+            this.direction = MoveDirection.valueOf(raw.toUpperCase(Locale.ROOT));
+        }
     }
 
     @Override

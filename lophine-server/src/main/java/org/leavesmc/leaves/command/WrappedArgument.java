@@ -24,7 +24,12 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class WrappedArgument<T> {
@@ -33,10 +38,20 @@ public class WrappedArgument<T> {
     private AsyncSuggestionProvider asyncSuggestionProvider = null;
     private SuggestionApplier suggestionApplier = null;
     private boolean optional = false;
+    private Item guiItem = null;
+    private final List<GuiSuggestion> guiSuggestions = new ArrayList<>();
 
     public WrappedArgument(String name, ArgumentType<T> type) {
         this.name = name;
         this.type = type;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public ArgumentType<T> getType() {
+        return this.type;
     }
 
     public WrappedArgument<T> suggestsAsync(AsyncSuggestionProvider provider) {
@@ -47,6 +62,31 @@ public class WrappedArgument<T> {
     public WrappedArgument<T> suggests(SuggestionApplier provider) {
         this.suggestionApplier = provider;
         return this;
+    }
+
+    public WrappedArgument<T> guiItem(Item item) {
+        this.guiItem = item;
+        return this;
+    }
+
+    public WrappedArgument<T> guiSuggest(String value, String description) {
+        this.guiSuggestions.add(new GuiSuggestion(value, description, this.guiItem));
+        return this;
+    }
+
+    public WrappedArgument<T> guiSuggest(String description, Iterable<String> values) {
+        for (String value : values) {
+            guiSuggest(value, description);
+        }
+        return this;
+    }
+
+    public Item getGuiItem() {
+        return this.guiItem;
+    }
+
+    public List<GuiSuggestion> getGuiSuggestions() {
+        return Collections.unmodifiableList(this.guiSuggestions);
     }
 
     public WrappedArgument<T> setOptional(boolean optional) {
@@ -69,8 +109,22 @@ public class WrappedArgument<T> {
                 suggestionApplier.applySuggestions(new CommandContext(context), b);
                 return CompletableFuture.completedFuture(b.build());
             });
+        } else if (!guiSuggestions.isEmpty()) {
+            builder.suggests((context, b) -> {
+                for (GuiSuggestion suggestion : guiSuggestions) {
+                    if (suggestion.description() != null && !suggestion.description().isEmpty()) {
+                        b.suggest(suggestion.value(), Component.literal(suggestion.description()));
+                    } else {
+                        b.suggest(suggestion.value());
+                    }
+                }
+                return CompletableFuture.completedFuture(b.build());
+            });
         }
         return builder;
+    }
+
+    public record GuiSuggestion(String value, String description, Item item) {
     }
 
     @FunctionalInterface

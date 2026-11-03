@@ -5,7 +5,6 @@ import fun.bm.lophine.bot.action.gui.ActionType;
 import fun.bm.lophine.bot.action.gui.GuiNode;
 import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import fun.bm.lophine.config.modules.function.FakeplayerConfig;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -14,13 +13,21 @@ import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.jetbrains.annotations.NotNull;
+import org.leavesmc.leaves.bot.ServerBot;
+import org.leavesmc.leaves.bot.agent.Actions;
+import org.leavesmc.leaves.bot.agent.actions.AbstractBotAction;
+import org.leavesmc.leaves.command.bot.BotCommand;
+import org.leavesmc.leaves.command.bot.subcommands.action.StartCommand;
+import org.leavesmc.leaves.command.bot.subcommands.action.StopCommand;
 import org.leavesmc.leaves.entity.bot.CraftBot;
 
-import java.rmi.UnexpectedException;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.RED;
 
 public class BotActionGuiMenu extends AbstractContainerMenu {
     private final BotActionGuiContainer container;
@@ -94,7 +101,6 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
                 return;
             }
 
-            // Handle pagination buttons
             if (this.container.isPrevPageSlot(slotIndex)) {
                 this.container.prevPage();
                 this.refreshSlots();
@@ -106,14 +112,12 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
                 return;
             }
 
-            // Handle command builder click
             if (this.container.isCommandBuilderSlot(slotIndex) && this.container.canExecuteCommandBuilder()) {
-                this.executeCommandBuilder(player);
+                this.executeCommandBuilder();
                 this.refreshSlots();
                 return;
             }
 
-            // Handle ActionType selection (with pagination offset)
             if (this.container.isSelectingActionType()) {
                 ActionType clickedType = this.container.getActionTypeAtSlot(slotIndex);
                 if (clickedType != null) {
@@ -123,11 +127,10 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
                 return;
             }
 
-            // Handle action stop click (when STOP action type is selected)
             if (this.container.getSelectedActionType() == ActionType.ACTION_STOP) {
                 String actionHash = this.container.getActionHashAtSlot(slotIndex);
                 if (actionHash != null) {
-                    this.stopActionByHash(actionHash, player);
+                    this.stopActionByHash(actionHash);
                     this.refreshSlots();
                 }
                 return;
@@ -135,7 +138,7 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
 
             GuiNode node = this.container.getGuiNodeAtSlot(slotIndex);
             if (node != null) {
-                this.handleNodeClick(node, player);
+                this.handleNodeClick(node);
                 this.refreshSlots();
             }
             return;
@@ -144,115 +147,86 @@ public class BotActionGuiMenu extends AbstractContainerMenu {
         super.clicked(slotIndex, buttonNum, containerInput, player);
     }
 
-    private void handleNodeClick(GuiNode node, Player player) {
-        if (node instanceof GuiRootNode rootNode) {
-            // Get the selected action type
-            ActionType actionType = this.container.getSelectedActionType();
-            if (actionType == null) {
-                return;
-            }
+    private void handleNodeClick(GuiNode node) {
+        ActionType actionType = this.container.getSelectedActionType();
+        if (actionType == null) {
+            return;
+        }
 
-            int maxAllowedParameters = actionType.getMaxAllowedParameters();
-
-            // If the node has children, check parameter limit before navigating
-            if (!rootNode.getChildren().isEmpty()) {
-                // Calculate current parameter count (navigation stack size + 1 for current node if exists)
-                int currentParamCount = this.container.getCurrentParameterCount();
-
-                // If adding this node would exceed the limit, execute command instead of navigating
-                if (currentParamCount + 1 > maxAllowedParameters) {
-                    this.executeCommand(rootNode, actionType, player);
-                    // Close GUI after START action execution
-                    if (actionType == ActionType.ACTION_START && player instanceof ServerPlayer serverPlayer) {
-                        serverPlayer.closeContainer();
-                    }
-                } else {
-                    this.container.navigateToChild(rootNode);
-                }
+        int maxAllowedParameters = actionType.getMaxAllowedParameters();
+        if (node.hasGuiChildren()) {
+            int currentParamCount = this.container.getCurrentParameterCount();
+            if (currentParamCount + 1 > maxAllowedParameters) {
+                this.executeNode(node, actionType);
             } else {
-                // Execute command with t`he selected action type
-                this.executeCommand(rootNode, actionType, player);
-                // Close GUI after START action execution
-                if (actionType == ActionType.ACTION_START && player instanceof ServerPlayer serverPlayer) {
-                    serverPlayer.closeContainer();
-                }
+                this.container.navigateToChild(node);
             }
+        } else {
+            this.executeNode(node, actionType);
         }
     }
 
-    private void executeCommand(GuiRootNode node, ActionType actionType, Player player) {
+    private void executeNode(GuiNode node, ActionType actionType) {
+        if (actionType == ActionType.ACTION_START) {
+            this.startAction(node);
+        }
+    }
+
+    private boolean canUseAction() {
+        CommandSender sender = this.player;
+        if (!FakeplayerConfig.checkEnabled() || !FakeplayerConfig.canUseAction || !BotCommand.hasPermission(sender, "action")) {
+            sender.sendMessage(text("You do not have permission to use bot actions", RED));
+            return false;
+        }
+        return true;
+    }
+
+    private void startAction(GuiNode node) {
+        if (!this.canUseAction()) {
+            return;
+        }
+
+        GuiRootNode root = node.getActionRoot();
+        if (root == null) {
+            return;
+        }
+        Actions<?> holder = Actions.getByName(root.getName());
+        if (holder == null) {
+            return;
+        }
+
         try {
-            String actionPrefix = actionType.getCommandActionPrefix();
-            String actionSuffix = actionType.getCommandActionSuffix();
-            if (!actionSuffix.isEmpty()) {
-                actionSuffix = actionSuffix + " ";
-            }
-
-            String extra = actionPrefix + " " + bot.getName() + " " + actionSuffix;
-            String command = node.buildCommand(extra);
-
-            // Apply parameter limit based on ActionType
-            if (actionType.getMaxAllowedParameters() == 0) {
-                // For actions like STOP that don't allow parameters, trim to just "action botName"
-                command = actionPrefix + " " + bot.getName();
-            }
-
-            if (player instanceof ServerPlayer serverPlayer) {
-                MinecraftServer.getServer().getCommands().performPrefixedCommand(
-                        serverPlayer.createCommandSourceStack(),
-                        command
-                );
-            }
+            AbstractBotAction<?> action = holder.create();
+            action.loadGui(node.collectGuiValues());
+            StartCommand.start(this.bot.getHandle(), this.player, holder, action);
         } catch (Exception e) {
-            LogUtils.getLogger().warn("Error executing command: ", e);
+            LogUtils.getLogger().warn("Error starting bot action from GUI: ", e);
+            this.player.sendMessage(text("Failed to start bot action", RED));
+            return;
+        }
+
+        if (this.player.getHandle() instanceof ServerPlayer serverPlayer) {
+            serverPlayer.closeContainer();
         }
     }
 
-    /**
-     * Execute the command from the command builder (book item).
-     * Uses the current node and selected action type.
-     */
-    private void executeCommandBuilder(Player player) {
+    private void executeCommandBuilder() {
         GuiNode currentNode = this.container.getCurrentNode();
         ActionType actionType = this.container.getSelectedActionType();
-
-        if (currentNode instanceof GuiRootNode rootNode && actionType != null) {
-            this.executeCommand(rootNode, actionType, player);
-            // Close GUI after START action execution
-            if (actionType != ActionType.ACTION_STOP && player instanceof ServerPlayer serverPlayer) {
-                serverPlayer.closeContainer();
-            }
+        if (currentNode != null && actionType != null) {
+            this.executeNode(currentNode, actionType);
         }
     }
 
-    /**
-     * Stop a bot action by its hash (UUID string)
-     */
-    private void stopActionByHash(String actionHash, Player player) {
-        try {
-            if (player instanceof ServerPlayer serverPlayer) {
-                String command = getStopActionCommand(actionHash);
-                MinecraftServer.getServer().getCommands().performPrefixedCommand(
-                        serverPlayer.createCommandSourceStack(),
-                        command
-                );
+    private void stopActionByHash(String actionHash) {
+        if (this.canUseAction()) {
+            ServerBot serverBot = this.bot.getHandle();
+            AbstractBotAction<?> action = StopCommand.findByHash(serverBot, actionHash);
+            if (action != null) {
+                StopCommand.stopAction(serverBot, this.player, action);
             }
-        } catch (Exception e) {
-            LogUtils.getLogger().warn("Error stopping action with hash {}: ", actionHash, e);
         }
-        // Always refresh to show updated action list after stop attempt
         this.container.showCurrentBotActions();
-    }
-
-    private String getStopActionCommand(String actionHash) throws UnexpectedException {
-        String command;
-        if (FakeplayerConfig.checkEnabled()) {
-            command = "bot ";
-        } else {
-            throw new UnexpectedException("Unable to build String from commandNode.");
-        }
-        command = command + "action " + this.bot.getName() + " stop " + actionHash;
-        return command;
     }
 
     private void refreshSlots() {

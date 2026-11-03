@@ -18,7 +18,7 @@
 package org.leavesmc.leaves.bot.agent;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import fun.bm.lophine.bot.BotActionGuiContainer;
+import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,15 +26,12 @@ import org.leavesmc.leaves.bot.agent.actions.*;
 import org.leavesmc.leaves.command.CommandContext;
 import org.leavesmc.leaves.entity.bot.action.*;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class Actions<T extends AbstractBotAction<T>> {
 
-    private static final Map<String, Actions<? extends AbstractBotAction<?>>> actionsByName = new HashMap<>();
+    private static final Map<String, Actions<? extends AbstractBotAction<?>>> actionsByName = new LinkedHashMap<>();
     private static final Map<Class<? extends BotAction<?>>, Actions<? extends AbstractBotAction<?>>> actionsByClass = new HashMap<>();
 
     static {
@@ -62,12 +59,10 @@ public class Actions<T extends AbstractBotAction<T>> {
     public static <T extends AbstractBotAction<T>> boolean register(Class<? extends BotAction<?>> apiType, @NotNull Supplier<T> creator) {
         AbstractBotAction<T> action = creator.get();
         if (!actionsByName.containsKey(action.getName())) {
-            Actions<?> actions = new Actions<>(creator.get().getName(), apiType, creator);
+            GuiRootNode guiRoot = GuiRootNode.fromAction(action);
+            Actions<?> actions = new Actions<>(action.getName(), apiType, creator, guiRoot);
             actionsByName.put(action.getName(), actions);
             actionsByClass.put(apiType, actions);
-            if (action.getGuiData() != null) {
-                BotActionGuiContainer.registerGuiRootNode(action.getGuiData());
-            }
             return true;
         }
         return false;
@@ -76,11 +71,13 @@ public class Actions<T extends AbstractBotAction<T>> {
     private final String name;
     private final Class<?> apiType;
     private final Supplier<T> creator;
+    private final GuiRootNode guiRoot;
 
-    private Actions(String name, Class<? extends BotAction<?>> apiType, Supplier<T> creator) {
+    private Actions(String name, Class<? extends BotAction<?>> apiType, Supplier<T> creator, GuiRootNode guiRoot) {
         this.name = name;
         this.apiType = apiType;
         this.creator = creator;
+        this.guiRoot = guiRoot;
     }
 
     public String getName() {
@@ -101,11 +98,14 @@ public class Actions<T extends AbstractBotAction<T>> {
         return action;
     }
 
+    public GuiRootNode getGuiRoot() {
+        return this.guiRoot;
+    }
+
     public static boolean unregister(@NotNull String name) {
         Actions<?> action = actionsByName.remove(name);
-        BotActionGuiContainer.unregisterGuiRootNode(name);
         if (action != null) {
-            actionsByClass.remove(action.getClass());
+            actionsByClass.remove(action.getType());
             return true;
         }
         return false;

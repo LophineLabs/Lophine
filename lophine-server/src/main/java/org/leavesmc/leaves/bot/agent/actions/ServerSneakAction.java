@@ -17,7 +17,6 @@
 
 package org.leavesmc.leaves.bot.agent.actions;
 
-import fun.bm.lophine.bot.action.gui.GuiRootNode;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leaves.bot.ServerBot;
 import org.leavesmc.leaves.entity.bot.actions.CraftBotAction;
@@ -27,9 +26,7 @@ import org.leavesmc.leaves.event.bot.BotActionStopEvent;
 public class ServerSneakAction extends AbstractStateBotAction<ServerSneakAction> {
 
     public ServerSneakAction() {
-        super("sneak");
-
-        this.guiData = new GuiRootNode("Sneak", "Sneak", null, "sneak");
+        super("sneak", "Sneak", "Sneak", null);
     }
 
     @Override

@@ -28,7 +28,7 @@ import static org.leavesmc.leaves.bot.agent.actions.ServerUseItemAction.useItem;
 public class ServerUseItemOffhandAction extends AbstractUseBotAction<ServerUseItemOffhandAction> {
 
     public ServerUseItemOffhandAction() {
-        super("use_offhand", null);
+        super("use_offhand");
     }
 
     @Override

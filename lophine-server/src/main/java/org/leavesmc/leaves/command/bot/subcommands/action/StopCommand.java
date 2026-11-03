@@ -87,23 +87,7 @@ public class StopCommand extends LiteralNode {
             }
 
             AbstractBotAction<?> action = bot.getBotActions().get(index);
-            BotActionStopEvent event = new BotActionStopEvent(
-                    bot.getBukkitEntity(), action.getName(), action.getUUID(), BotActionStopEvent.Reason.COMMAND, sender
-            );
-            event.callEvent();
-            if (!event.isCancelled()) {
-                action.stop(bot, BotActionStopEvent.Reason.COMMAND);
-                bot.getBotActions().remove(index);
-                sender.sendMessage(join(spaces(),
-                        text("Already stopped", GRAY),
-                        asAdventure(bot.getDisplayName()).append(text("'s", GRAY)),
-                        text("action", GRAY),
-                        text(action.getName(), AQUA).hoverEvent(showText(text(action.getActionDataString())))
-                ));
-            } else {
-                sender.sendMessage(text("Action stop cancelled by a plugin", RED));
-            }
-            return true;
+            return stopAction(bot, sender, action);
         }
     }
 
@@ -119,33 +103,41 @@ public class StopCommand extends LiteralNode {
             CommandSender sender = context.getSender();
 
             String hash = context.getArgument(StopHashArgument.class);
-
-            AbstractBotAction<?> action = null;
-            for (AbstractBotAction<?> action1 : bot.getBotActions()) {
-                if (action1.getUUID().toString().equals(hash)) {
-                    action = action1;
-                    break;
-                }
+            AbstractBotAction<?> action = findByHash(bot, hash);
+            if (action == null) {
+                throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument().create();
             }
-            if (action == null) throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument().create();
-            BotActionStopEvent event = new BotActionStopEvent(
-                    bot.getBukkitEntity(), action.getName(), action.getUUID(), BotActionStopEvent.Reason.COMMAND, sender
-            );
-            event.callEvent();
-            if (!event.isCancelled()) {
-                action.stop(bot, BotActionStopEvent.Reason.COMMAND);
-                bot.getBotActions().remove(action);
-                sender.sendMessage(join(spaces(),
-                        text("Already stopped", GRAY),
-                        asAdventure(bot.getDisplayName()).append(text("'s", GRAY)),
-                        text("action", GRAY),
-                        text(action.getName(), AQUA).hoverEvent(showText(text(action.getActionDataString())))
-                ));
-            } else {
-                sender.sendMessage(text("Action stop cancelled by a plugin", RED));
-            }
-            return true;
+            return stopAction(bot, sender, action);
         }
+    }
+
+    public static AbstractBotAction<?> findByHash(@NotNull ServerBot bot, @NotNull String hash) {
+        for (AbstractBotAction<?> action : bot.getBotActions()) {
+            if (action.getUUID().toString().equals(hash)) {
+                return action;
+            }
+        }
+        return null;
+    }
+
+    public static boolean stopAction(@NotNull ServerBot bot, @NotNull CommandSender sender, @NotNull AbstractBotAction<?> action) {
+        BotActionStopEvent event = new BotActionStopEvent(
+                bot.getBukkitEntity(), action.getName(), action.getUUID(), BotActionStopEvent.Reason.COMMAND, sender
+        );
+        event.callEvent();
+        if (!event.isCancelled()) {
+            action.stop(bot, BotActionStopEvent.Reason.COMMAND);
+            bot.getBotActions().remove(action);
+            sender.sendMessage(join(spaces(),
+                    text("Already stopped", GRAY),
+                    asAdventure(bot.getDisplayName()).append(text("'s", GRAY)),
+                    text("action", GRAY),
+                    text(action.getName(), AQUA).hoverEvent(showText(text(action.getActionDataString())))
+            ));
+        } else {
+            sender.sendMessage(text("Action stop cancelled by a plugin", RED));
+        }
+        return true;
     }
 
     private static class StopAll extends LiteralNode {
