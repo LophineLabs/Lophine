@@ -52,6 +52,7 @@ import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -142,6 +143,10 @@ public class ServerBot extends ServerPlayer {
         if (!this.isAlive()) {
             return;
         }
+
+        // ServerBot skips Player.tick(), which materializes these before getValue.
+        this.getAttribute(Attributes.BLOCK_INTERACTION_RANGE).carpetRefreshInteractionRange();
+        this.getAttribute(Attributes.ENTITY_INTERACTION_RANGE).carpetRefreshInteractionRange();
 
 
         if (this.getConfigValue(Configs.TICK_TYPE) == TickType.ENTITY_LIST) {
