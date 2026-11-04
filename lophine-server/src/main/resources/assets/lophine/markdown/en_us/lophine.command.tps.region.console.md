@@ -1,0 +1,1 @@
+{red}Cannot see current region information as console{/}

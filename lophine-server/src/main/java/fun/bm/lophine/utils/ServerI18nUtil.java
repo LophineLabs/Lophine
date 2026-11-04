@@ -6,9 +6,13 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.logging.LogUtils;
 import fun.bm.lophine.config.modules.function.LanguageConfig;
+import fun.bm.lophine.utils.markdown.MarkdownArgs;
+import fun.bm.lophine.utils.markdown.MarkdownI18n;
+import fun.bm.lophine.utils.markdown.MarkdownTemplate;
 import io.papermc.paper.ServerBuildInfo;
 import me.earthme.luminol.config.ConfigManager;
 import me.earthme.luminol.config.ConfigsInstance;
+import net.kyori.adventure.text.Component;
 import net.minecraft.locale.DeprecatedTranslationsInfo;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.FormattedText;
@@ -41,7 +45,7 @@ public class ServerI18nUtil {
     private static final String VERSION = ServerBuildInfo.buildInfo().minecraftVersionId();
     private static final String BASE_PATH = "cache/lophine/" + VERSION + "/";
     private static final Set<String> registeredLanguageBasePath = register();
-    private static final String defaultLophineLangName = "en_us.json";
+    private static final String defaultLophineLangName = "en_us";
     private static final String manifestUrl = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
     private static final String resourceBaseUrl = "https://resources.download.minecraft.net/";
     // pre-load
@@ -54,7 +58,7 @@ public class ServerI18nUtil {
     private static String versionPath;
     private static String manifestPath;
     private static String langJsonPath;
-    private static String targetLangFileName;
+    private static String targetLangName;
 
     private static Set<String> register() {
         Set<String> paths = new HashSet<>();
@@ -85,6 +89,7 @@ public class ServerI18nUtil {
 
     public static void init(boolean reload) {
         if (Objects.equals(LanguageConfig.lang, "en_us")) {
+            MarkdownI18n.reload(defaultLophineLangName, defaultLophineLangName);
             loadConfigI18n();
             return;
         }
@@ -94,7 +99,7 @@ public class ServerI18nUtil {
 
         langPath = newLangPath;
         langJsonPath = "minecraft/lang/" + LanguageConfig.lang + ".json";
-        targetLangFileName = LanguageConfig.lang + ".json";
+        targetLangName = LanguageConfig.lang;
         logger.info("Starting load language: {}", LanguageConfig.lang);
         Runnable task = () -> {
             loadI18n(LanguageConfig.lang, 2);
@@ -285,6 +290,7 @@ public class ServerI18nUtil {
         parseTranslations(map::put);
         loadLophineI18n(map::put);
         deprecatedTranslationsInfo.applyToMap(map);
+        MarkdownI18n.reload(LanguageConfig.lang, defaultLophineLangName);
         final Map<String, String> map1 = Map.copyOf(map);
         return new Language() {
             @Override
@@ -316,7 +322,7 @@ public class ServerI18nUtil {
     private static void loadLophineI18n(BiConsumer<String, String> bi) {
         loadLophineI18nDefault(bi);
         for (String targetPath : registeredLanguageBasePath) {
-            String targetFile = targetPath + targetLangFileName;
+            String targetFile = targetPath + targetLangName + ".json";
             if (Language.class.getResource(targetFile) != null) {
                 Language.parseTranslations(bi, targetFile);
             }
@@ -325,7 +331,7 @@ public class ServerI18nUtil {
 
     public static void loadLophineI18nDefault(BiConsumer<String, String> bi) {
         for (String targetPath : registeredLanguageBasePath) {
-            String targetFile = targetPath + defaultLophineLangName;
+            String targetFile = targetPath + defaultLophineLangName + ".json";
             if (Language.class.getResource(targetFile) != null) {
                 Language.parseTranslations(bi, targetFile);
             }
@@ -371,6 +377,18 @@ public class ServerI18nUtil {
             template = template.replace("{" + i + "}", String.valueOf(args[i]));
         }
         return template;
+    }
+
+    public static @NotNull MarkdownTemplate getMarkdownTemplate(String key) {
+        return MarkdownI18n.get(key);
+    }
+
+    public static @NotNull Component getLocalizedComponent(String key) {
+        return getMarkdownTemplate(key).render();
+    }
+
+    public static @NotNull Component getLocalizedComponent(String key, MarkdownArgs args) {
+        return getMarkdownTemplate(key).render(args);
     }
 
     public static boolean isInit() {

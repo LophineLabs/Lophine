@@ -1,5 +1,6 @@
 package me.earthme.luminol.commands;
 
+import fun.bm.lophine.command.tps.TpsCommand;
 import me.earthme.luminol.commands.bar.BarCommand;
 
 public class CommandRegister {
@@ -10,5 +11,6 @@ public class CommandRegister {
      */
     public static void register() {
         new BarCommand().register();
+        new TpsCommand().register();
     }
 }

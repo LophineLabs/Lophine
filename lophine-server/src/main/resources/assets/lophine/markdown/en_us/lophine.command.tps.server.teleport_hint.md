@@ -1,0 +1,2 @@
+{secondary} Click to teleport
+{/}
