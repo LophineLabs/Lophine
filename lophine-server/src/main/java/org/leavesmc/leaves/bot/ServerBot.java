@@ -145,7 +145,7 @@ public class ServerBot extends ServerPlayer {
         }
 
         //Fix java.lang.UnsupportedOperationException
-        this.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.BLOCK_INTERACTION_RANGE);
+        this.getAttribute(Attributes.BLOCK_INTERACTION_RANGE).carpetRefreshInteractionRange();
         this.getAttribute(Attributes.ENTITY_INTERACTION_RANGE).carpetRefreshInteractionRange();
 
 
