@@ -2967,7 +2967,7 @@ index 86d9f48c2bb1232e5697dbe3e01f7aaf5acbacdf..7dd7f1b0c91bac3cc7ed81c7820753df
          final BlockGetter level, final BlockPos pos, final BlockState blockState, final FluidState fluidState, final EntityType<?> type
      ) {
 diff --git a/net/minecraft/world/level/ServerExplosion.java b/net/minecraft/world/level/ServerExplosion.java
-index b423b55ee88ca802990e7f2a96cdb691575bfabb..478276f4e2a857c53afd6b2d90d6541df1abac18 100644
+index 2032fde63b3cd96b406ff0431fcf0ef656043cc1..95de7b23d26359d81cf136e12633a5b36dd37228 100644
 --- a/net/minecraft/world/level/ServerExplosion.java
 +++ b/net/minecraft/world/level/ServerExplosion.java
 @@ -532,6 +532,31 @@ public class ServerExplosion implements Explosion {
@@ -3017,9 +3017,9 @@ index b423b55ee88ca802990e7f2a96cdb691575bfabb..478276f4e2a857c53afd6b2d90d6541d
 -            return List.copyOf(queried);
 +            return fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.explosionNoEntityInfluence
 +                ? List.<Entity>of() : List.copyOf(queried);
-         }).thenCompose(entities -> {
+         }).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(entities -> {
              java.util.concurrent.CompletableFuture<Void> sequence=java.util.concurrent.CompletableFuture.completedFuture(null);
-             for (Entity entity : entities) sequence=sequence.thenCompose(ignored -> this.carpetImpactAsync(entity,entities));
+             for (Entity entity : entities) sequence=sequence.thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored -> this.carpetImpactAsync(entity,entities)));
 diff --git a/net/minecraft/world/level/block/BarrelBlock.java b/net/minecraft/world/level/block/BarrelBlock.java
 index e327275c3d7ffc0185204674f423f9b48a06f03b..480b85566dce3b10b7f0be35ad304181f72e0fa3 100644
 --- a/net/minecraft/world/level/block/BarrelBlock.java

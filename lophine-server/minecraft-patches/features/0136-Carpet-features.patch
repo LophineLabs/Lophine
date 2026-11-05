@@ -12298,7 +12298,7 @@ index d99b82edbe7c9fbb14bd5bfd5f125ab5daf28954..c5121ba40ae854a31d5250bc540c77ae
          private boolean canSpawnForCategoryGlobal(final MobCategory mobCategory, final int limit) {
              int maxMobCount = limit * this.spawnableChunkCount / NaturalSpawner.MAGIC_NUMBER;
 diff --git a/net/minecraft/world/level/ServerExplosion.java b/net/minecraft/world/level/ServerExplosion.java
-index f720686163d673ca58b10827aad444e21bdd3669..6e7fb55543a21c7f48180c7bfb26e13861631d80 100644
+index f720686163d673ca58b10827aad444e21bdd3669..d40f34cd1dcf691a87debc404a493427ded728f9 100644
 --- a/net/minecraft/world/level/ServerExplosion.java
 +++ b/net/minecraft/world/level/ServerExplosion.java
 @@ -46,9 +46,11 @@ public class ServerExplosion implements Explosion {
@@ -12536,16 +12536,16 @@ index f720686163d673ca58b10827aad444e21bdd3669..6e7fb55543a21c7f48180c7bfb26e138
 +        this.carpetActualExplosion = carpet.script.external.ScarpetNativeWork.trackNative(this.level.getServer(), actualResult);
 +        var observed = carpet.script.external.ScarpetNativeWork.<java.util.concurrent.CompletableFuture<Integer>>observeNative(this.source, () -> {
 +            var committed = carpet.script.external.ScarpetRuntime.captureNativeContinuation(() ->
-+                this.carpetStartDecisionAsync().thenCompose(cancelled -> {
++                this.carpetStartDecisionAsync().thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(cancelled -> {
 +                    if (Boolean.TRUE.equals(cancelled)) { this.wasCanceled = true; return java.util.concurrent.CompletableFuture.completedFuture(0); }
-+                    return carpet.script.external.ScarpetExplosionActors.currentAttribution(this).thenCompose(attribution ->
++                    return carpet.script.external.ScarpetExplosionActors.currentAttribution(this).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(attribution ->
 +                        carpet.script.external.ScarpetExplosionActors.area(this, attribution, () -> {
 +                            java.util.concurrent.CompletableFuture<Integer> phases;
-+                            try { phases=this.carpetBeginExplosion().thenCompose(this::carpetRunExplosionPhases); }
++                            try { phases=this.carpetBeginExplosion().thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(this::carpetRunExplosionPhases)); }
 +                            catch(Throwable failure) { phases=java.util.concurrent.CompletableFuture.failedFuture(failure); }
 +                            return this.carpetFinalizeExplosion(phases);
-+                        })).thenCompose(completed -> completed);
-+                }));
++                        }))).thenCompose(completed -> completed);
++                })));
 +            var sequence = committed.get();
 +            carpet.script.external.ScarpetNativeWork.record(sequence); return sequence;
 +        });
@@ -12558,22 +12558,22 @@ index f720686163d673ca58b10827aad444e21bdd3669..6e7fb55543a21c7f48180c7bfb26e138
 +        return this.carpetActualExplosion;
 +    }
 +    private java.util.concurrent.CompletableFuture<Integer> carpetFinalizeExplosion(java.util.concurrent.CompletableFuture<Integer> phases) {
-+        return phases.handle((count,failure) -> new Object[]{count,failure}).thenCompose(result ->
++        return phases.handle((count,failure) -> new Object[]{count,failure}).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(result ->
 +            carpet.script.external.ScarpetExplosionActors.world(this.level,BlockPos.containing(this.center),() -> {
 +                this.carpetClearExplosionCaches();
 +                if(result[1]!=null) throw new java.util.concurrent.CompletionException((Throwable)result[1]);
 +                return (Integer)result[0];
-+            }));
++            })));
 +    }
 +    private java.util.concurrent.CompletableFuture<Integer> carpetRunExplosionPhases(List<BlockPos> toBlow) {
 +        return java.util.concurrent.CompletableFuture.completedFuture(toBlow)
-+                .thenCompose(blocks -> this.carpetHurtEntitiesAsync().thenCompose(ignored ->
-+                    carpet.script.external.ScarpetExplosionActors.currentAttribution(this).thenCompose(outcomeAttribution ->
++                .thenCompose(blocks -> this.carpetHurtEntitiesAsync().thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored ->
++                    carpet.script.external.ScarpetExplosionActors.currentAttribution(this).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(outcomeAttribution ->
 +                    carpet.script.external.ScarpetExplosionActors.world(this.level, BlockPos.containing(this.center), () -> carpet.script.external.ScarpetAttribution.with(outcomeAttribution, () -> {
 +                        if (!carpet.script.CarpetEventServer.Event.EXPLOSION_OUTCOME.isNeeded()) return java.util.concurrent.CompletableFuture.completedFuture(false);
 +                        return carpet.script.external.ScarpetWorldExplosions.observeDecision(this.source, () -> carpet.script.external.ScarpetRuntime.captureEvent(() -> carpet.script.CarpetEventServer.Event.EXPLOSION_OUTCOME.onExplosion(this.level, this.source, this::getIndirectSourceEntity, this.center, this.radius, this.fire, java.util.List.copyOf(blocks), java.util.List.copyOf(this.carpetAffectedEntities), this.blockInteraction)));
-+                    }))).thenCompose(callback -> callback).thenCompose(ignoredOutcome -> carpet.script.external.ScarpetExplosionActors.currentAttribution(this))
-+                      .thenCompose(currentTool -> this.carpetFinishExplosionAsync(blocks, currentTool))));
++                    })))).thenCompose(callback -> callback).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignoredOutcome -> carpet.script.external.ScarpetExplosionActors.currentAttribution(this)))
++                      .thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(currentTool -> this.carpetFinishExplosionAsync(blocks, currentTool))))));
 +    }
 +    private java.util.concurrent.CompletableFuture<List<BlockPos>> carpetBeginExplosion() {
 +        this.carpetAffectedEntities.clear();
@@ -12708,11 +12708,11 @@ index f720686163d673ca58b10827aad444e21bdd3669..6e7fb55543a21c7f48180c7bfb26e138
 +                new AABB(Mth.floor(this.center.x-doubleRadius-1),Mth.floor(this.center.y-doubleRadius-1),Mth.floor(this.center.z-doubleRadius-1),
 +                         Mth.floor(this.center.x+doubleRadius+1),Mth.floor(this.center.y+doubleRadius+1),Mth.floor(this.center.z+doubleRadius+1)), entity -> entity.isAlive()&&!entity.isSpectator());
 +            return List.copyOf(queried);
-+        }).thenCompose(entities -> {
++        }).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(entities -> {
 +            java.util.concurrent.CompletableFuture<Void> sequence=java.util.concurrent.CompletableFuture.completedFuture(null);
-+            for (Entity entity : entities) sequence=sequence.thenCompose(ignored -> this.carpetImpactAsync(entity,entities));
++            for (Entity entity : entities) sequence=sequence.thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored -> this.carpetImpactAsync(entity,entities)));
 +            return sequence;
-+        });
++        }));
 +    }
 +    private java.util.concurrent.CompletableFuture<Void> carpetImpactAsync(Entity entity,List<Entity> entities) {
 +        return carpet.script.external.ScarpetExplosionActors.admitExplosionTarget(entity, () -> this.carpetAcceptedImpactAsync(entity,entities));
@@ -12724,28 +12724,28 @@ index f720686163d673ca58b10827aad444e21bdd3669..6e7fb55543a21c7f48180c7bfb26e138
 +                double dist=Math.sqrt(entity.distanceToSqr(this.center))/(this.radius*2.0F); if (dist>1) return null;
 +                Vec3 origin=entity instanceof PrimedTnt ? entity.position() : entity.getEyePosition();
 +                return new CarpetImpact(entity,dist,origin.subtract(this.center).normalize(),this.damageCalculator.shouldDamageEntity(this,entity),this.damageCalculator.getKnockbackMultiplier(entity),0);
-+            }))).thenCompose(initial -> {
++            }))).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(initial -> {
 +                if (initial==null) return java.util.concurrent.CompletableFuture.completedFuture(null);
 +                var density=!initial.damage()&&initial.knockbackMultiplier()==0 ? java.util.concurrent.CompletableFuture.completedFuture(0F) : carpet.script.external.ScarpetExplosionDensity.compute(this,entity);
-+                return density.thenCompose(exposure -> {
++                return density.thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(exposure -> {
 +                    var impact=new CarpetImpact(entity,initial.distance(),initial.direction(),initial.damage(),initial.knockbackMultiplier(),exposure);
 +                    return (impact.damage() ? carpet.script.external.ScarpetAttribution.teamsAllowDamage(this.source,entity) : java.util.concurrent.CompletableFuture.completedFuture(false))
-+                        .thenCompose(allowed -> {
++                        .thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(allowed -> {
 +                            if (allowed && entity instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragonPart) return java.util.concurrent.CompletableFuture.completedFuture(null);
 +                            java.util.concurrent.CompletableFuture<Void> damage;
 +                            if (!allowed) damage=java.util.concurrent.CompletableFuture.completedFuture(null);
 +                            else if (entity instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) {
 +                                damage=java.util.concurrent.CompletableFuture.completedFuture(null);
-+                                for (var part : dragon.getSubEntities()) if (entities.contains(part)) damage=damage.thenCompose(ignored -> this.carpetDamageAsync(part,dragon,exposure));
++                                for (var part : dragon.getSubEntities()) if (entities.contains(part)) damage=damage.thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored -> this.carpetDamageAsync(part,dragon,exposure)));
 +                            } else damage=this.carpetDamageAsync(entity,entity,exposure);
-+                            return damage.thenCompose(ignored -> carpet.script.external.ScarpetExplosionActors.entity(entity, () ->
++                            return damage.thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored -> carpet.script.external.ScarpetExplosionActors.entity(entity, () ->
 +                                carpet.script.external.ScarpetNativeWork.recoverGuestValue(carpet.script.external.ScarpetNativeWork.<Void>observeNative(entity, () -> {
 +                                    if (!allowed || !entity.lastDamageCancelled) this.carpetPostImpact(impact);
 +                                    return null;
-+                                })))).thenCompose(completed -> completed);
-+                        });
-+                });
-+            });
++                                }))))).thenCompose(completed -> completed);
++                        }));
++                }));
++            }));
 +    }
 +    private java.util.concurrent.CompletableFuture<Void> carpetDamageAsync(Entity victim,Entity outcomeOwner,float exposure) {
 +        return carpet.script.external.ScarpetExplosionActors.currentAttribution(this).thenCompose(attribution ->

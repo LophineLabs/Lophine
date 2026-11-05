@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 package carpet.script.external;
 
+import ca.spottedleaf.moonrise.common.util.TickThread;
 import ca.spottedleaf.moonrise.patches.collisions.CollisionUtil;
 import fun.bm.lophine.carpet.CarpetRegionLease;
 import io.papermc.paper.threadedregions.TickRegionScheduler;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
@@ -52,15 +54,22 @@ public final class ScarpetExplosionDensity {
         final Long2ObjectOpenHashMap<Entry> blocks = new Long2ObjectOpenHashMap<>();
         final Long2ObjectOpenHashMap<VoxelShape> shapeUpdates = new Long2ObjectOpenHashMap<>();
         final int height, minY;
+        final Function<BlockPos, Entry> readOwned;
 
-        Snapshot(int height, int minY) {
+        Snapshot(int height, int minY, Function<BlockPos, Entry> readOwned) {
             this.height = height;
             this.minY = minY;
+            this.readOwned = readOwned;
         }
 
         Entry entry(BlockPos position) {
-            Entry found = this.blocks.get(position.asLong());
-            if (found == null) throw new Missing(position);
+            long key = position.asLong();
+            Entry found = this.blocks.get(key);
+            if (found == null) {
+                found = this.readOwned.apply(position);
+                if (found == null) throw new Missing(position);
+                this.blocks.put(key, found);
+            }
             return found;
         }
 
@@ -270,12 +279,14 @@ public final class ScarpetExplosionDensity {
     public static CompletableFuture<Float> compute(ServerExplosion explosion, Entity target) {
         // One immutable geometry snapshot, as in the native synchronous getSeenFraction.
         // Chasing a moving bounding box across yielded ticks would never terminate.
-        CompletableFuture<Float> actual = ScarpetExplosionActors.entity(target, target::getBoundingBox).thenCompose(bounds ->
+        CompletableFuture<Float> actual = ScarpetExplosionActors.entity(target, target::getBoundingBox).thenCompose(ScarpetRuntime.captureNativeFunction(bounds ->
                 ScarpetExplosionActors.world(explosion.level(), BlockPos.containing(explosion.center()), () ->
-                        explosion.carpetCachedDensity(bounds)).thenCompose(cached -> {
+                        explosion.carpetCachedDensity(bounds)).thenCompose(ScarpetRuntime.captureNativeFunction(cached -> {
                     if (cached != null) return CompletableFuture.completedFuture(cached);
-                    Snapshot snapshot = new Snapshot(explosion.level().getHeight(), explosion.level().getMinY());
                     Backend backend = new NativeBackend(explosion, target, bounds);
+                    BlockPos center = BlockPos.containing(explosion.center());
+                    Snapshot snapshot = new Snapshot(explosion.level().getHeight(), explosion.level().getMinY(),
+                            position -> readOwned(explosion, center, position));
                     CollisionUtil.LazyEntityCollisionContext[] context = new CollisionUtil.LazyEntityCollisionContext[1];
                     var job = new Job(new ScarpetExplosionSampler(bounds, explosion.center()), snapshot, backend, (from, to, position) -> {
                         Entry entry = snapshot.entry(position);
@@ -292,9 +303,25 @@ public final class ScarpetExplosionDensity {
                     });
                     job.start();
                     return job.result;
-                }));
+                }))));
         ScarpetNativeWork.record(actual);
         return ScarpetNativeWork.trackNative(explosion.level().getServer(), actual);
+    }
+
+    // The current target actor can also fill its snapshot when it owns the explosion
+    // cache and the complete loaded footprint between the center and the requested block.
+    // A foreign or unloaded footprint still goes through the ticket-backed lease.
+    static Entry readOwned(ServerExplosion explosion, BlockPos center, BlockPos position) {
+        var level = explosion.level();
+        int minX = Math.min(center.getX(), position.getX()) >> 4, maxX = Math.max(center.getX(), position.getX()) >> 4;
+        int minZ = Math.min(center.getZ(), position.getZ()) >> 4, maxZ = Math.max(center.getZ(), position.getZ()) >> 4;
+        if (!TickThread.isTickThreadFor(level, minX, minZ, maxX, maxZ)) return null;
+        for (int x = minX; x <= maxX; ++x) {
+            for (int z = minZ; z <= maxZ; ++z) {
+                if (level.getChunkIfLoaded(x, z) == null) return null;
+            }
+        }
+        return explosion.carpetCollisionEntry(position);
     }
 
     private record NativeBackend(ServerExplosion explosion, Entity target,
