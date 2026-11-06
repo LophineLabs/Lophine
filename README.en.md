@@ -55,8 +55,8 @@ If you want to experience the latest features, you can build it yourself followi
 git clone https://github.com/LophineLabs/Lophine.git
 cd Lophine
 
-# Apply patches and build Paperclip JAR
-./gradlew applyAllPatches && ./gradlew createPaperclipJar
+# Apply patches and build distributable JAR
+./gradlew applyAllPatches && ./gradlew createMorninggloryclipJar
 ```
 
 After building, you can find the generated JAR file in the `lophine-server/build/libs` directory.

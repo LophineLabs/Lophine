@@ -1,6 +1,26 @@
 --- a/folia-server/build.gradle.kts
 +++ b/folia-server/build.gradle.kts
-@@ -7,15 +_,16 @@
+@@ -1,21 +_,36 @@
+ import io.papermc.fill.model.BuildChannel
+ import io.papermc.paperweight.attribute.DevBundleOutput
+ import io.papermc.paperweight.util.*
++import java.net.URI
++import java.net.http.HttpClient
++import java.net.http.HttpRequest
++import java.net.http.HttpResponse
++import java.nio.file.Files
++import java.nio.file.StandardCopyOption
++import java.security.MessageDigest
++import java.time.Duration
+ import java.time.Instant
++import java.util.HexFormat
++import java.util.concurrent.Callable
++import java.util.concurrent.Executors
++import java.util.zip.ZipEntry
++import java.util.zip.ZipFile
++import java.util.zip.ZipOutputStream
+ 
+ plugins {
      `java-library`
      `maven-publish`
      idea
@@ -149,3 +169,276 @@
  
  // Compile tests with -parameters for better junit parameterized test names
  tasks.compileTestJava {
+@@ -366,6 +_,13 @@
+     classpath(tasks.createPaperclipJar.flatMap { it.outputZip })
+     mainClass.set(null as String?)
+ }
++// Lophine start - Slim paperclip jar
++tasks.registerRunTask("runMorninggloryclip") {
++    description = "Spin up a test server from the slim MorninggloryClip jar"
++    classpath(tasks.named<CreateMorninggloryclipJar>("createMorninggloryclipJar").flatMap { it.outputZip })
++    mainClass.set(null as String?)
++}
++// Lophine end - Slim paperclip jar
+ 
+ fill {
+     project("folia")
+@@ -377,9 +_,257 @@
+ 
+         downloads {
+             register("server:default") {
+-                file = tasks.createPaperclipJar.flatMap { it.outputZip }
++                file = tasks.named<CreateMorninggloryclipJar>("createMorninggloryclipJar").flatMap { it.outputZip } // Lophine - Slim paperclip jar
+                 nameResolver.set { project, _, version, build -> "$project-$version-$build.jar" }
+             }
+         }
+     }
+ }
++
++// Lophine start - Slim paperclip jar
++abstract class CreateMorninggloryclipJar : DefaultTask() {
++    @get:InputFile
++    @get:PathSensitive(PathSensitivity.NONE)
++    abstract val inputJar: RegularFileProperty
++
++    @get:Input
++    abstract val repositories: ListProperty<String>
++
++    @get:OutputFile
++    abstract val outputZip: RegularFileProperty
++
++    @get:Internal
++    abstract val cacheDir: DirectoryProperty
++
++    private class Lib(val sha256: String, val id: String, val path: String, val line: String) {
++        fun normalizedLine(): String {
++            if (!path.endsWith(".jar")) return line
++            val parts = id.split(":")
++            val normalizedId = when (parts.size) {
++                3 -> "$id:jar"
++                4 -> "${parts[0]}:${parts[1]}:${parts[2]}:jar:${parts[3]}"
++                else -> id
++            }
++            return "$sha256\t$normalizedId\t$path"
++        }
++    }
++
++    private sealed interface Check {
++        data class Found(val repository: String) : Check
++        data object Missing : Check
++        data class Failed(val reason: String) : Check
++    }
++
++    private fun digest(algorithm: String, bytes: ByteArray): String =
++        HexFormat.of().formatHex(MessageDigest.getInstance(algorithm).digest(bytes))
++
++    private fun isChina(client: HttpClient): Boolean {
++        val apis = listOf(
++            "https://ipinfo.io/country" to { body: String -> body.trim() },
++            "http://ip-api.com/json/?fields=country" to { body: String ->
++                Regex("\"country\"\\s*:\\s*\"([^\"]+)\"").find(body)?.groupValues?.get(1) ?: ""
++            },
++            "https://api.ip.sb/geoip" to { body: String ->
++                Regex("\"country\"\\s*:\\s*\"([^\"]+)\"").find(body)?.groupValues?.get(1) ?: ""
++            },
++        )
++        for ((url, parse) in apis) {
++            try {
++                val request = HttpRequest.newBuilder(URI.create(url))
++                    .timeout(Duration.ofSeconds(5))
++                    .GET()
++                    .build()
++                val response = client.send(request, HttpResponse.BodyHandlers.ofString())
++                if (response.statusCode() in 200..299) {
++                    val country = parse(response.body())
++                    if (country.isNotBlank()) {
++                        return country.equals("China", ignoreCase = true) ||
++                            country.equals("CN", ignoreCase = true) ||
++                            country.equals("PRC", ignoreCase = true)
++                    }
++                }
++            } catch (_: Exception) {
++            }
++        }
++        return false
++    }
++
++    private fun resolveRepositories(client: HttpClient): List<String> {
++        val central = "https://repo1.maven.org/maven2/"
++        val centralCn = "https://maven.aliyun.com/repository/central/"
++        return if (isChina(client)) {
++            listOf(centralCn) + repositories.get() + listOf(central)
++        } else {
++            listOf(central) + repositories.get()
++        }
++    }
++
++    private fun fetch(client: HttpClient, url: String): ByteArray? {
++        var failure: Exception? = null
++        repeat(3) { attempt ->
++            if (attempt > 0) Thread.sleep(1000L * attempt)
++            try {
++                val request = HttpRequest.newBuilder(URI.create(url))
++                    .timeout(Duration.ofSeconds(60))
++                    .header("User-Agent", "Lophine-Build")
++                    .GET()
++                    .build()
++                val response = client.send(request, HttpResponse.BodyHandlers.ofByteArray())
++                when (response.statusCode()) {
++                    200 -> return response.body()
++                    403, 404, 410 -> return null
++                    else -> failure = IllegalStateException("HTTP ${response.statusCode()}")
++                }
++            } catch (e: Exception) {
++                failure = e
++            }
++        }
++        throw IllegalStateException("Failed to fetch $url: ${failure?.message}", failure)
++    }
++
++    private fun check(
++        client: HttpClient,
++        activeRepositories: List<String>,
++        lib: Lib,
++        content: ByteArray,
++        cache: java.nio.file.Path
++    ): Check {
++        val marker = cache.resolve("${lib.sha256}.repo")
++        if (Files.isRegularFile(marker)) {
++            return Check.Found("cache (${Files.readString(marker).trim()})")
++        }
++
++        val sha1 = digest("SHA-1", content)
++        val failures = mutableListOf<String>()
++        for (repository in activeRepositories) {
++            val url = repository.trimEnd('/') + "/" + lib.path
++            try {
++                // Compare the published checksum first so the whole jar doesn't need to be downloaded
++                val remoteSha1 = fetch(client, "$url.sha1")?.toString(Charsets.UTF_8)?.trim()?.split(Regex("\\s+"))?.firstOrNull()?.lowercase()
++                if (remoteSha1 != null && remoteSha1.matches(Regex("[0-9a-f]{40}"))) {
++                    if (remoteSha1 == sha1) {
++                        Files.writeString(marker, repository)
++                        return Check.Found(repository)
++                    }
++                    continue
++                }
++                val remote = fetch(client, url) ?: continue
++                if (digest("SHA-256", remote) == lib.sha256) {
++                    Files.writeString(marker, repository)
++                    return Check.Found(repository)
++                }
++            } catch (e: Exception) {
++                failures += "$repository: ${e.message}"
++            }
++        }
++        return if (failures.isEmpty()) Check.Missing else Check.Failed(failures.joinToString("; "))
++    }
++
++    @TaskAction
++    fun create() {
++        val input = inputJar.get().asFile
++        val output = outputZip.get().asFile.toPath()
++        val temp = output.resolveSibling(output.fileName.toString() + ".tmp")
++        val cache = cacheDir.get().asFile.toPath()
++        Files.createDirectories(output.parent)
++        Files.createDirectories(cache)
++
++        ZipFile(input).use { zip ->
++            val listEntry = zip.getEntry("META-INF/libraries.list")
++                ?: throw GradleException("META-INF/libraries.list not found in $input")
++            val libs = zip.getInputStream(listEntry).bufferedReader().readLines().filter { it.isNotBlank() }.map {
++                val parts = it.split("\t")
++                if (parts.size != 3) throw GradleException("Malformed libraries.list line: $it")
++                Lib(parts[0].lowercase(), parts[1], parts[2], it)
++            }
++
++            // Only the libraries bundled as jars; the others come from the vanilla jar or patches
++            val bundled = libs.mapNotNull { lib -> zip.getEntry("META-INF/libraries/" + lib.path)?.let { lib to it } }
++
++            val client = HttpClient.newBuilder()
++                .followRedirects(HttpClient.Redirect.NORMAL)
++                .connectTimeout(Duration.ofSeconds(15))
++                .build()
++            val activeRepositories = resolveRepositories(client)
++            val executor = Executors.newFixedThreadPool(8)
++            val results = try {
++                bundled.map { (lib, entry) ->
++                    lib to executor.submit(Callable {
++                        val content = zip.getInputStream(entry).use { it.readBytes() }
++                        if (digest("SHA-256", content) != lib.sha256) {
++                            Check.Failed("bundled file doesn't match libraries.list")
++                        } else {
++                            check(client, activeRepositories, lib, content, cache)
++                        }
++                    })
++                }.map { (lib, future) -> lib to future.get() }
++            } finally {
++                executor.shutdownNow()
++            }
++
++            val removedLibs = results.filter { it.second is Check.Found }.mapTo(HashSet()) { it.first }
++            val removedNames = removedLibs.mapTo(HashSet()) { "META-INF/libraries/" + it.path }
++
++            // Directories that still contain a file
++            val keptDirs = HashSet<String>()
++            for (entry in zip.entries()) {
++                if (entry.isDirectory || entry.name in removedNames) continue
++                var index = entry.name.lastIndexOf('/')
++                while (index > 0 && keptDirs.add(entry.name.substring(0, index + 1))) {
++                    index = entry.name.lastIndexOf('/', index - 1)
++                }
++            }
++
++            ZipOutputStream(Files.newOutputStream(temp).buffered()).use { out ->
++                for (entry in zip.entries()) {
++                    if (entry.name in removedNames) continue
++                    if (entry.isDirectory && entry.name.startsWith("META-INF/libraries/") && entry.name !in keptDirs) continue
++                    if (entry.name == "META-INF/libraries.list") {
++                        val text = libs.joinToString("") { lib ->
++                            (if (lib in removedLibs) lib.normalizedLine() else lib.line) + "\n"
++                        }
++                        out.putNextEntry(ZipEntry(entry.name).also { it.time = entry.time })
++                        out.write(text.toByteArray(Charsets.UTF_8))
++                        out.closeEntry()
++                        continue
++                    }
++                    out.putNextEntry(ZipEntry(entry.name).also { it.time = entry.time })
++                    if (!entry.isDirectory) {
++                        zip.getInputStream(entry).use { it.transferTo(out) }
++                    }
++                    out.closeEntry()
++                }
++            }
++            Files.move(temp, output, StandardCopyOption.REPLACE_EXISTING)
++
++            for ((lib, result) in results.sortedBy { it.first.id }) {
++                when (result) {
++                    is Check.Found -> logger.info("createMorninggloryclipJar: removed ${lib.id} <- ${result.repository}")
++                    Check.Missing -> logger.info("createMorninggloryclipJar: kept ${lib.id}")
++                    is Check.Failed -> logger.warn("createMorninggloryclipJar: kept ${lib.id}, ${result.reason}")
++                }
++            }
++            fun mb(bytes: Long) = "%.2f MB".format(bytes / 1024.0 / 1024.0)
++            logger.lifecycle(
++                "createMorninggloryclipJar: removed ${removedLibs.size} libraries, kept ${bundled.size - removedLibs.size}; " +
++                    "${mb(input.length())} -> ${mb(Files.size(output))}"
++            )
++        }
++    }
++}
++
++tasks.register<CreateMorninggloryclipJar>("createMorninggloryclipJar") {
++    group = "bundling"
++    description = "Build a runnable paperclip jar without the libraries downloadable from maven repositories"
++    inputJar.set(tasks.createPaperclipJar.flatMap { it.outputZip })
++    repositories.set(
++        listOf(
++            paperMavenPublicUrl,
++            bacteriawaMavenPublicUrl,
++            "https://repo.spongepowered.org/maven/",
++        )
++    )
++    outputZip.set(layout.buildDirectory.file("libs/${rootProject.name}-morninggloryclip-${project.version}.jar"))
++    cacheDir.set(layout.buildDirectory.dir("morninggloryclip/cache"))
++}
++// Lophine end - Slim paperclip jar

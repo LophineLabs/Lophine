@@ -10,7 +10,7 @@ mcversion=$(prop mcVersion)
 release=$(prop release)
 pushRepo=$(prop pushRepo)
 release_tag="$mcversion-$commitid"
-jarName="$project_id-$mcversion-paperclip.jar"
+jarName="$project_id-$mcversion-morninggloryclip.jar"
 jarName_dir="lophine-server/build/libs/$jarName"
 
 flag_push_repo=false
@@ -34,11 +34,11 @@ elif [ "$pushRepo" = "false" ]; then
   flag_push_repo=false
 fi
 
-actual_jar=$(ls lophine-server/build/libs/$project_id-paperclip-*.jar 2>/dev/null | head -n 1)
+actual_jar=$(ls lophine-server/build/libs/$project_id-morninggloryclip-*.jar 2>/dev/null | head -n 1)
 if [ -n "$actual_jar" ]; then
   mv "$actual_jar" "$jarName_dir"
 else
-  echo "Warning: No paperclip jar found to rename"
+  echo "Warning: No morninggloryclip jar found to rename"
 fi
 
 echo "project_id=$project_id" >> $GITHUB_ENV
