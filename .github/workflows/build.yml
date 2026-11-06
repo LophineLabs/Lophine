@@ -77,14 +77,14 @@ jobs:
       - name: Apply All Patches
         run: ./gradlew applyAllPatches
 
-      - name: Build Paperclip Jar
-        run: ./gradlew createPaperclipJar
+      - name: Build MorninggloryClip Jar
+        run: ./gradlew createMorninggloryclipJar
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v7
         with:
           name: ${{ env.project_id_b }} CI Artifacts
-          path: lophine-server/build/libs/*-paperclip-*.jar
+          path: lophine-server/build/libs/*-morninggloryclip-*.jar
 
       - name: Set Environment
         if: github.event_name != 'pull_request'

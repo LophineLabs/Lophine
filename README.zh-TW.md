@@ -55,8 +55,8 @@ CNB 與 GitHub 的對應版本基於相同的 Git Commit。中國大陸使用者
 git clone https://github.com/LophineLabs/Lophine.git
 cd Lophine
 
-# 套用 patch 並建置 Paperclip JAR
-./gradlew applyAllPatches && ./gradlew createPaperclipJar
+# 套用 patch 並建置用於分發的 JAR
+./gradlew applyAllPatches && ./gradlew createMorninggloryclipJar
 ```
 
 建置完成後，你可以在 `lophine-server/build/libs` 目錄中找到產生的 JAR 檔案。
