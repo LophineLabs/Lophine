@@ -1,6 +1,6 @@
 --- a/folia-server/build.gradle.kts
 +++ b/folia-server/build.gradle.kts
-@@ -1,21 +_,36 @@
+@@ -1,21 +_,40 @@
  import io.papermc.fill.model.BuildChannel
  import io.papermc.paperweight.attribute.DevBundleOutput
  import io.papermc.paperweight.util.*
@@ -16,8 +16,12 @@
 +import java.util.HexFormat
 +import java.util.concurrent.Callable
 +import java.util.concurrent.Executors
++import java.io.ByteArrayOutputStream
++import java.util.zip.CRC32
++import java.util.zip.Deflater
 +import java.util.zip.ZipEntry
 +import java.util.zip.ZipFile
++import java.util.zip.ZipInputStream
 +import java.util.zip.ZipOutputStream
  
  plugins {
@@ -183,19 +187,24 @@
  
  fill {
      project("folia")
-@@ -377,9 +_,257 @@
- 
-         downloads {
-             register("server:default") {
--                file = tasks.createPaperclipJar.flatMap { it.outputZip }
-+                file = tasks.named<CreateMorninggloryclipJar>("createMorninggloryclipJar").flatMap { it.outputZip } // Lophine - Slim paperclip jar
-                 nameResolver.set { project, _, version, build -> "$project-$version-$build.jar" }
-             }
+@@ -383,3 +_,425 @@
          }
      }
  }
 +
 +// Lophine start - Slim paperclip jar
++tasks.jar {
++    val vanillaServerJar = tasks.extractFromBundler.flatMap { it.serverJar }
++    val outputJar = archiveFile
++    inputs.file(vanillaServerJar).withPathSensitivity(PathSensitivity.NONE)
++    doLast {
++        CreateMorninggloryclipJar.optimizeServerJar(
++            vanillaServerJar.get().asFile.toPath(),
++            outputJar.get().asFile.toPath()
++        )
++    }
++}
++
 +abstract class CreateMorninggloryclipJar : DefaultTask() {
 +    @get:InputFile
 +    @get:PathSensitive(PathSensitivity.NONE)
@@ -209,6 +218,147 @@
 +
 +    @get:Internal
 +    abstract val cacheDir: DirectoryProperty
++
++    companion object {
++        private val SIGNATURE_FILES = setOf(
++            "META-INF/MOJANGCS.SF",
++            "META-INF/MOJANGCS.RSA",
++            "META-INF/MOJANGCS.DSA",
++        )
++
++        private fun isBinaryResource(name: String): Boolean =
++            name.endsWith(".class") || name.endsWith(".png") || name.endsWith(".nbt") || name.endsWith(".dat")
++
++        private fun normalizeText(bytes: ByteArray): ByteArray {
++            val text = String(bytes, Charsets.ISO_8859_1).replace("\r\n", "\n")
++            var end = text.length
++            while (end > 0 && text[end - 1] == '\n') end--
++            return text.substring(0, end).toByteArray(Charsets.ISO_8859_1)
++        }
++
++        fun optimizeServerJar(vanillaJar: java.nio.file.Path, serverJar: java.nio.file.Path) {
++            val serverEntries = LinkedHashMap<String, ByteArray>()
++            val serverTimes = HashMap<String, Long>()
++            ZipFile(serverJar.toFile()).use { zs ->
++                for (entry in zs.entries()) {
++                    if (entry.isDirectory || entry.name in SIGNATURE_FILES) continue
++                    serverEntries[entry.name] = zs.getInputStream(entry).use { it.readBytes() }
++                    serverTimes[entry.name] = entry.time
++                }
++            }
++
++            val temp = serverJar.resolveSibling("${serverJar.fileName}.tmp")
++            val written = HashSet<String>()
++            val writtenDirs = HashSet<String>()
++
++            fun writeParentDirs(out: ZipOutputStream, entryName: String, time: Long) {
++                var slash = entryName.indexOf('/')
++                while (slash > 0) {
++                    val dir = entryName.substring(0, slash + 1)
++                    if (writtenDirs.add(dir)) {
++                        out.putNextEntry(ZipEntry(dir).also {
++                            it.time = time
++                            it.method = ZipEntry.STORED
++                            it.size = 0
++                            it.compressedSize = 0
++                            it.crc = 0
++                        })
++                        out.closeEntry()
++                    }
++                    slash = entryName.indexOf('/', slash + 1)
++                }
++            }
++
++            ZipFile(vanillaJar.toFile()).use { zv ->
++                ZipOutputStream(Files.newOutputStream(temp).buffered()).use { out ->
++                    for (ve in zv.entries()) {
++                        if (ve.isDirectory) continue
++                        val name = ve.name
++                        val sBytes = serverEntries[name] ?: continue
++                        val vBytes = zv.getInputStream(ve).use { it.readBytes() }
++                        val matches = vBytes.contentEquals(sBytes) ||
++                            (!isBinaryResource(name) && normalizeText(vBytes).contentEquals(normalizeText(sBytes)))
++                        if (matches) {
++                            writeParentDirs(out, name, ve.time)
++                            out.putNextEntry(ZipEntry(name).also {
++                                it.time = ve.time
++                                it.method = ZipEntry.DEFLATED
++                            })
++                            out.write(vBytes)
++                            out.closeEntry()
++                            written.add(name)
++                        }
++                    }
++
++                    val crc = CRC32()
++                    for (name in serverEntries.keys.filter { it !in written }.sorted()) {
++                        val data = serverEntries.getValue(name)
++                        val time = serverTimes.getOrDefault(name, 0L)
++                        writeParentDirs(out, name, time)
++                        crc.reset()
++                        crc.update(data)
++                        out.putNextEntry(ZipEntry(name).also {
++                            it.time = time
++                            it.method = ZipEntry.STORED
++                            it.size = data.size.toLong()
++                            it.compressedSize = data.size.toLong()
++                            it.crc = crc.value
++                        })
++                        out.write(data)
++                        out.closeEntry()
++                    }
++                }
++            }
++            Files.move(temp, serverJar, StandardCopyOption.REPLACE_EXISTING)
++        }
++
++        fun repackStoredJar(jarBytes: ByteArray): ByteArray {
++            val outBuffer = ByteArrayOutputStream(jarBytes.size * 2)
++            val entries = ArrayList<Pair<ZipEntry, ByteArray>>()
++            ZipInputStream(jarBytes.inputStream()).use { zin ->
++                while (true) {
++                    val entry = zin.nextEntry ?: break
++                    if (!entry.isDirectory) {
++                        entries.add(entry to zin.readBytes())
++                    }
++                }
++            }
++            entries.sortBy { it.first.name }
++            val writtenDirs = HashSet<String>()
++            val crc = CRC32()
++            ZipOutputStream(outBuffer).use { zout ->
++                for ((entry, data) in entries) {
++                    var slash = entry.name.indexOf('/')
++                    while (slash > 0) {
++                        val dir = entry.name.substring(0, slash + 1)
++                        if (writtenDirs.add(dir)) {
++                            zout.putNextEntry(ZipEntry(dir).also {
++                                it.time = entry.time
++                                it.method = ZipEntry.STORED
++                                it.size = 0
++                                it.compressedSize = 0
++                                it.crc = 0
++                            })
++                            zout.closeEntry()
++                        }
++                        slash = entry.name.indexOf('/', slash + 1)
++                    }
++                    crc.reset()
++                    crc.update(data)
++                    zout.putNextEntry(ZipEntry(entry.name).also {
++                        it.time = entry.time
++                        it.method = ZipEntry.STORED
++                        it.size = data.size.toLong()
++                        it.compressedSize = data.size.toLong()
++                        it.crc = crc.value
++                    })
++                    zout.write(data)
++                    zout.closeEntry()
++                }
++            }
++            return outBuffer.toByteArray()
++        }
++    }
 +
 +    private class Lib(val sha256: String, val id: String, val path: String, val line: String) {
 +        fun normalizedLine(): String {
@@ -379,6 +529,16 @@
 +            val removedLibs = results.filter { it.second is Check.Found }.mapTo(HashSet()) { it.first }
 +            val removedNames = removedLibs.mapTo(HashSet()) { "META-INF/libraries/" + it.path }
 +
++            // Repack kept libraries with STORED entries so the outer jar solid-compresses them
++            val repackedLibs = HashMap<String, ByteArray>()
++            val repackedHashes = HashMap<Lib, String>()
++            for ((lib, entry) in bundled) {
++                if (lib in removedLibs || !lib.path.endsWith(".jar")) continue
++                val repacked = repackStoredJar(zip.getInputStream(entry).use { it.readBytes() })
++                repackedLibs[entry.name] = repacked
++                repackedHashes[lib] = digest("SHA-256", repacked)
++            }
++
 +            // Directories that still contain a file
 +            val keptDirs = HashSet<String>()
 +            for (entry in zip.entries()) {
@@ -390,12 +550,18 @@
 +            }
 +
 +            ZipOutputStream(Files.newOutputStream(temp).buffered()).use { out ->
++                out.setLevel(Deflater.BEST_COMPRESSION)
 +                for (entry in zip.entries()) {
 +                    if (entry.name in removedNames) continue
 +                    if (entry.isDirectory && entry.name.startsWith("META-INF/libraries/") && entry.name !in keptDirs) continue
 +                    if (entry.name == "META-INF/libraries.list") {
 +                        val text = libs.joinToString("") { lib ->
-+                            (if (lib in removedLibs) lib.normalizedLine() else lib.line) + "\n"
++                            val line = when {
++                                lib in removedLibs -> lib.normalizedLine()
++                                lib in repackedHashes -> "${repackedHashes.getValue(lib)}\t${lib.id}\t${lib.path}"
++                                else -> lib.line
++                            }
++                            line + "\n"
 +                        }
 +                        out.putNextEntry(ZipEntry(entry.name).also { it.time = entry.time })
 +                        out.write(text.toByteArray(Charsets.UTF_8))
@@ -404,7 +570,12 @@
 +                    }
 +                    out.putNextEntry(ZipEntry(entry.name).also { it.time = entry.time })
 +                    if (!entry.isDirectory) {
-+                        zip.getInputStream(entry).use { it.transferTo(out) }
++                        val repacked = repackedLibs[entry.name]
++                        if (repacked != null) {
++                            out.write(repacked)
++                        } else {
++                            zip.getInputStream(entry).use { it.transferTo(out) }
++                        }
 +                    }
 +                    out.closeEntry()
 +                }
