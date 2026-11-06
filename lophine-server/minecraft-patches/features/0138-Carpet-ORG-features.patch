@@ -739,10 +739,10 @@ index 279b5072596c062a7c800510ed914a9df8ce0698..c625c12d85d81ec0c5447a9b6b4944bc
          // Paper start - Implement click callbacks with custom click action
          final io.papermc.paper.event.player.PaperPlayerCustomClickEvent event = new io.papermc.paper.event.player.PaperPlayerCustomClickEvent(io.papermc.paper.adventure.PaperAdventure.asAdventure(packet.id()), this.getApiConnection(), packet.payload().orElse(null));
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 2c50a8109d49306eb11f5960e9b359b64442b75b..3d7bac7c7bd24fef7744f93bdf7204a5b0ac4d57 100644
+index 9f7748037f172fa6622ab3755fa610e33861ac87..2a385dba5e61e941512ff084d24e7ad4240ff892 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -890,7 +890,10 @@ public class ServerGamePacketListenerImpl
+@@ -892,7 +892,10 @@ public class ServerGamePacketListenerImpl
      public void handleBundleItemSelectedPacket(final ServerboundSelectBundleItemPacket packet) {
          PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());
          CraftEventFactory.callPlayerBundleItemSelectEvent(this.player, packet.slotId(), packet.selectedItemIndex()); // Paper - PlayerBundleItemSelectEvent
@@ -754,7 +754,7 @@ index 2c50a8109d49306eb11f5960e9b359b64442b75b..3d7bac7c7bd24fef7744f93bdf7204a5
      }
  
      @Override
-@@ -3891,11 +3894,13 @@ public class ServerGamePacketListenerImpl
+@@ -3903,11 +3906,13 @@ public class ServerGamePacketListenerImpl
              if (!this.player.containerMenu.stillValid(this.player)) {
                  LOGGER.debug("Player {} interacted with invalid menu {}", this.player, this.player.containerMenu);
              } else {
