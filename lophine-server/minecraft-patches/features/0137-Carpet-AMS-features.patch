@@ -285,10 +285,10 @@ index 083a82b5200a251e85f155d1df016cd8b4f18db5..04190db3ccb9bd8aed6e768a5afd4adf
      public static final TicketType PLUGIN = register("plugin", NO_TIMEOUT, FLAG_LOADING | FLAG_SIMULATION); // CraftBukkit
      public static final TicketType POST_TELEPORT = register("post_teleport", 5L, FLAG_LOADING | FLAG_SIMULATION); // Paper
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index f8b169dca169b8ba301d8633c8c9f856a9a9418d..2c50a8109d49306eb11f5960e9b359b64442b75b 100644
+index 277f8a0bbf526c74f33fc499cc76a9b0ce2dd21e..9f7748037f172fa6622ab3755fa610e33861ac87 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -4063,6 +4063,7 @@ public class ServerGamePacketListenerImpl
+@@ -4075,6 +4075,7 @@ public class ServerGamePacketListenerImpl
      @Override
      public void handleChangeGameMode(final ServerboundChangeGameModePacket packet) {
          PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());

@@ -1100,10 +1100,10 @@ index 650ce1664d54c0c2d309d1555a90f877e32de19b..1d9ac01724e3177b7c97907daad3ead3
  
      private static class Request {
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 3d7bac7c7bd24fef7744f93bdf7204a5b0ac4d57..15b21ab2ce0ee46f99ee12329f288addd6f017df 100644
+index 2a385dba5e61e941512ff084d24e7ad4240ff892..6a9d84cc53e51ad93dbd8634f4b36ee2d03569f2 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -1501,7 +1501,7 @@ public class ServerGamePacketListenerImpl
+@@ -1503,7 +1503,7 @@ public class ServerGamePacketListenerImpl
      @Override
      public void handleEntityTagQuery(final ServerboundEntityTagQueryPacket packet) {
          PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());
@@ -1112,7 +1112,7 @@ index 3d7bac7c7bd24fef7744f93bdf7204a5b0ac4d57..15b21ab2ce0ee46f99ee12329f288add
              Entity entity = this.player.level().getEntity(packet.getEntityId());
              if (entity != null) {
                  carpet.script.external.ScarpetNativeWork.record(carpet.script.external.ScarpetTagQueries.entity(this.player, entity,
-@@ -1555,10 +1555,15 @@ public class ServerGamePacketListenerImpl
+@@ -1557,10 +1557,15 @@ public class ServerGamePacketListenerImpl
      @Override
      public void handleBlockEntityTagQuery(final ServerboundBlockEntityTagQueryPacket packet) {
          PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());
@@ -1132,7 +1132,7 @@ index 3d7bac7c7bd24fef7744f93bdf7204a5b0ac4d57..15b21ab2ce0ee46f99ee12329f288add
          }
      }
  
-@@ -2995,7 +3000,8 @@ public class ServerGamePacketListenerImpl
+@@ -3007,7 +3012,8 @@ public class ServerGamePacketListenerImpl
  
          // CraftBukkit start - replaced with thread safe throttle
          // throttler.increment();
@@ -1142,7 +1142,7 @@ index 3d7bac7c7bd24fef7744f93bdf7204a5b0ac4d57..15b21ab2ce0ee46f99ee12329f288add
          // CraftBukkit end - replaced with thread safe throttle
              && !this.server.getPlayerList().isOp(this.player.nameAndId())
              && !this.server.isSingleplayerOwner(this.player.nameAndId())) {
-@@ -3963,7 +3969,9 @@ public class ServerGamePacketListenerImpl
+@@ -3975,7 +3981,9 @@ public class ServerGamePacketListenerImpl
                  if (io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.updateEquipmentOnPlayerActions) this.player.detectEquipmentUpdates(); // Paper - Force update attributes.
              } else if (drop && validData) {
                  if (this.dropSpamThrottler.isUnderThreshold()) {
@@ -1153,7 +1153,7 @@ index 3d7bac7c7bd24fef7744f93bdf7204a5b0ac4d57..15b21ab2ce0ee46f99ee12329f288add
                      this.player.drop(itemStack, true, Prediction.PREDICTED);
                  } else {
                      LOGGER.warn("Player {} was dropping items too fast in creative mode, ignoring.", this.player.getPlainTextName());
-@@ -4068,6 +4076,9 @@ public class ServerGamePacketListenerImpl
+@@ -4080,6 +4088,9 @@ public class ServerGamePacketListenerImpl
      @Override
      public void handleChangeGameMode(final ServerboundChangeGameModePacket packet) {
          PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());

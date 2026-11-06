@@ -6,8 +6,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
@@ -21,6 +23,18 @@ public final class CarpetBlockPredictionFence {
 
     private static final class State {
         final TreeMap<Integer, CompletableFuture<?>> pending = new TreeMap<>();
+        WeakReference<ServerPlayer> player = new WeakReference<>(null);
+        WeakReference<ServerLevel> world = new WeakReference<>(null);
+
+        // ClientLevel owns the prediction sequence; a different level/player is a new epoch.
+        // Weak references keep a value in STATES from retaining its weak connection key.
+        void ensureOwner(ServerGamePacketListenerImpl connection) {
+            if (this.player.get() != connection.player || this.world.get() != connection.player.level()) {
+                this.pending.clear();
+                this.player = new WeakReference<>(connection.player);
+                this.world = new WeakReference<>(connection.player.level());
+            }
+        }
     }
 
     private CarpetBlockPredictionFence() {
@@ -32,6 +46,7 @@ public final class CarpetBlockPredictionFence {
         State state = STATES.computeIfAbsent(connection, ignored -> new State());
         CompletableFuture<?> retained;
         synchronized (state) {
+            state.ensureOwner(connection);
             CompletableFuture<?> previous = state.pending.get(sequence);
             retained = previous == null || previous.isDone() ? actual : CompletableFuture.allOf(previous, actual);
             state.pending.put(sequence, retained);
@@ -48,6 +63,7 @@ public final class CarpetBlockPredictionFence {
         State state = STATES.get(connection);
         if (state == null) return requested;
         synchronized (state) {
+            state.ensureOwner(connection);
             return state.pending.isEmpty() || state.pending.firstKey() > requested
                     ? requested : state.pending.firstKey() - 1;
         }
