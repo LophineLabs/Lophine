@@ -101,7 +101,12 @@ public class ServuxLitematicsProtocol implements LeavesProtocol {
 
     @ProtocolHandler.PlayerJoin
     public static void onPlayerJoin(ServerPlayer player) {
-        sendMetaData(player);
+        if (ServuxProtocolConfig.litematicsEnabled && hasPermission(player)) {
+            // Clients may accept this announcement without sending a metadata request.
+            // Register first so the advertised connection can handle subsequent requests.
+            registeredPlayers.add(player.getUUID());
+            sendMetaData(player);
+        }
     }
 
     @ProtocolHandler.PlayerLeave

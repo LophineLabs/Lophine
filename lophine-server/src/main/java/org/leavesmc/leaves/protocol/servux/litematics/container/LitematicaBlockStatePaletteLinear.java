@@ -19,8 +19,8 @@ package org.leavesmc.leaves.protocol.servux.litematics.container;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.block.state.BlockState;
+import org.leavesmc.leaves.protocol.servux.litematics.utils.NbtUtils;
 
 import javax.annotation.Nullable;
 
