@@ -18,15 +18,37 @@
 package org.leavesmc.leaves.protocol.servux.litematics.utils;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class NbtUtils {
+
+    public static BlockState readBlockState(HolderGetter<Block> blocks, CompoundTag tag) {
+        if (tag.contains("Name")) {
+            // Litematica keeps its legacy palette schema independently of the vanilla NBT schema.
+            CompoundTag nativeTag = tag.copy();
+            nativeTag.put("id", tag.get("Name"));
+            tag.getCompound("Properties").ifPresent(properties -> nativeTag.put("properties", properties));
+            return net.minecraft.nbt.NbtUtils.readBlockState(blocks, nativeTag);
+        }
+        return net.minecraft.nbt.NbtUtils.readBlockState(blocks, tag);
+    }
+
+    public static CompoundTag writeBlockState(BlockState state) {
+        CompoundTag nativeTag = net.minecraft.nbt.NbtUtils.writeBlockState(state);
+        CompoundTag tag = new CompoundTag();
+        tag.put("Name", nativeTag.get("id"));
+        nativeTag.getCompound("properties").ifPresent(properties -> tag.put("Properties", properties));
+        return tag;
+    }
 
     public static void writeBlockPosToTag(Vec3i pos, CompoundTag tag) {
         tag.putInt("x", pos.getX());

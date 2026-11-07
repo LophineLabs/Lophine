@@ -27,7 +27,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -37,6 +36,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 import org.leavesmc.leaves.protocol.servux.ServuxProtocol;
 
 import java.util.*;
@@ -287,13 +287,13 @@ public final class ServuxLitematicaTasks {
         } finally {
             if (remaining.decrementAndGet() == 0) {
                 ACTIVE_TASKS.remove(player.getUUID(), cancelled);
-                MinecraftServer.getServer().execute(() -> {
+                player.getBukkitEntity().getScheduler().run(MinecraftInternalPlugin.INSTANCE, task -> {
                     if (player.connection != null) {
                         String result = failed.get() ? "stopped with an error" : cancelled.get() ? "cancelled" : "completed";
                         player.getBukkitEntity().sendActionBar(Component.text("Servux Litematica " + displayName + " task " + result,
                                 failed.get() ? NamedTextColor.RED : NamedTextColor.GREEN));
                     }
-                });
+                }, null);
             }
         }
     }
