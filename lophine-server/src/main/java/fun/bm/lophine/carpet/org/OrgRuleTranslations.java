@@ -1,6 +1,7 @@
 package fun.bm.lophine.carpet.org;
 
 import com.google.gson.JsonParser;
+import fun.bm.lophine.carpet.CarpetTranslationResources;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -21,37 +22,32 @@ public final class OrgRuleTranslations {
 
     private static Map<String, Map<String, String>> loadAll() {
         Map<String, Map<String, String>> languages = new HashMap<>();
-        for (String language : java.util.List.of("en_us", "fr_fr", "es_ar", "pt_br", "zh_cn", "zh_tw")) {
-            Map<String, String> entries = new HashMap<>();
-            for (String project : java.util.List.of("carpet", "tis", "org", "ams")) {
-                String root = "/assets/carpet/" + (project.equals("carpet") ? "lang" : project) + "/" + language;
-                try (InputStream json = OrgRuleTranslations.class.getResourceAsStream(root + ".json")) {
-                    if (json != null) {
-                        JsonParser.parseReader(new InputStreamReader(json, StandardCharsets.UTF_8)).getAsJsonObject()
-                                .entrySet().forEach(entry -> {
-                                    if (entry.getValue().isJsonPrimitive())
-                                        entries.putIfAbsent(entry.getKey(), entry.getValue().getAsString());
-                                });
+        for (var resource : CarpetTranslationResources.listAll("/assets/carpet", ".json", ".yml")) {
+            Map<String, String> entries = languages.computeIfAbsent(resource.language(), ignored -> new HashMap<>());
+            try (InputStream input = CarpetTranslationResources.open(resource.path())) {
+                if (resource.path().endsWith(".json")) {
+                    JsonParser.parseReader(new InputStreamReader(input, StandardCharsets.UTF_8)).getAsJsonObject()
+                            .entrySet().forEach(entry -> {
+                                if (entry.getValue().isJsonPrimitive())
+                                    entries.putIfAbsent(entry.getKey(), entry.getValue().getAsString());
+                            });
+                } else {
+                    var configuration = YamlConfiguration.loadConfiguration(new InputStreamReader(input, StandardCharsets.UTF_8));
+                    var section = configuration.getConfigurationSection("carpettisaddition.carpet_translations");
+                    if (section == null) {
+                        section = configuration.getConfigurationSection("carpetamsaddition.carpet_translations");
                     }
-                } catch (java.io.IOException exception) {
-                    throw new IllegalStateException("Unable to load bundled Carpet translations", exception);
-                }
-                try (InputStream yaml = OrgRuleTranslations.class.getResourceAsStream(root + ".yml")) {
-                    if (yaml != null) {
-                        var configuration = YamlConfiguration.loadConfiguration(new InputStreamReader(yaml, StandardCharsets.UTF_8));
-                        var section = configuration.getConfigurationSection(project.equals("tis") ? "carpettisaddition.carpet_translations" : "carpetamsaddition.carpet_translations");
-                        if (section != null) {
-                            for (String key : section.getKeys(true)) {
-                                if (section.isString(key)) entries.putIfAbsent("carpet." + key, section.getString(key));
-                            }
+                    if (section != null) {
+                        for (String key : section.getKeys(true)) {
+                            if (section.isString(key)) entries.putIfAbsent("carpet." + key, section.getString(key));
                         }
                     }
-                } catch (java.io.IOException exception) {
-                    throw new IllegalStateException("Unable to load bundled Carpet translations", exception);
                 }
+            } catch (java.io.IOException exception) {
+                throw new IllegalStateException("Unable to load bundled Carpet translations", exception);
             }
-            languages.put(language, Map.copyOf(entries));
         }
+        languages.replaceAll((language, entries) -> Map.copyOf(entries));
         return Map.copyOf(languages);
     }
 

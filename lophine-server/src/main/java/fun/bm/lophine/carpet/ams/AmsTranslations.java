@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 package fun.bm.lophine.carpet.ams;
 
+import fun.bm.lophine.carpet.CarpetTranslationResources;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
@@ -28,14 +29,12 @@ public final class AmsTranslations {
 
     private static Map<String, Map<String, String>> load() {
         Map<String, Map<String, String>> languages = new HashMap<>();
-        for (String language : new String[]{"en_us", "zh_cn", "zh_tw"}) {
-            String path = "/assets/carpet/ams/" + language + ".yml";
-            try (var input = AmsTranslations.class.getResourceAsStream(path)) {
-                if (input == null) throw new IllegalStateException("Missing AMS translation resource " + path);
+        for (var resource : CarpetTranslationResources.list("/assets/carpet/ams", ".yml")) {
+            try (var input = CarpetTranslationResources.open(resource.path())) {
                 var yaml = YamlConfiguration.loadConfiguration(new InputStreamReader(input, StandardCharsets.UTF_8));
                 Map<String, String> values = new HashMap<>();
                 flatten(yaml, "", values);
-                languages.put(language, Map.copyOf(values));
+                languages.put(resource.language(), Map.copyOf(values));
             } catch (java.io.IOException failure) {
                 throw new java.io.UncheckedIOException(failure);
             }

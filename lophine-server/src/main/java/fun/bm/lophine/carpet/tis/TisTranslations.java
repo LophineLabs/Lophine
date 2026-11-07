@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 package fun.bm.lophine.carpet.tis;
 
+import fun.bm.lophine.carpet.CarpetTranslationResources;
 import fun.bm.lophine.carpet.ams.AmsTranslations;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import net.minecraft.commands.CommandSourceStack;
@@ -30,17 +31,15 @@ public final class TisTranslations {
 
     private static Map<String, Map<String, String>> load() {
         Map<String, Map<String, String>> languages = new HashMap<>();
-        for (String language : new String[]{"en_us", "zh_cn", "zh_tw"}) {
-            String path = "/assets/carpet/tis/" + language + ".yml";
-            try (var input = TisTranslations.class.getResourceAsStream(path)) {
-                if (input == null) throw new IllegalStateException("Missing TIS translation resource " + path);
+        for (var resource : CarpetTranslationResources.list("/assets/carpet/tis", ".yml")) {
+            try (var input = CarpetTranslationResources.open(resource.path())) {
                 var yaml = new YamlConfiguration();
                 // Upstream uses "." as a leaf meaning its parent key, and also embeds dots in keys.
                 yaml.options().pathSeparator('\u0000');
                 yaml.load(new InputStreamReader(input, StandardCharsets.UTF_8));
                 Map<String, String> values = new HashMap<>();
                 flatten(yaml, "", values);
-                languages.put(language, Map.copyOf(values));
+                languages.put(resource.language(), Map.copyOf(values));
             } catch (java.io.IOException failure) {
                 throw new java.io.UncheckedIOException(failure);
             } catch (org.bukkit.configuration.InvalidConfigurationException failure) {
