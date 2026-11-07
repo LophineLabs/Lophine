@@ -24,12 +24,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pr_count=$(gh pr list --repo ${{ github.repository }} --head ${{ github.ref_name }} --state open --json number --jq 'length')
+          pr_count=$(gh pr list \
+            --repo ${{ github.repository }} \
+            --head ${{ github.repository_owner }}:${{ github.ref_name }} \
+            --state open \
+            --json number,isCrossRepository \
+            --jq '[.[] | select(.isCrossRepository == false)] | length')
           if [ "$pr_count" -gt 0 ]; then
-            echo "Open PR exists for branch ${{ github.ref_name }}, skipping push CI"
+            echo "Open same-repo PR exists for branch ${{ github.ref_name }}, skipping push CI"
             echo "skip=true" >> $GITHUB_OUTPUT
           else
-            echo "No open PR for branch ${{ github.ref_name }}"
+            echo "No open same-repo PR for branch ${{ github.ref_name }}"
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
 
