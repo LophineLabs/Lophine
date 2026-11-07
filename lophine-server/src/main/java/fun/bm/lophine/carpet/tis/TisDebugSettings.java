@@ -19,7 +19,7 @@ public final class TisDebugSettings {
         if (!value.equals("mixin_audit")) return value;
         var failures = new ArrayList<String>();
         int loaded = 0;
-        try (var input = TisDebugSettings.class.getResourceAsStream("/carpet/native-audit-targets.list")) {
+        try (var input = TisDebugSettings.class.getResourceAsStream("/assets/carpet/native-audit-targets.list")) {
             if (input == null) throw new IllegalStateException("Native Carpet audit target list is missing");
             try (var reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
                 for (String target : reader.lines().filter(line -> !line.isBlank() && !line.startsWith("#")).toList()) {

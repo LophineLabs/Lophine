@@ -24,7 +24,7 @@ public final class OrgRuleTranslations {
         for (String language : java.util.List.of("en_us", "fr_fr", "es_ar", "pt_br", "zh_cn", "zh_tw")) {
             Map<String, String> entries = new HashMap<>();
             for (String project : java.util.List.of("carpet", "tis", "org", "ams")) {
-                String root = "/carpet/upstream/" + project + "/" + language;
+                String root = "/assets/carpet/" + (project.equals("carpet") ? "lang" : project) + "/" + language;
                 try (InputStream json = OrgRuleTranslations.class.getResourceAsStream(root + ".json")) {
                     if (json != null) {
                         JsonParser.parseReader(new InputStreamReader(json, StandardCharsets.UTF_8)).getAsJsonObject()

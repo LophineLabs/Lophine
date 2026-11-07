@@ -63,7 +63,7 @@ public final class CarpetRuleMetadata {
     }
 
     private static Map<String, Rule> load() {
-        try (var stream = CarpetRuleMetadata.class.getResourceAsStream("/carpet/upstream/rules.json")) {
+        try (var stream = CarpetRuleMetadata.class.getResourceAsStream("/assets/carpet/rules.json")) {
             if (stream == null) throw new IllegalStateException("Missing pinned Carpet rule metadata");
             Rule[] rules = new Gson().fromJson(new InputStreamReader(stream, StandardCharsets.UTF_8), Rule[].class);
             Map<String, Rule> result = new TreeMap<>();
