@@ -344,8 +344,7 @@ carpettisaddition:
             thunder_in: "將於 %1$s 後發生雷雨"
             no_thunder: "這場降雨期間不會發生雷雨"
             rain_in:
-              '':
-                '': "將於 %1$s 後開始降雨"
+              .: "將於 %1$s 後開始降雨"
               with_thunder: "將會是一場最長持續 %1$s 的雷雨"
               thunder_unknown: "無法提供雷雨預報，你可以在 %1$s 後重試"
               no_thunder_for_now: "至少 %1$s 內不會有雷雨"
@@ -481,8 +480,7 @@ carpettisaddition:
       warning_content: "超過 15s 的持續時間可能會導致用戶端中斷連線，甚至觸發伺服器看門狗"
     speedtest:
       help:
-        '':
-          '': "測試網路連線速度與延遲。測試大小上限：%sMiB；用戶端支援：%s"
+        .: "測試網路連線速度與延遲。測試大小上限：%sMiB；用戶端支援：%s"
         test_size_rule_hint: "由規則 speedTestCommandMaxTestSize 設定"
         support_state:
           'no': "否"
@@ -517,8 +515,7 @@ carpettisaddition:
     raid:
       raid_count: "突襲數量：%1$s"
       status:
-        '':
-          '': "狀態"
+        .: "狀態"
         ongoing: "進行中"
         victory: "勝利"
         loss: "失敗"
@@ -644,8 +641,7 @@ carpettisaddition:
         mob_conversion: "由 %1$s 轉化"
         status_effect: "狀態效果（%1$s）"
         trans_dimension:
-          '':
-            '': "跨維度"
+          .: "跨維度"
           from: "來自 %1$s"
       removal_reason:
         despawn:
@@ -665,12 +661,10 @@ carpettisaddition:
         mob_pickup: "由 %1$s 拾起"
         mob_conversion: "轉化為 %1$s"
         death:
-          '':
-            '': "死亡"
+          .: "死亡"
           damage_source: "致死傷害來源"
         trans_dimension:
-          '':
-            '': "跨維度"
+          .: "跨維度"
           to: "前往 %1$s"
       help:
         doc_summary: "用於追蹤所有新生成與被移除實體的存活時間及生成 / 移除原因的追蹤器"
@@ -724,8 +718,7 @@ carpettisaddition:
 
   util:
     teleport_hint:
-      '':
-        '': "點擊以傳送至 %1$s"
+      .: "點擊以傳送至 %1$s"
       dimension: "維度"
     entity_type: "實體類型：%1$s（%2$s）"
     language:

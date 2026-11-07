@@ -2,7 +2,6 @@
 package fun.bm.lophine.carpet;
 
 import com.google.gson.Gson;
-
 import fun.bm.lophine.carpet.org.OrgRuleTranslations;
 
 import java.io.InputStreamReader;
