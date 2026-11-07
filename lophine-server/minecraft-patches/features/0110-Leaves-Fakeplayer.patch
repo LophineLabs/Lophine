@@ -496,7 +496,7 @@ index fb2c627a74e37f1270274d93d87f1262547dfd59..07e755ecbf55a18b63407483f91be88b
  
      // Paper start - utility method for common conversion back to the game profile
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index ed78ba7e95b522570b5955a7197fbeaeb073a53b..b9e3af1868f6a5b3c8101064dde5f9167070ebb6 100644
+index 404fed955358cfd574f0b7d192f4023644bd86ff..bc14032154e190463f26d8535032da1c90b79230 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -323,6 +323,19 @@ public abstract class PlayerList {
@@ -519,7 +519,7 @@ index ed78ba7e95b522570b5955a7197fbeaeb073a53b..b9e3af1868f6a5b3c8101064dde5f916
          final net.kyori.adventure.text.Component jm = playerJoinEvent.joinMessage();
  
          if (jm != null && !jm.equals(net.kyori.adventure.text.Component.empty())) { // Paper - Adventure
-@@ -801,6 +814,11 @@ public abstract class PlayerList {
+@@ -825,6 +838,11 @@ public abstract class PlayerList {
              respawnReason
          ).callEvent();
          // Paper end
@@ -531,7 +531,7 @@ index ed78ba7e95b522570b5955a7197fbeaeb073a53b..b9e3af1868f6a5b3c8101064dde5f916
  
          return player;
      }
-@@ -903,11 +921,16 @@ public abstract class PlayerList {
+@@ -927,11 +945,16 @@ public abstract class PlayerList {
  
      public String[] getPlayerNamesArray() {
          List<ServerPlayer> players = new java.util.ArrayList<>(this.players); // Folia - region threading
@@ -549,7 +549,7 @@ index ed78ba7e95b522570b5955a7197fbeaeb073a53b..b9e3af1868f6a5b3c8101064dde5f916
  
          return names;
      }
-@@ -1024,8 +1047,15 @@ public abstract class PlayerList {
+@@ -1048,8 +1071,15 @@ public abstract class PlayerList {
          return this.ops.contains(nameAndId) || this.server.isSingleplayerOwner(nameAndId) && this.server.getWorldData().isAllowCommands();
      }
  
@@ -567,7 +567,7 @@ index ed78ba7e95b522570b5955a7197fbeaeb073a53b..b9e3af1868f6a5b3c8101064dde5f916
      }
  
      public void broadcast(
-@@ -1371,7 +1401,13 @@ public abstract class PlayerList {
+@@ -1395,7 +1425,13 @@ public abstract class PlayerList {
      }
  
      public @Nullable ServerPlayer getPlayer(final UUID uuid) {

@@ -5051,7 +5051,7 @@ index 7109a22a9911d452242207ab0286ee985dafd439..08f61076ba332667533312e9811dabca
          boolean stateLocked = true; try { this.stateLock.lock(); // Paper - Fix GameProfileCache concurrency
          CachedUserNameToIdResolver.GameProfileInfo profileInfo = this.profilesByName.get(userName);
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index ba92bd02812673004f8072593dcc544a28fd0a64..8eb098cf0f18c1f13154b73f0a43affe2bdc9ead 100644
+index 4ace3dc678a1df7520ebf8119a7d407b5e45b6ff..0f4bcc74ba5ca07fa2659fb77d7c09bf22eb82d3 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -128,14 +128,14 @@ public abstract class PlayerList {
@@ -5176,17 +5176,26 @@ index ba92bd02812673004f8072593dcc544a28fd0a64..8eb098cf0f18c1f13154b73f0a43affe
          this.server.getCustomBossEvents().onPlayerDisconnect(entityplayer);
          UUID uuid = entityplayer.getUUID();
          ServerPlayer entityplayer1 = this.playersByUUID.get(uuid);
-@@ -697,6 +725,9 @@ public abstract class PlayerList {
+@@ -696,6 +724,9 @@ public abstract class PlayerList {
+         // Paper start - Fix kick event leave message not being sent
          return this.remove(player, net.kyori.adventure.text.Component.translatable("multiplayer.player.left", net.kyori.adventure.text.format.NamedTextColor.YELLOW, io.papermc.paper.configuration.GlobalConfiguration.get().messages.useDisplayNameInQuitMessage ? player.getBukkitEntity().displayName() : io.papermc.paper.adventure.PaperAdventure.asAdventure(player.getDisplayName())));
      }
-     public net.kyori.adventure.text.@Nullable Component remove(final ServerPlayer player, final net.kyori.adventure.text.Component leaveMessage) {
++    public net.kyori.adventure.text.@Nullable Component remove(final ServerPlayer player, final net.kyori.adventure.text.Component leaveMessage) {
 +        return this.carpetRemoveAsync(player, leaveMessage).getNow(leaveMessage);
 +    }
+ 
+     // Lophine start - drop player when a error occurred
+     private void dropOnlinePlayer(final ServerPlayer player) {
+@@ -712,7 +743,7 @@ public abstract class PlayerList {
+     }
+     // Lophine end - drop player when a error occurred
+ 
+-    public net.kyori.adventure.text.@Nullable Component remove(final ServerPlayer player, final net.kyori.adventure.text.Component leaveMessage) {
 +    private net.kyori.adventure.text.@Nullable Component carpetRemoveNative(final ServerPlayer player, final net.kyori.adventure.text.Component leaveMessage) {
+         try { // Lophine - drop player when a error occurred
          org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handlePlayerLeave(player); // Leaves - protocol
          // Paper end - Fix kick event leave message not being sent
-         ServerLevel level = player.level();
-@@ -766,13 +797,11 @@ public abstract class PlayerList {
+@@ -783,13 +814,11 @@ public abstract class PlayerList {
          player.getAdvancements().clearTriggers();
          this.players.remove(player);
          this.realPlayers.remove(player); // Leaves - replay api
@@ -5202,36 +5211,54 @@ index ba92bd02812673004f8072593dcc544a28fd0a64..8eb098cf0f18c1f13154b73f0a43affe
              // CraftBukkit start
              // this.stats.remove(uuid);
              // this.advancements.remove(uuid);
-@@ -794,7 +823,27 @@ public abstract class PlayerList {
-         // This removes the scoreboard (and player reference) for the specific player in the manager
+@@ -812,7 +841,7 @@ public abstract class PlayerList {
          this.cserver.getScoreboardManager().removePlayer(player.getBukkitEntity());
          // CraftBukkit end
--        return playerQuitEvent.quitMessage(); // Paper - Adventure
-+        return quitMessage; // Paper - Adventure
-+    }
-+
+         return playerQuitEvent.quitMessage(); // Paper - Adventure
+-        // Lophine start - drop player when a error occurred
++            // Lophine start - drop player when a error occurred
+         } catch (Throwable failure) {
+             this.dropOnlinePlayer(player);
+             LOGGER.error("Player removal failed; dropping {} from the online list", player.getPlainTextName(), failure);
+@@ -821,6 +850,37 @@ public abstract class PlayerList {
+         // Lophine end - drop player when a error occurred
+     }
+ 
 +    public java.util.concurrent.CompletableFuture<net.kyori.adventure.text.Component> carpetRemoveAsync(ServerPlayer player, net.kyori.adventure.text.@Nullable Component quitMessage) {
 +        return this.carpetRemoveAsync(player, quitMessage, ignored -> {});
 +    }
 +
 +    public java.util.concurrent.CompletableFuture<net.kyori.adventure.text.Component> carpetRemoveAsync(ServerPlayer player, net.kyori.adventure.text.@Nullable Component quitMessage, java.util.function.Consumer<net.kyori.adventure.text.Component> callerTail) {
 +        net.kyori.adventure.text.Component effective = quitMessage == null ? net.kyori.adventure.text.Component.translatable("multiplayer.player.left", net.kyori.adventure.text.format.NamedTextColor.YELLOW, io.papermc.paper.configuration.GlobalConfiguration.get().messages.useDisplayNameInQuitMessage ? player.getBukkitEntity().displayName() : io.papermc.paper.adventure.PaperAdventure.asAdventure(player.getDisplayName())) : quitMessage;
-+        var captured = carpet.script.external.ScarpetRuntime.captureOwnerOperation(() -> {
-+            try (var accepted = carpet.script.external.ScarpetPlayerInventoryGate.acceptedScope(player)) {
-+                return carpet.script.external.ScarpetNativeWork.<java.util.concurrent.CompletableFuture<net.kyori.adventure.text.Component>>observeNative(player, () -> {
-+                    net.kyori.adventure.text.Component actual = this.carpetRemoveNative(player, effective);
-+                    if (!carpet.script.external.ScarpetNativeRemovals.thenOwner(player, () -> callerTail.accept(actual))) callerTail.accept(actual);
-+                    var completed = carpet.script.external.ScarpetNativeRemovals.completion(player).thenApply(ignored -> actual);
-+                    carpet.script.external.ScarpetNativeWork.record(completed); return carpet.script.external.ScarpetNativeRemovals.trackCaller(this.server, completed);
-+                }).thenCompose(next -> next);
++        java.util.concurrent.CompletableFuture<net.kyori.adventure.text.Component> completed;
++        try {
++            var captured = carpet.script.external.ScarpetRuntime.captureOwnerOperation(() -> {
++                try (var accepted = carpet.script.external.ScarpetPlayerInventoryGate.acceptedScope(player)) {
++                    return carpet.script.external.ScarpetNativeWork.<java.util.concurrent.CompletableFuture<net.kyori.adventure.text.Component>>observeNative(player, () -> {
++                        net.kyori.adventure.text.Component actual = this.carpetRemoveNative(player, effective);
++                        if (!carpet.script.external.ScarpetNativeRemovals.thenOwner(player, () -> callerTail.accept(actual))) callerTail.accept(actual);
++                        var completedRemoval = carpet.script.external.ScarpetNativeRemovals.completion(player).thenApply(ignored -> actual);
++                        carpet.script.external.ScarpetNativeWork.record(completedRemoval); return carpet.script.external.ScarpetNativeRemovals.trackCaller(this.server, completedRemoval);
++                    }).thenCompose(next -> next);
++                }
++            });
++            completed = ca.spottedleaf.moonrise.common.util.TickThread.isShutdownThread() ? captured.get() : carpet.script.external.ScarpetPlayerInventoryGate.whenIdleForRemoval(player, captured).thenCompose(next -> next);
++        } catch (Throwable failure) {
++            completed = java.util.concurrent.CompletableFuture.failedFuture(failure);
++        }
++        completed.whenComplete((ignored, failure) -> {
++            if (failure != null) {
++                this.dropOnlinePlayer(player);
++                LOGGER.error("Player removal failed; dropping {} from the online list", player.getPlainTextName(), failure);
 +            }
 +        });
-+        var completed = ca.spottedleaf.moonrise.common.util.TickThread.isShutdownThread() ? captured.get() : carpet.script.external.ScarpetPlayerInventoryGate.whenIdleForRemoval(player, captured).thenCompose(next -> next);
 +        carpet.script.external.ScarpetNativeWork.record(completed); return carpet.script.external.ScarpetNativeRemovals.trackCaller(this.server, completed);
-     }
- 
++    }
++
      // Paper start - PlayerLoginEvent
-@@ -860,6 +909,7 @@ public abstract class PlayerList {
+     public record LoginResult(@Nullable Component message, org.bukkit.event.player.PlayerLoginEvent.Result result) {
+         public static LoginResult ALLOW = new net.minecraft.server.players.PlayerList.LoginResult(null, org.bukkit.event.player.PlayerLoginEvent.Result.ALLOWED);
+@@ -884,6 +944,7 @@ public abstract class PlayerList {
  
      // Paper start - respawn event
      public ServerPlayer respawn(final ServerPlayer serverPlayer, final boolean keepAllPlayerData, final Entity.RemovalReason removalReason, final org.bukkit.event.player.PlayerRespawnEvent.RespawnReason respawnReason) {
@@ -5239,7 +5266,7 @@ index ba92bd02812673004f8072593dcc544a28fd0a64..8eb098cf0f18c1f13154b73f0a43affe
          // Folia start - region threading
          if (true) {
              throw new UnsupportedOperationException("Must use teleportAsync while in region threading");
-@@ -873,7 +923,7 @@ public abstract class PlayerList {
+@@ -897,7 +958,7 @@ public abstract class PlayerList {
          Level fromLevel = serverPlayer.level();
          // Paper end - respawn event
          this.players.remove(serverPlayer);
@@ -5248,7 +5275,7 @@ index ba92bd02812673004f8072593dcc544a28fd0a64..8eb098cf0f18c1f13154b73f0a43affe
          serverPlayer.level().removePlayerImmediately(serverPlayer, removalReason);
          ServerLevel level = respawnInfo.newLevel();
          ServerPlayer player = serverPlayer; // Paper - TODO - recreate instance
-@@ -980,7 +1030,7 @@ public abstract class PlayerList {
+@@ -1004,7 +1065,7 @@ public abstract class PlayerList {
          ).callEvent();
          // Paper end
          // Leaves start - bot support
@@ -5257,7 +5284,7 @@ index ba92bd02812673004f8072593dcc544a28fd0a64..8eb098cf0f18c1f13154b73f0a43affe
              this.server.getBotList().bots.forEach(bot -> bot.sendFakeDataIfNeed(player, true)); // Leaves - render bot
          }
          // Leaves end - bot support
-@@ -1085,19 +1135,11 @@ public abstract class PlayerList {
+@@ -1109,19 +1170,11 @@ public abstract class PlayerList {
      }
  
      public String[] getPlayerNamesArray() {
@@ -5282,7 +5309,7 @@ index ba92bd02812673004f8072593dcc544a28fd0a64..8eb098cf0f18c1f13154b73f0a43affe
      }
  
      public UserBanList getBans() {
-@@ -1164,7 +1206,7 @@ public abstract class PlayerList {
+@@ -1188,7 +1241,7 @@ public abstract class PlayerList {
          } // Paper - Add sendOpLevel API
  
          // Purpur start - Barrels and enderchests 6 rows
@@ -5291,7 +5318,7 @@ index ba92bd02812673004f8072593dcc544a28fd0a64..8eb098cf0f18c1f13154b73f0a43affe
          // Purpur end - Barrels and enderchests 6 rows
      }
  
-@@ -1216,6 +1258,7 @@ public abstract class PlayerList {
+@@ -1240,6 +1293,7 @@ public abstract class PlayerList {
          // Leaves start - fakeplayer support
          name = name.toLowerCase(java.util.Locale.ROOT);
          ServerPlayer player = this.playersByName.get(name);
@@ -5299,7 +5326,7 @@ index ba92bd02812673004f8072593dcc544a28fd0a64..8eb098cf0f18c1f13154b73f0a43affe
          if (player == null) {
              player = this.server.getBotList().getBotByName(name);
          }
-@@ -1346,7 +1389,7 @@ public abstract class PlayerList {
+@@ -1370,7 +1424,7 @@ public abstract class PlayerList {
      }
  
      public int getPlayerCount() {
@@ -5308,7 +5335,7 @@ index ba92bd02812673004f8072593dcc544a28fd0a64..8eb098cf0f18c1f13154b73f0a43affe
      }
  
      public int getMaxPlayers() {
-@@ -1453,6 +1496,8 @@ public abstract class PlayerList {
+@@ -1477,6 +1531,8 @@ public abstract class PlayerList {
          this.broadcastChatMessage(message, isFiltered, senderPlayer, chatType, null);
      }
      public void broadcastChatMessage(final PlayerChatMessage message, final Predicate<ServerPlayer> isFiltered, final @Nullable ServerPlayer senderPlayer, final ChatType.Bound chatType, final @Nullable Function<net.kyori.adventure.audience.Audience, Component> unsignedFunction) {
@@ -5317,7 +5344,7 @@ index ba92bd02812673004f8072593dcc544a28fd0a64..8eb098cf0f18c1f13154b73f0a43affe
          // Paper end
          boolean trusted = this.verifyChatTrusted(message);
          this.server.logChatMessage((unsignedFunction == null ? message.decoratedContent() : unsignedFunction.apply(this.server.console)), chatType, trusted ? null : "Not Secure"); // Paper
-@@ -1558,6 +1603,16 @@ public abstract class PlayerList {
+@@ -1582,6 +1638,16 @@ public abstract class PlayerList {
      }
  
      public List<ServerPlayer> getPlayers() {
@@ -5334,7 +5361,7 @@ index ba92bd02812673004f8072593dcc544a28fd0a64..8eb098cf0f18c1f13154b73f0a43affe
          return this.players;
      }
  
-@@ -1568,6 +1623,7 @@ public abstract class PlayerList {
+@@ -1592,6 +1658,7 @@ public abstract class PlayerList {
      public @Nullable ServerPlayer getPlayer(final UUID uuid) {
          // Leaves start - fakeplayer support
          ServerPlayer player = this.playersByUUID.get(uuid);
@@ -5342,7 +5369,7 @@ index ba92bd02812673004f8072593dcc544a28fd0a64..8eb098cf0f18c1f13154b73f0a43affe
          if (player == null) {
              player = this.server.getBotList().getBot(uuid);
          }
-@@ -1589,7 +1645,45 @@ public abstract class PlayerList {
+@@ -1613,7 +1680,45 @@ public abstract class PlayerList {
          return false;
      }
  

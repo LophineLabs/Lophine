@@ -75,10 +75,10 @@ index 4a1f464b6e250549f954deb609a9b14cddef677a..0c88741c02622a2e00deb8c8e89af8d8
  
      public Set<ThrownEnderpearl> getEnderPearls() {
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index cea15af47041ef0c3f79a9b0d2df79e568953d31..09432be8006f8b515386098f003d49e77a1edb1d 100644
+index f300ffb5ec076d9eeb637d5d81b8f83abd77760f..4799d3530105737305aa5e85604f5fb2dac3733d 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -785,11 +785,13 @@ public abstract class PlayerList {
+@@ -802,11 +802,13 @@ public abstract class PlayerList {
          player.unRide();
  
          for (ThrownEnderpearl enderpearl : player.getEnderPearls()) {

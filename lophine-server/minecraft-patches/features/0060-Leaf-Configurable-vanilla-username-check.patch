@@ -86,7 +86,7 @@ index 7443744e3f256983e52a1cefcaf66082e4a46a7b..b7553611723f7120c66e1f3e51d89df2
          }
  
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 530a99c2a77f13b100467d1847311e5d01b2c6e8..b9ddcbdb393d1d0aec3c894c4ffa69dcb8266390 100644
+index e6b233685d9a9d5055290571feef0b7cb1f2d898..8e029d895ad37734fa5335df43b125f460f219f1 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -136,6 +136,7 @@ public abstract class PlayerList {
@@ -97,7 +97,7 @@ index 530a99c2a77f13b100467d1847311e5d01b2c6e8..b9ddcbdb393d1d0aec3c894c4ffa69dc
  
      // Folia start - region threading
      private final Object connectionsStateLock = new Object();
-@@ -584,6 +585,7 @@ public abstract class PlayerList {
+@@ -601,6 +602,7 @@ public abstract class PlayerList {
          player.getAdvancements().clearTriggers();
          this.players.remove(player);
          this.playersByName.remove(player.getScoreboardName().toLowerCase(java.util.Locale.ROOT)); // Spigot

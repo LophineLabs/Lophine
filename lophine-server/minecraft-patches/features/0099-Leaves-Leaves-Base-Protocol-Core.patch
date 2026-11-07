@@ -108,7 +108,7 @@ index e074fe9eb6a1e6cb30b7de522fcac673dcb81960..ca9993d703f523cda4ede40c5360d612
          // Paper start
          org.bukkit.craftbukkit.CraftServerLinks links = new org.bukkit.craftbukkit.CraftServerLinks(serverLinks);
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index d11d9ac4225c7db59be9f27c0d3c46471f6b047d..45cca1667cb6e1eb9dc35da080cd19a0c1112a59 100644
+index 0912f058a9b3e9a41908d24f789db5f30baf02fb..9381154cf3b2d0eee4aee0486db8f405a56c27ac 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -271,6 +271,7 @@ public abstract class PlayerList {
@@ -128,15 +128,15 @@ index d11d9ac4225c7db59be9f27c0d3c46471f6b047d..45cca1667cb6e1eb9dc35da080cd19a0
          final net.kyori.adventure.text.Component jm = playerJoinEvent.joinMessage();
  
          if (jm != null && !jm.equals(net.kyori.adventure.text.Component.empty())) { // Paper - Adventure
-@@ -517,6 +520,7 @@ public abstract class PlayerList {
-         return this.remove(player, net.kyori.adventure.text.Component.translatable("multiplayer.player.left", net.kyori.adventure.text.format.NamedTextColor.YELLOW, io.papermc.paper.configuration.GlobalConfiguration.get().messages.useDisplayNameInQuitMessage ? player.getBukkitEntity().displayName() : io.papermc.paper.adventure.PaperAdventure.asAdventure(player.getDisplayName())));
-     }
+@@ -534,6 +537,7 @@ public abstract class PlayerList {
+ 
      public net.kyori.adventure.text.@Nullable Component remove(final ServerPlayer player, final net.kyori.adventure.text.Component leaveMessage) {
+         try { // Lophine - drop player when a error occurred
 +        org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handlePlayerLeave(player); // Leaves - protocol
          // Paper end - Fix kick event leave message not being sent
          ServerLevel level = player.level();
          player.awardStat(Stats.LEAVE_GAME);
-@@ -1421,5 +1425,6 @@ public abstract class PlayerList {
+@@ -1445,5 +1449,6 @@ public abstract class PlayerList {
              player.connection.send(recipes);
              player.getRecipeBook().sendInitialRecipeBook(player);
          }

@@ -309,7 +309,8 @@ public final class ScarpetPlayerInventoryGate {
     }
 
     private static <T> CompletableFuture<T> snapshot(ServerPlayer player, Supplier<T> snapshot, boolean mandatoryCleanup) {
-        TickThread.ensureTickThread(player, "Player inventory snapshot must be requested by its owner");
+        // Pause metadata may be requested from the global region thread during logout or
+        // duplicate-login kicks. The snapshot body still runs on the owning region.
         return of(player).whenIdle(operation -> {
             var result = new CompletableFuture<T>();
             java.util.function.Consumer<net.minecraft.world.entity.Entity> body = owned -> {

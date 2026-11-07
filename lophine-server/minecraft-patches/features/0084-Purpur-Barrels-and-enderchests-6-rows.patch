@@ -8,10 +8,10 @@ As part of: Purpur (https://github.com/PurpurMC/Purpur/blob/dc46f46d28dcdcaf33bb
 Licensed under: MIT (https://github.com/PurpurMC/Purpur/blob/dc46f46d28dcdcaf33bb533f9571a107db98c1d7/LICENSE)
 
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index b9ddcbdb393d1d0aec3c894c4ffa69dcb8266390..d11d9ac4225c7db59be9f27c0d3c46471f6b047d 100644
+index 8e029d895ad37734fa5335df43b125f460f219f1..0912f058a9b3e9a41908d24f789db5f30baf02fb 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -970,6 +970,10 @@ public abstract class PlayerList {
+@@ -994,6 +994,10 @@ public abstract class PlayerList {
          player.getBukkitEntity().recalculatePermissions(); // CraftBukkit
          this.server.getCommands().sendCommands(player);
          } // Paper - Add sendOpLevel API

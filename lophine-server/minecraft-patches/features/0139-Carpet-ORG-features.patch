@@ -792,15 +792,22 @@ index 44f6e716afbd4ac6b543802fdd0fb2113dc7f98f..c1e5c993386081fbe2518f8d9987088f
              Optional<ValueInput> loadedData = this.server
                  .getPlayerList()
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 0c36efdfae748b8ec8d92d97f7900e39d41ebdb6..cea15af47041ef0c3f79a9b0d2df79e568953d31 100644
+index 5191d2a68d672a3863f9042586088b61bae9c12f..f300ffb5ec076d9eeb637d5d81b8f83abd77760f 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -793,6 +793,14 @@ public abstract class PlayerList {
+@@ -810,6 +810,21 @@ public abstract class PlayerList {
          }
  
          level.removePlayerImmediately(player, Entity.RemovalReason.UNLOADED_WITH_PLAYER);
 +        if (carpet.script.external.ScarpetNativeRemovals.thenOwner(player, () -> this.carpetFinishPlayerRemoval(player, playerQuitEvent.quitMessage()))) return playerQuitEvent.quitMessage();
 +        return this.carpetFinishPlayerRemoval(player, playerQuitEvent.quitMessage());
++        // Lophine start - drop player when a error occurred
++        } catch (Throwable failure) {
++            this.dropOnlinePlayer(player);
++            LOGGER.error("Player removal failed; dropping {} from the online list", player.getPlainTextName(), failure);
++            throw failure;
++        }
++        // Lophine end - drop player when a error occurred
 +    }
 +
 +    private net.kyori.adventure.text.@Nullable Component carpetFinishPlayerRemoval(final ServerPlayer player, net.kyori.adventure.text.@Nullable Component quitMessage) {
@@ -810,6 +817,22 @@ index 0c36efdfae748b8ec8d92d97f7900e39d41ebdb6..cea15af47041ef0c3f79a9b0d2df79e5
          player.retireScheduler(); // Paper - Folia schedulers
          player.getBukkitEntity().packetProcessor.close(); // Folia - region threading
          player.getAdvancements().clearTriggers();
+@@ -841,14 +856,7 @@ public abstract class PlayerList {
+         // This removes the scoreboard (and player reference) for the specific player in the manager
+         this.cserver.getScoreboardManager().removePlayer(player.getBukkitEntity());
+         // CraftBukkit end
+-        return playerQuitEvent.quitMessage(); // Paper - Adventure
+-            // Lophine start - drop player when a error occurred
+-        } catch (Throwable failure) {
+-            this.dropOnlinePlayer(player);
+-            LOGGER.error("Player removal failed; dropping {} from the online list", player.getPlainTextName(), failure);
+-            throw failure;
+-        }
+-        // Lophine end - drop player when a error occurred
++        return quitMessage; // Paper - Adventure
+     }
+ 
+     public java.util.concurrent.CompletableFuture<net.kyori.adventure.text.Component> carpetRemoveAsync(ServerPlayer player, net.kyori.adventure.text.@Nullable Component quitMessage) {
 diff --git a/net/minecraft/world/Containers.java b/net/minecraft/world/Containers.java
 index 6370f0eb9039941687d37a0fe387fbd676ec151b..b001d5a608f5fa1c1e904961710f0333cc276787 100644
 --- a/net/minecraft/world/Containers.java
@@ -2276,7 +2299,7 @@ index 87e6ebcc3b99e5bb535452097f472262f3ad5b01..b24427d1d7fac988eb011c278707116d
  
      public boolean isRainingAt(final BlockPos pos) {
 diff --git a/net/minecraft/world/level/ServerExplosion.java b/net/minecraft/world/level/ServerExplosion.java
-index 589373357284f565c6b6485f0cc7dd978e2abcc2..b423b55ee88ca802990e7f2a96cdb691575bfabb 100644
+index f6abb4d3b3c3999a3633ed8f7d2c4d442299509a..2032fde63b3cd96b406ff0431fcf0ef656043cc1 100644
 --- a/net/minecraft/world/level/ServerExplosion.java
 +++ b/net/minecraft/world/level/ServerExplosion.java
 @@ -1112,6 +1112,11 @@ public class ServerExplosion implements Explosion {

@@ -297,7 +297,7 @@ index 277f8a0bbf526c74f33fc499cc76a9b0ce2dd21e..9f7748037f172fa6622ab3755fa610e3
              LOGGER.warn(
                  "Player {} tried to change game mode to {} without required permissions",
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 8eb098cf0f18c1f13154b73f0a43affe2bdc9ead..0c36efdfae748b8ec8d92d97f7900e39d41ebdb6 100644
+index 0f4bcc74ba5ca07fa2659fb77d7c09bf22eb82d3..5191d2a68d672a3863f9042586088b61bae9c12f 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -577,6 +577,7 @@ public abstract class PlayerList {
@@ -1580,7 +1580,7 @@ index c5121ba40ae854a31d5250bc540c77ae589d1363..86d9f48c2bb1232e5697dbe3e01f7aaf
              final boolean canSpawn;
              int maxSpawns = Integer.MAX_VALUE;
 diff --git a/net/minecraft/world/level/ServerExplosion.java b/net/minecraft/world/level/ServerExplosion.java
-index 6e7fb55543a21c7f48180c7bfb26e13861631d80..589373357284f565c6b6485f0cc7dd978e2abcc2 100644
+index d40f34cd1dcf691a87debc404a493427ded728f9..f6abb4d3b3c3999a3633ed8f7d2c4d442299509a 100644
 --- a/net/minecraft/world/level/ServerExplosion.java
 +++ b/net/minecraft/world/level/ServerExplosion.java
 @@ -604,7 +604,12 @@ public class ServerExplosion implements Explosion {

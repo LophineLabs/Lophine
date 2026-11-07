@@ -1,0 +1,53 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Sun, 8 Nov 2026 00:28:54 +0800
+Subject: [PATCH] Drop failed PlayerList removals from the online list
+
+PlayerList.remove can throw before unmapping, for example on a region
+thread check. Entity.equals uses the reusable network id, so the leftover
+ServerPlayer stays in players and playersByUUID. A later login with the
+same UUID then cannot place a new session.
+
+diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
+index 82fb4aecffaf4ae97a9c2ab60eca2d67107de0a8..d50509ada528c2061a25ddbe036ec1fa821b50c8 100644
+--- a/net/minecraft/server/players/PlayerList.java
++++ b/net/minecraft/server/players/PlayerList.java
+@@ -502,7 +502,24 @@ public abstract class PlayerList {
+         // Paper start - Fix kick event leave message not being sent
+         return this.remove(player, net.kyori.adventure.text.Component.translatable("multiplayer.player.left", net.kyori.adventure.text.format.NamedTextColor.YELLOW, io.papermc.paper.configuration.GlobalConfiguration.get().messages.useDisplayNameInQuitMessage ? player.getBukkitEntity().displayName() : io.papermc.paper.adventure.PaperAdventure.asAdventure(player.getDisplayName())));
+     }
++
++    // Lophine start - drop player when a error occurred
++    private void dropOnlinePlayer(final ServerPlayer player) {
++        this.players.removeIf(online -> online == player);
++        this.realPlayers.removeIf(online -> online == player); // Leaves - replay api
++        final String nameKey = player.getScoreboardName().toLowerCase(java.util.Locale.ROOT);
++        if (this.playersByName.get(nameKey) == player) {
++            this.playersByName.remove(nameKey);
++        }
++        if (me.earthme.luminol.config.modules.misc.UsernameCheckConfig.allowOldPlayersJoin) this.playedPlayers.remove(player.getGameProfile().name()); // Leaf - Configurable vanilla username check
++        if (this.playersByUUID.get(player.getUUID()) == player) {
++            this.playersByUUID.remove(player.getUUID());
++        }
++    }
++    // Lophine end - drop player when a error occurred
++
+     public net.kyori.adventure.text.@Nullable Component remove(final ServerPlayer player, final net.kyori.adventure.text.Component leaveMessage) {
++        try { // Lophine - drop player when a error occurred
+         // Paper end - Fix kick event leave message not being sent
+         ServerLevel level = player.level();
+         player.awardStat(Stats.LEAVE_GAME);
+@@ -598,6 +615,13 @@ public abstract class PlayerList {
+         this.cserver.getScoreboardManager().removePlayer(player.getBukkitEntity());
+         // CraftBukkit end
+         return playerQuitEvent.quitMessage(); // Paper - Adventure
++        // Lophine start - drop player when a error occurred
++        } catch (Throwable failure) {
++            this.dropOnlinePlayer(player);
++            LOGGER.error("Player removal failed; dropping {} from the online list", player.getPlainTextName(), failure);
++            throw failure;
++        }
++        // Lophine end - drop player when a error occurred
+     }
+ 
+     // Paper start - PlayerLoginEvent
