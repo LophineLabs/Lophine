@@ -42,7 +42,7 @@
   "lophine.experiment.command.comment": "包含以下设置：启用 trigger 指令、启用 function 指令、启用 scoreboard 指令、全部保存命令。",
   "lophine.experiment.command.function_command_enabled": "启用 function 指令",
   "lophine.experiment.command.function_command_enabled.comment": "允许使用 function 指令",
-  "lophine.experiment.command.save_all_command": "全部保存命令",
+  "lophine.experiment.command.save_all_command": "save-all 指令",
   "lophine.experiment.command.save_all_command.comment": "包含以下设置：启用 save-all 指令、记录 save-all 全部过程、Save-all 超时（秒）。",
   "lophine.experiment.command.save_all_command.enabled": "启用 save-all 指令",
   "lophine.experiment.command.save_all_command.enabled.comment": "允许使用 save-all 指令",
