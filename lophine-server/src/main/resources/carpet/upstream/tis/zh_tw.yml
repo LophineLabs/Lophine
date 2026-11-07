@@ -1,0 +1,1604 @@
+carpettisaddition:
+  rule:
+    microTimingTarget:
+      deprecate_not_marker_warning: "[警告] 非 marker_only 的目標類型已棄用，並將在未來移除"
+    synchronizedLightThread:
+      safety_warning:
+        '0': "偵測到規則 synchronizedLightThread 與規則 lightUpdates 之間的危險組合"
+        '1': "已取消規則修改，以防止在光照同步時無限等待"
+        '2': "相關規則將設為的值："
+    tickFreezeDeepCommand:
+      wrapper: "%s (%s)"
+      deep_freeze: "深度凍結"
+    yeetUpdateSuppressionCrash:
+      exception_detail:
+        body: "在 %2$s 階段於 %1$s 觸發的更新抑制"
+        catch_location: "例外狀況捕捉位置：%s"
+        name_and_message: "例外狀況名稱：%s，訊息："
+      report_message: "你剛才造成了伺服器崩潰：%1$s"
+      catch_location:
+        world_ticking: "世界運算"
+        server_async_task: "伺服器非同步任務"
+        player_entity_ticking: "玩家實體運算"
+        player_removal: "玩家移除"
+        packet_handling: "封包處理器"
+
+  validator:
+    basic:
+      failure: "規則 %1$s 的值錯誤：%2$s"
+    positive_number:
+      message: "必須為正數"
+    negative_number:
+      message: "必須為負數"
+    non_negative_number:
+      message: "必須為正數或 0"
+    non_positive_number:
+      message: "必須為負數或 0"
+    ranged_number:
+      message: "必須為介於 %1$s 到 %2$s 之間的數字"
+    fake_player_name_extra:
+      message: "你需要提供一個不含特殊字元且長度為 1 到 16 的字串"
+      warn:
+        found: "套用規則 %2$s 時，在值 \"%1$s\" 中發現未預期的字元"
+        blocked: "如果你確定要使用此值，請再輸入一次該指令"
+        applied: "因為你堅持，已強制接受該值"
+    tiscm_protocol:
+      protocol_not_enabled: "[警告] TISCM 網路協定未啟用。你需要將規則 tiscmNetworkProtocol 設為 true 才能使規則 %1$s 正常運作"
+    logger_switch:
+      message: "無效的記錄器開關規則值"
+
+  logger:
+    commandBlock:
+      executed: "%1$s 執行了 %2$s"
+      remove_executor: "點擊以移除 %1$s"
+    damage:
+      modify_reason:
+        wearing_a_helmet: "戴著頭盔"
+        holding_a_shield: "舉著盾牌"
+        recently_hit: "近期受擊"
+        difficulty: "難易度"
+        immuse_to_damage: "免疫傷害"
+        invulnerable: "無敵"
+        respawn_protection: "重生保護"
+        pvp_disabled: "已停用 PVP"
+        status_effect: "狀態效果"
+        enchantment: "附魔"
+        armor: "盔甲"
+      type: "類型"
+      attacker: "攻擊者"
+      source: "來源"
+      header_message: "%1$s 正在受到 %2$s 點傷害，傷害名稱：%3$s，初始生命值：%4$s"
+      due_to: "，原因：%1$s"
+      footer_message: "%1$s 實際受到 %2$s 點傷害，剩餘生命值：%3$s"
+    entity:
+      created: "%1$s 已建立"
+      despawned: "%1$s 已消失"
+      damage_amount: "傷害值"
+    entityIdCounter:
+      header_hover: "實體 ID 計數器記錄器"
+      increment: "ID 為 %2$s 的實體 %1$s 已在 %3$s 上實例化"
+      thread_name:
+        server: "伺服器執行緒"
+        client: "用戶端執行緒"
+        worker: "工作執行緒"
+        unknown: "未知執行緒"
+    item:
+      item_stack_size: "物品堆疊數量"
+    microTiming:
+      gametime: "遊戲時間"
+      merged_message: "已合併另外 %1$s 則相同的訊息"
+      common:
+        color: "顏色"
+        indentation: "縮排層級"
+        dimension: "維度"
+        event_source: "事件來源"
+        id: "ID"
+        entity: "實體"
+        type: "類型"
+        block: "方塊"
+        fluid: "流體"
+        order: "順序"
+        depth: "深度"
+        priority: "優先順序"
+        position: "位置"
+      util:
+        successful: "成功"
+        failed: "失敗"
+        return_value: "回傳值"
+        direction:
+          down: "下"
+          up: "上"
+          north: "北"
+          south: "南"
+          west: "西"
+          east: "東"
+      stage:
+        unknown: "未知"
+        spawning: "生物生成"
+        spawning_special: "特殊生物生成"
+        world_border: "世界邊界"
+        tile_tick: "排程刻"
+        raid: "突襲"
+        wandering_trader: "流浪商人"
+        block_event: "方塊事件"
+        entity: "實體"
+        chunk_tick: "區塊刻"
+        tile_entity: "方塊實體"
+        dragon_fight: "終界龍戰"
+        auto_save: "自動儲存"
+        async_task: "非同步任務"
+        player_action: "玩家動作"
+        command_function: "指令函數"
+        network: "網路"
+        console: "控制台"
+        scarpet: "Scarpet"
+      stage_detail:
+        thunder: "閃電"
+        'ice&snow': "結冰與積雪"
+        randomtick: "隨機刻"
+      sub_stage:
+        player: "玩家"
+        player_action: "執行用戶端傳送的玩家動作"
+        player_action_pack: "執行來自 /player 指令的動作包"
+        ticking_weather_effect_entities: "運算天氣效果實體"
+        ticking_regular_entities: "運算一般實體"
+        ticking_player_entity: "運算玩家實體"
+      block_update_type:
+        aka: "即 %1$s"
+        except: "排除"
+        blockupdates: "方塊更新"
+        blockupdates_except: "方塊更新（含排除）"
+        stateupdates: "狀態更新"
+        comparatorupdates: "比較器更新"
+        singleblockupdate: "單一方塊更新"
+        singlestateupdate: "單一狀態更新"
+      piston_block_event_type:
+        push: "推出"
+        retract: "拉回"
+        drop: "丟下"
+        unknown: "未知操作"
+      event:
+        set_block_state_event_base:
+          flag_data:
+            '0': "發出方塊更新"
+            '1': "更新監聽器"
+            '2': "更新用戶端監聽器"
+            '3': "在用戶端立即重繪"
+            '4': "發出狀態更新"
+            '5': "掉落方塊實體中的物品"
+            '6': "由活塞引起"
+            '7': "發出光照更新"
+            '8': "觸發副作用"
+        block_state_change:
+          state_change: "狀態變更"
+          state_change_details: "方塊狀態變更詳情"
+          finished: "結束"
+        block_replace:
+          block_replace: "方塊替換"
+          finished: "結束"
+        detect_block_update:
+          emit: "發出"
+          detected: "已偵測"
+          started: "開始"
+          ended: "結束"
+        emit_block_update:
+          emit: "發出"
+          updates: "更新"
+          method_name: "方法名稱（yarn）"
+          started: "開始"
+          ended: "結束"
+          self: "自身"
+        execute_block_event:
+          execute: "執行"
+          blockevent: "方塊事件"
+          ended: "結束"
+          fail_info:
+            block_changed: "方塊已變更"
+            event_fail: "事件執行失敗"
+        execute_tile_tick:
+          execute: "執行"
+          ended: "結束"
+          priority: "優先順序"
+          tiletick_event: "排程刻事件"
+        piston_compute_push_structure:
+          computed: "已計算推動結構"
+          to_push: "要推動的方塊數量：%s"
+          to_destroy: "要破壞的方塊數量：%s"
+          push: "推出"
+          pull: "拉回"
+          info:
+            piston_pos: "活塞位置：%s"
+            piston_direction: "活塞朝向：%s"
+            push_type: "推動類型：%s"
+            push_direction: "推動方向：%s"
+            push_start_pos: "推動起始位置：%s"
+          failure_reason:
+            push_limit_exceeded: "超過推動上限"
+            got_immovable_block: "遇到無法移動的方塊"
+          failure_pos: "位置：%s"
+          failure_block: "方塊：%s"
+        schedule_block_event:
+          scheduled: "已排定"
+          blockevent: "方塊事件"
+        schedule_block_update:
+          scheduled: "已排定"
+        schedule_tile_tick:
+          scheduled: "已排定"
+          tiletick_event: "排程刻事件"
+          delay: "延遲"
+          priority: "優先順序"
+      carpet_logger:
+        rule_hint: "使用指令 %1$s 開始記錄"
+        click_to_execute: "點擊以執行"
+      rule_listener:
+        instant_block_updater_promote: "世界中的方塊更新器似乎並非瞬時類型，這可能會使涉及方塊更新的微時序記錄難以閱讀\n你可以開啟規則 %1$s 以啟用 1.19- 的瞬時方塊更新器"
+        click_to_see_rule: "點擊以查看規則"
+      marker:
+        on_mark: "已§a新增§r微時序標記：%1$s"
+        on_unmark: "已§c移除§r微時序標記：%1$s"
+        on_type_switch: "已將標記切換至 %1$s 模式"
+        on_mobility_true: "已將標記 %1$s 設為§a可移動§r"
+        on_mobility_false: "已將標記 %1$s 設為§c不可移動§r"
+        cleared: "已清除標記"
+    mobcapsLocal:
+      player_not_found: "找不到玩家 %1$s"
+      local: "局部"
+    movement:
+      header: "%1$s 嘗試移動 %2$s"
+      header_details: "移動類型：%1$s，遊戲時間：%2$s"
+      delta: "差值"
+      due_to: "，原因：%1$s"
+      footer: "%1$s 實際移動了 %2$s"
+      movement_type:
+        self: "自身邏輯"
+        player: "玩家動作"
+        piston: "活塞"
+        shulker_box: "界伏盒"
+        shulker: "界伏蚌"
+      modification:
+        piston: "活塞限制"
+        sneaking: "潛行"
+        collision: "碰撞"
+    phantom:
+      header: "夜魅提醒"
+      summon: "%1$s 召喚了 %2$s 隻 %3$s"
+      reminder:
+        time_since_rest: "你已經 %1$s 分鐘沒有睡覺了"
+        regular: "%1$s 可能會在 %2$s 分鐘後開始生成"
+        now: "%1$s 從現在起可能會開始生成"
+    portalCreation:
+      created: "%1$s 於 %2$s 建立了地獄傳送門，時間：%3$s"
+    projectiles:
+      visualized:
+        info: "視覺化投射物記錄器：已視覺化 %1$s 刻的軌跡"
+        not_enabled:
+          warn: "視覺化投射物記錄器：視覺化功能未啟用"
+          hint: "點擊以啟用"
+    raid:
+      created: "已建立 ID 為 %1$s 的突襲"
+      invalidated: "突襲（ID：%1$s）已結束，原因：%2$s"
+      bad_omen_level_increased: "突襲（ID：%1$s）的不祥之兆等級已提升至 %2$s"
+      center_moved: "突襲（ID：%1$s）已將中心點移動至 %2$s"
+      raid_invalidate_reason:
+        difficulty_peaceful: "難易度設為和平"
+        gamerule_disable: "已由遊戲規則停用"
+        poi_removed_before_spawn: "生成前 POI 已移除"
+        time_out: "逾時"
+        raider_cannot_spawn: "無法生成突襲者"
+        raid_victory: "突襲勝利"
+        raid_defeat: "突襲失敗"
+    ticket:
+      added: "被新增"
+      removed: "被移除"
+      time_detail: "世界：%1$s\n遊戲時間：%2$s"
+      message: "載入票 %1$s 於 %3$s %2$s"
+      ticket_detail: "等級 = %1$s\n持續時間 = %2$s\n實體運算區塊：%3$s\n弱載入區塊：%4$s\n邊界區塊：%5$s"
+      permanent: "永久"
+    tickWarp:
+      not_started: "Tick warp 尚未開始"
+      starter: "啟動者"
+      server: "伺服器"
+      average_tps: "平均 TPS"
+      average_mspt: "平均 MSPT"
+      time_info: "%1$s 分鐘（遊戲內）/ %2$s 分鐘（現實時間）"
+      elapsed_time: "經過時間"
+      estimated_time: "預估剩餘時間"
+      show_history_header: "上次 tick warp 結果（%1$s 分鐘前）"
+    wanderingTrader:
+      header_hover: "流浪商人記錄器"
+      summon: "%1$s 於 %3$s 召喚了 %2$s"
+      summon_failed: "%1$s 無法召喚 %2$s：%3$s"
+      no_spawnable_pos_nearby: "無法在玩家附近找到可生成的位置"
+      bad_spawn_pos: "%1$s 不是 %2$s 的有效生成位置"
+    xporb:
+      xp_amount: "經驗值"
+
+  command:
+    dye_counter:
+      unknown_color: "未知的顏色：%1$s"
+      no_item_yet: "尚未統計任何 %1$s"
+      restart_single: "已重設 %1$s %2$s"
+      restart_all: "已重設所有 %1$s"
+      counter:
+        not_started: "%1$s %2$s 尚未開始統計"
+        summary: "%2$s %3$s 的 %1$s 統計（%4$s 分鐘 %5$s），總計：%6$s，（%7$s/h）："
+        realtime: "現實時間"
+        reset: "重設"
+    info:
+      world:
+        ticking_order: "遊戲中 %1$s 個維度的運算順序："
+        weather:
+          data:
+            title: "天氣遙測資料"
+            clearWeatherTime: "晴朗計時器"
+            rainTime: "降雨計時器"
+            raining: "正在降雨"
+            thunderTime: "雷雨計時器"
+            thundering: "正在雷雨"
+          forecast:
+            title: "天氣預報"
+            current: "目前天氣：%1$s"
+            clear_sky_duration: "晴朗持續時間"
+            rain_duration: "降雨持續時間"
+            thunder_duration: "雷雨持續時間"
+            thunder_in: "將於 %1$s 後發生雷雨"
+            no_thunder: "這場降雨期間不會發生雷雨"
+            rain_in:
+              '':
+                '': "將於 %1$s 後開始降雨"
+              with_thunder: "將會是一場最長持續 %1$s 的雷雨"
+              thunder_unknown: "無法提供雷雨預報，你可以在 %1$s 後重試"
+              no_thunder_for_now: "至少 %1$s 內不會有雷雨"
+              maybe_thunder: "可能會發生雷雨。請在 %1$s 後重試以取得進一步資料"
+          weathers:
+            clear_sky: "晴朗"
+            raining: "降雨"
+            thundering: "雷雨"
+      server:
+        entity_id_counter: "實體 ID 計數器：%1$s"
+        server_tick_counter: "伺服器刻計數器：%1$s"
+    manipulate:
+      block:
+        emit:
+          block_update: "已發出 %1$s 個方塊更新"
+          state_update: "已發出 %1$s 個狀態更新"
+          light_update: "已發出 %1$s 個光照更新"
+        execute:
+          block_event: "已執行 %1$s 個方塊事件（type=%2$s data=%3$s）"
+          random_tick: "已執行 %1$s 個隨機刻"
+          tile_tick: "已執行 %1$s 個排程刻"
+          precipitation_tick: "已執行 %1$s 個降水刻"
+      chunk:
+        help:
+          danger_notice: "[注意] 區塊操作無法復原。執行前請先備份並三思"
+          root: "參數說明：\ncurrent：操作你所在的區塊\nsquare|chebyshev <r>：操作以玩家為中心的正方形範圍內的區塊。正方形的邊長為 2r + 1\ncircle|euclidean <r>：操作以玩家為中心的圓形範圍內的區塊。圓形的直徑為 2r + 1\nat <chunkX> <chunkZ>：操作指定位置的區塊。該區塊必須已載入"
+        common:
+          throttled: "請等待目前進行中的操作完成"
+          nothing_to_abort: "沒有進行中的操作可供中止"
+        erase:
+          loading_summary: "已載入 %s 個待抹除的區塊，耗時 %ss"
+          matter_summary: "已抹除 %s 個區塊，耗時 %ss，已移除 %s 個實體、%s 個方塊實體、%s 個排程刻、%s 個方塊事件、%s 個區塊區段"
+          erase_light: "正在重設已抹除區塊內的光照，這可能需要一點時間"
+          light_summary: "已完成光照重設，耗時：%ss"
+          light_summary_aborted: "已中止光照重設，已處理 %s/%s 個區塊，耗時：%ss"
+          aborting: "正在中止任務，請等待光照引擎完成剩餘任務"
+          all_done: "已完成區塊抹除操作。總耗時：%ss"
+          all_done_hover: "耗時統計：\n區塊載入：%ss\n內容抹除：%ss\n光照重設：%ss"
+        relight:
+          relight_start: "正在重新計算 %s 個區塊的光照，請等待光照引擎處理這些更新"
+          relight_progress: "已重新計算 %s/%s 個區塊的光照，速度 %s 區塊/s，預估剩餘時間 %ss"
+          relight_progress_hover: "你可以使用 %s 指令來中止此任務"
+          aborting: "正在中止任務，請等待光照引擎完成剩餘任務"
+          done: "已重新計算 %s 個區塊的光照。總耗時：%ss"
+          done_aborted: "已中止重新計算光照，已處理 %s/%s 個區塊，耗時：%ss"
+          hint: "你可以使用指令 \"/refresh chunk\" 來重新整理指定區塊外的光照更新"
+        inhabitedTime:
+          set_done: "已將 %s 個區塊的累積停留時間設為 %s"
+          add_done: "已將 %s 個區塊的累積停留時間增加 %s"
+          add_summary: "這 %s 個區塊的新累積停留時間：最小值 %s，最大值 %s，平均值 %s"
+          query_no_chunk: "沒有可查詢的區塊"
+          query_summary: "%s 個區塊的累積停留時間：最小值 %s，最大值 %s，平均值 %s"
+      container:
+        help: "操作 %1$s"
+        cannot_manipulate: "目前無法操作 %1$s，你可以嘗試在其他遊戲階段執行此指令"
+        entity:
+          name: "實體清單"
+          revert: "已反轉包含 %2$s 個實體的 %1$s"
+          shuffle: "已隨機打亂包含 %2$s 個實體的 %1$s"
+        tile_entity:
+          name: "可運算方塊實體清單"
+          revert: "已反轉包含 %2$s 個方塊實體的 %1$s"
+          shuffle: "已隨機打亂包含 %2$s 個方塊實體的 %1$s"
+          query:
+            title: "位於 %1$s 的方塊實體資訊"
+            type: "類型"
+            ticking_order: "運算順序"
+            not_found: "位於 %1$s 處沒有方塊實體"
+          statistic:
+            title: "%1$s 中的方塊實體統計"
+            all: "所有方塊實體"
+            ticking: "可運算方塊實體"
+        tile_tick:
+          name: "排程刻佇列"
+          item_name: "排程刻事件"
+          item_description: "方塊：%1$s\n延遲：%2$s\n優先順序：%3$s（%4$s）"
+          scheduled: "已排定 %1$s @ %2$s"
+          removed: "已移除 %1$s 個排程刻事件"
+        block_event:
+          name: "方塊事件佇列"
+          item_name: "方塊事件"
+          scheduled: "已排定 %1$s @ %2$s"
+          removed: "已移除 %1$s 個方塊事件"
+      entity:
+        entity_message: "%1$s 個實體"
+        rename:
+          renamed: "已將 %1$s 重新命名為 %2$s"
+          cleared: "已清除 %1$s 的自訂名稱"
+        persistent:
+          not_found: "找不到目標，請選擇生物實體"
+          title: "持續存在狀態："
+          set: "已將 %1$s 的持續存在狀態設為 %2$s"
+        mounted: "已讓 %1$s 騎乘 %2$s"
+        dismounted: "已讓 %1$s 結束騎乘"
+        velocity:
+          title: "速度向量："
+          added: "已將 %1$s 的速度增加 %2$s"
+          set: "已將 %1$s 的速度設為 %2$s"
+      server:
+        entity_id_counter:
+          set: "已將實體 ID 計數器設為 %1$s"
+          add: "已將實體 ID 計數器增加 %1$s，目前數值：%2$s"
+          show: "目前實體 ID 計數器數值：%1$s"
+          query: "%1$s 的實體 ID 為 %2$s"
+          progress_of_overflow_to_negative: "溢位至負數的進度：%1$s"
+          progress_of_overflow_to_0: "溢位至 0 的進度：%1$s"
+    player:
+      action:
+        perTick:
+          permission_not_enough: "因權限不足，無法使用「perTick」動作模式。詳見規則 commandPlayerActionPerTick"
+          disabled: "「perTick」動作模式已停用。詳見規則 commandPlayerActionPerTick"
+        randomly:
+          root:
+            help: "一組讓玩家隨機執行動作的亂數產生器\n可用的亂數產生器：\n  uniform：均勻分佈\n  poisson：卜瓦松分佈\n  gaussian：高斯 / 常態分佈\n  triangular：三角分佈\n你可以在目標指令結尾加上 §7--simulate§r，以使用指定的亂數產生器執行模擬測試"
+            uniform_deprecation: "已棄用，將在 mc1.21 推出時移除。請改用 §7uniform§r 子指令"
+          simulate:
+            command: "指令：%1$s"
+            samples: "模擬次數：%1$s"
+            divider: "======================"
+          uniform:
+            help: "§l均勻分佈§r，從 §7<min>§r 到 §7<max>§r，閉區間\n[min, max] 範圍內的所有整數被選中的機率皆相同：1 / (max - min + 1)"
+          poisson:
+            help: "§l卜瓦松分佈§r，由偏移原點與最大值點決定\n此亂數產生器透過以下步驟實作：\n1. 建立一個 λ = §7<maxima>§r - §7<origin>§r 的卜瓦松亂數產生器\n2. 將機率密度函數向 X 軸正方向平移 §7<origin>§r\n3. 完成。現在機率密度函數的起點為 x = §7<origin>§r，最大值點為 x = 7<maxima>§r\n產生的隨機實數間隔會四捨五入為整數，並限制在 [1, +∞) 範圍內，因為玩家動作間隔必須是正整數\n若 λ 大於 50，將自動替換為等價的高斯分佈產生器以提升效能\n你也可以選擇為隨機值指定上限 §7<upper_bound>§r。所有大於上限的值都會被替換為上限值"
+            large_origin: "§7<origin>§r 不能大於 §7<maxima>§r"
+          gaussian:
+            help: "§l高斯 / 常態分佈§r，由 μ（§7<mu>§r）與 σ（§7<sigma>§r）決定\n機率速查表（在 [μ - r, μ + r] 範圍內）：\n  r = 0.32σ：25.0%\n  r = 0.67σ：50.0%\n  r = 1σ：68.3%\n  r = 2σ：95.4%\n  r = 3σ：99.7%\n產生的隨機實數間隔會四捨五入為整數，並限制在 [1, +∞) 範圍內，因為玩家動作間隔必須是正整數\n你也可以選擇為隨機值指定 §7<lower_bound>§r 或 §7<upper_bound>§r。所有超出範圍的值都會被限制在邊界範圍內"
+          triangular:
+            help: "§l三角分佈§r，由眾數 §7<mode>§r 與偏差量 §7<deviation>§r 決定\n數值範圍：[§7<mode>§r - §7<deviation>§r, §7<mode>§r + §7<deviation>§r]\n你也可以選擇為隨機值指定 §7<lower_bound>§r 或 §7<upper_bound>§r。所有超出範圍的值都會被限制在邊界範圍內"
+    sleep:
+      help: "立即阻塞目前執行緒指定的持續時間，可用於製造延遲"
+      usage: "用法：%1$s"
+      warning_header: "警告"
+      warning_content: "超過 15s 的持續時間可能會導致用戶端中斷連線，甚至觸發伺服器看門狗"
+    speedtest:
+      help:
+        '':
+          '': "測試網路連線速度與延遲。測試大小上限：%sMiB；用戶端支援：%s"
+        test_size_rule_hint: "由規則 speedTestCommandMaxTestSize 設定"
+        support_state:
+          'no': "否"
+          partial: "部分"
+          'yes': "是"
+      test_type:
+        download: "↓下載"
+        upload: "↑上傳"
+        ping: "Ping"
+      command:
+        abort_no_test: "沒有進行中的測速工作階段，無須中止"
+        abort_test: "正在中止測速"
+        test_size_too_large: "測試大小 %sMiB 過大。不應超過 %sMiB"
+        tiscm_protocol_disabled: "規則 tiscmNetworkProtocol 已停用。你需要啟用該規則才能開始測速"
+        client_not_supported: "用戶端不支援 TISCM 測速功能。請安裝或更新 Carpet TIS Addition 模組"
+        has_ongoing: "你有正在進行的測速，請等待目前測試完成"
+      messenger:
+        abort_hover: "點擊此處以中止測試"
+        header_hover: "TISCM 網路測速指令 %s"
+      speed_test:
+        start: "測速開始，大小：%sMiB"
+        progress: "[%s] %s%% %sMiB/s"
+        done: "測速完成，已處理 %sMiB，耗時：%ss，速度：%sMiB/s"
+      ping_test:
+        start: "測試開始，次數：%s，間隔 %sms"
+        pinging: "#%s 正在 Ping 用戶端 ... %sms"
+        done: "測試完成，次數：%s，平均延遲：%sms"
+    stop:
+      double_confirmation:
+        message: "請再次執行此指令以確認關閉伺服器"
+        hover_hint: "由規則 stopCommandDoubleConfirmation 提供的二次確認機制，以防止誤觸"
+    raid:
+      raid_count: "突襲數量：%1$s"
+      status:
+        '':
+          '': "狀態"
+        ongoing: "進行中"
+        victory: "勝利"
+        loss: "失敗"
+        stopped: "已停止"
+      center: "中心點"
+      bad_omen_level: "不祥之兆等級"
+      waves: "波數"
+      raiders: "突襲者"
+      none: "無"
+      no_raid: "目前沒有突襲"
+    raycast:
+      missed: "射線未命中"
+      hit: "射線命中"
+      unknown_enum:
+        shapeMode: "未知的形狀模式 %1$s"
+        fluidMode: "未知的流體模式 %1$s"
+    refresh:
+      inventory:
+        done: "已重新整理物品欄"
+      chunk:
+        overloaded: "無法重新整理：網路連線負載過高"
+        too_far: "所選區塊不在你的顯示距離內"
+        done: "已重新整理 %1$s 個區塊"
+    removeentity:
+      success: "已移除 %1$s 個實體"
+    spawn:
+      mobcapsLocal:
+        info: "玩家 %1$s 的局部生物上限："
+      natualSpawning:
+        unknown_enum:
+          mob_catalogue: "未知的生物分類 %1$s"
+        condition:
+          dimension_only: "維度：%s"
+          catalogue_only: "生物分類：%s"
+          dimension_and_catalogue: "維度：%s，生物分類：%s"
+        show:
+          show: "正在列出生物自然生成狀態 %s"
+          enabled: "已啟用"
+          disabled: "已停用"
+          all_dimension: "全維度"
+          single:
+            enabled: "目前狀態：%s\n點擊以在 %s 中為 %s 停用自然生成"
+            disabled: "目前狀態：%s\n點擊以在 %s 中為 %s 啟用自然生成"
+          catalogue:
+            enabled: "點擊以在所有維度中為 %s 停用自然生成"
+            disabled: "點擊以在所有維度中為 %s 啟用自然生成"
+          dimension:
+            enabled: "點擊以在 %s 中為所有生物分類停用自然生成"
+            disabled: "點擊以在 %s 中為所有生物分類啟用自然生成"
+          all:
+            enabled: "點擊以在所有維度中為所有生物分類停用自然生成"
+            disabled: "點擊以在所有維度中為所有生物分類啟用自然生成"
+        set:
+          done: "已在 %2$s 個維度中變更共 %1$s 個生物自然生成狀態"
+          show_after_set: "正在列出更新後的生物自然生成狀態"
+        resetAll:
+          done: "已重設所有生物自然生成狀態並恢復正常 —— 已全面啟用自然生成"
+    supplier_counter:
+      counter_name: "供應計數器"
+      key_name: "物品"
+      key_name_pc: "物品"
+    xp_counter:
+      counter_name: "經驗計數器"
+      key_name: "經驗"
+      key_name_pc: "經驗"
+      key_hover: "經驗球數值：%1$s\n經驗球大小：%2$s"
+      lithium_hopper_sleeping_notice: "[提示] Lithium 的漏斗休眠最佳化已啟用。你可能需要手動喚醒休眠中的經驗計數器漏斗，例如拆下並重新放置漏斗"
+
+  tracker:
+    tracker_name_full: "%1$s 追蹤器"
+    tracking_already_started: "%1$s 已在執行中"
+    tracking_started: "已啟動 %1$s"
+    tracking_stopped: "已停止 %1$s"
+    tracking_not_started: "%1$s 尚未啟動"
+    tracking_restarted: "已重新啟動 %1$s"
+    tracked: "已追蹤 %1$s"
+    real_time: "現實時間"
+    in_game: "遊戲內時間"
+    lifetime:
+      name: "存活時間"
+      no_result: "尚無結果"
+      specific_result: "%1$s 的存活時間結果"
+      invalid_detail: "無效的統計詳情 \"%1$s\""
+      unknown_entity_type: "未知的實體類型 \"%1$s\""
+      filter_info_header: "篩選器"
+      detail_hint: "點擊以顯示詳情"
+      spawn_count: "生成數量"
+      removal_count: "移除數量"
+      item_count: "物品數量"
+      experience_amount: "經驗值數量"
+      lifetime: "存活時間"
+      lifetime_overview: "存活時間總覽"
+      lifetime_explain: "實體生成與移除之間經過的生物生成階段次數"
+      reasons_for_spawning: "生成原因"
+      reasons_for_removal: "移除原因"
+      minimum_lifetime: "最短存活時間"
+      maximum_lifetime: "最長存活時間"
+      average_lifetime: "平均存活時間"
+      spawning_position: "生成位置"
+      spawning_position_mr: "生成位置（最近一次）"
+      removal_position: "移除位置"
+      spawn_reason:
+        block_drop: "方塊掉落"
+        breeding: "繁殖"
+        command: "/summon 指令"
+        container: "從容器掉出"
+        dispensed: "由方塊發射"
+        item: "由物品生成"
+        jockey: "騎士"
+        jockey_mount: "騎士坐騎"
+        natural: "自然生成"
+        place_block: "放置方塊"
+        player_login: "玩家登入"
+        portal_pigman: "地獄傳送門殭屍化豬布林生成"
+        raid: "於突襲中作為突襲者生成"
+        slime: "史萊姆分裂"
+        spawner: "由生怪磚生成"
+        summon: "由實體或方塊召喚"
+        vehicle_dismounting: "結束騎乘載具"
+        zombie_reinforce: "殭屍增援"
+        mob_drop: "由 %1$s 掉落"
+        mob_throw: "由 %1$s 丟出"
+        mob_conversion: "由 %1$s 轉化"
+        status_effect: "狀態效果（%1$s）"
+        trans_dimension:
+          '':
+            '': "跨維度"
+          from: "來自 %1$s"
+      removal_reason:
+        despawn:
+          randomly: "隨機消失"
+          immediately: "立即消失"
+          difficulty: "因難易度而消失"
+          timeout: "因逾時而消失"
+        exploded: "自爆"
+        hopper: "由漏斗收集"
+        merge: "實體合併"
+        other: "其他"
+        persistent: "變成持續存在"
+        pickup_block: "拾起方塊"
+        player_logout: "玩家登出"
+        vehicle_mounting: "騎乘載具"
+        void: "進入虛空"
+        mob_pickup: "由 %1$s 拾起"
+        mob_conversion: "轉化為 %1$s"
+        death:
+          '':
+            '': "死亡"
+          damage_source: "致死傷害來源"
+        trans_dimension:
+          '':
+            '': "跨維度"
+          to: "前往 %1$s"
+      help:
+        doc_summary: "用於追蹤所有新生成與被移除實體的存活時間及生成 / 移除原因的追蹤器"
+        complete_doc_hint: "完整說明 %1$s"
+        here: "見此處"
+        doc_link: "https://carpet.tis.world/docs/commands#lifetime"
+      filter:
+        global: "全域"
+        unsupported:
+          '0': "不支援的實體篩選器（第 %1$s 個）"
+          '1': "請輸入 @e 格式的實體選擇器"
+        filter_set: "已將 %1$s 的實體篩選器設為 %2$s"
+        filter_removed: "已移除 %1$s 的實體篩選器"
+        display: "%1$s 的實體篩選器為 %2$s"
+        display_total: "目前有 %1$s 個啟用的篩選器"
+        none: "無"
+        click_to_clear: "點擊以清除篩選器"
+        or: "或"
+      recorder:
+        enabled: "已啟用存活時間資料記錄器"
+        already_enabled: "存活時間資料記錄器已處於啟用狀態"
+        need_rerun_to_start: "提示：你需要重新啟動目前的存活時間追蹤以開始記錄"
+        disabled: "已停用存活時間資料記錄器"
+        already_disabled: "存活時間資料記錄器已處於停用狀態"
+        started: "已啟動存活時間資料記錄器，輸出檔案：%1$s"
+        total_output_count_too_many: "已略過啟動存活時間資料記錄器，因為輸出檔案總數（%1$s）超過設定上限（%2$s）"
+        total_output_size_too_large: "已略過啟動存活時間資料記錄器，因為輸出檔案總大小（%1$s）超過設定上限（%2$s）"
+        total_output_size_unknown: "已略過啟動存活時間資料記錄器，因為無法取得輸出檔案總大小"
+        stopped: "已停止存活時間資料記錄器，共記錄 %1$s 筆資料（%2$s）"
+        reload_config_failed: "無法重新載入存活時間資料記錄器設定：%s"
+        reload_config_ok: "已重新載入存活時間資料記錄器設定"
+        status:
+          title: "存活時間資料記錄器"
+          status: "狀態：%1$s，%2$s"
+          enabled: "已啟用"
+          disabled: "已停用"
+          running: "執行中"
+          paused: "已暫停"
+          stopped: "已停止"
+          output_file: "輸出檔案：%1$s"
+          record_written: "已記錄資料：%1$s（%2$s）"
+          bytes_written: "已寫入位元組：%1$s（%2$s）"
+          sample_rate: "取樣率：%1$s"
+          capped: "上限 %1$s，%2$s"
+          unlimited: "無限制"
+    raid:
+      name: "突襲"
+      raid_generated: "已生成的突襲"
+      invalidate_reasons_statistics: "結束原因"
+      none: "無"
+
+  util:
+    teleport_hint:
+      '':
+        '': "點擊以傳送至 %1$s"
+      dimension: "維度"
+    entity_type: "實體類型：%1$s（%2$s）"
+    language:
+      space: ""
+    stack_trace:
+      stack_trace: "堆疊追蹤"
+      stack_trace_hover: "堆疊追蹤（點擊以複製詳情）"
+      deobfuscated_stack_trace: "反混淆後的堆疊追蹤"
+      deobfuscated_stack_trace_hover: "反混淆後的堆疊追蹤（點擊以複製詳情）"
+      n_more_lines: "... 還有 %1$s 行"
+    entity_filter:
+      dimension: "維度"
+      anchor_pos: "錨點位置"
+    color:
+      white: "白色"
+      orange: "橙色"
+      magenta: "洋紅色"
+      light_blue: "淺藍色"
+      yellow: "黃色"
+      lime: "淺綠色"
+      pink: "粉紅色"
+      gray: "灰色"
+      light_gray: "淺灰色"
+      cyan: "青色"
+      purple: "紫色"
+      blue: "藍色"
+      brown: "棕色"
+      green: "綠色"
+      red: "紅色"
+      black: "黑色"
+    mob_category:
+      monster: "怪物"
+      creature: "生物"
+      ambient: "環境"
+      axolotls: "六角恐龍"
+      underground_water_creature: "地下水生生物"
+      water_creature: "水生生物"
+      water_ambient: "水生環境生物"
+      misc: "其他"
+    mob_category_short:
+      monster: "怪物"
+      creature: "生物"
+      ambient: "環境"
+      axolotls: "六角恐龍"
+      underground_water_creature: "地下水生生物"
+      water_creature: "水生生物"
+      water_ambient: "水生環境生物"
+      misc: "其他"
+
+  misc:
+    player_mount_anything_permission_denied: "只有 OP 玩家才能騎乘任何實體"
+    log_subscribe_for_other_permission_denied: "只有 OP 玩家才能控制其他玩家的記錄器訂閱"
+    logger_rule_switch:
+      permission_denied: "權限不足，無法訂閱記錄器 %1$s"
+      rule_hint: "詳見規則 %1$s"
+    rule_disabling:
+      unmatched_minecraft: "因 Minecraft 版本不符而停用"
+      unsatisfied_restriction: "因未滿足模組限制條件而停用"
+
+  carpet_translations:
+    category:
+      TIS: "TIS"
+      TISCM_protocol: "TISCM 網路協定"
+      logger: "記錄器"
+      carpet_mod: "Carpet 模組"
+      porting: "移植"
+    rule:
+      antiSpamDisabled:
+        name: "停用防洗版"
+        desc: "停用對玩家的洗頻檢查，包含：傳送聊天訊息冷卻、創造模式丟棄物品冷卻"
+      blockEventPacketRange:
+        name: "方塊事件封包範圍"
+        desc: "設定方塊事件成功觸發後，玩家會收到方塊事件封包的範圍"
+        extra:
+          '0': "對活塞而言，此封包用於顯示活塞移動動畫。調小此數值以降低用戶端延遲"
+      blockPlacementIgnoreEntity:
+        name: "方塊放置忽略實體"
+        desc: "停用放置方塊前的實體碰撞檢查，也就是你可以將方塊放置在實體內"
+        extra:
+          '0': "僅對創造模式玩家生效"
+      breedingCooldownDisabled:
+        name: "停用繁殖冷卻"
+        desc: "移除所有生物的繁殖冷卻時間"
+      cauldronBlockItemInteractFix:
+        name: "鍋釜方塊物品互動修正"
+        desc: "讓玩家可以對著任意盛裝高度的鍋釜放置方塊"
+        extra:
+          '0': "影響 Minecraft <= 1.16.x。這個惱人的行為已在 1.17+ 中修復"
+      chatMessageLengthLimitUnlocked:
+        name: "聊天訊息長度上限解鎖"
+        desc: "解除聊天訊息／指令字串的長度上限"
+        extra:
+          '0': "長度上限將從 256 提升至 32000"
+          '1': "需要在用戶端安裝 Carpet TIS Addition"
+      chunkTickInEntityTickingChunksBackport:
+        name: "強載入區塊區塊刻移植"
+        desc: "移植 Minecraft 1.21.5+ 的特性：所有實體運算區塊（強載入區塊）皆會執行區塊刻，無須附近存在玩家"
+        extra:
+          '0': "此規則僅在 Minecraft < 1.21.5 中存在"
+      chunkTickSpeed:
+        name: "區塊刻速度"
+        desc: "修改每個區塊在每遊戲刻執行區塊刻的頻率"
+        extra:
+          '0': "預設值為 1。設為 0 以停用區塊刻"
+          '1': "受影響的遊戲階段：雷雨、結冰與降雪、隨機刻"
+          '2': "當值為 n 時，每個區塊在每遊戲刻會執行 n 次氣候相關運算，且每個子區塊會執行 n * randomTickSpeed 次隨機刻"
+      chunkUpdatePacketThreshold:
+        name: "區塊更新封包閾值"
+        desc: "當方塊變更數量超過此閾值時，遊戲將直接傳送整個區塊資料封包"
+        extra:
+          '0': "提高此數值可能有助於減少網路頻寬用量，並在子區塊同時有大量方塊實體與方塊變更時提升用戶端 FPS"
+          '1': "將其設為極高值以模擬 1.16+ 的行為，即不傳送區塊封包而僅傳送多個方塊變更封包"
+          '2': "此規則僅在 <1.16 中可用"
+      clientSettingsLostOnRespawnFix:
+        name: "重生用戶端設定修正"
+        desc: "修復玩家重生或從終界進入終界傳送門時，未從舊玩家實體轉移已儲存的用戶端設定的問題"
+        extra:
+          '0': "使依賴用戶端設定的模組總能正常運作，例如本模組與 WorldEdit 模組的伺服器端翻譯"
+      commandLifeTime:
+        name: "存活時間追蹤器"
+        desc: "啟用 /lifetime 指令以追蹤實體存活時間等資訊"
+        extra:
+          '0': "有助於生怪塔偵錯等用途"
+      commandManipulate:
+        name: "世界操作指令開關"
+        desc: "啟用 /manipulate 指令以執行世界相關的操作指令"
+      commandPlayerActionPerTick:
+        name: "玩家單刻動作開關"
+        desc: "啟用 /player <name> <action> 指令的「perTick」動作模式"
+        extra:
+          '0': "此規則預設為停用，因為「perTick」動作模式超出了原版行為的能力範圍：原版用戶端每刻只能執行一次動作輸入"
+          '1': "不過你仍可透過此規則啟用「perTick」動作模式，或限制僅管理員玩家可用"
+      commandRaid:
+        name: "突襲追蹤器"
+        desc: "啟用 /raid 指令以列出與追蹤突襲"
+      commandRaycast:
+        name: "射線追蹤指令開關"
+        desc: "啟用 /raycast 指令以進行射線追蹤偵錯"
+      commandRefresh:
+        name: "重新整理指令開關"
+        desc: "啟用 /refresh 指令以將你的用戶端與伺服器同步"
+      commandRemoveEntity:
+        name: "移除實體指令開關"
+        desc: "啟用 /removeentity 指令以直接從世界中抹除目標實體"
+      commandSleep:
+        name: "睡眠指令開關"
+        desc: "啟用 /sleep 指令以人為製造延遲"
+      commandSpeedTest:
+        name: "網路測速指令開關"
+        desc: "啟用 /speedtest 指令以進行網路速度測試"
+        extra:
+          '0': "可透過規則 speedTestCommandMaxTestSize 變更允許的最大測試資料量"
+      creativeHitRemoveEntity:
+        name: "創造玩家攻擊移除實體"
+        desc: "允許創造模式玩家透過攻擊直接移除實體"
+        extra:
+          '0': "手持劍且能觸發橫掃攻擊時，橫掃範圍內的實體也會一併被移除"
+          '1': "移除實體的方式與 /removeentity 指令相同"
+      creativeInstantTame:
+        name: "創造模式立即馴服動物"
+        desc: "讓創造模式玩家可以瞬間馴服動物"
+        extra:
+          '0': "影響貓、狼、鸚鵡與馬類動物"
+      creativeNetherWaterPlacement:
+        name: "創造玩家地獄放水"
+        desc: "允許創造模式玩家在地獄透過水桶放置水"
+        extra:
+          '0': "技術上而言，此規則適用於所有 ultrawarm 維度"
+      creativeNoItemCooldown:
+        name: "創造物品無冷卻"
+        desc: "移除創造模式玩家使用物品的冷卻時間"
+        extra:
+          '0': "例如投擲終界珍珠後的 20 遊戲刻冷卻時間"
+      creativeOpenContainerForcibly:
+        name: "創造強制開啟容器"
+        desc: "允許創造模式玩家開啟被阻擋的容器。例如界伏盒"
+      debugNbtQueryNoPermission:
+        name: "NBT 偵錯查詢免權限"
+        desc: "移除用戶端 F3+I 操作所發出的 NBT 偵錯查詢請求的權限需求"
+        extra:
+          '0': "在原版中，此請求至少需要權限等級 2"
+          '1': "需要在用戶端安裝 Carpet TIS Addition"
+      deobfuscateCrashReportStackTrace:
+        name: "反混淆崩潰堆疊追蹤"
+        desc: "反混淆崩潰報告中的堆疊追蹤"
+      dispenserNoItemCost:
+        name: "發射器不消耗物品"
+        desc: "發射器與投擲器觸發時不會減少內部的物品堆疊數量"
+        extra:
+          '0': "無論是投擲或使用物品皆不消耗，但投擲器向容器傳輸物品時仍會消耗"
+      dispensersFireDragonBreath:
+        name: "發射器發射龍之吐息"
+        desc: "發射器可發射龍之吐息以產生龍之吐息藥水效果雲"
+      dustTrapdoorReintroduced:
+        name: "重新引入紅石粉地板門迴圈"
+        desc: "重新引入由紅石粉與地板門組成的瞬時更新循環器"
+        extra:
+          '0': "此規則實際上做了以下兩件事："
+          '1': "1. 讓開啟的地板門無法改變紅石粉的指向（還原 mc1.20 前的行為）"
+          '2': "2. 讓紅石粉忽略來自下方的狀態更新（還原 mc1.20.3 前的行為）"
+      elytraFireworkBoostOnBlockBackport:
+        name: "鞘翅對方塊放煙火推進"
+        desc: "移植 Minecraft 1.21.6+ 的特性：在鞘翅滑翔狀態下對著方塊使用煙火時，會推進玩家而非施放煙火"
+        extra:
+          '0': "此規則僅在 Minecraft < 1.21.6 中存在"
+      elytraFireworkKeepLeashConnection:
+        name: "鞘翅煙火加速不斷拴繩"
+        desc: "啟用時，鞘翅飛行期間使用煙火不再會扯斷既有的拴繩連接，還原 mc1.21.6 前的行為"
+        extra:
+          '0': "注意：此規則不會防止因距離過遠而導致的拴繩斷開"
+          '1': "此規則僅在 Minecraft >= 1.21.6 中存在"
+      enchantCommandNoRestriction:
+        name: "附魔指令無限制"
+        desc: "移除 /enchant 指令中所有的附魔限制檢查"
+      endGatewayChunkLoadingBackport:
+        name: "折躍門區塊載入移植"
+        desc: "啟用後，實體進入終界折躍門時，可載入出口折躍門周圍的區塊"
+        extra:
+          '0': "用於載入區塊的載入票券為半徑設為 3 的 PORTAL 票券，與地獄傳送門的行為一致"
+          '1': "此規則僅在 Minecraft < 1.21 中存在，因為此特性已於原版 1.21-pre1 引入"
+          '2': "另見：規則 endPortalChunkLoadingBackport"
+      endPortalChunkLoadingBackport:
+        name: "終界門區塊載入移植"
+        desc: "啟用後，實體從主世界進入終界維度時，可載入黑曜石平台周圍的區塊"
+        extra:
+          '0': "用於載入區塊的載入票券為半徑設為 3 的 PORTAL 票券，與地獄傳送門的行為一致"
+          '1': "此規則僅在 Minecraft < 1.20.5 中存在，因為此特性已於原版 24w03a（mc1.20.5 快照）引入"
+          '2': "另見：規則 endGatewayChunkLoadingBackport"
+      endPortalOpenedSoundDisabled:
+        name: "停用終界傳送門音效"
+        desc: "停用開啟終界傳送門時發出的音效"
+      entityBrainMemoryUnfreedFix:
+        name: "實體大腦記憶釋放修正"
+        desc: "修復生物實體被移除後，其大腦記憶仍未釋放的問題"
+        extra:
+          '0': "若生物實體在被移除前持續記住其他實體並接連被移除，可能會在大腦中建立無限長的記憶鏈，進而導致記憶體洩漏"
+          '1': "修復 MC-260605，採用與 Mojang 在 1.19.4-pre3 實作相同的修復方式"
+      entityChunkSectionIndexXOverflowFix:
+        name: "實體區段索引溢位修正"
+        desc: "修復進行實體範圍查詢時，若查詢範圍與滿足 `(chunkX + 1) % (2 ^ 22) == 2 ^ 21` 的任意區塊相交，會拋出 IllegalArgumentException 的錯誤"
+        extra:
+          '0': "此規則僅在 Minecraft >= 1.17 中存在，因為此錯誤是在 1.17 中引入的"
+      entityIdCounterLoggerSamplingDuration:
+        name: "實體 ID 記錄取樣時長"
+        desc: "計算實體 ID 計數器遞增速度的取樣視窗長度，單位為遊戲刻"
+      entityInstantDeathRemoval:
+        name: "立即移除死亡實體"
+        desc: "移除生物實體死亡後被移除前的 20 遊戲刻延遲"
+        extra:
+          '0': "啟用時，生物實體將在死亡後立即消失"
+      entityMomentumLoss:
+        name: "實體動量流失"
+        desc: "設為 false 以停用從磁碟載入實體時，對超過 10m/gt 的單軸動量歸零的機制"
+      entityPathNavigationStuckDetectionUseRealTimeReintroduced:
+        name: "尋路逾時使用現實時間"
+        desc: "重新引入 mc < 1.19.3 中實體尋路卡住偵測使用現實時間的邏輯"
+        extra:
+          '0': "此規則讓卡住偵測再次使用現實時間而非遊戲時間，使透過紅石裝置偵測延遲或刻速率再次成為可能"
+          '1': "將行為還原至 mc < 22w42a（1.19.3 快照）"
+      entityPlacementIgnoreCollision:
+        name: "實體放置忽略碰撞"
+        desc: "停用使用物品放置實體時的方塊與實體碰撞檢查"
+        extra:
+          '0': "受影響的物品：盔甲座、終界水晶、所有種類的船"
+          '1': "生怪蛋物品不受影響"
+      entityTrackerDistance:
+        name: "實體同步距離"
+        desc: "伺服器將實體資訊同步至用戶端的最大水平切比雪夫距離（單位：區塊）"
+        extra:
+          '0': "基本上可視為「實體顯示距離」，但仍會受伺服器顯示距離限制"
+          '1': "將其設為不小於伺服器顯示距離的數值，即可讓伺服器將顯示距離內的所有實體同步至用戶端"
+          '2': "將其設為非正數以使用原版邏輯"
+          '3': "需要重新載入區塊以將新的規則數值套用至實體"
+      entityTrackerInterval:
+        name: "實體同步間隔"
+        desc: "伺服器將實體資訊同步至用戶端的時間間隔（單位：遊戲刻）"
+        extra:
+          '0': "設為較小的數值（例如 1）時，每 1 遊戲刻都會將實體資訊同步至用戶端，可減少用戶端實體不同步的情況"
+          '1': "將其設為非正數以使用原版邏輯"
+          '2': "需要重新載入區塊以將新的規則數值套用至實體"
+      explosionNoEntityInfluence:
+        name: "爆炸不影響實體"
+        desc: "爆炸不會影響任何實體"
+        extra:
+          '0': "此處的影響包含傷害、加速等"
+      explosionPacketRange:
+        name: "爆炸封包廣播範圍"
+        desc: "設定爆炸發生時，玩家會收到爆炸封包的範圍"
+      failSoftBlockStateParsing:
+        name: "方塊狀態剖析容錯"
+        desc: "忽略 /setblock 等指令中方塊狀態引數內無效的屬性鍵／值"
+        extra:
+          '0': "在原版中，無效的屬性鍵／值會在剖析時導致指令失敗，此規則會抑制該錯誤"
+          '1': "有助於跨版本貼上 Litematica 結構圖等操作"
+      fakePlayerNamePrefix:
+        name: "假人名稱前綴"
+        desc: "為透過 /player 指令召喚的假人加上名稱前綴"
+        extra:
+          '0': "設為 #none 以停用加上前綴"
+          '1': "可防止召喚不合規名稱的假人，並讓玩家清單更加整潔"
+      fakePlayerNameSuffix:
+        name: "假人名稱後綴"
+        desc: "為透過 /player 指令召喚的假人加上名稱後綴"
+        extra:
+          '0': "設為 #none 以停用加上後綴"
+      fakePlayerTicksLikeRealPlayer:
+        name: "假人比照真玩家執行刻"
+        desc: "調整 Carpet 的假人邏輯與 /player 動作包進行刻運算所在的遊戲階段，使其行為盡可能接近真實玩家"
+        extra:
+          '0': "調整項目，調整前 -> 調整後："
+          '1': "1. 假人實體相關刻運算：實體階段 -> 網路階段"
+          '2': "2. /player 指令動作包：實體階段 -> 非同步任務階段"
+      fakePlayerRemoteSpawning:
+        name: "假人遠端生成"
+        desc: "使用 /player 指令遠端召喚假人的權限需求"
+        extra:
+          '0': "此處的「遠端」是指在距離超過 16m 處或在其他維度召喚假人"
+      farmlandTrampledDisabled:
+        name: "停用耕地踩踏"
+        desc: "停用耕地被生物踩踏退化為泥土的機制"
+      fillCommandModeEnhance:
+        name: "fill 指令模式強化"
+        desc: "增強 /fill 指令中的模式功能"
+        extra:
+          '0': "新增 softreplace 模式：盡可能保留原方塊的方塊狀態。可用於替換階梯／半磚等的方塊類型"
+      fortressNetherBricksPackSpawningFix:
+        name: "地獄要塞成群生成修復"
+        desc: "修復 [1.18.2, 1.21.5) 中引入的地獄要塞怪物成群生成隔離問題"
+        extra:
+          '0': "於 1.18.2-pre1 引入。對於首次嘗試位置在地獄磚上的成群生成，若後續嘗試位置偏移至內部結構邊界框內的非地獄磚方塊上，要塞怪物將無法生成，反之亦然"
+          '1': "問題影響範例：帶有基岩天花板的凋零玫瑰式凋零骷髏塔，在建造地獄磚成群生成延伸地板後，產率可能會不升反降"
+      flattenTriangularDistribution:
+        name: "攤平三角形分布"
+        desc: "將 Minecraft 隨機數產生器中的所有三角分布改為均勻分布"
+        extra:
+          '0': "藉此，極端情況將更容易發生"
+      fluidDestructionDisabled:
+        name: "停用流體破壞"
+        desc: "停用流體流動造成的方塊破壞"
+        extra:
+          '0': "流體只會單純停留在破壞方塊前的狀態"
+          '1': "在創造模式中，這有助於防止液體意外沖毀你的紅石線路"
+      gazeDisguiseEquipmentExtended:
+        name: "凝視偽裝裝備擴充"
+        desc: "允許玩家穿戴龍首、玩家頭顱或生物頭顱來偽裝自己對其他生物的視線"
+        extra:
+          '0': "穿戴這些物品將提供與穿戴雕刻過的南瓜相同的效果，即不會激怒終界使者，也無法定住嘎枝使其停止移動"
+      hopperCountersUnlimitedSpeed:
+        name: "漏斗計數器無限速度"
+        desc: "讓指向羊毛的漏斗擁有無限的吸取與傳輸物品速度，且無冷卻時間"
+        extra:
+          '0': "僅在 Carpet 模組中的 hopperCounters 選項啟用時生效"
+      hopperNoItemCost:
+        name: "漏斗物品無消耗"
+        desc: "上方放有羊毛方塊的漏斗可無限輸出物品而不減少內部物品數量"
+        extra:
+          '0': "你可以使用 /scounter 指令或訂閱 scounter 記錄器，來追蹤輸出的物品數量"
+          '1': "此規則同時也是 /scounter 指令的開關"
+      hopperXpCounters:
+        name: "漏斗經驗計數器"
+        desc: "讓漏斗計數器能夠統計來自經驗球的經驗值數量"
+        extra:
+          '0': "啟用後，漏斗計數器將能「吸收」經驗球並統計其經驗值"
+          '1': "你可以使用 /xcounter 指令或訂閱 xcounter 記錄器，來查看經驗計數器的統計結果"
+          '2': "此規則同時也是 /xcounter 指令的開關"
+      HUDLoggerUpdateInterval:
+        name: "HUD 記錄器更新間隔"
+        desc: "覆寫 HUD 記錄器的更新間隔（單位：遊戲刻）"
+      instantCommandBlock:
+        name: "瞬時指令方塊"
+        desc: "讓位於紅石礦上的指令方塊立即執行指令，而非排程延遲 1 遊戲刻的方塊刻事件來執行"
+        extra:
+          '0': "僅影響一般指令方塊"
+      instantBlockUpdaterReintroduced:
+        name: "重新引入瞬時方塊更新"
+        desc: "重新引入 1.19 以前版本的瞬時方塊更新行為"
+        extra:
+          '0': "使更新抑制在 1.19+ 中再次可行"
+          '1': "同時也讓 microTiming 記錄器的記錄結果邏輯更清晰，如同 1.19 以前的版本一樣乾淨"
+          '2': "警告：1.19+ 原版方塊更新邏輯的行為與 1.19 以前的瞬時方塊更新邏輯並非完全一致。請注意這可能會導致紅石裝置損壞。請參閱 TISUnion/Carpet-TIS-Addition 的 issue #156 與 #236"
+      itemEntitySkipMovementDisabled:
+        name: "停用掉落物略過移動"
+        desc: "移除掉落物進行刻運算時略過移動運算的機制"
+        extra:
+          '0': "還原 <=1.13 的掉落物行為，即地面上低速的掉落物仍會在每遊戲刻運算移動，而非每 4 遊戲刻一次"
+          '1': "在需要精確的掉落物移動時序時非常實用"
+          '2': "會導致依賴此機制的紅石裝置失效，例如 2no2name 的無線紅石"
+      keepMobInLazyChunks:
+        name: "保留弱載入區塊生物"
+        desc: "弱載入區塊內的怪物不會自然消失"
+        extra:
+          '0': "此選項僅在 Minecraft 1.15 至 1.16 之間的版本生效"
+      largeBarrel:
+        name: "大型木桶"
+        desc: "史上最棒的儲物方塊：大型木桶"
+        extra:
+          '0': "兩個相鄰且底部相對的木桶方塊可組成一個大型木桶"
+          '1': "大型木桶的行為與邏輯就像大型儲物箱一樣"
+      leaderZombieSpawnWithMaxHealthDisabled:
+        name: "停用領頭殭屍滿血生成"
+        desc: "啟用時，領頭殭屍將以預設生命值（20）生成，而非提升後的最高生命值"
+        extra:
+          '0': "將行為還原至 mc < 26.1，當時領頭殭屍雖有較高的最高生命值，但生成時仍為 20 點生命值"
+      lifeTimeTrackerConsidersMobcap:
+        name: "存活追蹤考量生物上限"
+        desc: "存活時間追蹤器處理不計入生物上限（mobcap）之生物的策略"
+        extra:
+          '0': "true：不追蹤不計入生物上限的生物，並在生物不再影響生物上限的瞬間（例如拾起物品時）將其視為已移除。適合用於設計生怪塔"
+          '1': "false：追蹤所有可追蹤的生物，並在生物實際被移除時才標記為已移除。適合用於測試突襲或非生怪塔裝置"
+      lightEngineMaxBatchSize:
+        name: "光照引擎最大批次大小"
+        desc: "變更光照任務的最大批次大小"
+        extra:
+          '0': "提高對光照抑制的容忍度"
+          '1': "設為 5 即為遊戲定義的預設上限"
+      lightQueueLoggerSamplingDuration:
+        name: "光照佇列記錄取樣時長"
+        desc: "光照佇列記錄器的取樣時長，單位為遊戲刻"
+        extra:
+          '0': "影響記錄器中顯示除佇列大小以外的所有資料"
+      lightUpdates:
+        name: "光照更新"
+        desc: "暫停或停用光照更新"
+        extra:
+          '0': "若設為 suppressed，將不會執行任何光照更新，可用於模擬光照抑制器"
+          '1': "若設為 ignored，將不會排程任何光照更新。適合用來製造光照錯誤"
+          '2': "若設為 off，將不會排程或執行任何光照更新"
+          '3': "[警告] 若設為 suppressed 或 off，將無法載入新區塊。此時若伺服器因玩家移動或其他原因嘗試載入區塊，伺服器將會永久卡死"
+      loggerMovement:
+        name: "移動記錄器"
+        desc: "移動記錄器的開關／權限需求"
+      manipulateBlockLimit:
+        manipulateBlockLimit: "操作方塊指令數量上限"
+        desc: "/manipulate block 系列指令可影響的最大方塊數量"
+      microTiming:
+        name: "微時序"
+        desc: "啟用微時序記錄器的功能"
+        extra:
+          '0': "使用染料物品標記並記錄紅石元件動作、方塊更新與堆疊追蹤"
+          '1': "使用 /log microTiming 開始記錄"
+          '2': "啟用時可能會影響伺服器效能"
+          '3': "請參閱規則 microTimingDyeMarker 的說明以了解染料標記的使用方式"
+          '4': "[已棄用] 使用羊毛方塊與終界燭來標記需要記錄的方塊"
+          '5': "[已棄用] 終界燭會偵測方塊更新，紅石元件則會顯示其動作"
+          '6': "[已棄用] - 偵測器、活塞、終界燭：指向羊毛方塊"
+          '7': "[已棄用] - 紅石中繼器、紅石比較器、鐵軌、按鈕等：放置在羊毛方塊上"
+          '8': "[已棄用] 除此之外，通用的方塊動作記錄方式是將羊毛方塊上的終界燭指向要記錄的方塊"
+          '9': "[已棄用] 查看規則 microTimingTarget 以了解如何切換記錄方式"
+      microTimingDyeMarker:
+        name: "微時序染料標記"
+        desc: "允許玩家手持染料物品對著方塊按右鍵，將其標記為 microTiming 記錄器的記錄目標"
+        extra:
+          '0': "你需要訂閱 microTiming 記錄器才能標記或顯示方塊"
+          '1': "使用相同染料再次按右鍵可將標記切換為終界燭模式，額外記錄方塊更新資訊。再次按右鍵則會移除標記"
+          '2': "使用史萊姆球對著標記按右鍵可將其設為可移動。當附著的方塊被活塞移動時，標記會隨之移動到對應的新位置"
+          '3': "使用 `/carpet microTimingDyeMarker clear` 以移除所有標記"
+          '4': "使用重新命名的染料物品可建立具名標記。標記名稱也會一併顯示在記錄訊息中"
+          '5': "當用戶端安裝 fabric-carpet 時，可在標記的方塊處看到方框。若同時安裝 carpet-tis-addition，還可透過方塊看到標記名稱"
+      microTimingTarget:
+        name: "微時序目標"
+        desc: "修改在 microTiming 記錄器中指定待記錄事件的方式。以染料標記的事件總是會被記錄"
+        extra:
+          '0': "labelled：記錄以羊毛標記的事件。已棄用"
+          '1': "in_range：記錄距離任意玩家 32m 內的事件。已棄用"
+          '2': "all：記錄所有事件。請謹慎使用。已棄用"
+          '3': "marker_only：僅記錄以染料標記的事件。請搭配規則 microTimingDyeMarker 使用"
+      microTimingTickDivision:
+        name: "微時序遊戲刻劃分"
+        desc: "決定劃分遊戲刻的方式"
+        extra:
+          '0': "world_timer：在主世界計時器遞增時劃分"
+          '1': "player_action：在玩家動作階段開始時劃分"
+      minecartFullDropBackport:
+        name: "礦車完整掉落移植"
+        desc: "移植 Minecraft 1.19+ 的特性：礦車實體被破壞時會掉落完整的礦車物品"
+        extra:
+          '0': "此規則僅在 Minecraft < 1.19 中存在"
+      minecartPlaceableOnGround:
+        name: "礦車可在地面放置"
+        desc: "讓礦車可以像船一樣無須鐵軌直接放置在地面上"
+      minecartTakePassengerMinVelocity:
+        name: "礦車載客最小速度"
+        desc: "決定礦車將附近實體載上車成為乘客所需的最低水平速度（單位：m/gt）"
+        extra:
+          '0': "設為 0 讓礦車無論速度多慢都能像船一樣搭載乘客"
+          '1': "設為 NaN 讓礦車永遠不會搭載乘客"
+      mobcapsDisplayIgnoreMisc:
+        name: "生物上限顯示忽略雜項"
+        desc: "在 Carpet 的生物上限（mobcaps）顯示中忽略「misc」（雜項）生物類別"
+        extra:
+          '0': "因為它毫無用處：misc 類別中不會自然生成任何生物，且在計算生物上限時也會被忽略"
+          '1': "影響 mobcaps 記錄器與 /spawn mobcap 指令"
+      moveableReinforcedDeepslate:
+        name: "可移動強化深板岩"
+        desc: "讓強化深板岩可被活塞推動"
+      naturalSpawningUse13Heightmap:
+        name: "自然生成用 1.13 高度圖"
+        desc: "將生物自然生成選取初始座標時的 Y 值上限，改為該 XZ 位置處最高的遮光方塊"
+        extra:
+          '0': "基本上，此規則將自然生成時對高度圖的使用方式還原至 1.13 及以前的版本"
+          '1': "注意：這會略微增加自然生成階段的運算耗時"
+          '2': "另見：規則 naturalSpawningUse13HeightmapExtra"
+      naturalSpawningUse13HeightmapExtra:
+        name: "1.13 高度圖額外選項"
+        desc: "在計算規則 naturalSpawningUse13Heightmap 的修改版高度圖時，忽略活塞、史萊姆方塊與蜂蜜塊"
+        extra:
+          '0': "此規則旨在維持與 1.13 前一致的行為，但可能會帶來非預期的機制濫用"
+      netherPortalEntityInteractionCheckUseFullBlockShape:
+        name: "地獄門完整方塊碰撞箱"
+        desc: "將地獄傳送門方塊用於實體進入檢查的體素形狀改為完整方塊"
+        extra:
+          '0': "基本上，此規則會將地獄傳送門的傳送範圍從傳送門外框改為完整方塊"
+          '1': "將行為還原至 mc < 25w04a（1.21.5 快照），並撤銷 MC-101556 的修復"
+      netherPortalMaxSize:
+        name: "地獄傳送門最大尺寸"
+        desc: "修改地獄傳送門的最大尺寸限制"
+        extra:
+          '0': "若將其設為較大的數值，請謹慎使用"
+      oakBalloonPercent:
+        name: "大型橡樹生成機率"
+        desc: "橡木樹苗長成大型橡木（fancy_oak，俗稱雞腿樹）的百分比機率"
+        extra:
+          '0': "例如：0 代表不會長成大型橡木，50 代表 50% 機率長成大型橡木，100 代表總是長成大型橡木"
+          '1': "設為 -1 以停用此規則並使用原版邏輯（10% 機率長成大型橡木）"
+      observerNoDetection:
+        name: "偵測器不進行偵測"
+        desc: "阻止偵測器在收到狀態更新後排程方塊刻事件"
+        extra:
+          '0': "基本上此規則停用了偵測器的偵測功能"
+      obsidianPlatformBlockBreakerBackport:
+        name: "黑曜石平台破壞方塊"
+        desc: "移植 Minecraft 1.21+ 的特性：在終界維度生成黑曜石平台時可破壞既有的方塊"
+        extra:
+          '0': "注意：在原版 [1.16, 1.21) 中，一般實體建立黑曜石平台時的方塊走訪順序與 mc1.21+ 不同"
+      opPlayerNoCheat:
+        name: "OP 玩家禁止作弊"
+        desc: "停用部分指令以防止管理員意外作弊"
+        extra:
+          '0': "受影響的指令清單：/gamemode, /tp, /teleport, /give, /setblock, /summon"
+      optimizedFastEntityMovement:
+        name: "最佳化快速實體移動"
+        desc: "透過僅檢查目前移動軸向上的方塊碰撞，來最佳化高速實體移動"
+        extra:
+          '0': "靈感來自 carpetmod112 中的 fastMovingEntityOptimization 規則"
+          '1': "搭配規則 optimizedTNT 使用可大幅提升大砲的效能表現"
+      optimizedHardHitBoxEntityCollision:
+        name: "最佳化硬碰撞箱碰撞"
+        desc: "最佳化實體與具有硬碰撞箱之實體的碰撞運算"
+        extra:
+          '0': "在區塊中使用額外的獨立清單來儲存具有硬碰撞箱的實體（包含船與界伏蚌）"
+          '1': "因為世界中通常不會到處都是船與界伏蚌，這能在實體移動並搜尋路徑上具有硬碰撞箱的實體時，大幅減少不必要的走訪運算"
+          '2': "需在載入區塊前啟用才會生效。在傳送門生怪塔中約有 ~20% 的效能提升"
+          '3': "可能與其他新增實體的模組不相容"
+          '4': "已知衝突的模組：async"
+      optimizedTNTHighPriority:
+        name: "最佳化 TNT 高優先級"
+        desc: "以更高優先順序的 Mixin 注入來實作 Carpet 規則 optimizedTNT"
+        extra:
+          '0': "使規則 optimizedTNT 能夠覆寫 Lithium 的爆炸最佳化"
+          '1': "當然，規則 optimizedTNT 必須啟用才會生效"
+      overspawningReintroduced:
+        name: "重新引入過量生成"
+        desc: "將超量生成機制重新引入至 mc1.16+"
+        extra:
+          '0': "啟用超量生成時，遊戲僅會在自然生成階段開始時檢查生物上限與生成位能"
+          '1': "這讓生怪塔能再次於單一遊戲刻內忽略生物上限並完整利用所有生成嘗試，使高速被動生物農場再次成為可能"
+      poiUpdates:
+        name: "POI 更新開關"
+        desc: "方塊變更時是否會觸發 POI（興趣點）更新"
+        extra:
+          '0': "設為 false 以停用 POI 更新"
+      persistentLoggerSubscription:
+        name: "持久化記錄器訂閱"
+        desc: "在伺服器重新啟動後仍保留玩家訂閱的記錄器與記錄選項"
+        extra:
+          '0': "僅在玩家首次登入時套用 Carpet 的 defaultLoggers 規則"
+          '1': "記錄器訂閱項目儲存於 config/carpettisaddition/logger_subscriptions.json 中"
+      preciseEntityPlacement:
+        name: "精準實體放置"
+        desc: "使用物品放置／召喚實體時，將實體精確放置在玩家準星指向的目標座標"
+        extra:
+          '0': "受影響的物品：生怪蛋、盔甲座、終界水晶"
+      railDupingFix:
+        name: "鐵軌複製修復"
+        desc: "停用舊式透過推動充能中的動力鐵軌或觸發鐵軌來複製鐵軌的機制"
+      redstoneDustRandomUpdateOrder:
+        name: "紅石粉隨機更新順序"
+        desc: "隨機化紅石粉發出方塊更新的順序"
+        extra:
+          '0': "有助於測試你的紅石裝置是否具有位置相依性"
+          '1': "在規則 fastRedstoneDust 啟用時無效"
+      redstoneDustRepeaterComparatorIgnoreUpwardsStateUpdate:
+        name: "紅石忽略下方狀態更新"
+        desc: "讓紅石粉、紅石中繼器與紅石比較器忽略來自下方的狀態更新"
+        extra:
+          '0': "這會撤銷 23w35a（1.20.2 快照）引入的變更。啟用此規則後，即可再次輕鬆製作懸空比較器"
+          '1': "備註：規則 dustTrapdoorReintroduced 對紅石粉實作了相同的還原機制"
+      renewableDragonEgg:
+        name: "可再生龍蛋"
+        desc: "讓龍蛋變為可再生"
+        extra:
+          '0': "當龍蛋處於龍之吐息藥水效果雲中時，有一定機率吸收效果雲並「召喚」出一顆新的龍蛋"
+          '1': "可搭配規則「dispensersFireDragonBreath」使用以更加便利"
+      renewableDragonHead:
+        name: "可再生龍首"
+        desc: "被高壓苦力怕炸死的終界龍將會掉落龍首"
+      renewableElytra:
+        name: "可再生鞘翅"
+        desc: "夜魅被界伏蚌擊殺時，會以指定的機率掉落鞘翅"
+        extra:
+          '0': "設為 0 以停用"
+      repeaterHalfDelay:
+        name: "紅石中繼器延遲減半"
+        desc: "將位於紅石礦上方的紅石中繼器延遲減半"
+        extra:
+          '0': "延遲會從 2, 4, 6 或 8 遊戲刻變為 1, 2, 3 或 4 遊戲刻"
+      sandDupingFix:
+        name: "重力方塊複製修正"
+        desc: "停用利用終界傳送門複製沙與其他重力方塊的機制"
+        extra:
+          '0': "重力方塊包含沙、鐵砧、龍蛋等"
+          '1': "在複製機中，沙只會被傳送至另一個維度"
+      shulkerBoxCCEReintroduced:
+        name: "重新引入界伏盒 CCE"
+        desc: "重新引入透過紅石比較器讀取帶有非 Inventory 類型方塊實體的界伏盒方塊訊號，所觸發的 ClassCastException 更新抑制器"
+        extra:
+          '0': "願虛空的魔法盒永存！"
+      shulkerBoxContentDropBackport:
+        name: "界伏盒內容物掉落移植"
+        desc: "移植界伏盒掉落物因受到傷害而銷毀時，會掉落其內部所有物品的特性"
+        extra:
+          '0': "此特性於原版 Minecraft 1.17 引入"
+      snowMeltMinLightLevel:
+        name: "融雪最小亮度等級"
+        desc: "雪融化所需的最低亮度等級"
+        extra:
+          '0': "在原版中此值為 12，代表當亮度等級 >=12 時，雪會在隨機刻中融化"
+          '1': "設為 0 可融化建築上所有惱人的積雪"
+          '2': "設為與防止方塊上降雪相同的最低亮度等級（亮度等級 10），即可輕鬆測試你的建築是否能靠照明防止積雪"
+          '3': "你可以修改遊戲規則 randomTickSpeed 來加速融雪過程，或修改 Carpet 規則 chunkTickSpeed 來加速降雪過程"
+      soundSuppressionSimulator:
+        name: "聲音抑制模擬器"
+        desc: "位於青金石礦上的伏聆振測器／校準伏聆振測器可模擬聲音抑制器"
+        extra:
+          '0': "當位於青金石礦上的（校準）伏聆振測器方塊實體收到振動並準備查詢其「sculk_sensor_phase」方塊狀態前，拋出 IllegalArgumentException"
+      spawnBabyProbably:
+        name: "生成幼年生物機率"
+        desc: "生成生物時，若存在幼年變體，則以指定的機率生成幼年變體"
+        extra:
+          '0': "設為 -1 以停用此規則並使用原版邏輯"
+      spawnJockeyProbably:
+        name: "生成騎士變種機率"
+        desc: "生成生物時，若存在騎士變體，則以指定的機率生成騎士變體"
+        extra:
+          '0': "受影響的騎士類型：雞騎士、蜘蛛騎士、熾足獸騎士"
+          '1': "對於熾足獸，生成殭屍化豬布林與幼年熾足獸的比例仍維持 1:3"
+          '2': "設為 -1 以停用此規則並使用原版邏輯"
+      spawnLeaderZombieProbably:
+        name: "生成領頭殭屍機率"
+        desc: "生成殭屍時，覆寫生成領頭殭屍的機率"
+        extra:
+          '0': "領頭殭屍能夠呼叫殭屍增援隊、擁有較高的最高生命值，且能破門"
+          '1': "設為 -1 以停用此規則並使用原版邏輯"
+      speedTestCommandMaxTestSize:
+        name: "測速指令最大測試大小"
+        desc: "使用 /speedtest 指令進行網路速度測試時的最大測試資料大小（單位：MiB）"
+      stopCommandDoubleConfirmation:
+        name: "stop 指令二次確認"
+        desc: "為 /stop 指令加上二次確認機制，以防止意外停止伺服器"
+        extra:
+          '0': "你需要在 1 分鐘內輸入兩次 /stop 才能停止伺服器"
+          '1': "此機制僅對玩家生效"
+      structureBlockDoNotPreserveFluid:
+        name: "結構方塊不保留流體"
+        desc: "結構方塊在放置可含水方塊時，不保留既有的流體"
+        extra:
+          '0': "具有抑制錯誤 MC-130584 發生的連帶效果"
+      structureBlockLimit:
+        name: "結構方塊尺寸上限"
+        desc: "覆寫結構方塊的尺寸上限"
+        extra:
+          '0': "若相對位置大於 32，用戶端可能會顯示錯誤的位置"
+      structureBlockOutlineDistance:
+        name: "結構方塊外框顯示距離"
+        desc: "自訂結構方塊外框的顯示距離"
+        extra:
+          '0': "需要在用戶端啟用才能正常運作"
+      synchronizedLightThread:
+        name: "同步光照執行緒"
+        desc: "將光照執行緒與伺服器主執行緒同步"
+        extra:
+          '0': "使光照執行緒不會落後於主執行緒而失去同步"
+          '1': "伺服器會在每個世界開始刻運算時等待所有光照任務完成"
+          '2': "啟用此規則後即可安全地執行 /tick warp，而無須擔心潛在的光照抑制或光照不同步"
+      syncServerMsptMetricsData:
+        name: "同步伺服器 MSPT 資料"
+        desc: "將伺服器的 MSPT 指標資料同步至用戶端，讓玩家可在 F3 + ALT 的偵錯畫面中查看"
+        extra:
+          '0': "需要在用戶端安裝 Carpet TIS Addition"
+      tickCommandCarpetfied:
+        name: "tick 指令 Carpet 化"
+        desc: "只需此規則，即可完整還原 mc1.20.3 以前 Carpet 模組中的 /tick 指令"
+        extra:
+          '0': "啟用此規則等同於將以下規則設為以下數值："
+          '1': "- tickCommandEnhance = true"
+          '2': "- tickCommandPermission = 2"
+          '3': "- tickFreezeCommandToggleable = true"
+          '4': "- tickFreezeDeepCommand = true"
+          '5': "- tickProfilerCommandsReintroduced = true"
+          '6': "- tickWarpCommandAsAnAlias = true"
+      tickCommandEnhance:
+        name: "tick 指令強化"
+        desc: "啟用 mc1.20.3 以前 Carpet 模組中針對 /tick 指令的增強功能"
+        extra:
+          '0': "增強項目清單："
+          '1': "1. 啟用「/tick sprint status」指令（先前為「/tick warp status」）"
+      tickCommandPermission:
+        name: "tick 指令權限等級"
+        desc: "覆寫「/tick」指令的權限等級需求"
+        extra:
+          '0': "設為「2」或「ops」以還原 mc1.20.3 以前 Carpet 模組的預設行為"
+          '1': "若想在指令方塊等處執行「/tick」指令，此規則會非常實用"
+      tickFreezeCommandToggleable:
+        name: "tick 凍結指令可切換"
+        desc: "讓「/tick freeze」指令再次變為切換式開關，如同先前 Carpet 模組的行為"
+        extra:
+          '0': "亦即當遊戲已處於凍結狀態時，執行「/tick freeze」指令會解除凍結"
+      tickFreezeDeepCommand:
+        name: "深度凍結刻指令"
+        desc: "還原 Carpet 模組中的「/tick freeze deep」子指令"
+        extra:
+          '0': "相較於一般的「/tick freeze」，它額外支援凍結區塊載入票券的到期計時"
+      tickProfilerCommandsReintroduced:
+        name: "重新引入刻效能分析"
+        desc: "還原 Carpet 模組中的「/tick health」與「/tick entities」子指令"
+        extra:
+          '0': "如同先前的 Carpet 模組，這兩個子指令的行為與「/profile [health|entities]」子指令相同"
+      tickWarpCommandAsAnAlias:
+        name: "tickWarp 指令別名"
+        desc: "還原「/tick warp」子指令，作為原版「/tick sprint」指令的別名"
+      tileTickLimit:
+        name: "方塊排程刻上限"
+        desc: "修改每遊戲刻可執行的排程方塊刻事件數量上限"
+      tiscmNetworkProtocol:
+        name: "TISCM 網路協定"
+        desc: "TISCM 網路協定的開關"
+      tntDupingFix:
+        name: "TNT 複製修正"
+        desc: "停用 TNT、地毯與部分鐵軌的複製機"
+        extra:
+          '0': "基於附著方塊更新的複製機將不起作用，而基於紅石元件更新的複製機將無法保留複製出的方塊"
+          '1': "Dupe bad dig good"
+      tntFuseDuration:
+        name: "TNT 引信時長"
+        desc: "覆寫 TNT 的預設引信時長"
+        extra:
+          '0': "這也會影響被爆炸點燃的 TNT 引信時長"
+      tntIgnoreRedstoneSignal:
+        name: "TNT 忽略紅石訊號"
+        desc: "防止 TNT 方塊被紅石訊號點燃"
+        extra:
+          '0': "你仍然可以使用爆炸等方式點燃 TNT"
+      tooledTNT:
+        name: "工具化 TNT"
+        desc: "玩家引發的爆炸在破壞方塊並掉落物品時，會套用玩家慣用手所持的工具"
+        extra:
+          '0': "因此只要在爆炸時手持正確的工具，即可點燃 TNT 來採集需要特定工具或附魔的方塊"
+          '1': "例如：你可以手持絲綢之觸鎬來採集冰，或手持剪刀來採集草"
+          '2': "此規則同樣適用於玩家以外的任何其他生物實體"
+          '3': "技術上而言，此規則會在爆炸期間將引發爆炸之實體慣用手上的物品套用至戰利品表建構器"
+      totallyNoBlockUpdate:
+        name: "完全無方塊更新"
+        desc: "停用所有方塊更新與狀態更新"
+      toughWitherRose:
+        name: "堅韌的凋零玫瑰"
+        desc: "由死而生，凋零玫瑰堅韌到足以種植在任何表面上"
+        extra:
+          '0': "此規則移除了凋零玫瑰方塊的所有放置條件限制，代表你可以將凋零玫瑰放置在任何地方"
+          '1': "當你想在凋零骷髏塔中運用更新抑制的凋零玫瑰時，此規則非常實用"
+      turtleEggTrampledDisabled:
+        name: "停用海龜蛋踩踏破壞"
+        desc: "停用海龜蛋被踩踏而破碎的機制"
+      ultraSecretSetting:
+        name: "終極祕密設定"
+        desc: "qOf DSh hwg ORRWHW Cb"
+      undeadDontBurnInSunlight:
+        name: "不死生物陽光下不燃燒"
+        desc: "防止不死生物在陽光下燃燒"
+        extra:
+          '0': "不過牠們的頭盔在陽光下仍會損耗耐久度"
+      updateSkippingSimulator:
+        name: "更新跳略模擬器"
+        desc: "位於深板岩青金石礦上的觸發鐵軌／動力鐵軌可模擬更新略過器"
+        extra:
+          '0': "當位於深板岩青金石礦上已充能的觸發鐵軌／動力鐵軌準備將其 powered 狀態設為 false 前，將更新計數器設為最大值以觸發更新略過，並取消本次充能狀態變更"
+      updateSuppressionSimulator:
+        name: "更新抑制模擬器"
+        desc: "位於青金石礦上的觸發鐵軌／動力鐵軌可模擬更新抑制器"
+        extra:
+          '0': "當位於青金石礦上已充能的觸發鐵軌／動力鐵軌準備將其 powered 狀態設為 false 前，拋出指定的 JVM 例外狀況"
+          '1': "false：停用規則；true：啟用規則並使用 StackOverflowError；其他：啟用規則並使用指定的例外狀況"
+      vaultBlacklistDisabled:
+        name: "停用寶庫黑名單"
+        desc: "停用寶庫方塊中與玩家黑名單相關的功能"
+        extra:
+          '0': "啟用此規則後："
+          '1': "1. 玩家開啟寶庫時，其 UUID 不會被加入寶庫黑名單中"
+          '2': "2. 無論玩家是否在寶庫黑名單中，皆可觸發或開啟寶庫"
+      violentNetherPortalCreation:
+        name: "強制建立地獄傳送門"
+        desc: "允許建立地獄傳送門時無視門框內既有的方塊，直接強制開啟地獄傳送門"
+        extra:
+          '0': "false：停用此規則，維持原版行為"
+          '1': "replaceable：僅允許無視可替換的方塊（例如流體、草）"
+          '2': "all：允許無視黑曜石以外的任何方塊。由於傳送門門框的計算方式，黑曜石無法被無視"
+          '3': "注意：強制替換方塊的過程不會產生方塊更新，與原版行為一致"
+      visualizeProjectileLoggerEnabled:
+        name: "視覺化投射物記錄器"
+        desc: "啟用視覺化投射物記錄器"
+        extra:
+          '0': "試試 /log projectiles visualize"
+      voidDamageAmount:
+        name: "虛空傷害數值"
+        desc: "修改虛空傷害的數值"
+      voidDamageIgnorePlayer:
+        name: "虛空傷害忽略玩家"
+        desc: "防止玩家受到虛空傷害"
+        extra:
+          '0': "對玩家完全無害的虛空，太棒了！"
+          '1': "若將規則值設為以逗號分隔的遊戲模式清單，則僅處於這些遊戲模式中的玩家對虛空傷害免疫"
+      voidRelatedAltitude:
+        name: "虛空相對高度"
+        desc: "修改世界底部與實體會受到虛空傷害之虛空區域間的相對高度"
+      wetExplosionReintroduced:
+        name: "重新引入水爆"
+        desc: "重新引入 MC 1.21.2 ~ 1.21.5 版本中的「水下爆炸」機制"
+        extra:
+          '0': "若爆炸是由實體（例如點燃的 TNT）所產生且該實體接觸到水，則該爆炸不會對掉落物、盔甲座以及所有裝飾性實體造成傷害"
+          '1': "此規則在 MC 1.21.2 ~ 1.21.5 中無任何效果"
+          '2': "另見：MC-3697"
+      witherSpawnedSoundDisabled:
+        name: "停用凋零怪生成音效"
+        desc: "停用凋零怪在被召喚後生命值回滿時所發出的生成音效"
+      xpTrackingDistance:
+        name: "經驗球追蹤距離"
+        desc: "覆寫經驗球追蹤玩家的距離"
+        extra:
+          '0': "設為 0 以停用追蹤"
+      yeetAsyncTaskExecutionDelay:
+        name: "移除非同步工作延遲"
+        desc: "確保 MinecraftServer 的非同步伺服器任務盡快執行"
+        extra:
+          '0': "在原版中，當伺服器進行遊戲刻加速（tick warp）時，非同步任務的執行最多可能被略過 4 刻"
+          '1': "此規則確保非同步任務總是會在最接近的非同步任務階段執行"
+      yeetIdleMspt:
+        name: "抑制閒置 MSPT"
+        desc: "抑制閒置 MSPT 的產生"
+        extra:
+          '0': "部分操作（例如卸載區塊與儲存 POI）可能會產生閒置 MSPT 開銷"
+          '1': "閒置 MSPT 僅會在目前遊戲刻耗時尚未達到延遲上限時出現（即 MSPT 仍低於 50，且伺服器未處於 tick warp 狀態）"
+          '2': "啟用此規則時，閒置 MSPT 將受到抑制。若伺服器既未掉刻也未處於 tick warp 狀態，其 MSPT 可能會略微降低"
+      yeetOutOfOrderChatKick:
+        name: "移除亂序聊天踢出"
+        desc: "防止玩家因任何原因收到「Out-of-order chat packet received...」訊息而被踢出"
+      yeetUpdateSuppressionCrash:
+        name: "移除更新抑制崩潰"
+        desc: "防止伺服器因更新抑制引發的 StackOverflowError、OutOfMemoryError、ClassCastException 或 IllegalArgumentSuppression 而崩潰"
+        extra:
+          '0': "功能與 fabric-carpet 的 updateSuppressionCrashFix 規則相同，但提供更多資訊"
+          '1': "在 fabric-carpet >= 1.4.49 中，若要在遊戲內接收防止更新抑制崩潰的廣播訊息，你需要訂閱 updateSuppressedCrashes 記錄器"
+          '2': "注意：此規則僅處理由更新抑制手段（例如鐵軌堆疊溢位器、聲音抑制、界伏盒 CCE...）引發的例外狀況。它並非攔截所有例外狀況的通用 try-catch"
+      zombifiedPiglinDropLootIfAngryReintroduced:
+        name: "憤怒殭屍化豬布林掉寶"
+        desc: "啟用時，殭屍化豬布林在進入憤怒狀態或將玩家設為攻擊目標後的 100 遊戲刻內死亡，將會如同被玩家擊殺般掉落戰利品與經驗球"
+        extra:
+          '0': "將行為還原至 mc < 25w02a（1.21.5 快照），並撤銷 MC-56653 的修復"

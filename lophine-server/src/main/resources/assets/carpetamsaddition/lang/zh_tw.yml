@@ -1,0 +1,852 @@
+carpetamsaddition:
+  carpet:
+    totalRules:
+      version: "版本"
+      total_rules: "規則總數"
+
+  fuzz:
+    command:
+      highlightCoordButtonHoverText: "使用 Fuzz 模組標示路徑點，使用 /coordCompass clear 取消標示"
+
+  rule:
+    amsUpdateSuppressionCrashFix:
+      msg: "更新抑制位置 @ %s -> [ %s ] | 原因：%s"
+      copy: "複製座標到剪貼簿"
+    welcomeMessage:
+      modify_content_in: "於此路徑修改內容："
+      save_path: "[ 存檔資料夾 ]"
+    maxPlayerBlockInteractionRange:
+      disable_command: "<Carpet AMS Addition> 由於已啟用 maxPlayerBlockInteractionRange 規則，此變更不會生效"
+    maxPlayerEntityInteractionRange:
+      disable_command: "<Carpet AMS Addition> 由於已啟用 maxPlayerEntityInteractionRange 規則，此變更不會生效"
+    sendPlayerDeathLocation:
+      location: "死亡位置"
+      copy: "複製座標到剪貼簿"
+    phantomSpawnAlert:
+      msg: "§b<phantomSpawnAlert> §r§e%s §r§d召喚了夜魅 §r§e@ §r§a[ %s ]"
+    experimentalMinecartSpeed:
+      vanilla_command_disabled: "<Carpet AMS Addition> 此遊戲規則已由 Carpet 規則 minecartMaxSpeed 接管"
+
+  command:
+    commandHelper:
+      refresh_cmd_tree: "<Carpet AMS Addition> 已重新整理指令樹"
+    playerChunkLoading:
+      no_player_specified: "<commandPlayerChunkLoadController> 未指定任何玩家"
+      set: "<commandPlayerChunkLoadController> %s 區塊載入 %s"
+      chunk_loading_true: "<commandPlayerChunkLoadController> 區塊載入：true"
+      chunk_loading_false: "<commandPlayerChunkLoadController> 區塊載入：false"
+      help: "/playerChunkLoading [true/false] - 控制玩家自身的區塊載入，僅能操作自己"
+    amsUpdateSuppressionCrashFixForceMode:
+      lazy_mode: "[ lazy 模式 ]"
+      force_mode: "[ force 模式 ]"
+    anvilInteractionDisabled:
+      disable: "[ 鐵砧互動已停用 ]"
+      enable: "[ 鐵砧互動已啟用 ]"
+    customBlockBlastResistance:
+      modify_set: "<customBlockBlastResistance> %s/%s -> %s/%s"
+      set: "<customBlockBlastResistance> + %s/%s"
+      remove: "<customBlockBlastResistance> - %s/%s"
+      not_found: "<customBlockBlastResistance> 找不到 %s"
+      removeAll: "<customBlockBlastResistance> 已移除所有自訂方塊爆炸抗性。"
+      list: "[ 方塊 / 爆炸抗性 ]"
+      help:
+        set: "/customBlockBlastResistance set <block> <hardness> - 新增或修改方塊及其爆炸抗性"
+        remove: "/customBlockBlastResistance remove <block> - 從清單中移除方塊"
+        removeAll: "/customBlockBlastResistance removeAll - 從清單中移除所有方塊"
+        list: "/customBlockBlastResistance list - 顯示所有已新增的方塊"
+    here:
+      overworld: "主世界"
+      nether: "地獄"
+      the_end: "終界"
+      the_end_button_hover: "複製終界座標"
+      overworld_button_hover: "複製主世界座標"
+      nether_button_hover: "複製地獄座標"
+    where:
+      overworld: "主世界"
+      nether: "地獄"
+      the_end: "終界"
+      who_get_who: "%s 取得了 %s 的位置"
+      the_end_button_hover: "複製終界座標"
+      overworld_button_hover: "複製主世界座標"
+      nether_button_hover: "複製地獄座標"
+    leader:
+      add: "<commandPlayerLeader> %s 已成為導遊"
+      is_already_leader: "<commandPlayerLeader> %s 已經是導遊"
+      remove: "<commandPlayerLeader> %s 已不再是導遊"
+      is_not_leader: "<commandPlayerLeader> %s 不是導遊"
+      removeAll: "<commandPlayerLeader> 已移除所有導遊"
+      list_title: "[ 導遊清單 ]"
+      help:
+        add: "/leader add <PlayerName> - 新增一名導遊"
+        remove: "/leader remove <PlayerName> - 移除一名導遊"
+        removeAll: "/leader removeAll - 移除所有導遊"
+        broadcast_leader_pos: "/leader broadcastLeaderPos <player> interval <tick> - 定時廣播導遊的座標，將時間設為負數以停止廣播"
+        list: "/leader list - 檢視導遊清單"
+    ping:
+      stop_ping: "已停止 ping 操作。"
+      active_ping_is_null: "目前沒有進行中的 ping 操作。"
+      help:
+        ping: "/pings <targetIpOrDomainName> <pingQuantity> - 向指定主機執行 ping"
+        stop: "/pings stop - 中斷 ping 操作"
+    getSaveSize:
+      size_msg: "目前存檔大小："
+      save_success_msg: "[ 已儲存世界 ]"
+      save_fail_msg: "[ 無法儲存世界 ]"
+    getSystemInfo:
+      os: "作業系統：%s"
+      os_arch: "系統架構：%s"
+      available_processors: "可用處理器：%s"
+      max_memory: "最大記憶體：%s"
+      total_memory: "已分配記憶體：%s"
+      free_memory: "可用記憶體：%s"
+    customCommandPermissionLevel:
+      modify_set: "<customCommandPermissionLevel> %s %d -> %d"
+      set: "<customCommandPermissionLevel> + %s/%d"
+      remove: "<customCommandPermissionLevel> - %s"
+      not_found: "<customCommandPermissionLevel> 設定檔中不存在指令：%s"
+      cant_modify_self: "<customCommandPermissionLevel> 無法修改此指令的權限"
+      removeAll: "<customCommandPermissionLevel> 已移除所有項目"
+      list_title: "[ 自訂指令權限等級清單 ]"
+      help:
+        set: "/customCommandPermissionLevel set <command> <permissionLevel> - 設定指令的權限等級"
+        remove: "/customCommandPermissionLevel remove <command> - 移除已修改的指令"
+        refresh: "/customCommandPermissionLevel refresh - 重新整理指令樹"
+        removeAll: "/customCommandPermissionLevel removeAll - 移除所有已修改的指令"
+        list: "/customCommandPermissionLevel list - 檢視已修改的指令清單"
+    customMovableBlock:
+      add: "<customMovableBlock> + %s"
+      already_exists: "<customMovableBlock> 已存在 %s"
+      remove: "<customMovableBlock> - %s"
+      not_found: "<customMovableBlock> 找不到 %s"
+      removeAll: "<customMovableBlock> 已從清單中移除所有方塊"
+      list: "[ 可移動方塊清單 ]"
+      help:
+        set: "/customMovableBlock add <block> - 新增可移動方塊"
+        remove: "/customMovableBlock remove <block> - 移除可移動方塊"
+        removeAll: "/customMovableBlock removeAll - 移除所有已新增的可移動方塊"
+        list: "/customMovableBlock list - 檢視可移動方塊清單"
+    commandGetHeldItemID:
+      getHeldItemID:
+        copy: "複製到剪貼簿"
+    customAntiFireItems:
+      add: "<customAntiFireItems> + %s"
+      already_exists: "<customAntiFireItems> 已存在 %s"
+      not_found: "<customAntiFireItems> 找不到該物品"
+      remove: "<customAntiFireItems> - %s"
+      removeAll: "<customAntiFireItems> 已從清單中移除所有物品"
+      list_title: "[ 防火物品清單 ]"
+      help:
+        set: "/customAntiFireItems add <item> - 新增防火物品"
+        remove: "/customAntiFireItems remove <item> - 移除防火物品"
+        removeAll: "/customAntiFireItems removeAll - 移除所有已新增的防火物品"
+        list: "/customAntiFireItems list - 檢視防火物品清單"
+    carpetExtensionModWikiHyperlink:
+      click_to_jump: "點擊連結前往頁面："
+    customBlockHardness:
+      modify_set: "<customBlockHardness> %s/%s -> %s/%s"
+      set: "<customBlockHardness> + %s/%s"
+      remove: "<customBlockHardness> - %s/%s"
+      not_found: "<customBlockHardness> 找不到 %s"
+      removeAll: "<customBlockHardness> 已移除所有自訂方塊硬度。"
+      list: "[ 方塊 / 硬度 ]"
+      default_hardness: "%s 的預設硬度：%s"
+      help:
+        set: "/customBlockHardness set <block> <hardness> - 新增或修改方塊及其硬度"
+        remove: "/customBlockHardness remove <block> - 從清單中移除方塊"
+        removeAll: "/customBlockHardness removeAll - 從清單中移除所有方塊"
+        get_default_hardness: "/customBlockHardness getDefaultHardness <block> - 查詢方塊的預設硬度"
+        list: "/customBlockHardness list - 顯示所有已新增的方塊"
+    at:
+      title: "%s @ 了你"
+    getClientPlayerFps:
+      feedback: "%s - FPS：%s"
+      help: "/getClientPlayerFps <player> - 取得指定玩家的 FPS"
+    playerPose:
+      set_help: "/playerPose <player> set <pose> - 設定玩家姿勢"
+      stop_help: "/playerPose <player> stop - 停止指定姿勢"
+    amsp:
+      support_client_set_is_none: "<AMSP> 目前沒有支援 AMSP 的用戶端"
+      support_client_list_title: "支援 AMSP 的用戶端清單："
+      server_support_status: "<AMSP> 伺服器支援狀態：%s"
+      request_client_version: "<AMSP> 正在第 %s 次請求用戶端版本資訊..."
+      client_mod_version_success_feedback: "<AMSP> %s 的用戶端版本為：%s"
+      client_mod_version_failed_feedback: "<AMSP> 重試 %s 次後仍未收到用戶端版本資訊"
+      get_client_version_waiting: "<AMSP> 已送出版本請求，正在等待回應..."
+      server_mod_version_feedback: "<AMSP> 伺服器 Carpet AMS Addition 版本：%s v%s"
+      deny_client_feedback: "<AMSP> 已禁止 %s 透過 AMSP 與伺服器通訊"
+      deny_all_client_feedback: "<AMSP> 已禁止目前所有用戶端透過 AMSP 與伺服器通訊"
+      set_server_support_feedback: "<AMSP> 已將伺服器支援狀態變更為：%s"
+      request_handshake_feedback: "<AMSP> 已向 %s 送出交握請求"
+    playerNoNetherPortalTeleport:
+      globalMode_enable: "<playerNoNetherPortalTeleport> 已開啟全域模式"
+      globalMode_disable: "<playerNoNetherPortalTeleport> 已關閉全域模式"
+      globalMode_state: "<playerNoNetherPortalTeleport> 全域模式：%s"
+      add_success: "<playerNoNetherPortalTeleport> 已禁止 %s 透過地獄傳送門傳送"
+      add_fail: "<playerNoNetherPortalTeleport> %s 已在黑名單中"
+      remove_success: "<playerNoNetherPortalTeleport> 已將 %s 從黑名單中移除"
+      remove_fail: "<playerNoNetherPortalTeleport> %s 不在黑名單中"
+      clear_success: "<playerNoNetherPortalTeleport> 已清空黑名單"
+      clear_fail: "<playerNoNetherPortalTeleport> 黑名單為空"
+      list_title: "[ 地獄傳送門傳送玩家黑名單 ]"
+      help:
+        globalMode: "/playerNoNetherPortalTeleport globalMode [true/false] - 設定全域模式"
+        globalModeState: "/playerNoNetherPortalTeleport globalMode - 檢視全域模式狀態"
+        add: "/playerNoNetherPortalTeleport add <player> - 將玩家加入黑名單"
+        remove: "/playerNoNetherPortalTeleport remove <player> - 將玩家從黑名單中移除"
+        clear: "/playerNoNetherPortalTeleport clear - 清空黑名單"
+        list: "/playerNoNetherPortalTeleport list - 檢視黑名單"
+
+  logger:
+    serverRuntime:
+      server_runtime: "伺服器運作時間"
+
+  validator:
+    enhancedWorldEater:
+      value_range: "數值應為 0 - 16 或 -1"
+    maxClientInteractionReachDistance:
+      value_range: "數值應為 0 - 512 或 -1"
+    maxPlayerBlockInteractionRange:
+      value_range: "數值應為 0 - 512 或 -1"
+    maxPlayerEntityInteractionRange:
+      value_range: "數值應為 0 - 512 或 -1"
+    blockChunkLoaderTimeController:
+      value_range: "數值應為 1 - 300"
+    blockChunkLoaderRangeController:
+      value_range: "數值應為 1 - 32"
+    easyGetPitcherPod:
+      value_range: "數值應為 2 - 100 或 0"
+    renewableNetherScrap:
+      value_range: "數值應為 0 - 1"
+    experimentalMinecartSpeed:
+      value_range: "數值應為 0 - 1000 或 -1"
+    observer:
+      largeEnderChest:
+        switch_tip: "<Carpet AMS Addition> 偵測到已啟用大型終界箱（largeEnderChest）規則，重新進入遊戲後生效。為防止物品遺失，建議將此規則設為預設啟用"
+      amsNetworkProtocol:
+        need_enable_protocol: "<Carpet AMS Addition> 已將 %s 重設為預設值。需要先啟用 amsNetworkProtocol 規則"
+      need_restart_server_or_client:
+        is_client_message: "<Carpet AMS Addition> 偵測到規則 %s 設定已變更，重新啟動用戶端後生效"
+        is_server_message: "<Carpet AMS Addition> 偵測到規則 %s 設定已變更，重新啟動伺服器後生效"
+
+  observer:
+    largeEnderChest:
+      switch_tip: "<Carpet AMS Addition> 偵測到已啟用大型終界箱（largeEnderChest）規則，重新進入遊戲後生效。為防止物品遺失，建議將此規則設為預設啟用"
+    amsNetworkProtocol:
+      need_enable_protocol: "<Carpet AMS Addition> 已將 %s 重設為預設值，需要先啟用 amsNetworkProtocol 規則"
+    need_restart_server_or_client:
+      is_client_message: "<Carpet AMS Addition> 偵測到規則 %s 設定已變更，重新啟動用戶端後生效"
+      is_server_message: "<Carpet AMS Addition> 偵測到規則 %s 設定已變更，重新啟動伺服器後生效"
+
+  carpet_translations:
+    category:
+      AMS: "AMS"
+      crafting: "合成"
+      AMS_chunkload: "AMS_區塊載入"
+      AMS_network: "AMS_網路"
+    rule:
+      superBow:
+        name: "超級弓"
+        desc: "允許弓同時附魔無限與修補"
+      sharedVillagerDiscounts:
+        name: "共享村民折扣"
+        desc: "將治癒殭屍村民後取得的村民交易折扣共享給所有玩家"
+      fakePeace:
+        name: "偽和平"
+        desc: "模擬和平模式（偽和平），可自訂生效的維度或維度組合，並以 \",\" 分隔"
+      extinguishedCampfire:
+        name: "熄滅的營火"
+        desc: "玩家放置營火時預設為熄滅狀態"
+      netherWaterPlacement:
+        name: "地獄可放水"
+        desc: "玩家可以在地獄使用水桶放置水"
+      blowUpEverything:
+        name: "炸毀所有方塊"
+        desc: "將所有方塊的爆炸抗性設為 0"
+      optimizedDragonRespawn:
+        name: "最佳化終界龍重生"
+        desc: "最佳化終界龍重生時搜尋終界傳送門的過程"
+      safeFlight:
+        name: "安全飛行"
+        desc: "玩家使用鞘翅飛行撞牆時不會受到傷害"
+      customBlockUpdateSuppressor:
+        name: "自訂方塊更新抑制器"
+        desc: "自訂一個方塊作為更新抑制器（並非所有方塊都能設為更新抑制器）"
+        extra:
+          '0': "指令格式："
+          '1': "指令格式："
+          '2': "/carpet customBlockUpdateSuppressor minecraft:BlockName"
+          '3': "使用以下指令控制啟用此規則時是否自動啟用 \"amsUpdateSuppressionCrashFix\" 規則："
+          '4': "/amsUpdateSuppressionCrashFixForceMode true/false"
+      infiniteTrades:
+        name: "無限交易"
+        desc: "防止村民交易被鎖定"
+      invulnerable:
+        name: "無懈可擊"
+        desc: "玩家將免疫除虛空傷害以外的所有傷害"
+      creativeOneHitKill:
+        name: "創造模式一擊必殺"
+        desc: "允許創造模式下的玩家一擊消滅實體；若玩家處於潛行狀態，目標周圍的其他實體也會一併被消滅"
+      largeEnderChest:
+        name: "大型終界箱"
+        desc: "將終界箱的容量加倍（與大型儲物箱相同）"
+      bambooModelNoOffset:
+        name: "竹子模型無偏移"
+        desc: "使竹子的方塊模型不產生隨機偏移"
+      bambooCollisionBoxDisabled:
+        name: "停用竹子碰撞箱"
+        desc: "允許玩家穿過竹子"
+      commandCustomAntiFireItems:
+        name: "自訂防火物品指令"
+        desc: "使用指令控制任意物品是否防火"
+        extra:
+          '0': "啟用規則後，使用 \"/customAntiFireItems help\" 指令檢視使用說明"
+      itemAntiExplosion:
+        name: "掉落物防爆"
+        desc: "掉落物不會被爆炸摧毀"
+        extra:
+          '0': "[false] - 停用規則"
+          '1': "[true] - 啟用規則"
+          '2': "[no_blast_wave] - 防爆且無衝擊波，爆炸不會推動掉落物"
+      creativeShulkerBoxDropsDisabled:
+        name: "創造模式界伏盒不掉落"
+        desc: "在創造模式下破壞裝有物品的界伏盒時不會產生掉落物"
+      shulkerHitLevitationDisabled:
+        name: "停用界伏蚌懸浮效果"
+        desc: "玩家被界伏蚌擊中時只會受到傷害，不會獲得懸浮效果"
+      immuneShulkerBullet:
+        name: "免疫界伏彈"
+        desc: "玩家完全免疫界伏蚌發射的界伏彈"
+      blueSkullController:
+        name: "藍色凋零頭顱控制器"
+        desc: "控制凋零怪發射藍色凋零頭顱的機率"
+        extra:
+          '0': "[SURELY] - 總是發射藍色凋零頭顱"
+          '1': "[NEVER] - 從不發射藍色凋零頭顱"
+          '2': "[VANILLA] - 原版行為"
+      endermanTeleportRandomlyDisabled:
+        name: "禁止終界使者隨機傳送"
+        desc: "禁止終界使者隨機傳送"
+      fasterMovement:
+        name: "快速移動"
+        desc: "提供五個檔位讓玩家移動更快"
+        extra:
+          '0': "你可以使用 fasterMovementController 規則控制此規則在哪個維度生效。預設在所有維度生效。"
+      fasterMovementController:
+        name: "快速移動控制器"
+        desc: "用於控制 fasterMovement 規則在哪個維度生效。"
+        extra:
+          '0': "[overworld] - 僅在主世界生效"
+          '1': "[nether] - 僅在地獄生效"
+          '2': "[end] - 僅在終界生效"
+          '3': "[all] - 在所有維度生效"
+      easyWitherSkeletonSkullDrop:
+        name: "輕鬆掉落凋零骷髏頭顱"
+        desc: "擊殺凋零骷髏時 100% 掉落凋零骷髏頭顱"
+      commandAnvilInteractionDisabled:
+        name: "停用鐵砧互動指令"
+        desc: "玩家無法開啟鐵砧的介面"
+        extra:
+          '0': "指令：/anvilInteractionDisabled true/false"
+      preventAdministratorCheat:
+        name: "防止管理員作弊"
+        desc: "停用部分指令以防止管理員意外作弊"
+        extra:
+          '0': "受影響的指令清單："
+          '1': "/gamemode, /tp, /teleport, /give, /setblock, /summon, /difficulty, /kill, /time, /weather, /fill, /setblock, /enchant, /experience, /advancement, /effect, /data, /defaultgamemode, /gamerule"
+      amsUpdateSuppressionCrashFix:
+        name: "AMS 更新抑制崩潰修復"
+        desc: "防止更新抑制導致伺服器崩潰，同時提供發生更新抑制的座標與維度"
+        extra:
+          '0': "[false] - 停用規則"
+          '1': "[true] - 啟用規則"
+          '2': "[silence] - 啟用但不傳送伺服器訊息"
+          '3': "使用以下指令控制啟用 \"customBlockUpdateSuppressor\" 時是否強制啟用此規則（權限等級為 2）："
+          '4': "/amsUpdateSuppressionCrashFixForceMode true/false"
+      cakeBlockDropOnBreak:
+        name: "破壞蛋糕掉落"
+        desc: "破壞蛋糕時會掉落蛋糕（僅在蛋糕完整時才會掉落）"
+      noCakeEating:
+        name: "禁止吃蛋糕"
+        desc: "禁止玩家食用蛋糕"
+      redstoneComponentSound:
+        name: "紅石元件音效"
+        desc: "玩家對紅石元件按右鍵時會播放音效"
+        extra:
+          '0': "受影響的元件："
+          '1': "日光感測器、紅石粉、紅石中繼器"
+      largeShulkerBox:
+        name: "大型界伏盒"
+        desc: "將界伏盒的容量加倍（與大型儲物箱相同）"
+        extra:
+          '0': "伺服器端切換此規則設定時需要重新啟動伺服器"
+          '1': "用戶端切換此規則設定時需要重新啟動用戶端"
+      maxPlayerBlockInteractionRange:
+        name: "玩家方塊最大互動距離"
+        desc: "變更伺服器允許的最大玩家方塊互動距離，設為 \"-1\" 以停用此規則"
+        extra:
+          '0': "數值範圍：0 - 512"
+          '1': "當 Minecraft >= 1.20.5 時，可使用 \"maxPlayerBlockInteractionRangeScope\" 規則修改其作用範圍"
+          '2': "在 global 模式下修改數值後，玩家需要重新進入遊戲"
+      maxPlayerEntityInteractionRange:
+        name: "玩家實體最大互動距離"
+        desc: "變更伺服器允許的最大玩家實體互動距離，設為 \"-1\" 以停用此規則"
+        extra:
+          '0': "數值範圍：0 - 512"
+          '1': "當 Minecraft >= 1.20.5 時，可使用 \"maxPlayerEntityInteractionRangeScope\" 規則修改其作用範圍"
+          '2': "在 global 模式下修改數值後，玩家需要重新進入遊戲"
+      maxPlayerBlockInteractionRangeScope:
+        name: "方塊最大互動距離範圍"
+        desc: "變更 \"maxPlayerBlockInteractionRange\" 規則的作用範圍"
+        extra:
+          '0': "[server] - 需由用戶端自行修改互動距離，伺服器端僅放行用戶端的修改"
+          '1': "[global] - 距離修改將同時套用於伺服器端與用戶端，用戶端無須另行調整"
+      maxPlayerEntityInteractionRangeScope:
+        name: "實體最大互動距離範圍"
+        desc: "變更 \"maxPlayerEntityInteractionRange\" 規則的作用範圍"
+        extra:
+          '0': "[server] - 需由用戶端自行修改互動距離，伺服器端僅放行用戶端的修改"
+          '1': "[global] - 距離修改將同時套用於伺服器端與用戶端，用戶端無須另行調整"
+      maxClientInteractionReachDistance:
+        name: "用戶端最大互動距離"
+        desc: "變更用戶端允許的最大互動距離，設為 \"-1\" 以停用此規則"
+        extra:
+          '0': "數值範圍：0 - 512"
+          '1': "需要停用 Tweakeroo 中的 tweakBlockReachOverride 功能"
+      commandCustomMovableBlock:
+        name: "自訂可移動方塊"
+        desc: "自訂使原本無法被推動的方塊可被推動（不支援容器方塊；若需推動容器，可使用 Carpet 的 movableBlockEntities 規則）"
+        extra:
+          '0': "啟用規則後，使用 \"/customMovableBlock help\" 指令檢視使用說明"
+      easyMaxLevelBeacon:
+        name: "簡易滿級烽火台"
+        desc: "只需一個底座方塊即可啟動滿級烽火台"
+      commandCustomBlockBlastResistance:
+        name: "自訂方塊爆炸抗性"
+        desc: "使用指令自訂任意方塊的爆炸抗性（當啟用 enhancedWorldEater 規則時，此規則不會生效）"
+        extra:
+          '0': "啟用規則後，使用 \"/customBlockBlastResistance help\" 指令檢視使用說明"
+      regeneratingDragonEgg:
+        name: "重複生成龍蛋"
+        desc: "玩家每次擊敗終界龍都會生成一顆龍蛋"
+        extra:
+          '0': "為了 Dnsolx 的蛋"
+      enhancedWorldEater:
+        name: "強化版世界吞噬者"
+        desc: "透過自訂除下列方塊以外的爆炸抗性，讓世界吞噬者暢行無阻（啟用此規則時將覆寫 commandCustomBlockBlastResistance 規則）"
+        extra:
+          '0': "方塊清單："
+          '1': "爆炸抗性 < 17.0F 的方塊、基岩、鐵砧、終界傳送門框架、終界傳送門、終界折躍門"
+      sneakToEditSign:
+        name: "潛行編輯告示牌"
+        desc: "玩家可在潛行且雙手騰空時，對已放置的告示牌按互動鍵進行編輯"
+        extra:
+          '0': "在 Minecraft >= 1.20 中，玩家必須潛行才能編輯告示牌"
+      fancyFakePlayerName:
+        name: "醒目假人名稱"
+        desc: "為 Carpet 模組召喚的假人加上綠色前綴與後綴；輸入指令時無須輸入前綴，但後綴為實際存在"
+        extra:
+          '0': "注意：此規則會建立一個以你輸入的值為名稱的隊伍"
+          '1': "範例：1024_byteeeee -> [bot] 1024_byteeeee_bot"
+      fakePlayerNoScoreboardCounter:
+        name: "假人不計入計分板"
+        desc: "計分板將隱藏假人"
+      noFamilyPlanning:
+        name: "動物連續繁殖"
+        desc: "允許玩家持續餵食動物以進行繁殖"
+      hopperSuctionDisabled:
+        name: "停用漏斗吸取"
+        desc: "漏斗不會吸入物品"
+      noEnchantedGoldenAppleEating:
+        name: "禁止吃附魔金蘋果"
+        desc: "防止玩家誤食附魔金蘋果"
+      useItemCooldownDisabled:
+        name: "停用物品使用冷卻"
+        desc: "移除使用物品的冷卻時間"
+      flippinCactusSoundEffect:
+        name: "仙人掌扳手音效"
+        desc: "啟用 Carpet 模組的 flippinCactus（仙人掌扳手）規則時，使用仙人掌會播放音效（提供五種音效選項，設為 0 以停用音效）"
+      undyingCoral:
+        name: "防止珊瑚死亡"
+        desc: "防止珊瑚方塊與扇狀珊瑚因缺水而死亡"
+      enderDragonNoDestroyBlock:
+        name: "禁止終界龍破壞方塊"
+        desc: "使終界龍無法破壞任何方塊"
+      easyCompost:
+        name: "輕鬆堆肥"
+        desc: "使每次堆肥必定成功"
+      easyMineDragonEgg:
+        name: "輕鬆挖掘龍蛋"
+        desc: "使龍蛋不會瞬移，玩家可直接挖掘並收集龍蛋"
+      breedableParrots:
+        name: "可繁殖鸚鵡"
+        desc: "自訂一種食物來餵食並繁殖鸚鵡（如果你真的很想，也可以餵牠們吃石頭）"
+      kirinArm:
+        name: "麒麟臂"
+        desc: "允許玩家瞬間挖掘所有可挖掘的方塊"
+      sensibleEnderman:
+        name: "理智的終界使者"
+        desc: "使終界使者只會拾起西瓜與南瓜"
+      endermanPickUpDisabled:
+        name: "禁止終界使者拾起方塊"
+        desc: "禁止終界使者拾起方塊"
+      mitePearl:
+        name: "終界蟎珍珠"
+        desc: "每次使用終界珍珠都會生成一隻終界蟎"
+      commandHere:
+        name: "here 指令"
+        desc: "使用 \"/here\" 指令傳送自己目前所在的維度、座標及對應的主世界/地獄座標，並給予自己 30 秒的發光效果"
+        extra:
+          '0': "當用戶端安裝了 Fuzz 模組時，可點擊訊息末尾的 +H 按鈕標示路徑點，並使用 \"/coordCompass clear\" 指令取消標示"
+      commandWhere:
+        name: "where 指令"
+        desc: "使用 \"/where\" 指令取得指定玩家所在的維度、座標及對應的主世界/地獄座標，並給予目標玩家 30 秒的發光效果"
+        extra:
+          '0': "當用戶端安裝了 Fuzz 模組時，可點擊訊息末尾的 +H 按鈕標示路徑點，並使用 \"/coordCompass clear\" 指令取消標示"
+      fakePlayerPickUpController:
+        name: "假人拾取控制器"
+        desc: "提供兩種模式來控制假人是否可拾起物品"
+        extra:
+          '0': "[MainHandOnly] - 僅慣用手可拾起物品"
+          '1': "[NoPickUp] - 完全無法拾起物品"
+          '2': "[false] - 停用規則"
+      sneakToEatCake:
+        name: "潛行吃蛋糕"
+        desc: "玩家只能在潛行狀態下食用蛋糕"
+      commandPlayerLeader:
+        name: "玩家領隊指令"
+        desc: "指定一名或多名玩家為導遊，並賦予他們發光效果"
+        extra:
+          '0': "啟用規則後，使用 \"/leader help\" 指令檢視使用說明"
+      commandPacketInternetGroper:
+        name: "ping 指令"
+        desc: "玩家可在遊戲中使用 \"ping\" 指令"
+        extra:
+          '0': "啟用規則後，使用 \"/ping help\" 指令檢視使用說明"
+      commandPlayerNoNetherPortalTeleport:
+        name: "地獄傳送門不傳送玩家"
+        desc: "使玩家無法透過地獄傳送門傳送"
+        extra:
+          '0': "啟用規則後，使用 \"/playerNoNetherPortalTeleport help\" 指令檢視使用說明"
+      infiniteDurability:
+        name: "無限耐久度"
+        desc: "使用物品時不會消耗耐久度"
+      welcomeMessage:
+        name: "歡迎訊息"
+        desc: "當玩家加入伺服器時，向玩家傳送自訂訊息（使用 JSON 檔案自訂訊息）"
+        extra:
+          '0': "JSON 位置："
+          '1': "[ 存檔資料夾 ]/carpetamsaddition/welcomeMessage.json"
+      commandGetSaveSize:
+        name: "取得存檔大小指令"
+        desc: "使用 \"/getSaveSize\" 指令取得目前存檔大小"
+      carpetAlwaysSetDefault:
+        name: "Carpet 始終設定預設值"
+        desc: "設定 Carpet 規則時，自動將其設為預設值"
+      fertilizableSmallFlower:
+        name: "可施肥小花"
+        desc: "使蒲公英等小型花朵也能使用骨粉催熟複製"
+      preventEndSpikeRespawn:
+        name: "阻止終界尖柱重生"
+        desc: "防止終界黑曜石柱在重生終界龍時重新生成"
+        extra:
+          '0': "[true] - 禁止生成"
+          '1': "[false] - 停用規則"
+          '2': "[keepEndCrystal] - 保留終界水晶生成"
+      safePointedDripstone:
+        name: "安全的鐘乳石"
+        desc: "玩家落在鐘乳石上時不會受到額外摔落傷害"
+      pointedDripstoneCollisionBoxDisabled:
+        name: "停用鐘乳石碰撞箱"
+        desc: "允許玩家穿過鐘乳石"
+      foliageGenerateDisabled:
+        name: "停用樹葉生成"
+        desc: "樹葉不會以任何方式生成"
+      stackableDiscounts:
+        name: "村民折扣疊加"
+        desc: "重新引入 <23w31a 中可疊加治癒村民折扣的機制"
+      commandGetSystemInfo:
+        name: "取得系統資訊指令"
+        desc: "使用 \"/getSystemInfo\" 指令取得伺服器的系統資訊"
+      ironGolemNoDropFlower:
+        name: "鐵魔像不掉落花"
+        desc: "鐵魔像不會掉落花朵"
+      easyGetPitcherPod:
+        name: "輕鬆取得瓶子草豆莢"
+        desc: "玩家種植瓶子草時可收穫隨機數量的瓶子草豆莢（最大數量可自訂，最小數量固定為 2 個）"
+        extra:
+          '0': "數值範圍：2 - 100 或 0"
+      commandGoto:
+        name: "goto 指令"
+        desc: "使用 \"/goto\" 指令快速傳送到指定維度與座標"
+        extra:
+          '0': "未指定座標時，將傳送至玩家目前位置在目標維度的對應座標"
+      sendPlayerDeathLocation:
+        name: "傳送玩家死亡位置"
+        desc: "當玩家死亡時，廣播包含該玩家死亡座標與維度的訊息"
+        extra:
+          '0': "[false] - 停用規則"
+          '1': "[all] - 總是傳送訊息"
+          '2': "[realPlayerOnly] - 僅在真實玩家死亡時傳送訊息"
+          '3': "[fakePlayerOnly] - 僅在假人死亡時傳送訊息"
+          '4': "當用戶端安裝了 Carpet Org Addition 時，可點擊訊息末尾的 +H 按鈕標示路徑點，並使用 /highlight clear 指令取消標示"
+      perfectInvisibility:
+        name: "完美隱形"
+        desc: "當玩家擁有隱形效果時，即使穿著全套盔甲，生物也完全不會察覺玩家"
+      sneakInvisibility:
+        name: "潛行隱形"
+        desc: "當玩家潛行時，即使穿著全套盔甲，生物也完全不會察覺玩家"
+      commandCustomCommandPermissionLevel:
+        name: "自訂指令權限等級"
+        desc: "自訂任意指令的權限等級"
+        extra:
+          '0': "啟用規則後，使用 \"/customCommandPermissionLevel help\" 指令檢視使用說明"
+      shulkerGolem:
+        name: "界伏蚌魔像"
+        desc: "在界伏盒上放置雕刻過的南瓜即可召喚一隻界伏蚌"
+      headHunter:
+        name: "獵頭"
+        desc: "玩家死亡時會掉落自己的頭顱"
+      commandGetPlayerSkull:
+        name: "取得玩家頭顱指令"
+        desc: "使用 \"/getPlayerSkull <player> <count>\" 指令取得玩家頭顱"
+      quickVillagerLevelUp:
+        name: "村民快速升級"
+        desc: "每次開啟交易畫面時，村民都會升級"
+      renewableNetheriteScrap:
+        name: "可再生獄髓碎片"
+        desc: "自訂殭屍化豬布林掉落獄髓碎片的機率"
+        extra:
+          '0': "數值範圍：0 - 1"
+      fakePlayerInteractLikeClient:
+        name: "假人模擬用戶端互動"
+        desc: "修正部分情況下假人與盔甲座、礦車、船的互動結果與用戶端不一致的問題"
+      strongLeash:
+        name: "強力拴繩"
+        desc: "拴繩不會因為距離過遠而斷裂"
+      superZombieDoctor:
+        name: "超級殭屍醫生"
+        desc: "玩家可使用虛弱藥水 + 金蘋果瞬間將殭屍村民治癒為村民"
+      fakePlayerUseOfflinePlayerUUID:
+        name: "假人使用離線 UUID"
+        desc: "使假人使用離線 UUID"
+      superLeash:
+        name: "超級拴繩"
+        desc: "使村民與怪物也能被拴繩拴住"
+      fullMoonEveryDay:
+        name: "每天都是滿月"
+        desc: "每天都是滿月"
+      easyRefreshTrades:
+        name: "輕鬆重新整理交易"
+        desc: "當村民尚未與玩家交易過時，每次開啟交易畫面都會重新整理村民的交易項目"
+        extra:
+          '0': "當玩家慣用手拿著綠寶石方塊時，不會觸發重新整理"
+      jebSheepDropRandomColorWool:
+        name: "彩虹羊掉落隨機色羊毛"
+        desc: "當綿羊被命名為 jeb_ 時，剪下羊毛會掉落隨機顏色的羊毛"
+      cryingObsidianNetherPortal:
+        name: "哭泣的黑曜石地獄門"
+        desc: "可使用哭泣的黑曜石建造地獄傳送門"
+      furnaceSmeltingTimeController:
+        name: "熔爐冶煉時間控制器"
+        desc: "控制熔爐熔煉物品所需的時間（單位：刻）"
+      fakePlayerDefaultSurvivalMode:
+        name: "假人預設生存模式"
+        desc: "召喚假人時，一律預設為生存模式"
+      commandGetHeldItemID:
+        name: "取得慣用手物品 ID"
+        desc: "使用 \"/getHeldItemID\" 指令取得玩家慣用手物品的物品 ID"
+      stringDupeReintroduced:
+        name: "重新引入複製線特性"
+        desc: "重新引入複製線的特性，你可以使用此規則繼續使用製線機"
+      witchRedstoneDustDropController:
+        name: "女巫紅石粉掉落控制"
+        desc: "設定女巫掉落紅石粉的保底數量"
+      witchGlowstoneDustDropController:
+        name: "女巫螢石粉掉落控制"
+        desc: "設定女巫掉落螢石粉的保底數量"
+      tntPowerController:
+        name: "TNT 威力控制器"
+        desc: "控制 TNT 的爆炸威力，設為 \"-1\" 以停用規則"
+      meekEnderman:
+        name: "溫馴的終界使者"
+        desc: "玩家注視終界使者時不會激怒牠們"
+      customizedNetherPortal:
+        name: "自訂地獄傳送門"
+        desc: "完全自訂地獄傳送門。啟用後可挖掘地獄傳送門方塊，且挖掘傳送門框架或傳送門方塊本身都不會導致整個地獄傳送門破壞"
+      commandCarpetExtensionModWikiHyperlink:
+        name: "Carpet 擴充 Wiki 連結"
+        desc: "列出常用 Carpet 擴充模組的 Wiki 連結。只需使用 \"/carpetExtensionModWikiHyperlink <ExtensionName>\" 指令即可在聊天欄取得超連結，點擊連結即可前往"
+        extra:
+          '0': "隨著版本更新，此規則的擴充模組清單會持續調整"
+      commandCustomBlockHardness:
+        name: "自訂方塊硬度指令"
+        desc: "使用指令自訂任意方塊的挖掘硬度"
+        extra:
+          '0': "啟用規則後，使用 \"/customBlockHardness help\" 指令檢視使用說明"
+          '1': "當用戶端未安裝 Carpet AMS Addition 時，此規則完全無法使用"
+      onlyOpCanSpawnRealPlayerInWhitelist:
+        name: "僅 OP 可召喚白名單玩家"
+        desc: "不論是否啟用白名單，僅有 OP 玩家可召喚白名單內的玩家"
+      itemEntityCreateNetherPortalDisabled:
+        name: "停用掉落物建立地獄門"
+        desc: "防止掉落物穿過地獄傳送門時建立新的傳送門"
+      powerfulExpMending:
+        name: "強力經驗修補"
+        desc: "使物品只需放在物品欄內即可獲得修補附魔效果，無須拿在手上"
+      commandAtSomeOnePlayer:
+        name: "@ 玩家指令"
+        desc: "使用 /@ 指令標註指定玩家"
+      largeBundle:
+        name: "大型束口袋"
+        desc: "使束口袋擁有 9x3 或 9x6 的介面，手持束口袋按右鍵即可開啟介面"
+        extra:
+          '0': "此規則不允許將束口袋與界伏盒放入束口袋中"
+      maxChainUpdateDepth:
+        name: "最大連鎖更新深度"
+        desc: "修改最大連鎖更新深度，設為 \"-1\" 以停用規則"
+      phantomSpawnAlert:
+        name: "夜魅生成警告"
+        desc: "廣播是哪位玩家引來夜魅生成的訊息"
+      endPortalChunkLoadDisabled:
+        name: "停用終界傳送門載入"
+        desc: "使實體穿過終界傳送門時不會觸發區塊載入（適用於 Minecraft >= 1.20.6）"
+      amsNetworkProtocol:
+        name: "AMS 網路協定"
+        desc: "AMS 網路協定的開關"
+      commandAmspDebug:
+        name: "AMSP 協定除錯指令"
+        desc: "一些用於網路通訊測試的指令"
+      commandGetClientPlayerFps:
+        name: "取得用戶端玩家 FPS"
+        desc: "使用指令取得指定用戶端玩家的 FPS"
+        extra:
+          '0': "啟用規則後，使用 \"/getClientPlayerFps help\" 指令檢視使用說明"
+      commandSetPlayerPose:
+        name: "設定玩家姿勢指令"
+        desc: "使用指令設定玩家姿勢"
+        extra:
+          '0': "啟用規則後，使用 \"/playerPose help\" 指令檢視使用說明"
+      onlyPlayerCanCreateNetherPortal:
+        name: "僅玩家可建立地獄門"
+        desc: "僅允許玩家穿過地獄傳送門時生成新的地獄傳送門"
+      preventServerPause:
+        name: "防止伺服器暫停"
+        desc: "防止伺服器在無玩家 60 秒後暫停"
+      flippinCactusExtras:
+        name: "仙人掌扳手擴充"
+        desc: "使 flippinCactus（仙人掌扳手）規則適用於更多方塊"
+        extra:
+          '0': "受影響的方塊："
+          '1': "木桶、浮雕書櫃、合成器、展示架"
+      experimentalMinecartSpeed:
+        name: "實驗性礦車速度"
+        desc: "設定實驗性礦車的速度"
+        extra:
+          '0': "啟用此規則將覆寫遊戲規則"
+      experimentalMinecartEnabled:
+        name: "啟用實驗性礦車"
+        desc: "啟用實驗性礦車"
+        extra:
+          '0': "伺服器端切換此規則設定時需要重新啟動伺服器"
+          '1': "用戶端切換此規則設定時需要重新啟動用戶端"
+      amsTranslationMode:
+        name: "AMS 翻譯模式"
+        desc: "切換 Carpet AMS Addition 的翻譯模式"
+        extra:
+          '0': "[client] - 優先使用用戶端自身的語言向用戶端傳送翻譯文字"
+          '1': "[server] - 統一使用伺服器端設定的語言進行翻譯"
+      scheduledRandomTickCactus:
+        name: "排程刻催熟仙人掌"
+        desc: "當仙人掌方塊收到排程刻時，一併觸發生長隨機刻"
+      scheduledRandomTickBamboo:
+        name: "排程刻催熟竹子"
+        desc: "當竹子方塊收到排程刻時，一併觸發生長隨機刻"
+      scheduledRandomTickChorusFlower:
+        name: "排程刻催熟歌萊花"
+        desc: "當歌萊花方塊收到排程刻時，一併觸發生長隨機刻"
+      scheduledRandomTickSugarCane:
+        name: "排程刻催熟甘蔗"
+        desc: "當甘蔗方塊收到排程刻時，一併觸發生長隨機刻"
+      scheduledRandomTickStem:
+        name: "排程刻催熟莖藤植物"
+        desc: "當海帶、扭曲藤、垂泣藤方塊收到排程刻時，一併觸發生長隨機刻"
+      scheduledRandomTickAllPlants:
+        name: "排程刻催熟所有植物"
+        desc: "當所有植物方塊收到排程刻時，一併觸發生長隨機刻"
+      commandPlayerChunkLoadController:
+        name: "玩家區塊載入控制"
+        desc: "控制任意遊戲模式下玩家對周圍區塊的載入"
+        extra:
+          '0': "指令："
+          '1': "/playerChunkLoading true/false"
+      noteBlockChunkLoader:
+        name: "音階盒區塊載入"
+        desc: "觸發音階盒時載入周圍 3x3 區塊 15 秒；可使用 blockChunkLoaderTimeController 與 blockChunkLoaderRangeController 規則控制載入時間與範圍"
+        extra:
+          '0': "[bone_block] - 當音階盒上方有骨塊時可觸發載入"
+          '1': "[wither_skeleton_skull] - 當音階盒上方有凋零骷髏頭顱（放置於音階盒上或掛在牆上皆可）時可觸發載入"
+          '2': "[note_block] - 無須附加條件，僅需音階盒即可觸發載入"
+          '3': "[false] - 停用此規則"
+          '4': "由於在伺服器目前維度沒有玩家達 300 刻後，Minecraft 會停止實體相關更新，因此每當目前維度中沒有玩家時，由此規則載入的區塊中的漏斗將會停止運作。"
+          '5': "你可以啟用 blockChunkLoaderKeepWorldTickUpdate 或 keepWorldTickUpdate 規則來解決此問題。"
+      bellBlockChunkLoader:
+        name: "鐘方塊區塊載入"
+        desc: "觸發鐘時載入周圍 3x3 區塊 15 秒；可使用 blockChunkLoaderTimeController 與 blockChunkLoaderRangeController 規則控制載入時間與範圍"
+        extra:
+          '0': "由於在伺服器目前維度沒有玩家達 300 刻後，Minecraft 會停止實體相關更新，因此每當目前維度中沒有玩家時，由此規則載入的區塊中的漏斗將會停止運作。"
+          '1': "你可以啟用 blockChunkLoaderKeepWorldTickUpdate 或 keepWorldTickUpdate 規則來解決此問題。"
+      pistonBlockChunkLoader:
+        name: "活塞頭區塊載入"
+        desc: "觸發活塞或黏性活塞且正常伸出時，以活塞頭所在的區塊為中心載入周圍 3x3 區塊 15 秒；可使用 blockChunkLoaderTimeController 與 blockChunkLoaderRangeController 規則控制載入時間與範圍"
+        extra:
+          '0': "[bone_block] - 當活塞/黏性活塞上方有骨塊時"
+          '1': "[bedrock] - 當活塞/黏性活塞下方有基岩時"
+          '2': "[all] - 當活塞/黏性活塞上方有骨塊或下方有基岩時"
+          '3': "[false] - 停用此規則"
+          '4': "由於在伺服器目前維度沒有玩家達 300 刻後，Minecraft 會停止實體相關更新，因此每當目前維度中沒有玩家時，由此規則載入的區塊中的漏斗將會停止運作。"
+          '5': "你可以啟用 blockChunkLoaderKeepWorldTickUpdate 或 keepWorldTickUpdate 規則來解決此問題。"
+      blockChunkLoaderKeepWorldTickUpdate:
+        name: "方塊載入保持實體更新"
+        desc: "在伺服器目前維度沒有玩家達 300 刻後，Minecraft 會停止實體相關更新；此規則可使下列規則觸發載入時繞過此限制"
+        extra:
+          '0': "受影響的規則："
+          '1': "noteBlockChunkLoader、pistonBlockChunkLoader、bellBlockChunkLoader"
+      keepWorldTickUpdate:
+        name: "保持世界刻更新"
+        desc: "在伺服器目前維度沒有玩家達 300 刻後，Minecraft 會停止實體相關更新；此規則可繞過此限制"
+      blockChunkLoaderTimeController:
+        name: "方塊載入時長控制器"
+        desc: "用於控制方塊載入器系列規則的載入時間（需要重新啟動伺服器）"
+        extra:
+          '0': "受影響的規則："
+          '1': "noteBlockChunkLoader、pistonBlockChunkLoader、bellBlockChunkLoader"
+      blockChunkLoaderRangeController:
+        name: "方塊載入範圍控制器"
+        desc: "用於控制方塊載入器系列規則的載入範圍（需要重新啟動伺服器）"
+        extra:
+          '0': "受影響的規則："
+          '1': "noteBlockChunkLoader、pistonBlockChunkLoader、bellBlockChunkLoader"
+      craftableEnchantedGoldenApples:
+        name: "可合成附魔金蘋果"
+        desc: "允許再次使用 8 個黃金方塊與 1 顆蘋果合成附魔金蘋果"
+      betterCraftableBoneBlock:
+        name: "更好的骨塊合成"
+        desc: "使用 9 根骨頭即可直接合成 3 個骨塊"
+      craftableElytra:
+        name: "可合成鞘翅"
+        desc: "新增鞘翅的合成配方"
+      betterCraftableDispenser:
+        name: "更好的發射器合成"
+        desc: "使用更彈性的配方合成發射器"
+      betterCraftablePolishedBlackStoneButton:
+        name: "改良拋光黑石按鈕合成"
+        desc: "允許使用深板岩合成拋光黑石按鈕"
+      rottenFleshBurnedIntoLeather:
+        name: "腐肉燒製皮革"
+        desc: "可在熔爐中將腐肉燒製成皮革"
+      craftableCarvedPumpkin:
+        name: "可合成雕刻過的南瓜"
+        desc: "使用剪刀與南瓜合成雕刻過的南瓜，每合成一個會消耗剪刀 1 點耐久度（受耐久附魔影響）"
+      testRule:
+        name: "測試用規則"
+        desc: "僅供測試使用"

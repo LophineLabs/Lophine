@@ -30,7 +30,7 @@ public final class TisTranslations {
 
     private static Map<String, Map<String, String>> load() {
         Map<String, Map<String, String>> languages = new HashMap<>();
-        for (String language : new String[]{"en_us", "zh_cn"}) {
+        for (String language : new String[]{"en_us", "zh_cn", "zh_tw"}) {
             String path = "/carpet/upstream/tis/" + language + ".yml";
             try (var input = TisTranslations.class.getResourceAsStream(path)) {
                 if (input == null) throw new IllegalStateException("Missing TIS translation resource " + path);

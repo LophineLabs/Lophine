@@ -28,7 +28,7 @@ public final class AmsTranslations {
 
     private static Map<String, Map<String, String>> load() {
         Map<String, Map<String, String>> languages = new HashMap<>();
-        for (String language : new String[]{"en_us", "zh_cn"}) {
+        for (String language : new String[]{"en_us", "zh_cn", "zh_tw"}) {
             String path = "/assets/carpetamsaddition/lang/" + language + ".yml";
             try (var input = AmsTranslations.class.getResourceAsStream(path)) {
                 if (input == null) throw new IllegalStateException("Missing AMS translation resource " + path);
