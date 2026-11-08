@@ -1,8 +1,8 @@
 package fun.bm.lophine.carpet.org;
 
 import com.google.gson.JsonParser;
-import fun.bm.lophine.carpet.CarpetTranslationResources;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
+import fun.bm.lophine.utils.FileResolver;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.InputStream;
@@ -22,15 +22,16 @@ public final class OrgRuleTranslations {
 
     private static Map<String, Map<String, String>> loadAll() {
         Map<String, Map<String, String>> languages = new HashMap<>();
-        for (var resource : CarpetTranslationResources.listAll("/assets/carpet", ".json", ".yml")) {
-            Map<String, String> entries = languages.computeIfAbsent(resource.language(), ignored -> new HashMap<>());
-            try (InputStream input = CarpetTranslationResources.open(resource.path())) {
+        for (var resource : FileResolver.listAll("/assets/carpet", FileResolver.LANGUAGE_NAME, ".json", ".yml")) {
+            Map<String, String> entries = languages.computeIfAbsent(resource.name(), ignored -> new HashMap<>());
+            try (InputStream input = FileResolver.open(resource.path())) {
                 if (resource.path().endsWith(".json")) {
-                    JsonParser.parseReader(new InputStreamReader(input, StandardCharsets.UTF_8)).getAsJsonObject()
-                            .entrySet().forEach(entry -> {
-                                if (entry.getValue().isJsonPrimitive())
-                                    entries.putIfAbsent(entry.getKey(), entry.getValue().getAsString());
-                            });
+                    var parsed = JsonParser.parseReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+                    if (!parsed.isJsonObject()) continue;
+                    parsed.getAsJsonObject().entrySet().forEach(entry -> {
+                        if (entry.getValue().isJsonPrimitive())
+                            entries.putIfAbsent(entry.getKey(), entry.getValue().getAsString());
+                    });
                 } else {
                     var configuration = YamlConfiguration.loadConfiguration(new InputStreamReader(input, StandardCharsets.UTF_8));
                     var section = configuration.getConfigurationSection("carpettisaddition.carpet_translations");
