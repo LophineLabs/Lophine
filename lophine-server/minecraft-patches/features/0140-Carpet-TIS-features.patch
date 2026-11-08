@@ -2133,10 +2133,10 @@ index 94c0d5a61a44b945ee7b76fbbf9d43538b2567cb..c1e799350a4b87d00767a3255e4ca712
                      itemStack.setCount(orgCount);
                  }
 diff --git a/net/minecraft/world/entity/item/PrimedTnt.java b/net/minecraft/world/entity/item/PrimedTnt.java
-index be538470c76cdb2975942b45d717e79e7ccb1bab..30d63b6114b4bfcb8a1e3b34b2ec36e7d52c7be9 100644
+index 5aa868610571f22697939608aa9ff843c015dd69..0eb04134eb60ef85f720a162d3f0af0c96890954 100644
 --- a/net/minecraft/world/entity/item/PrimedTnt.java
 +++ b/net/minecraft/world/entity/item/PrimedTnt.java
-@@ -266,6 +266,12 @@ public class PrimedTnt extends Entity implements TraceableEntity {
+@@ -272,6 +272,12 @@ public class PrimedTnt extends Entity implements TraceableEntity {
          this.entityData.set(DATA_FUSE_ID, time);
      }
  
@@ -2967,10 +2967,10 @@ index 86d9f48c2bb1232e5697dbe3e01f7aaf5acbacdf..7dd7f1b0c91bac3cc7ed81c7820753df
          final BlockGetter level, final BlockPos pos, final BlockState blockState, final FluidState fluidState, final EntityType<?> type
      ) {
 diff --git a/net/minecraft/world/level/ServerExplosion.java b/net/minecraft/world/level/ServerExplosion.java
-index 2032fde63b3cd96b406ff0431fcf0ef656043cc1..95de7b23d26359d81cf136e12633a5b36dd37228 100644
+index 6cf0e226c093e21b4443b0ab95e26d3caec9d841..72275b8909f42f2f26552d9c04c1e89dc971f0e0 100644
 --- a/net/minecraft/world/level/ServerExplosion.java
 +++ b/net/minecraft/world/level/ServerExplosion.java
-@@ -532,6 +532,31 @@ public class ServerExplosion implements Explosion {
+@@ -533,6 +533,31 @@ public class ServerExplosion implements Explosion {
          // Paper end - collision optimisations
      }
  
@@ -3002,15 +3002,15 @@ index 2032fde63b3cd96b406ff0431fcf0ef656043cc1..95de7b23d26359d81cf136e12633a5b3
      private void hurtEntities() {
          if (!(this.radius < 1.0E-5F)) {
              float doubleRadius = this.radius * 2.0F;
-@@ -542,6 +567,7 @@ public class ServerExplosion implements Explosion {
+@@ -543,6 +568,7 @@ public class ServerExplosion implements Explosion {
              int z0 = Mth.floor(this.center.z - doubleRadius - 1.0);
              int z1 = Mth.floor(this.center.z + doubleRadius + 1.0);
              List<Entity> list = this.level.getEntities(this.excludeSourceFromDamage ? this.source : null, new AABB(x0, y0, z0, x1, y1, z1), entity -> entity.isAlive() && !entity.isSpectator()); // Paper - Fix lag from explosions processing dead entities, Allow explosions to damage source
 +            if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.explosionNoEntityInfluence) list = java.util.Collections.emptyList();
  
-             for (Entity entity : list) { // Paper - used in loop
-                 if (carpet.script.external.ScarpetExplosionActors.retiredFakePlayer(entity)) continue;
-@@ -922,7 +948,8 @@ public class ServerExplosion implements Explosion {
+             this.hurtEntities(list);
+         }
+@@ -930,7 +956,8 @@ public class ServerExplosion implements Explosion {
              List<Entity> queried = this.level.getEntities(this.excludeSourceFromDamage ? this.source : null,
                  new AABB(Mth.floor(this.center.x-doubleRadius-1),Mth.floor(this.center.y-doubleRadius-1),Mth.floor(this.center.z-doubleRadius-1),
                           Mth.floor(this.center.x+doubleRadius+1),Mth.floor(this.center.y+doubleRadius+1),Mth.floor(this.center.z+doubleRadius+1)), entity -> entity.isAlive()&&!entity.isSpectator());
@@ -3018,8 +3018,8 @@ index 2032fde63b3cd96b406ff0431fcf0ef656043cc1..95de7b23d26359d81cf136e12633a5b3
 +            return fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.explosionNoEntityInfluence
 +                ? List.<Entity>of() : List.copyOf(queried);
          }).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(entities -> {
-             java.util.concurrent.CompletableFuture<Void> sequence=java.util.concurrent.CompletableFuture.completedFuture(null);
-             for (Entity entity : entities) sequence=sequence.thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored -> this.carpetImpactAsync(entity,entities)));
+             return allowOwnedProjectileImpacts ? this.carpetRunImpactSegments(entities, 0)
+                 : this.carpetAsyncImpactRange(entities, 0, entities.size());
 diff --git a/net/minecraft/world/level/block/BarrelBlock.java b/net/minecraft/world/level/block/BarrelBlock.java
 index e327275c3d7ffc0185204674f423f9b48a06f03b..480b85566dce3b10b7f0be35ad304181f72e0fa3 100644
 --- a/net/minecraft/world/level/block/BarrelBlock.java

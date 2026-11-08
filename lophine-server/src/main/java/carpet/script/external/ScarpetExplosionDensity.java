@@ -277,6 +277,12 @@ public final class ScarpetExplosionDensity {
     }
 
     public static CompletableFuture<Float> compute(ServerExplosion explosion, Entity target) {
+        // Local loaded geometry needs no owner hand-off or per-tick sampling delay.
+        // The explosion revalidates the entire ray footprint before using native sampling.
+        if (TickThread.isTickThreadFor(target)) {
+            Float owned = explosion.carpetTryOwnedDensity(target);
+            if (owned != null) return CompletableFuture.completedFuture(owned);
+        }
         // One immutable geometry snapshot, as in the native synchronous getSeenFraction.
         // Chasing a moving bounding box across yielded ticks would never terminate.
         CompletableFuture<Float> actual = ScarpetExplosionActors.entity(target, target::getBoundingBox).thenCompose(ScarpetRuntime.captureNativeFunction(bounds ->
