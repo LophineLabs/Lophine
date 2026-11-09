@@ -4,17 +4,20 @@ import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
 import io.sentry.protocol.SentryException;
 import io.sentry.protocol.SentryStackFrame;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
 import java.util.ArrayDeque;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-/** Local quotas apply to SDK uncaught exceptions as well as Log4j events. */
+/**
+ * Local quotas apply to SDK uncaught exceptions as well as Log4j events.
+ */
 final class SentryRateLimiter {
     private static final int MAX_FINGERPRINTS = 1024;
     private static final Pattern NUMBERS = Pattern.compile("[0-9]+(?:\\.[0-9]+)*");

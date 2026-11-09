@@ -1,14 +1,17 @@
 package gg.pufferfish.pufferfish.sentry;
 
 import io.sentry.Breadcrumb;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.LogEvent;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.LogEvent;
 
-/** Bounded, process-wide context: Folia errors may be emitted on a different thread. */
+/**
+ * Bounded, process-wide context: Folia errors may be emitted on a different thread.
+ */
 final class SentryLogContext {
     static final int MAX_MESSAGE_LENGTH = 2048;
     private final int capacity;
