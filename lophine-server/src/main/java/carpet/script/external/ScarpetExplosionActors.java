@@ -219,6 +219,7 @@ public final class ScarpetExplosionActors {
         return admitTarget(target, acceptedNativePhase, () -> CompletableFuture.completedFuture(null));
     }
 
+    // Lophine start - track the target phase and retire unadmitted optional hits
     private static <T> CompletableFuture<T> admitTarget(Entity target, Supplier<CompletableFuture<T>> acceptedNativePhase,
                                                         Supplier<CompletableFuture<T>> unadmittedRetirement) {
         // Create the observer INSIDE the captured supplier: restoring the initiating flags must not replace its new token or target privilege.
@@ -257,6 +258,8 @@ public final class ScarpetExplosionActors {
             ScarpetPlayerInventoryGate.trackAccepted(player, actual);
         return actual;
     }
+
+    // Lophine end - track the target phase and retire unadmitted optional hits
 
     /**
      * Returns the real native damage result after all dynamically created damage/death work, never the provisional false.

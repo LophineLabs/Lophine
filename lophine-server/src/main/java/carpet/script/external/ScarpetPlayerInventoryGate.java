@@ -92,6 +92,7 @@ public final class ScarpetPlayerInventoryGate {
         return done;
     }
 
+    // Lophine start - allow unadmitted optional hits to finish on retirement
     /**
      * A queued typed intent is not part of a snapshot's old accepted work until it starts.
      */
@@ -125,6 +126,8 @@ public final class ScarpetPlayerInventoryGate {
         return done;
     }
 
+    // Lophine end - allow unadmitted optional hits to finish on retirement
+
     private static <T> CompletableFuture<T> intentReceipt(ServerPlayer player) {
         var done = new CompletableFuture<T>() {
             @Override
@@ -140,6 +143,7 @@ public final class ScarpetPlayerInventoryGate {
         INTENTS.computeIfAbsent(player, IntentQueue::new).add(new Intent<>(operation, done));
     }
 
+    // Lophine start - distinguish actor retirement from failures of accepted work
     /**
      * Only not-yet-admitted intents are abandoned; executing native children keep their true receipt.
      */
@@ -343,6 +347,8 @@ public final class ScarpetPlayerInventoryGate {
             pump();
         }
     }
+
+    // Lophine end - distinguish actor retirement from failures of accepted work
 
     public static <T> CompletableFuture<T> whenIdle(ServerPlayer player, Supplier<T> snapshot) {
         return snapshot(player, snapshot, false);
