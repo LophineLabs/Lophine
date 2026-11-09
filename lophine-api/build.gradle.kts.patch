@@ -4,7 +4,7 @@
      api("org.apache.logging.log4j:log4j-api:$log4jVersion")
      api("org.slf4j:slf4j-api:$slf4jVersion")
      api("com.mojang:brigadier:1.3.11")
-+    api("io.sentry:sentry:8.0.0-rc.2") // Pufferfish
++    api("io.sentry:sentry:8.63.0") // Pufferfish
  
      // Deprecate bungeecord-chat in favor of adventure
      api("net.md-5:bungeecord-chat:$bungeeCordChatVersion") {

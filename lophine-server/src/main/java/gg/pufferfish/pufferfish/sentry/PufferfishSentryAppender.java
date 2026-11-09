@@ -19,54 +19,92 @@ package gg.pufferfish.pufferfish.sentry;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import io.sentry.Breadcrumb;
 import io.sentry.Sentry;
 import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
+import io.sentry.protocol.Message;
 import io.sentry.protocol.User;
-import me.earthme.luminol.config.modules.misc.SentryConfig;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.filter.AbstractFilter;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class PufferfishSentryAppender extends AbstractAppender {
 
-    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(PufferfishSentryAppender.class.getSimpleName());
     private static final Gson GSON = new Gson();
     private final Level logLevel;
+    private final SentryLogContext context;
+    private final Consumer<SentryEvent> sender;
+    private final ThreadLocal<Boolean> appending = ThreadLocal.withInitial(() -> false);
 
     public PufferfishSentryAppender(Level logLevel) {
-        super("PufferfishSentryAdapter", new SentryFilter(), null);
-        this.logLevel = logLevel;
+        this(logLevel, new SentryLogContext(100), Sentry::captureEvent);
+    }
+
+    PufferfishSentryAppender(Level logLevel, SentryLogContext context, Consumer<SentryEvent> sender) {
+        super("PufferfishSentryAdapter", null, null);
+        this.logLevel = logLevel == null || logLevel.isLessSpecificThan(Level.ERROR) ? Level.ERROR : logLevel;
+        this.context = context;
+        this.sender = sender;
     }
 
     @Override
     public void append(LogEvent logEvent) {
-        if (logEvent.getLevel().isMoreSpecificThan(logLevel) && (logEvent.getThrown() != null || !SentryConfig.onlyLogThrown)) {
-            try {
-                logException(logEvent);
-            } catch (Exception e) {
-                logger.warn("Failed to log event with sentry", e);
+        String loggerName = logEvent.getLoggerName();
+        if (this.appending.get() || isInternalLogger(loggerName)) {
+            return;
+        }
+        this.appending.set(true);
+        try {
+            this.context.record(logEvent);
+            if (this.logLevel == Level.OFF || logEvent.getLevel() == Level.OFF
+                    || !logEvent.getLevel().isMoreSpecificThan(Level.ERROR)) {
+                return;
             }
-        } else {
-            try {
-                logBreadcrumb(logEvent);
-            } catch (Exception e) {
-                logger.warn("Failed to log event with sentry", e);
+            String text = logEvent.getMessage().getFormattedMessage();
+            boolean watchdog = (loggerName != null && loggerName.endsWith("WatchdogThread"))
+                    || (logEvent.getThreadName() != null && logEvent.getThreadName().contains("Watchdog"));
+            boolean watchdogHeadline = watchdog && (text.contains("has not responded") || text.contains("has stopped responding"));
+            // A watchdog prints many ERROR lines for a single dump; retain those as context only.
+            if (watchdog && !watchdogHeadline && logEvent.getThrown() == null) {
+                return;
             }
+            if (loggerName != null && loggerName.endsWith(".MinecraftServer")
+                    && logEvent.getThrown() == null && text.startsWith("This crash report has been saved to:")) {
+                return;
+            }
+            boolean crash = logEvent.getThrown() != null && loggerName != null
+                    && (loggerName.endsWith(".TickRegionScheduler")
+                    || loggerName.endsWith(".MinecraftServer") && (text.contains("Encountered an unexpected exception")
+                    || text.contains("Uncaught exception in server thread")));
+            if (!crash && !watchdogHeadline && !logEvent.getLevel().isMoreSpecificThan(this.logLevel)) {
+                return;
+            }
+            SentryEvent event = createEvent(logEvent);
+            if (crash || watchdogHeadline) {
+                event.setLevel(SentryLevel.FATAL);
+                event.setTag("error.category", crash ? "server_crash" : "watchdog_timeout");
+            } else {
+                event.setTag("error.category", "severe_error");
+            }
+            this.sender.accept(event);
+        } catch (Exception exception) {
+            // Use the appender status logger, not Log4j's root logger (which would recurse).
+            error("Failed to prepare Sentry event", logEvent, exception);
+        } finally {
+            this.appending.remove();
         }
     }
 
-    private void logException(LogEvent e) {
+    private SentryEvent createEvent(LogEvent e) {
         SentryEvent event = new SentryEvent(e.getThrown());
 
-        event.setThrowable(e.getThrown());
+        event.setTimestamp(new java.util.Date(e.getTimeMillis()));
+        Message message = new Message();
+        message.setFormatted(SentryLogContext.truncate(e.getMessage().getFormattedMessage()));
+        event.setMessage(message);
         event.setLevel(getLevel(e.getLevel()));
         event.setLogger(e.getLoggerName());
         event.setTransaction(e.getLoggerName());
@@ -95,21 +133,10 @@ public class PufferfishSentryAppender extends AbstractAppender {
             }
         }
 
-        Sentry.captureEvent(event);
+        return event;
     }
 
-    private void logBreadcrumb(LogEvent e) {
-        Breadcrumb breadcrumb = new Breadcrumb();
-
-        breadcrumb.setLevel(getLevel(e.getLevel()));
-        breadcrumb.setCategory(e.getLoggerName());
-        breadcrumb.setType(e.getLoggerName());
-        breadcrumb.setMessage(e.getMessage().getFormattedMessage());
-
-        Sentry.addBreadcrumb(breadcrumb);
-    }
-
-    private SentryLevel getLevel(Level level) {
+    static SentryLevel getLevel(Level level) {
         return switch (level.getStandardLevel()) {
             case TRACE, DEBUG -> SentryLevel.DEBUG;
             case WARN -> SentryLevel.WARNING;
@@ -119,27 +146,8 @@ public class PufferfishSentryAppender extends AbstractAppender {
         };
     }
 
-    private static class SentryFilter extends AbstractFilter {
-
-        @Override
-        public Result filter(Logger logger, Level level, Marker marker, String msg,
-                             Object... params) {
-            return this.filter(logger.getName());
-        }
-
-        @Override
-        public Result filter(Logger logger, Level level, Marker marker, Object msg, Throwable t) {
-            return this.filter(logger.getName());
-        }
-
-        @Override
-        public Result filter(LogEvent event) {
-            return this.filter(event == null ? null : event.getLoggerName());
-        }
-
-        private Result filter(String loggerName) {
-            return loggerName != null && loggerName.startsWith("gg.castaway.pufferfish.sentry") ? Result.DENY
-                    : Result.NEUTRAL;
-        }
+    private static boolean isInternalLogger(String name) {
+        return name != null && (name.startsWith("gg.pufferfish.pufferfish.sentry")
+                || name.startsWith("gg.castaway.pufferfish.sentry") || name.startsWith("io.sentry"));
     }
 }
