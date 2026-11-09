@@ -18,7 +18,7 @@ index 2a64a5b2cf049661fe3f5a22ddfa39979624f5ec..335e9775e0d9a61f0e9641aba691a3bd
                          );
                      },
 diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
-index 4516bfad2d1907c6161fbf0bf2105efb5ce5228c..3da53c137f391a2f1db3bc2840243d237ee0dd49 100644
+index 4516bfad2d1907c6161fbf0bf2105efb5ce5228c..f810b75153e6d0368fec5e521b5b0519d3894dfe 100644
 --- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 +++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 @@ -99,7 +99,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
@@ -30,13 +30,3 @@ index 4516bfad2d1907c6161fbf0bf2105efb5ce5228c..3da53c137f391a2f1db3bc2840243d23
                      org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.ENDER_PEARL,
                      // chunk could have been unloaded
                      Entity.TELEPORT_FLAG_TELEPORT_PASSENGERS | Entity.TELEPORT_FLAG_LOAD_CHUNK,
-@@ -178,7 +178,8 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
-                 }
-                 Entity entity = this.getOwnerRaw();
-                 if (entity != null) {
--                    attemptTeleport(entity, (ServerLevel)this.level(), this.position());
-+                    // Lophine - match vanilla's pre-impact teleport destination.
-+                    attemptTeleport(entity, (ServerLevel)this.level(), this.oldPosition());
-                 }
-                 this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.HIT);
-                 return;

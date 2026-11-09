@@ -8244,7 +8244,7 @@ index 494f2c114c2fdb59df57f6a945992eed37c90cfd..c3c5a57829f7cdbefc6a2e4f8cf2b8f0
              ItemStack itemStack = this.getItem();
              Item item = itemStack.getItem();
 diff --git a/net/minecraft/world/entity/item/PrimedTnt.java b/net/minecraft/world/entity/item/PrimedTnt.java
-index e810c03fdbd480eb2b7e1b904f9f761d524b3a99..cf30df650ecc3ec9dbd2f246ebe68891d0426b7a 100644
+index e810c03fdbd480eb2b7e1b904f9f761d524b3a99..8674ceac1376276c23028acc3ef9b1d12899d40c 100644
 --- a/net/minecraft/world/entity/item/PrimedTnt.java
 +++ b/net/minecraft/world/entity/item/PrimedTnt.java
 @@ -11,6 +11,7 @@ import net.minecraft.util.Mth;
@@ -8323,7 +8323,7 @@ index e810c03fdbd480eb2b7e1b904f9f761d524b3a99..cf30df650ecc3ec9dbd2f246ebe68891
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.applyEffectsFromBlocks();
          // Paper start - Configurable TNT height nerf
-@@ -118,19 +147,42 @@ public class PrimedTnt extends Entity implements TraceableEntity {
+@@ -118,19 +147,46 @@ public class PrimedTnt extends Entity implements TraceableEntity {
          // Paper end - Configurable TNT height nerf
          this.setDeltaMovement(this.getDeltaMovement().scale(this.getAirDrag()));
          if (this.onGround()) {
@@ -8365,14 +8365,18 @@ index e810c03fdbd480eb2b7e1b904f9f761d524b3a99..cf30df650ecc3ec9dbd2f246ebe68891
 -            this.discard(EntityRemoveEvent.Cause.EXPLODE); // CraftBukkit - add Bukkit remove cause
 -            // CraftBukkit end
 +                carpet.script.external.ScarpetExplosionContinuations.runOnce(this, () -> {
-+                    this.explode();
-+                    this.discard(EntityRemoveEvent.Cause.EXPLODE);
++                    try {
++                        this.explode();
++                    } finally {
++                        // Lophine - retain Bukkit's prime-event order without keeping expired TNT alive through async phases.
++                        this.discard(EntityRemoveEvent.Cause.EXPLODE);
++                    }
 +                }, () -> {});
 +            } else this.discard(EntityRemoveEvent.Cause.EXPLODE);
          } else {
              this.updateFluidInteraction();
              if (this.level().isClientSide()) {
-@@ -148,6 +200,9 @@ public class PrimedTnt extends Entity implements TraceableEntity {
+@@ -148,6 +204,9 @@ public class PrimedTnt extends Entity implements TraceableEntity {
      }
  
      private void explode() {
@@ -8382,7 +8386,7 @@ index e810c03fdbd480eb2b7e1b904f9f761d524b3a99..cf30df650ecc3ec9dbd2f246ebe68891
          if (this.level() instanceof ServerLevel level && level.getGameRules().get(GameRules.TNT_EXPLODES)) {
              // CraftBukkit start
              ExplosionPrimeEvent event = CraftEventFactory.callExplosionPrimeEvent((org.bukkit.entity.Explosive) this.getBukkitEntity());
-@@ -155,18 +210,17 @@ public class PrimedTnt extends Entity implements TraceableEntity {
+@@ -155,18 +214,17 @@ public class PrimedTnt extends Entity implements TraceableEntity {
                  return;
              }
              // CraftBukkit end
@@ -8412,7 +8416,7 @@ index e810c03fdbd480eb2b7e1b904f9f761d524b3a99..cf30df650ecc3ec9dbd2f246ebe68891
          }
      }
  
-@@ -183,7 +237,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
+@@ -183,7 +241,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
  
      @Override
      protected void readAdditionalSaveData(final ValueInput input) {
