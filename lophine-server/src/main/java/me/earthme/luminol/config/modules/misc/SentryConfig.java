@@ -1,12 +1,11 @@
 package me.earthme.luminol.config.modules.misc;
 
-import gg.pufferfish.pufferfish.sentry.SentryManager;
 import gg.pufferfish.pufferfish.sentry.SentryBuildConfig;
+import gg.pufferfish.pufferfish.sentry.SentryManager;
 import me.earthme.luminol.api.config.annotation.CommandSuggestions;
 import me.earthme.luminol.api.config.annotation.ConfigClassInfo;
 import me.earthme.luminol.api.config.annotation.ConfigInfo;
 import me.earthme.luminol.api.config.annotation.NeedRun;
-import me.earthme.luminol.api.config.annotation.TransformedConfig;
 import me.earthme.luminol.api.config.enums.EnumConfigCategory;
 import me.earthme.luminol.api.config.enums.EnumRunnableType;
 import org.apache.logging.log4j.Level;
@@ -20,16 +19,13 @@ public class SentryConfig {
     public static boolean enabled = true;
 
     @ConfigInfo(name = "dsn")
-    @TransformedConfig(name = "dsn", directory = {"sentry"})
     public static String sentryDsn = "";
 
     @CommandSuggestions(suggest = {"OFF", "FATAL", "ERROR"})
     @ConfigInfo(name = "log_level")
-    @TransformedConfig(name = "log-level", directory = {"sentry"})
     public static String logLevel = "ERROR";
 
     @ConfigInfo(name = "only_log_thrown")
-    @TransformedConfig(name = "only-log-thrown", directory = {"sentry"})
     public static boolean onlyLogThrown = false;
 
     @ConfigInfo(name = "rate_limit_window_seconds")
