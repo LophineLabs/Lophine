@@ -79,6 +79,9 @@ jobs:
 
       - name: Build MorninggloryClip Jar
         run: ./gradlew createMorninggloryclipJar
+        env:
+          LOPHINE_OFFICIAL_BUILD: ${{ github.repository == 'LophineLabs/Lophine' && github.event_name != 'pull_request' }}
+          LOPHINE_SENTRY_DSN: ${{ github.repository == 'LophineLabs/Lophine' && github.event_name != 'pull_request' && secrets.LOPHINE_SENTRY_DSN || '' }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v7
@@ -130,6 +133,8 @@ jobs:
         env:
           PRIVATE_MAVEN_REPO_PASSWORD: ${{ secrets.PRIVATE_MAVEN_REPO_PASSWORD }}
           PRIVATE_MAVEN_REPO_USERNAME: ${{ secrets.PRIVATE_MAVEN_REPO_USERNAME }}
+          LOPHINE_OFFICIAL_BUILD: ${{ github.repository == 'LophineLabs/Lophine' && github.event_name != 'pull_request' }}
+          LOPHINE_SENTRY_DSN: ${{ github.repository == 'LophineLabs/Lophine' && github.event_name != 'pull_request' && secrets.LOPHINE_SENTRY_DSN || '' }}
 
       - name: Create Release - Pre Process
         if: ( github.event_name != 'pull_request' && env.from_pr_merge != 'true' && !( env.unexpect == 'true' ) && env.flag_release == 'true' && env.release_exists != 'true' && !(inputs.force-release == 'false')) || inputs.force-release == 'true'
