@@ -17,10 +17,10 @@
 
 package gg.pufferfish.pufferfish.sentry;
 
+import io.papermc.paper.ServerBuildInfo;
 import io.sentry.Sentry;
 import io.sentry.SentryLevel;
 import io.sentry.protocol.SentryId;
-import io.papermc.paper.ServerBuildInfo;
 import me.earthme.luminol.config.modules.misc.SentryConfig;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -34,7 +34,9 @@ public class SentryManager {
     private static PufferfishSentryAppender appender;
 
     private record Settings(String dsn, Level level, boolean onlyThrown, int duplicateSeconds,
-                            int eventWindowSeconds, int maxEvents, int crashWindowSeconds, int maxCrashes, int contextLines) {}
+                            int eventWindowSeconds, int maxEvents, int crashWindowSeconds, int maxCrashes,
+                            int contextLines) {
+    }
 
     public static synchronized void init(Level logLevel) {
         configure(SentryConfig.resolveDsn(), logLevel, SentryConfig.onlyLogThrown,
@@ -44,14 +46,14 @@ public class SentryManager {
 
     // Retain the original entry point; its window now controls duplicate suppression only.
     public static synchronized void configure(String dsn, Level logLevel, boolean onlyThrown,
-                                               int windowSeconds, int maxEvents, int contextLines) {
+                                              int windowSeconds, int maxEvents, int contextLines) {
         configure(dsn, logLevel, onlyThrown, windowSeconds, SentryConfig.eventWindowSeconds, maxEvents,
                 SentryConfig.crashWindowSeconds, SentryConfig.maxCrashesPerWindow, contextLines);
     }
 
     public static synchronized void configure(String dsn, Level logLevel, boolean onlyThrown,
-                                               int duplicateSeconds, int eventWindowSeconds, int maxEvents,
-                                               int crashWindowSeconds, int maxCrashes, int contextLines) {
+                                              int duplicateSeconds, int eventWindowSeconds, int maxEvents,
+                                              int crashWindowSeconds, int maxCrashes, int contextLines) {
         Level threshold = logLevel == null || logLevel.isLessSpecificThan(Level.ERROR) ? Level.ERROR : logLevel;
         Settings settings = new Settings(dsn == null ? "" : dsn.trim(), threshold, onlyThrown,
                 Math.clamp(duplicateSeconds, 1, 86400), Math.clamp(eventWindowSeconds, 1, 86400), Math.clamp(maxEvents, 1, 1000),

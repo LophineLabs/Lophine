@@ -4,6 +4,7 @@ import io.papermc.paper.ServerBuildInfo;
 import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
 import io.sentry.protocol.SentryException;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.LongSupplier;
