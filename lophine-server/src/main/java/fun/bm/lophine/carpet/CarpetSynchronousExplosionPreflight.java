@@ -7,12 +7,16 @@ import carpet.script.external.*;
 import fun.bm.lophine.carpet.org.OrgItemShadowGroups;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
 import net.minecraft.world.level.EntityBasedExplosionDamageCalculator;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
+import net.minecraft.world.level.ServerExplosion;
 import net.minecraft.world.level.SimpleExplosionDamageCalculator;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -50,6 +54,56 @@ public final class CarpetSynchronousExplosionPreflight {
             return false;
         }
     }
+
+    /**
+     * An unaffected container must not force a cannon's native projectile impulses through per-target continuations.
+     * This admits only the entity phase; block events and inventory/loot work retain their asynchronous scopes.
+     */
+    public static boolean canRunOwnedProjectileImpacts(ServerExplosion explosion, ExplosionDamageCalculator calculator, List<Entity> targets) {
+        Entity source = explosion.getDirectSourceEntity();
+        if (source == null || source.getClass() != PrimedTnt.class) return false;
+        if (targets.isEmpty()) return false;
+        if (calculator == null || calculator.getClass() != EntityBasedExplosionDamageCalculator.class
+                && calculator.getClass() != ExplosionDamageCalculator.class) return false;
+        ServerLevel world = explosion.level();
+        Vec3 center = explosion.center();
+        float power = explosion.radius();
+        if (!Double.isFinite(center.x) || !Double.isFinite(center.y) || !Double.isFinite(center.z)
+                || !Float.isFinite(power) || power < 0F) return false;
+        if (ScarpetNativeWork.isDraining(world.getServer()) && ScarpetNativeWork.capture() == null) return false;
+        if (!ScarpetRuntime.EVENT_DISABLED.get() && (Event.EXPLOSION.isNeeded() || Event.EXPLOSION_OUTCOME.isNeeded()
+                || Event.PLAYER_TAKES_DAMAGE.isNeeded() || Event.PLAYER_DEALS_DAMAGE.isNeeded() || Event.PLAYER_DIES.isNeeded())) return false;
+        try {
+            double physical = Math.ceil(power * 2D) + 2D;
+            // Collision reads may touch block entities. This phase neither destroys blocks nor opens inventories.
+            requireRectangle(world, center, physical, physical, false);
+            requireEntity(world, source, source);
+            if (source.isRemoved()) return false;
+            LivingEntity indirect = explosion.getIndirectSourceEntity();
+            if (indirect != null) requireEntity(world, indirect, source);
+            var damage = explosion.getDamageSource();
+            Entity direct = damage.getDirectEntity(), causing = damage.getEntity();
+            if (direct != null) requireEntity(world, direct, source);
+            if (causing != null) requireEntity(world, causing, source);
+            for (Entity target : targets) {
+                // These exact native classes cannot enter living damage/death, inventory or loot phases.
+                if (!isNativeProjectile(target)) return false;
+                requireEntity(world, target, source);
+                // A datapack can redirect pearls, whose owner registration may involve another player actor.
+                if (target instanceof ThrownEnderpearl && target.is(EntityTypeTags.REDIRECTABLE_PROJECTILE)) return false;
+                if (target.isRemoved()) return false;
+                if (!explosion.carpetOwnsDensityFootprint(target)) return false;
+            }
+            return true;
+        } catch (CarpetSynchronousExplosionScope.Unavailable unavailable) {
+            return false;
+        }
+    }
+
+    public static boolean isNativeProjectile(Entity entity) {
+        return entity.getClass() == PrimedTnt.class || entity.getClass() == ThrownEnderpearl.class;
+    }
+
 
     private static void require(ServerLevel world, Entity source, net.minecraft.world.damagesource.DamageSource damage, ExplosionDamageCalculator calculator, Vec3 center, float power, boolean packetAudience) {
         if (!Double.isFinite(center.x) || !Double.isFinite(center.y) || !Double.isFinite(center.z) || !Float.isFinite(power) || power < 0F)
@@ -122,6 +176,10 @@ public final class CarpetSynchronousExplosionPreflight {
     }
 
     private static void requireRectangle(ServerLevel world, Vec3 center, double extent, double physical) {
+        requireRectangle(world, center, extent, physical, true);
+    }
+
+    private static void requireRectangle(ServerLevel world, Vec3 center, double extent, double physical, boolean checkBlockEntities) {
         double minXd = Math.floor((center.x - extent) / 16D), maxXd = Math.floor((center.x + extent) / 16D), minZd = Math.floor((center.z - extent) / 16D), maxZd = Math.floor((center.z + extent) / 16D);
         if (minXd < Integer.MIN_VALUE || maxXd > Integer.MAX_VALUE || minZd < Integer.MIN_VALUE || maxZd > Integer.MAX_VALUE)
             reject("The complete explosion footprint cannot be represented as a native chunk rectangle");
@@ -131,7 +189,7 @@ public final class CarpetSynchronousExplosionPreflight {
                     reject("The complete explosion and packet footprint is not on the current native owner");
                 var chunk = world.getChunkIfLoaded((int) x, (int) z);
                 if (chunk == null) reject("The complete explosion footprint is not already loaded");
-                for (var position : chunk.getBlockEntities().keySet())
+                if (checkBlockEntities) for (var position : chunk.getBlockEntities().keySet())
                     if (Math.abs(position.getX() - center.x) <= physical && Math.abs(position.getY() - center.y) <= physical && Math.abs(position.getZ() - center.z) <= physical)
                         reject("A block entity may require an asynchronous inventory or loot scope");
             }

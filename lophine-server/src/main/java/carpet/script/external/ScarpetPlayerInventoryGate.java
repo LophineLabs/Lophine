@@ -92,10 +92,20 @@ public final class ScarpetPlayerInventoryGate {
         return done;
     }
 
+    // Lophine start - allow unadmitted optional hits to finish on retirement
     /**
      * A queued typed intent is not part of a snapshot's old accepted work until it starts.
      */
     public static <T> CompletableFuture<T> enqueuePaused(ServerPlayer player, Supplier<CompletableFuture<T>> nativeOperation) {
+        return enqueuePaused(player, nativeOperation, null);
+    }
+
+    /**
+     * An optional unadmitted effect can complete without touching an actor that retired while queued.
+     * The retirement supplier must use immutable metadata only; already started effects keep their real result.
+     */
+    public static <T> CompletableFuture<T> enqueuePaused(ServerPlayer player, Supplier<CompletableFuture<T>> nativeOperation,
+                                                       Supplier<CompletableFuture<T>> unadmittedRetirement) {
         TickThread.ensureTickThread(player, "Paused typed intent must be queued by its owner");
         var done = ScarpetPlayerInventoryGate.<T>intentReceipt(player);
         ScarpetNativeWork.record(done);
@@ -112,9 +122,11 @@ public final class ScarpetPlayerInventoryGate {
             ScarpetNativeWork.aliasDependency(actual, observed);
             return actual;
         });
-        queue(player, captured, done);
+        INTENTS.computeIfAbsent(player, IntentQueue::new).add(new Intent<>(captured, done, unadmittedRetirement));
         return done;
     }
+
+    // Lophine end - allow unadmitted optional hits to finish on retirement
 
     private static <T> CompletableFuture<T> intentReceipt(ServerPlayer player) {
         var done = new CompletableFuture<T>() {
@@ -131,23 +143,31 @@ public final class ScarpetPlayerInventoryGate {
         INTENTS.computeIfAbsent(player, IntentQueue::new).add(new Intent<>(operation, done));
     }
 
+    // Lophine start - distinguish actor retirement from failures of accepted work
     /**
      * Only not-yet-admitted intents are abandoned; executing native children keep their true receipt.
      */
     public static void retired(ServerPlayer player) {
         IntentQueue queue = INTENTS.get(player);
-        if (queue != null) queue.failUnstarted(new IllegalStateException("Paused player retired"), true);
+        if (queue != null) queue.failUnstarted(new IllegalStateException("Paused player retired"), true, true);
     }
 
     private static final class Intent<T> {
         final Supplier<CompletableFuture<T>> operation;
         final CompletableFuture<T> done;
         final java.util.function.BiConsumer<T, Throwable> publish;
+        final Supplier<CompletableFuture<T>> unadmittedRetirement;
         boolean started;
 
         Intent(Supplier<CompletableFuture<T>> operation, CompletableFuture<T> done) {
+            this(operation, done, null);
+        }
+
+        Intent(Supplier<CompletableFuture<T>> operation, CompletableFuture<T> done,
+               Supplier<CompletableFuture<T>> unadmittedRetirement) {
             this.operation = operation;
             this.done = done;
+            this.unadmittedRetirement = unadmittedRetirement;
             publish = ScarpetRuntime.captureNativeConsumer((T value, Throwable failure) -> {
                 if (failure == null) done.complete(value);
                 else done.completeExceptionally(failure);
@@ -162,6 +182,18 @@ public final class ScarpetPlayerInventoryGate {
                 done.completeExceptionally(problem);
             }
         }
+
+        void retire(Throwable failure) {
+            if (unadmittedRetirement == null) {
+                finish(null, failure);
+                return;
+            }
+            try {
+                unadmittedRetirement.get().whenComplete(this::finish);
+            } catch (Throwable problem) {
+                finish(null, problem);
+            }
+        }
     }
 
     /**
@@ -173,6 +205,8 @@ public final class ScarpetPlayerInventoryGate {
         final java.util.concurrent.atomic.AtomicInteger pumping = new java.util.concurrent.atomic.AtomicInteger();
         Intent<?> current;
         boolean retired;
+        boolean actorRetired;
+        Throwable terminalFailure;
 
         IntentQueue(ServerPlayer player) {
             this.player = new java.lang.ref.WeakReference<>(player);
@@ -180,12 +214,18 @@ public final class ScarpetPlayerInventoryGate {
 
         void add(Intent<?> intent) {
             boolean rejected;
+            boolean retirement;
+            Throwable rejection;
             synchronized (this) {
                 rejected = retired;
+                retirement = actorRetired;
+                rejection = terminalFailure;
                 if (!rejected) waiting.addLast(intent);
             }
-            if (rejected) intent.finish(null, new IllegalStateException("Paused player retired"));
-            else pump();
+            if (rejected) {
+                if (retirement) intent.retire(rejection);
+                else intent.finish(null, rejection);
+            } else pump();
         }
 
         void pump() {
@@ -214,7 +254,7 @@ public final class ScarpetPlayerInventoryGate {
         void awaitOpen(Intent<?> intent) {
             ServerPlayer owner = player.get();
             if (owner == null) {
-                failUnstarted(new IllegalStateException("Paused player was collected"), true);
+                failUnstarted(new IllegalStateException("Paused player was collected"), true, true);
                 return;
             }
             try {
@@ -235,8 +275,8 @@ public final class ScarpetPlayerInventoryGate {
                     if (owned != owner)
                         failUnstarted(new IllegalStateException("Paused player identity changed"), true);
                     else run(owner, intent);
-                }, ignored -> failUnstarted(new IllegalStateException("Paused player scheduler retired"), true), 1L))
-                    failUnstarted(new IllegalStateException("Paused player scheduler retired"), true);
+                }, ignored -> failUnstarted(new IllegalStateException("Paused player scheduler retired"), true, true), 1L))
+                    failUnstarted(new IllegalStateException("Paused player scheduler retired"), true, true);
             } catch (Throwable failure) {
                 failUnstarted(failure, true);
             }
@@ -247,7 +287,7 @@ public final class ScarpetPlayerInventoryGate {
             try {
                 TickThread.ensureTickThread(owner, "Paused player intent must run on its owner");
                 if (owner.isRemoved() || owner.hasDisconnected()) {
-                    failUnstarted(new IllegalStateException("Paused player retired"), true);
+                    failUnstarted(new IllegalStateException("Paused player retired"), true, true);
                     return;
                 }
                 if (paused(owner)) {
@@ -282,9 +322,17 @@ public final class ScarpetPlayerInventoryGate {
         }
 
         void failUnstarted(Throwable failure, boolean terminal) {
+            failUnstarted(failure, terminal, false);
+        }
+
+        void failUnstarted(Throwable failure, boolean terminal, boolean retirement) {
             java.util.List<Intent<?>> failed;
             synchronized (this) {
-                if (terminal) retired = true;
+                if (terminal) {
+                    retired = true;
+                    actorRetired |= retirement;
+                    terminalFailure = failure;
+                }
                 failed = new java.util.ArrayList<>(waiting);
                 waiting.clear();
                 if (current != null && !current.started) {
@@ -292,10 +340,15 @@ public final class ScarpetPlayerInventoryGate {
                     current = null;
                 }
             }
-            for (Intent<?> intent : failed) intent.finish(null, failure);
+            for (Intent<?> intent : failed) {
+                if (retirement) intent.retire(failure);
+                else intent.finish(null, failure);
+            }
             pump();
         }
     }
+
+    // Lophine end - distinguish actor retirement from failures of accepted work
 
     public static <T> CompletableFuture<T> whenIdle(ServerPlayer player, Supplier<T> snapshot) {
         return snapshot(player, snapshot, false);

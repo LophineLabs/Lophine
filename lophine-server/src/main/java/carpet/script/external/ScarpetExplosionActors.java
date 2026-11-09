@@ -219,14 +219,14 @@ public final class ScarpetExplosionActors {
         return admitTarget(target, acceptedNativePhase, () -> CompletableFuture.completedFuture(null));
     }
 
+    // Lophine start - track the target phase and retire unadmitted optional hits
     private static <T> CompletableFuture<T> admitTarget(Entity target, Supplier<CompletableFuture<T>> acceptedNativePhase,
                                                         Supplier<CompletableFuture<T>> unadmittedRetirement) {
-        var wholePhase = ScarpetNativeWork.capture();
         // Create the observer INSIDE the captured supplier: restoring the initiating flags must not replace its new token or target privilege.
-        Supplier<CompletableFuture<T>> admitted = ScarpetRuntime.captureNativeContinuation(() -> targetPhase(target, wholePhase, acceptedNativePhase));
+        Supplier<CompletableFuture<T>> admitted = ScarpetRuntime.captureNativeContinuation(() -> targetPhase(target, acceptedNativePhase));
         Supplier<CompletableFuture<T>> admission = () -> {
             if (target instanceof net.minecraft.server.level.ServerPlayer player && !player.isRemoved() && ScarpetPlayerInventoryGate.paused(player))
-                return ScarpetPlayerInventoryGate.enqueuePaused(player, admitted);
+                return ScarpetPlayerInventoryGate.enqueuePaused(player, admitted, unadmittedRetirement);
             return admitted.get();
         };
         CompletableFuture<T> completed = (unadmittedRetirement == null ? entity(target, admission)
@@ -235,13 +235,14 @@ public final class ScarpetExplosionActors {
         return completed;
     }
 
-    private static <T> CompletableFuture<T> targetPhase(Entity target, ScarpetNativeWork.Token wholePhase, Supplier<CompletableFuture<T>> phase) {
+    private static <T> CompletableFuture<T> targetPhase(Entity target, Supplier<CompletableFuture<T>> phase) {
         var observed = ScarpetNativeWork.observeNative(target, () -> {
             if (target instanceof net.minecraft.server.level.ServerPlayer player) {
                 try (var accepted = ScarpetPlayerInventoryGate.acceptedScope(player)) {
-                    // This future is metadata for Gate only. Recording it into the same root would await itself.
-                    if (wholePhase != null && !player.isRemoved())
-                        ScarpetPlayerInventoryGate.trackAccepted(player, ScarpetNativeWork.completionOf(wholePhase));
+                    // Fence this target's effects, not the enclosing explosion, which may still need another paused player.
+                    // This receipt is gate metadata only; recording it into its own token would await itself.
+                    if (!player.isRemoved())
+                        ScarpetPlayerInventoryGate.trackAccepted(player, ScarpetNativeWork.completionOf(ScarpetNativeWork.capture()));
                     CompletableFuture<T> actual = phase.get();
                     ScarpetNativeWork.record(actual);
                     return actual;
@@ -257,6 +258,8 @@ public final class ScarpetExplosionActors {
             ScarpetPlayerInventoryGate.trackAccepted(player, actual);
         return actual;
     }
+
+    // Lophine end - track the target phase and retire unadmitted optional hits
 
     /**
      * Returns the real native damage result after all dynamically created damage/death work, never the provisional false.
