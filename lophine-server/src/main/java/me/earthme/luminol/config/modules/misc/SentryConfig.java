@@ -1,6 +1,5 @@
 package me.earthme.luminol.config.modules.misc;
 
-import gg.pufferfish.pufferfish.sentry.SentryBuildConfig;
 import gg.pufferfish.pufferfish.sentry.SentryManager;
 import me.earthme.luminol.api.config.annotation.CommandSuggestions;
 import me.earthme.luminol.api.config.annotation.ConfigClassInfo;
@@ -13,7 +12,8 @@ import org.apache.logging.log4j.Level;
 @ConfigClassInfo(category = EnumConfigCategory.MISC, name = "sentry")
 public class SentryConfig {
 
-    public static final String DEFAULT_DSN = SentryBuildConfig.dsn();
+    // Official CI replaces this empty default with its build secret before compilation.
+    public static final String DEFAULT_DSN = "";
 
     @ConfigInfo(name = "enabled")
     public static boolean enabled = true;
