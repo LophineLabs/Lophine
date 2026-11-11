@@ -19,7 +19,9 @@ import org.leavesmc.leaves.protocol.servux.litematics.utils.ReplaceBehavior;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 
-/** Immutable source data and compact section intersections; only a few sections are expanded at once. */
+/**
+ * Immutable source data and compact section intersections; only a few sections are expanded at once.
+ */
 final class ServuxPastePlan {
     static final int PHASES = 5;
     private static final int MAX_SECTIONS = 65_536;

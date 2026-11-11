@@ -36,7 +36,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
-/** Background preparation never accesses mutable world state; all placement runs on the current region owner. */
+/**
+ * Background preparation never accesses mutable world state; all placement runs on the current region owner.
+ */
 public final class ServuxPasteManager {
     private static final int MAX_JOBS = 4;
     private static final int MAX_PREPARED_SECTIONS = 16;
@@ -49,7 +51,9 @@ public final class ServuxPasteManager {
 
     private ServuxPasteManager() { }
 
-    /** The caller retains its original buffer; this method owns only its retained read-only slice. */
+    /**
+     * The caller retains its original buffer; this method owns only its retained read-only slice.
+     */
     public static void receive(ServerPlayer player, FriendlyByteBuf packet) {
         FriendlyByteBuf owned = new FriendlyByteBuf(packet.retainedSlice().asReadOnly());
         onPlayerThread(player, owner -> receiveOwned(owner, owned), owned::release);
@@ -178,7 +182,9 @@ public final class ServuxPasteManager {
         return sections != null && sections.containsKey(SectionPos.asLong(x, y, z));
     }
 
-    /** Called once at the end of each region tick; the deadline includes all jobs in that region. */
+    /**
+     * Called once at the end of each region tick; the deadline includes all jobs in that region.
+     */
     public static void tick(ServerLevel world, long scheduledEnd) {
         if (PAUSED_SECTIONS.get() == 0) return;
         State state = STATES.get(world.getServer());
@@ -236,7 +242,9 @@ public final class ServuxPasteManager {
         if (job != null && job.player == player) job.cancel("Servux paste cancelled");
     }
 
-    /** Cancel unstarted work before native draining; admitted slice tails keep their real completion. */
+    /**
+     * Cancel unstarted work before native draining; admitted slice tails keep their real completion.
+     */
     public static void shutdown(MinecraftServer server) {
         State state = STATES.get(server);
         if (state == null) return;

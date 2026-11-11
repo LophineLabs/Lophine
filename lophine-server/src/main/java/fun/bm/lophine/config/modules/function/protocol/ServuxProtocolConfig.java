@@ -85,7 +85,4 @@ public class ServuxProtocolConfig {
     @ConfigInfo(name = "paste-concurrent-sections", directory = {"litematics"})
     public static int pasteConcurrentSections = 8;
 
-    @CommandSuggestions(suggest = {"-1", "1200"})
-    @ConfigInfo(name = "litematics-print-max-delay-ticks", directory = {"litematics"})
-    public static int maxDelay = 1200;
 }
