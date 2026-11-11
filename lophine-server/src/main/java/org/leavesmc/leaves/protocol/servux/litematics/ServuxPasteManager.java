@@ -49,8 +49,6 @@ public final class ServuxPasteManager {
             new ArrayBlockingQueue<>(MAX_JOBS * (MAX_PREPARED_SECTIONS + 1)), task -> Thread.ofPlatform().daemon(true).name("Servux paste preparation").unstarted(task),
             new ThreadPoolExecutor.AbortPolicy());
 
-    private ServuxPasteManager() { }
-
     /**
      * The caller retains its original buffer; this method owns only its retained read-only slice.
      */
@@ -61,14 +59,23 @@ public final class ServuxPasteManager {
 
     private static void receiveOwned(ServerPlayer player, FriendlyByteBuf owned) {
         Job job;
-        try { job = admit(player); }
-        catch (RuntimeException failure) { owned.release(); throw failure; }
-        if (job == null) { owned.release(); return; }
+        try {
+            job = admit(player);
+        } catch (RuntimeException failure) {
+            owned.release();
+            throw failure;
+        }
+        if (job == null) {
+            owned.release();
+            return;
+        }
         try {
             PREPARER.execute(() -> job.read(owned));
         } catch (RuntimeException failure) {
             owned.release();
-            synchronized (job) { job.preparing = false; }
+            synchronized (job) {
+                job.preparing = false;
+            }
             job.fail(failure);
             return;
         }
@@ -77,9 +84,15 @@ public final class ServuxPasteManager {
 
     private static void onPlayerThread(ServerPlayer player, Consumer<ServerPlayer> action, Runnable discarded) {
         Consumer<ServerPlayer> run = current -> {
-            if (current.hasDisconnected()) { discarded.run(); return; }
-            try { action.accept(current); }
-            catch (RuntimeException failure) { ServuxProtocol.LOGGER.warn("Cannot admit Servux paste for {}", current.getUUID(), failure); }
+            if (current.hasDisconnected()) {
+                discarded.run();
+                return;
+            }
+            try {
+                action.accept(current);
+            } catch (RuntimeException failure) {
+                ServuxProtocol.LOGGER.warn("Cannot admit Servux paste for {}", current.getUUID(), failure);
+            }
         };
         if (TickThread.isTickThreadFor(player)) {
             run.accept(player);
@@ -102,7 +115,8 @@ public final class ServuxPasteManager {
 
     private static Job admit(ServerPlayer player, ServerLevel world) {
         TickThread.ensureTickThread(player, "Servux paste admission must own its player");
-        if (world.getServer() != player.level().getServer()) throw new IllegalArgumentException("Paste world belongs to another server");
+        if (world.getServer() != player.level().getServer())
+            throw new IllegalArgumentException("Paste world belongs to another server");
         if (!ServuxProtocolConfig.litematicsEnabled || !ServuxLitematicsProtocol.hasPermission(player) || !player.isCreative()
                 || ScarpetNativeWork.isDraining(player.level().getServer())) {
             player.getBukkitEntity().sendActionBar(Component.text("Servux paste requires permission and Creative Mode", NamedTextColor.RED));
@@ -123,7 +137,8 @@ public final class ServuxPasteManager {
     public static void receiveTag(ServerPlayer player, net.minecraft.nbt.CompoundTag tag) {
         // Preserve the direct-call entry point without compressing or parsing NBT on the region thread.
         var snapshot = tag.copy();
-        onPlayerThread(player, owner -> receiveTagOwned(owner, snapshot), () -> { });
+        onPlayerThread(player, owner -> receiveTagOwned(owner, snapshot), () -> {
+        });
     }
 
     private static void receiveTagOwned(ServerPlayer player, net.minecraft.nbt.CompoundTag snapshot) {
@@ -132,23 +147,29 @@ public final class ServuxPasteManager {
         try {
             PREPARER.execute(() -> {
                 var packet = new FriendlyByteBuf(Unpooled.buffer());
-                try { ServuxDataByteBuf.write(packet, snapshot); }
-                catch (Throwable failure) {
+                try {
+                    ServuxDataByteBuf.write(packet, snapshot);
+                } catch (Throwable failure) {
                     packet.release();
-                    synchronized (job) { job.preparing = false; }
+                    synchronized (job) {
+                        job.preparing = false;
+                    }
                     job.fail(failure);
                     return;
                 }
                 job.read(packet);
             });
         } catch (RuntimeException failure) {
-            synchronized (job) { job.preparing = false; }
+            synchronized (job) {
+                job.preparing = false;
+            }
             job.fail(failure);
         }
     }
 
     public static void pastePrepared(ServerLevel world, ReplaceBehavior replace, ServerPlayer player, SchematicPlacement placement) {
-        onPlayerThread(player, owner -> pastePreparedOwned(world, replace, owner, placement), () -> { });
+        onPlayerThread(player, owner -> pastePreparedOwned(world, replace, owner, placement), () -> {
+        });
     }
 
     private static void pastePreparedOwned(ServerLevel world, ReplaceBehavior replace, ServerPlayer player, SchematicPlacement placement) {
@@ -159,14 +180,19 @@ public final class ServuxPasteManager {
                 try {
                     job.replace = replace;
                     job.installPlan(ServuxPastePlan.create(placement, job.minY, job.maxY, job.stopping::get));
-                } catch (Throwable failure) { job.fail(failure); }
-                finally {
-                    synchronized (job) { job.preparing = false; }
+                } catch (Throwable failure) {
+                    job.fail(failure);
+                } finally {
+                    synchronized (job) {
+                        job.preparing = false;
+                    }
                     job.pump();
                 }
             });
         } catch (RuntimeException failure) {
-            synchronized (job) { job.preparing = false; }
+            synchronized (job) {
+                job.preparing = false;
+            }
             job.fail(failure);
         }
     }
@@ -233,7 +259,8 @@ public final class ServuxPasteManager {
 
     public static void cancel(ServerPlayer player) {
         cancelAdmitted(player);
-        if (!TickThread.isTickThreadFor(player)) onPlayerThread(player, ServuxPasteManager::cancelAdmitted, () -> { });
+        if (!TickThread.isTickThreadFor(player)) onPlayerThread(player, ServuxPasteManager::cancelAdmitted, () -> {
+        });
     }
 
     private static void cancelAdmitted(ServerPlayer player) {
@@ -283,8 +310,12 @@ public final class ServuxPasteManager {
         private int claimedSections;
 
         Job(State state, ServerPlayer player, ServerLevel world) {
-            this.state = state; this.player = player; this.id = player.getUUID(); this.world = world;
-            this.minY = world.getMinY(); this.maxY = world.getMaxY() + 1; // The world API includes maxY; the paste plan excludes it.
+            this.state = state;
+            this.player = player;
+            this.id = player.getUUID();
+            this.world = world;
+            this.minY = world.getMinY();
+            this.maxY = world.getMaxY() + 1; // The world API includes maxY; the paste plan excludes it.
             this.nbtLimit = ServuxProtocolConfig.litematicsMaxNbtSize;
         }
 
@@ -299,12 +330,17 @@ public final class ServuxPasteManager {
                         var bytes = packet.nioBuffer();
                         while (bytes.hasRemaining()) channel.write(bytes);
                     }
-                } finally { packet.release(); }
+                } finally {
+                    packet.release();
+                }
                 if (stopping.get()) return;
                 var input = new FriendlyByteBuf(Unpooled.wrappedBuffer(Files.readAllBytes(cache)));
                 net.minecraft.nbt.CompoundTag tag;
-                try { tag = ServuxDataByteBuf.read(input, nbtLimit); }
-                finally { input.release(); }
+                try {
+                    tag = ServuxDataByteBuf.read(input, nbtLimit);
+                } finally {
+                    input.release();
+                }
                 if (!tag.getStringOr("Task", "").equals("LitematicaPaste"))
                     throw new IllegalArgumentException("Upload is not a Litematica paste");
                 replace = ReplaceBehavior.fromStringStatic(tag.getStringOr("ReplaceMode", ReplaceBehavior.NONE.name()));
@@ -313,7 +349,9 @@ public final class ServuxPasteManager {
             } catch (Throwable problem) {
                 if (!stopping.get()) fail(problem);
             } finally {
-                synchronized (this) { preparing = false; }
+                synchronized (this) {
+                    preparing = false;
+                }
                 pump();
             }
         }
@@ -323,7 +361,8 @@ public final class ServuxPasteManager {
                 if (stopping.get() || state.closed) return;
                 var claimed = state.paused.computeIfAbsent(world, ignored -> new ConcurrentHashMap<>());
                 for (var section : prepared.sections)
-                    if (claimed.containsKey(section.key())) throw new IllegalStateException("Paste overlaps another active paste");
+                    if (claimed.containsKey(section.key()))
+                        throw new IllegalStateException("Paste overlaps another active paste");
                 plan = prepared;
                 for (var section : prepared.sections) claimed.put(section.key(), this);
                 claimedSections = prepared.sections.size();
@@ -341,7 +380,8 @@ public final class ServuxPasteManager {
             synchronized (this) {
                 if (!stopping.get() && !preparing && plan != null) {
                     while (phase < plan.passes() && completed == plan.sections.size() && inFlight == 0) {
-                        phase++; next = completed = 0;
+                        phase++;
+                        next = completed = 0;
                     }
                     int limit = Math.clamp(ServuxProtocolConfig.pasteConcurrentSections, 1, MAX_PREPARED_SECTIONS);
                     while (phase < plan.passes() && inFlight < limit && next < plan.sections.size()) {
@@ -352,17 +392,27 @@ public final class ServuxPasteManager {
                 finish = !preparing && inFlight == 0 && (stopping.get() || plan == null || phase == plan.passes());
             }
             for (Work item : work) {
-                try { PREPARER.execute(() -> prepare(item)); }
-                catch (RuntimeException problem) { fail(problem); sectionDone(); }
+                try {
+                    PREPARER.execute(() -> prepare(item));
+                } catch (RuntimeException problem) {
+                    fail(problem);
+                    sectionDone();
+                }
             }
             if (finish) cleanup();
         }
 
         void prepare(Work work) {
             try {
-                if (stopping.get()) { sectionDone(); return; }
+                if (stopping.get()) {
+                    sectionDone();
+                    return;
+                }
                 var prepared = plan.preparePass(work.section, work.phase, replace, stopping::get);
-                if (prepared.empty() || stopping.get()) { sectionDone(); return; }
+                if (prepared.empty() || stopping.get()) {
+                    sectionDone();
+                    return;
+                }
                 Batch batch = new Batch(this, prepared);
                 batches.add(batch);
                 if (stopping.get()) batch.cancel();
@@ -388,7 +438,10 @@ public final class ServuxPasteManager {
         }
 
         void sectionDone() {
-            synchronized (this) { completed++; inFlight--; }
+            synchronized (this) {
+                completed++;
+                inFlight--;
+            }
             pump();
         }
 
@@ -399,7 +452,10 @@ public final class ServuxPasteManager {
 
         void cancel(String reason) {
             synchronized (this) {
-                if (!stopping.get()) { failure = reason; stopping.set(true); }
+                if (!stopping.get()) {
+                    failure = reason;
+                    stopping.set(true);
+                }
             }
             for (Batch batch : batches) batch.cancel();
             pump();
@@ -409,7 +465,8 @@ public final class ServuxPasteManager {
             if (!cleaned.compareAndSet(false, true)) return;
             synchronized (state) {
                 var claimed = state.paused.get(world);
-                if (claimed != null && plan != null) for (var section : plan.sections) claimed.remove(section.key(), this);
+                if (claimed != null && plan != null)
+                    for (var section : plan.sections) claimed.remove(section.key(), this);
                 PAUSED_SECTIONS.addAndGet(-claimedSections);
                 if (claimed != null && claimed.isEmpty()) state.paused.remove(world, claimed);
                 state.jobs.remove(id, this);
@@ -417,17 +474,21 @@ public final class ServuxPasteManager {
             }
             Path file = cache;
             if (file != null) Thread.ofVirtual().name("Servux paste cache cleanup").start(() -> {
-                try { Files.deleteIfExists(file); }
-                catch (java.io.IOException problem) { ServuxProtocol.LOGGER.warn("Cannot remove Servux paste cache {}", file, problem); }
+                try {
+                    Files.deleteIfExists(file);
+                } catch (java.io.IOException problem) {
+                    ServuxProtocol.LOGGER.warn("Cannot remove Servux paste cache {}", file, problem);
+                }
             });
             long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started);
             boolean heightClipped = plan != null && plan.heightClipped;
             String result = failure != null ? failure : heightClipped ? "completed_with_height_clipping" : "completed";
             ServuxProtocol.LOGGER.info("Servux paste {} finished: result={}, elapsed_ms={}, changed_blocks={}, bulk_skipped_air={}",
                     id, result, elapsedMillis, blocks.get(), bulkSkippedAir.get());
-            if (!state.closed) message(failure != null ? failure : "Servux: applied " + blocks.get() + " block changes in "
-                    + elapsedMillis + "ms" + (heightClipped ? "; clipped to Y=" + minY + ".." + (maxY - 1) : ""),
-                    failure != null ? NamedTextColor.RED : heightClipped ? NamedTextColor.GOLD : NamedTextColor.GREEN);
+            if (!state.closed)
+                message(failure != null ? failure : "Servux: applied " + blocks.get() + " block changes in "
+                                + elapsedMillis + "ms" + (heightClipped ? "; clipped to Y=" + minY + ".." + (maxY - 1) : ""),
+                        failure != null ? NamedTextColor.RED : heightClipped ? NamedTextColor.GOLD : NamedTextColor.GREEN);
         }
 
         void progress() {
@@ -451,10 +512,12 @@ public final class ServuxPasteManager {
                         player.getBukkitEntity().sendActionBar(Component.text(text, color));
                     }
                 }, null);
-            } catch (RuntimeException ignored) { }
+            } catch (RuntimeException ignored) {
+            }
         }
 
-        record Work(ServuxPastePlan.Section section, int phase) { }
+        record Work(ServuxPastePlan.Section section, int phase) {
+        }
     }
 
     private static final class Batch {
@@ -468,16 +531,24 @@ public final class ServuxPasteManager {
         private int cursor;
         private int airCursor;
 
-        Batch(Job job, ServuxPastePlan.Prepared prepared) { this.job = job; this.prepared = prepared; }
+        Batch(Job job, ServuxPastePlan.Prepared prepared) {
+            this.job = job;
+            this.prepared = prepared;
+        }
 
         void offer() {
-            if (job.stopping.get()) { cancel(); return; }
+            if (job.stopping.get()) {
+                cancel();
+                return;
+            }
             if (!done.isDone() && queued.compareAndSet(false, true)) job.state.ready.add(this);
         }
 
         void cancel() {
             boolean finish;
-            synchronized (this) { finish = !running && tail.isDone(); }
+            synchronized (this) {
+                finish = !running && tail.isDone();
+            }
             if (finish) {
                 done.complete(null);
                 var waiting = admission;
@@ -501,7 +572,10 @@ public final class ServuxPasteManager {
                 return null;
             });
             ScarpetNativeWork.trackNative(job.world.getServer(), actual);
-            synchronized (this) { tail = actual; running = false; }
+            synchronized (this) {
+                tail = actual;
+                running = false;
+            }
             actual.whenComplete((ignored, problem) -> {
                 if (problem != null) done.completeExceptionally(problem);
                 else if (job.stopping.get() || cursor == prepared.size()) done.complete(null);
@@ -525,7 +599,10 @@ public final class ServuxPasteManager {
                 if (SchematicPlacingUtils.placePreparedBlock(job.world, change.positionAt(airCursor++), change.state(), null, job.replace)
                         == SchematicPlacingUtils.PlacementResult.CHANGED) job.blocks.incrementAndGet();
             }
-            if (airCursor == change.length()) { airCursor = 0; cursor++; }
+            if (airCursor == change.length()) {
+                airCursor = 0;
+                cursor++;
+            }
         }
 
         @SuppressWarnings("unchecked")
@@ -536,7 +613,8 @@ public final class ServuxPasteManager {
                 if (change.kind() == ServuxPastePlan.ChangeKind.ADD_WATER) {
                     BitSet admitted = job.fluidBases.get(prepared.section().key());
                     if (admitted != null && admitted.get(local)
-                            && SchematicPlacingUtils.addPreparedWater(job.world, change.pos(), change.state())) job.blocks.incrementAndGet();
+                            && SchematicPlacingUtils.addPreparedWater(job.world, change.pos(), change.state()))
+                        job.blocks.incrementAndGet();
                 } else {
                     var result = SchematicPlacingUtils.placePreparedBlock(job.world, change.pos(), change.state(), change.nbt(), job.replace);
                     if (result != SchematicPlacingUtils.PlacementResult.SKIPPED && change.kind() == ServuxPastePlan.ChangeKind.DRY_BASE)

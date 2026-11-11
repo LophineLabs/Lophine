@@ -93,6 +93,7 @@ public final class ScarpetPlayerInventoryGate {
     }
 
     // Lophine start - allow unadmitted optional hits to finish on retirement
+
     /**
      * A queued typed intent is not part of a snapshot's old accepted work until it starts.
      */
@@ -105,7 +106,7 @@ public final class ScarpetPlayerInventoryGate {
      * The retirement supplier must use immutable metadata only; already started effects keep their real result.
      */
     public static <T> CompletableFuture<T> enqueuePaused(ServerPlayer player, Supplier<CompletableFuture<T>> nativeOperation,
-                                                       Supplier<CompletableFuture<T>> unadmittedRetirement) {
+                                                         Supplier<CompletableFuture<T>> unadmittedRetirement) {
         TickThread.ensureTickThread(player, "Paused typed intent must be queued by its owner");
         var done = ScarpetPlayerInventoryGate.<T>intentReceipt(player);
         ScarpetNativeWork.record(done);
@@ -144,6 +145,7 @@ public final class ScarpetPlayerInventoryGate {
     }
 
     // Lophine start - distinguish actor retirement from failures of accepted work
+
     /**
      * Only not-yet-admitted intents are abandoned; executing native children keep their true receipt.
      */

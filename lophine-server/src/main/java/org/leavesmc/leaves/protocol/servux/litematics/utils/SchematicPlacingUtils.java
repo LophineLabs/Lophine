@@ -54,9 +54,11 @@ import java.util.Map;
 import java.util.Set;
 
 public class SchematicPlacingUtils {
-    public enum PlacementResult { SKIPPED, UNCHANGED, CHANGED }
+    public enum PlacementResult {SKIPPED, UNCHANGED, CHANGED}
 
-    /** Empty-cell counts and a palette miss exclude occupied cells and other air variants. */
+    /**
+     * Empty-cell counts and a palette miss exclude occupied cells and other air variants.
+     */
     public static boolean isUnchangedAirSection(ServerLevel world, BlockPos pos) {
         ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(world, pos, "Servux air check must own its section");
         var chunk = world.getChunkIfLoaded(pos);
@@ -65,9 +67,11 @@ public class SchematicPlacingUtils {
         return section.hasOnlyAir() && !section.maybeHas(state -> state.isAir() && state != Blocks.AIR.defaultBlockState());
     }
 
-    /** One already transformed block, executed only by the loaded area's current owner. */
+    /**
+     * One already transformed block, executed only by the loaded area's current owner.
+     */
     public static PlacementResult placePreparedBlock(ServerLevel world, BlockPos pos, BlockState state,
-                                             @Nullable CompoundTag blockEntityData, ReplaceBehavior replace) {
+                                                     @Nullable CompoundTag blockEntityData, ReplaceBehavior replace) {
         ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(world, pos, "Servux paste must own its block");
         if (world.getChunkIfLoaded(pos) == null) throw new IllegalStateException("Paste chunk lost its FULL ticket");
         BlockState previous = world.getBlockState(pos);
@@ -92,7 +96,9 @@ public class SchematicPlacingUtils {
         return changed ? PlacementResult.CHANGED : PlacementResult.UNCHANGED;
     }
 
-    /** Add the deferred water state without clearing or reloading the existing block entity. */
+    /**
+     * Add the deferred water state without clearing or reloading the existing block entity.
+     */
     public static boolean addPreparedWater(ServerLevel world, BlockPos pos, BlockState state) {
         ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(world, pos, "Servux fluid pass must own its block");
         if (world.getChunkIfLoaded(pos) == null) throw new IllegalStateException("Paste chunk lost its FULL ticket");

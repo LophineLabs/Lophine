@@ -36,12 +36,15 @@ final class ServuxPastePlan {
         this.heightClipped = heightClipped;
     }
 
-    int passes() { return this.sections.size() == 1 ? 1 : PHASES; }
+    int passes() {
+        return this.sections.size() == 1 ? 1 : PHASES;
+    }
 
     Prepared preparePass(Section section, int pass, ReplaceBehavior replace, BooleanSupplier cancelled) {
         if (this.sections.size() != 1) return prepare(section, pass, replace, cancelled);
         List<Change> changes = new ArrayList<>();
-        for (int phase = 0; phase < PHASES - 1; phase++) changes.addAll(prepare(section, phase, replace, cancelled).changes());
+        for (int phase = 0; phase < PHASES - 1; phase++)
+            changes.addAll(prepare(section, phase, replace, cancelled).changes());
         Prepared auxiliary = prepare(section, PHASES - 1, replace, cancelled);
         return new Prepared(section, -1, List.copyOf(changes), auxiliary.ticks(), auxiliary.entities());
     }
@@ -92,7 +95,8 @@ final class ServuxPastePlan {
             if (cancelled.getAsBoolean()) throw new CancellationException();
             var order = chunkOrders.computeIfAbsent(ChunkPos.pack(section.x, section.z), ignored -> {
                 Map<String, Integer> ranks = new HashMap<>();
-                for (String name : placement.getRegionsTouchingChunk(section.x, section.z)) ranks.put(name, ranks.size());
+                for (String name : placement.getRegionsTouchingChunk(section.x, section.z))
+                    ranks.put(name, ranks.size());
                 return ranks;
             });
             section.parts.sort(Comparator.comparingInt(part -> order.get(part.name)));
@@ -120,7 +124,8 @@ final class ServuxPastePlan {
 
     Prepared prepare(Section section, int phase, ReplaceBehavior replace, BooleanSupplier cancelled) {
         if (cancelled.getAsBoolean()) throw new CancellationException();
-        if (phase == PHASES - 1) return new Prepared(section, phase, List.of(), List.copyOf(section.ticks), List.copyOf(section.entities));
+        if (phase == PHASES - 1)
+            return new Prepared(section, phase, List.of(), List.copyOf(section.ticks), List.copyOf(section.entities));
         Classification known = section.classification;
         if (known != null && known.replace() == replace && (known.mask() & (1 << phase)) == 0)
             return new Prepared(section, phase, List.of(), List.of(), List.of());
@@ -130,38 +135,46 @@ final class ServuxPastePlan {
         int mask = indexed ? known.mask() : 0;
         for (int y = 0; y < 16; y++) {
             if (cancelled.getAsBoolean()) throw new CancellationException();
-            for (int z = 0; z < 16; z++) for (int x = 0; x < 16; x++) {
-                int local = (y << 8) | (z << 4) | x;
-                if (indexed && (phases[local] & (1 << phase)) == 0) continue;
-                BlockPos target = new BlockPos((section.x << 4) + x, (section.y << 4) + y, (section.z << 4) + z);
-                BlockState state = null;
-                CompoundTag nbt = null;
-                for (Part part : section.parts) {
-                    if (!part.contains(target) || part.region.blockContainers() == null) continue;
-                    BlockPos source = part.toSource(target);
-                    var container = part.region.blockContainers();
-                    var size = container.getSize();
-                    if (source.getX() < 0 || source.getY() < 0 || source.getZ() < 0
-                            || source.getX() >= size.getX() || source.getY() >= size.getY() || source.getZ() >= size.getZ()) continue;
-                    BlockState next = container.get(source.getX(), source.getY(), source.getZ());
-                    if (next.is(Blocks.STRUCTURE_VOID)) continue;
-                    if (replace == ReplaceBehavior.WITH_NON_AIR && next.isAir()) continue;
-                    state = part.transform(next);
-                    nbt = part.region.tileEntities().get(source);
-                    if (replace == ReplaceBehavior.NONE && !state.isAir()) break;
+            for (int z = 0; z < 16; z++)
+                for (int x = 0; x < 16; x++) {
+                    int local = (y << 8) | (z << 4) | x;
+                    if (indexed && (phases[local] & (1 << phase)) == 0) continue;
+                    BlockPos target = new BlockPos((section.x << 4) + x, (section.y << 4) + y, (section.z << 4) + z);
+                    BlockState state = null;
+                    CompoundTag nbt = null;
+                    for (Part part : section.parts) {
+                        if (!part.contains(target) || part.region.blockContainers() == null) continue;
+                        BlockPos source = part.toSource(target);
+                        var container = part.region.blockContainers();
+                        var size = container.getSize();
+                        if (source.getX() < 0 || source.getY() < 0 || source.getZ() < 0
+                                || source.getX() >= size.getX() || source.getY() >= size.getY() || source.getZ() >= size.getZ())
+                            continue;
+                        BlockState next = container.get(source.getX(), source.getY(), source.getZ());
+                        if (next.is(Blocks.STRUCTURE_VOID)) continue;
+                        if (replace == ReplaceBehavior.WITH_NON_AIR && next.isAir()) continue;
+                        state = part.transform(next);
+                        nbt = part.region.tileEntities().get(source);
+                        if (replace == ReplaceBehavior.NONE && !state.isAir()) break;
+                    }
+                    if (state == null) continue;
+                    if (state.hasProperty(BlockStateProperties.WATERLOGGED) && state.getValue(BlockStateProperties.WATERLOGGED)) {
+                        BlockState dry = state.setValue(BlockStateProperties.WATERLOGGED, false);
+                        if (!indexed) {
+                            phases[local] = (byte) ((1 << phase(dry)) | (1 << 3));
+                            mask |= phases[local];
+                        }
+                        if (phase(dry) == phase) changes.add(target, dry, nbt, ChangeKind.DRY_BASE);
+                        if (phase == 3) changes.add(target, state, null, ChangeKind.ADD_WATER);
+                    } else {
+                        int kind = phase(state);
+                        if (!indexed) {
+                            phases[local] = (byte) (1 << kind);
+                            mask |= phases[local];
+                        }
+                        if (kind == phase) changes.add(target, state, nbt, ChangeKind.BLOCK);
+                    }
                 }
-                if (state == null) continue;
-                if (state.hasProperty(BlockStateProperties.WATERLOGGED) && state.getValue(BlockStateProperties.WATERLOGGED)) {
-                    BlockState dry = state.setValue(BlockStateProperties.WATERLOGGED, false);
-                    if (!indexed) { phases[local] = (byte) ((1 << phase(dry)) | (1 << 3)); mask |= phases[local]; }
-                    if (phase(dry) == phase) changes.add(target, dry, nbt, ChangeKind.DRY_BASE);
-                    if (phase == 3) changes.add(target, state, null, ChangeKind.ADD_WATER);
-                } else {
-                    int kind = phase(state);
-                    if (!indexed) { phases[local] = (byte) (1 << kind); mask |= phases[local]; }
-                    if (kind == phase) changes.add(target, state, nbt, ChangeKind.BLOCK);
-                }
-            }
         }
         section.classification = new Classification(replace, mask, phase < 31 - Integer.numberOfLeadingZeros(mask) ? phases : null);
         return new Prepared(section, phase, changes.finish(), List.of(), List.of());
@@ -188,19 +201,43 @@ final class ServuxPastePlan {
         final List<SavedTick> ticks = new ArrayList<>();
         final List<SavedEntity> entities = new ArrayList<>();
         volatile Classification classification;
-        Section(int x, int y, int z) { this.x = x; this.y = y; this.z = z; }
-        long key() { return SectionPos.asLong(x, y, z); }
-        ChunkPos chunk() { return new ChunkPos(x, z); }
+
+        Section(int x, int y, int z) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        long key() {
+            return SectionPos.asLong(x, y, z);
+        }
+
+        ChunkPos chunk() {
+            return new ChunkPos(x, z);
+        }
     }
 
-    record Prepared(Section section, int phase, List<Change> changes, List<SavedTick> ticks, List<SavedEntity> entities) {
-        boolean empty() { return changes.isEmpty() && ticks.isEmpty() && entities.isEmpty(); }
-        int size() { return changes.size() + ticks.size() + entities.size(); }
+    record Prepared(Section section, int phase, List<Change> changes, List<SavedTick> ticks,
+                    List<SavedEntity> entities) {
+        boolean empty() {
+            return changes.isEmpty() && ticks.isEmpty() && entities.isEmpty();
+        }
+
+        int size() {
+            return changes.size() + ticks.size() + entities.size();
+        }
     }
-    enum ChangeKind { BLOCK, DRY_BASE, ADD_WATER, AIR_RUN }
-    private record Classification(ReplaceBehavior replace, int mask, byte[] blocks) { }
+
+    enum ChangeKind {BLOCK, DRY_BASE, ADD_WATER, AIR_RUN}
+
+    private record Classification(ReplaceBehavior replace, int mask, byte[] blocks) {
+    }
+
     record Change(BlockPos pos, BlockState state, CompoundTag nbt, ChangeKind kind, int length) {
-        Change(BlockPos pos, BlockState state, CompoundTag nbt, ChangeKind kind) { this(pos, state, nbt, kind, 1); }
+        Change(BlockPos pos, BlockState state, CompoundTag nbt, ChangeKind kind) {
+            this(pos, state, nbt, kind, 1);
+        }
+
         BlockPos positionAt(int offset) {
             if (offset == 0) return pos;
             int local = (((pos.getY() & 15) << 8) | ((pos.getZ() & 15) << 4) | (pos.getX() & 15)) + offset;
@@ -208,8 +245,12 @@ final class ServuxPastePlan {
                     (pos.getZ() & ~15) + ((local >> 4) & 15));
         }
     }
-    record SavedTick(BlockPos pos, ScheduledTick<?> tick, boolean block) { }
-    record SavedEntity(LitematicaSchematic.EntityInfo info, SubRegionPlacement placement) { }
+
+    record SavedTick(BlockPos pos, ScheduledTick<?> tick, boolean block) {
+    }
+
+    record SavedEntity(LitematicaSchematic.EntityInfo info, SubRegionPlacement placement) {
+    }
 
     private static final class ChangeBuilder {
         private final boolean compactAir;
@@ -217,7 +258,9 @@ final class ServuxPastePlan {
         private BlockPos airStart;
         private int airLength;
 
-        ChangeBuilder(boolean compactAir) { this.compactAir = compactAir; }
+        ChangeBuilder(boolean compactAir) {
+            this.compactAir = compactAir;
+        }
 
         void add(BlockPos pos, BlockState state, CompoundTag nbt, ChangeKind kind) {
             if (compactAir && state == Blocks.AIR.defaultBlockState() && nbt == null && kind == ChangeKind.BLOCK) {
@@ -240,7 +283,10 @@ final class ServuxPastePlan {
             airLength = 0;
         }
 
-        List<Change> finish() { flushAir(); return List.copyOf(entries); }
+        List<Change> finish() {
+            flushAir();
+            return List.copyOf(entries);
+        }
     }
 
     private static final class Part {
@@ -254,8 +300,11 @@ final class ServuxPastePlan {
 
         Part(String name, SchematicPlacement placement, SubRegionPlacement relative, LitematicaSchematic.SubRegion region, BlockPos min, BlockPos max) {
             this.name = name;
-            this.placement = placement; this.relative = relative; this.region = region;
-            this.min = min; this.max = max;
+            this.placement = placement;
+            this.relative = relative;
+            this.region = region;
+            this.min = min;
+            this.max = max;
             this.offset = PositionUtils.getTransformedBlockPos(relative.pos(), placement.getMirror(), placement.getRotation()).offset(placement.getOrigin());
             var end = PositionUtils.getRelativeEndPositionFromAreaSize(region.size()).offset(relative.pos());
             this.containerOffset = PositionUtils.getMinCorner(relative.pos(), end).subtract(relative.pos());
@@ -265,17 +314,21 @@ final class ServuxPastePlan {
             this.subMirror = mirror;
             this.rotation = placement.getRotation().getRotated(relative.rotation());
         }
+
         boolean contains(BlockPos pos) {
             return pos.getX() >= min.getX() && pos.getX() <= max.getX() && pos.getY() >= min.getY()
                     && pos.getY() <= max.getY() && pos.getZ() >= min.getZ() && pos.getZ() <= max.getZ();
         }
+
         BlockPos toSource(BlockPos target) {
             BlockPos pos = PositionUtils.getReverseTransformedBlockPos(target.subtract(offset), relative.mirror(), relative.rotation());
             return PositionUtils.getReverseTransformedBlockPos(pos, placement.getMirror(), placement.getRotation()).subtract(containerOffset);
         }
+
         BlockPos toWorld(BlockPos source) {
             return PositionUtils.getTransformedPlacementPosition(source.offset(containerOffset), placement, relative).offset(offset);
         }
+
         BlockState transform(BlockState state) {
             return state.mirror(placement.getMirror()).mirror(subMirror).rotate(rotation);
         }
