@@ -3033,7 +3033,7 @@ index b410af1f886d6b744cf05c168524cf35f689cfd7..8b7f404eaa44dadacad745de092eb8bf
                              // Paper start - Remove the Block Entity if it's invalid
                          } else {
 diff --git a/net/minecraft/world/level/levelgen/PhantomSpawner.java b/net/minecraft/world/level/levelgen/PhantomSpawner.java
-index adc4f77d8d362da78aee3ce0598e8a34c2fa316c..4645a5711962fb96c6b0f24ff6f165cf9cf582a9 100644
+index cca1e16cb178fac4973983a2bf848b816d310eb9..7ebe57a339d25795ccefe8ed9f40beee8d4fb742 100644
 --- a/net/minecraft/world/level/levelgen/PhantomSpawner.java
 +++ b/net/minecraft/world/level/levelgen/PhantomSpawner.java
 @@ -59,6 +59,13 @@ public class PhantomSpawner implements CustomSpawner {
@@ -3047,6 +3047,6 @@ index adc4f77d8d362da78aee3ce0598e8a34c2fa316c..4645a5711962fb96c6b0f24ff6f165cf
 +                                                    return;
 +                                                }
 +                                            }
-                                             if (NaturalSpawner.isValidEmptySpawnBlock(level, spawnPos, blockState, fluidState, EntityTypes.PHANTOM)) {
+                                             if (!org.leavesmc.leaves.protocol.servux.litematics.ServuxPasteManager.isPaused(level, spawnPos) && NaturalSpawner.isValidEmptySpawnBlock(level, spawnPos, blockState, fluidState, EntityTypes.PHANTOM)) { // Lophine - pause natural spawning while pasting
                                                  SpawnGroupData groupData = null;
                                                  int groupSize = 1 + random.nextInt(difficulty.getDifficulty().getId() + 1);

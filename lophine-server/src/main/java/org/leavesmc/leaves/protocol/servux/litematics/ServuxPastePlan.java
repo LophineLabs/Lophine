@@ -17,6 +17,7 @@ import org.leavesmc.leaves.protocol.servux.litematics.utils.PositionUtils;
 import org.leavesmc.leaves.protocol.servux.litematics.utils.ReplaceBehavior;
 
 import java.util.*;
+import java.util.concurrent.CancellationException;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -50,14 +51,11 @@ final class ServuxPastePlan {
         boolean heightClipped = false;
         var boxes = placement.getSubRegionBoxes(SubRegionPlacement.RequiredEnabled.PLACEMENT_ENABLED);
         for (String name : new TreeSet<>(boxes.keySet())) {
-            if (cancelled.getAsBoolean()) throw new java.util.concurrent.CancellationException();
+            if (cancelled.getAsBoolean()) throw new CancellationException();
             var box = boxes.get(name);
             if (box.pos1() == null || box.pos2() == null) continue;
             BlockPos min = PositionUtils.getMinCorner(box.pos1(), box.pos2());
             BlockPos max = PositionUtils.getMaxCorner(box.pos1(), box.pos2());
-            if (min.getX() < -29_999_984 || max.getX() >= 29_999_984
-                    || min.getZ() < -29_999_984 || max.getZ() >= 29_999_984)
-                throw new IllegalArgumentException("Schematic is outside world bounds");
             heightClipped |= min.getY() < minY || max.getY() >= maxY;
             int loY = Math.max(min.getY(), minY), hiY = Math.min(max.getY(), maxY - 1);
             if (loY > hiY) continue;
@@ -68,7 +66,7 @@ final class ServuxPastePlan {
             for (int x = min.getX() >> 4; x <= max.getX() >> 4; x++)
                 for (int z = min.getZ() >> 4; z <= max.getZ() >> 4; z++)
                     for (int y = loY >> 4; y <= hiY >> 4; y++) {
-                        if (cancelled.getAsBoolean()) throw new java.util.concurrent.CancellationException();
+                        if (cancelled.getAsBoolean()) throw new CancellationException();
                         section(sections, x, y, z).parts.add(part);
                     }
             addTicks(sections, part, region.pendingBlockTicks(), true, minY, maxY);
@@ -91,7 +89,7 @@ final class ServuxPastePlan {
         ordered.sort(Comparator.comparingInt((Section s) -> s.x).thenComparingInt(s -> s.z).thenComparingInt(s -> s.y));
         Map<Long, Map<String, Integer>> chunkOrders = new HashMap<>();
         for (Section section : ordered) {
-            if (cancelled.getAsBoolean()) throw new java.util.concurrent.CancellationException();
+            if (cancelled.getAsBoolean()) throw new CancellationException();
             var order = chunkOrders.computeIfAbsent(ChunkPos.pack(section.x, section.z), ignored -> {
                 Map<String, Integer> ranks = new HashMap<>();
                 for (String name : placement.getRegionsTouchingChunk(section.x, section.z)) ranks.put(name, ranks.size());
@@ -121,7 +119,7 @@ final class ServuxPastePlan {
     }
 
     Prepared prepare(Section section, int phase, ReplaceBehavior replace, BooleanSupplier cancelled) {
-        if (cancelled.getAsBoolean()) throw new java.util.concurrent.CancellationException();
+        if (cancelled.getAsBoolean()) throw new CancellationException();
         if (phase == PHASES - 1) return new Prepared(section, phase, List.of(), List.copyOf(section.ticks), List.copyOf(section.entities));
         Classification known = section.classification;
         if (known != null && known.replace() == replace && (known.mask() & (1 << phase)) == 0)
@@ -131,7 +129,7 @@ final class ServuxPastePlan {
         ChangeBuilder changes = new ChangeBuilder(replace == ReplaceBehavior.ALL && phase == 0);
         int mask = indexed ? known.mask() : 0;
         for (int y = 0; y < 16; y++) {
-            if (cancelled.getAsBoolean()) throw new java.util.concurrent.CancellationException();
+            if (cancelled.getAsBoolean()) throw new CancellationException();
             for (int z = 0; z < 16; z++) for (int x = 0; x < 16; x++) {
                 int local = (y << 8) | (z << 4) | x;
                 if (indexed && (phases[local] & (1 << phase)) == 0) continue;
