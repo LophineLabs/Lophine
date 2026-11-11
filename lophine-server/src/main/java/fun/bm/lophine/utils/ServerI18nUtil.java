@@ -57,6 +57,7 @@ public class ServerI18nUtil {
     private static String assetsPath;
     private static String versionPath;
     private static String manifestPath;
+    private static String packMcmetaPath;
     private static String langJsonPath;
     private static String targetLangName;
 
@@ -116,6 +117,7 @@ public class ServerI18nUtil {
         assetsPath = BASE_PATH + "assets.json";
         versionPath = BASE_PATH + VERSION + ".json";
         manifestPath = BASE_PATH + "manifest.json";
+        packMcmetaPath = BASE_PATH + "pack.mcmeta";
         preloadTask = CompletableFuture.runAsync(() -> preLoadI18n(2));
     }
 
@@ -123,6 +125,9 @@ public class ServerI18nUtil {
         try {
             if (!Files.exists(Path.of(assetsPath))) {
                 downloadAssets(true);
+            }
+            if (!Files.exists(Path.of(packMcmetaPath))) {
+                downloadPackMcmeta(true);
             }
         } catch (UnsupportedLanguageException e) {
             logger.warn("Unsupported language: {}", LanguageConfig.lang);
@@ -172,6 +177,16 @@ public class ServerI18nUtil {
         }
     }
 
+    private static void fetchResource(JsonObject langEntry, String langPath) throws IOException, InterruptedException {
+        String hash = langEntry.get("hash").getAsString();
+        if (hash == null || hash.length() < 2) {
+            throw new IllegalArgumentException("Invalid hash value");
+        }
+
+        String langUrl = resourceBaseUrl + hash.substring(0, 2) + "/" + hash;
+        fetchAndSave(langUrl, langPath);
+    }
+
     private static void downloadLang(boolean fetchFromAssets) throws Exception {
         JsonObject json;
         if (!Files.exists(Path.of(assetsPath)) || (json = loadJson(assetsPath)) == null) {
@@ -188,13 +203,27 @@ public class ServerI18nUtil {
             throw new UnsupportedLanguageException();
         }
 
-        String hash = langEntry.get("hash").getAsString();
-        if (hash == null || hash.length() < 2) {
-            throw new IllegalArgumentException("Invalid hash value");
+        fetchResource(langEntry, langPath);
+    }
+
+    private static void downloadPackMcmeta(boolean fetchFromAssets) throws Exception {
+        JsonObject json;
+        if (!Files.exists(Path.of(assetsPath)) || (json = loadJson(assetsPath)) == null) {
+            if (fetchFromAssets) {
+                downloadAssets(true);
+                downloadPackMcmeta(false);
+            }
+            return;
         }
 
-        String langUrl = resourceBaseUrl + hash.substring(0, 2) + "/" + hash;
-        fetchAndSave(langUrl, langPath);
+        JsonObject objects = json.getAsJsonObject("objects");
+        JsonObject packEntry = objects == null ? null : objects.getAsJsonObject("pack.mcmeta");
+        if (packEntry == null) {
+            logger.warn("Asset index does not contain pack.mcmeta");
+            return;
+        }
+
+        fetchResource(packEntry, packMcmetaPath);
     }
 
     private static void downloadAssets(boolean fetchFromVersion) throws Exception {
@@ -271,6 +300,34 @@ public class ServerI18nUtil {
         Files.write(outputPath, data, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
     }
 
+    private static boolean isLanguageRightToLeft(String lang) {
+        if (lang == null || lang.isEmpty() || defaultLophineLangName.equals(lang)) {
+            return false;
+        }
+        try {
+            if (packMcmetaPath == null) {
+                return false;
+            }
+            if (!Files.exists(Path.of(packMcmetaPath))) {
+                downloadPackMcmeta(true);
+            }
+            JsonObject json = loadJson(packMcmetaPath);
+            if (json == null) {
+                return false;
+            }
+            JsonObject language = json.getAsJsonObject("language");
+            JsonObject info = language == null ? null : language.getAsJsonObject(lang);
+            if (info == null) {
+                return false;
+            }
+            JsonElement bidirectional = info.get("bidirectional");
+            return bidirectional != null && bidirectional.isJsonPrimitive() && bidirectional.getAsBoolean();
+        } catch (Exception e) {
+            logger.warn("Failed to resolve RTL metadata for language {}", lang, e);
+            return false;
+        }
+    }
+
     private static JsonObject loadJson(String path) {
         try {
             byte[] data = Files.readAllBytes(Paths.get(path));
@@ -290,8 +347,9 @@ public class ServerI18nUtil {
         parseTranslations(map::put);
         loadLophineI18n(map::put);
         deprecatedTranslationsInfo.applyToMap(map);
-        MarkdownI18n.reload(LanguageConfig.lang, defaultLophineLangName);
+        MarkdownI18n.reload(targetLangName, defaultLophineLangName);
         final Map<String, String> map1 = Map.copyOf(map);
+        final boolean defaultRightToLeft = isLanguageRightToLeft(targetLangName);
         return new Language() {
             @Override
             public @NotNull String getOrDefault(@NotNull String key, @NotNull String defaultValue) {
@@ -305,7 +363,7 @@ public class ServerI18nUtil {
 
             @Override
             public boolean isDefaultRightToLeft() {
-                return false;
+                return defaultRightToLeft;
             }
 
             @Override
