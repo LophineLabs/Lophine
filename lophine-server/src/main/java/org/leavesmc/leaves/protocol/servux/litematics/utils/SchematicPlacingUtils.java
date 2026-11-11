@@ -54,6 +54,53 @@ import java.util.Map;
 import java.util.Set;
 
 public class SchematicPlacingUtils {
+    public enum PlacementResult { SKIPPED, UNCHANGED, CHANGED }
+
+    /** Empty-cell counts and a palette miss exclude occupied cells and other air variants. */
+    public static boolean isUnchangedAirSection(ServerLevel world, BlockPos pos) {
+        ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(world, pos, "Servux air check must own its section");
+        var chunk = world.getChunkIfLoaded(pos);
+        if (chunk == null) throw new IllegalStateException("Paste chunk lost its FULL ticket");
+        var section = chunk.getSection(chunk.getSectionIndex(pos.getY()));
+        return section.hasOnlyAir() && !section.maybeHas(state -> state.isAir() && state != Blocks.AIR.defaultBlockState());
+    }
+
+    /** One already transformed block, executed only by the loaded area's current owner. */
+    public static PlacementResult placePreparedBlock(ServerLevel world, BlockPos pos, BlockState state,
+                                             @Nullable CompoundTag blockEntityData, ReplaceBehavior replace) {
+        ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(world, pos, "Servux paste must own its block");
+        if (world.getChunkIfLoaded(pos) == null) throw new IllegalStateException("Paste chunk lost its FULL ticket");
+        BlockState previous = world.getBlockState(pos);
+        if (replace == ReplaceBehavior.NONE && !previous.isAir()
+                || replace == ReplaceBehavior.WITH_NON_AIR && state.isAir()) return PlacementResult.SKIPPED;
+        if (previous == state && blockEntityData == null && !state.hasBlockEntity()) return PlacementResult.UNCHANGED;
+        BlockEntity entity = world.getBlockEntity(pos);
+        int flags = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SKIP_ON_PLACE;
+        if (entity != null) {
+            if (entity instanceof Container container) container.clearContent();
+            world.setBlock(pos, Blocks.BARRIER.defaultBlockState(), flags);
+        }
+        boolean changed = world.setBlock(pos, state, flags);
+        if (changed && blockEntityData != null) {
+            entity = world.getBlockEntity(pos);
+            if (entity != null) {
+                CompoundTag tag = blockEntityData.copy();
+                NbtUtils.writeBlockPosToTag(pos, tag);
+                TagUtil.loadTileWithComponents(entity, tag);
+            }
+        }
+        return changed ? PlacementResult.CHANGED : PlacementResult.UNCHANGED;
+    }
+
+    /** Add the deferred water state without clearing or reloading the existing block entity. */
+    public static boolean addPreparedWater(ServerLevel world, BlockPos pos, BlockState state) {
+        ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(world, pos, "Servux fluid pass must own its block");
+        if (world.getChunkIfLoaded(pos) == null) throw new IllegalStateException("Paste chunk lost its FULL ticket");
+        var dry = state.setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED, false);
+        if (world.getBlockState(pos) != dry) return false;
+        return world.setBlock(pos, state, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SKIP_ON_PLACE);
+    }
+
     public static void placeToWorldWithinChunk(
             Level world,
             ChunkPos chunkPos,

@@ -77,6 +77,14 @@ public class ServuxProtocolConfig {
     @ConfigInfo(name = "litematics-max-nbt-size", directory = {"litematics"})
     public static int litematicsMaxNbtSize = 2097152;
 
+    @CommandSuggestions(suggest = {"2.0", "4.0", "8.0", "10.0"})
+    @ConfigInfo(name = "paste-max-millis-per-tick", directory = {"litematics"})
+    public static double pasteMaxMillisPerTick = 8.0D;
+
+    @CommandSuggestions(suggest = {"2", "4", "8", "16"})
+    @ConfigInfo(name = "paste-concurrent-sections", directory = {"litematics"})
+    public static int pasteConcurrentSections = 8;
+
     @CommandSuggestions(suggest = {"-1", "1200"})
     @ConfigInfo(name = "litematics-print-max-delay-ticks", directory = {"litematics"})
     public static int maxDelay = 1200;

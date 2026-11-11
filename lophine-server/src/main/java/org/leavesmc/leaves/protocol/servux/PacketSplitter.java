@@ -145,7 +145,7 @@ public class PacketSplitter {
             if (data.readableBytes() > remaining) {
                 throw new IllegalArgumentException("Servux payload exceeded its declared size");
             }
-            received.writeBytes(data.readBytes(data.readableBytes()));
+            received.writeBytes(data, data.readableBytes());
             return received.writerIndex() == expectedSize ? received : null;
         }
 
