@@ -2338,14 +2338,15 @@ index 5eb7d46bf0d84720662125711fa7b544e9299446..3fc3ee73ef31e67f7b6cd6059cd93d28
          i -> i.group(
                  ComponentSerialization.CODEC.lenientOptionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description),
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index c2e875a94814a23058243338b91c51dac890ea22..cf1d6bb90289f907f342567889f75c434b9134bc 100644
+index 6c9bf50eb9b86ef9014711c698d6c7fa5fe22bb2..e99995f1f2a3f98e241027e5488a0ca57531d9cc 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1041,6 +1041,19 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1041,7 +1041,20 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      // Folia end - region threading
  
      public void stopServer() { // Folia - region threading - public
 +        this.tickRateManager.carpetSetDeeplyFrozen(false);
+         org.leavesmc.leaves.protocol.servux.litematics.ServuxPasteManager.shutdown(this); // Lophine - cancel queued Servux pastes before native draining
 +        carpet.script.external.ScarpetNativeWork.beginDrain(this);
 +        fun.bm.lophine.carpet.CarpetRegionLease.beginShutdown(this);
 +        fun.bm.lophine.carpet.CarpetResourceReloadCoordinator.shutdown();
@@ -2361,11 +2362,12 @@ index c2e875a94814a23058243338b91c51dac890ea22..cf1d6bb90289f907f342567889f75c43
          // Folia start - region threading
          // halt scheduler
          // don't wait, we may be on a scheduler thread
-@@ -1182,6 +1195,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1183,7 +1196,12 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      }
  
      public void halt(final boolean wait, final boolean isRestarting, boolean force) {
 +        this.tickRateManager.carpetSetDeeplyFrozen(false);
+         org.leavesmc.leaves.protocol.servux.litematics.ServuxPasteManager.shutdown(this); // Lophine - cancel queued Servux pastes before native draining
 +        carpet.script.external.ScarpetNativeWork.beginDrain(this);
 +        fun.bm.lophine.carpet.CarpetRegionLease.beginShutdown(this);
 +        if (carpet.script.external.ScarpetRuntime.beginShutdown(this, () -> this.halt(wait, isRestarting, force))) return;
@@ -2373,7 +2375,7 @@ index c2e875a94814a23058243338b91c51dac890ea22..cf1d6bb90289f907f342567889f75c43
          if (!force && !this.getBotList().forceShutdown && !this.getBotList().removeAll()) { // Leaves - save or remove bot
              this.getPlayerList().broadcastSystemMessage(Component.literal("Bot Still need to save, please wait! If you want to shuntdown without bot data saving, please use /stop force"), false);
              return;
-@@ -1707,7 +1725,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1709,7 +1727,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              // run all player packets
              for (ServerPlayer player : new java.util.ArrayList<>(region.world.getCurrentWorldData().getLocalPlayers())) {
                  PacketProcessor packetProcessor = ((org.bukkit.craftbukkit.entity.CraftPlayer)player.getBukkitEntity()).packetProcessor;
@@ -2382,7 +2384,7 @@ index c2e875a94814a23058243338b91c51dac890ea22..cf1d6bb90289f907f342567889f75c43
              }
              } finally { foliaProfiler.stopTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.PLAYER_PACKET_PROCESSING); } // Folia - profiler
              foliaProfiler.startTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.PLUGIN_TICK_TASKS); try { // Folia - profiler
-@@ -1892,12 +1910,18 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1895,12 +1913,18 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
  
      private ServerStatus.Players buildPlayerStatus() {
          List<ServerPlayer> players = new java.util.ArrayList<>(this.playerList.realPlayers); // Folia - region threading // Leaves - only real player
@@ -2402,7 +2404,7 @@ index c2e875a94814a23058243338b91c51dac890ea22..cf1d6bb90289f907f342567889f75c43
          ObjectArrayList<NameAndId> sample = new ObjectArrayList<>(sampleSize);
          int offset = Mth.nextInt(this.random, 0, players.size() - sampleSize);
  
-@@ -2073,7 +2097,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -2076,7 +2100,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
  
      protected void tickConnection() {
          this.getConnection().tick();
@@ -2410,7 +2412,7 @@ index c2e875a94814a23058243338b91c51dac890ea22..cf1d6bb90289f907f342567889f75c43
      }
  
      public void forceGameTimeSynchronization() {
-@@ -2502,7 +2525,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -2505,7 +2528,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          return this.reloadResources(packsToEnable, io.papermc.paper.event.server.ServerResourcesReloadedEvent.Cause.PLUGIN);
      }
  
@@ -2419,7 +2421,7 @@ index c2e875a94814a23058243338b91c51dac890ea22..cf1d6bb90289f907f342567889f75c43
      public void saveDatapacks(Collection<String> selectedPacks) {
          this.packRepository.setSelected(selectedPacks, false); // Paper - add pendingReload flag to determine required pack loading - false as this is *after* a reload (see above)
          WorldDataConfiguration worldDataConfiguration = new WorldDataConfiguration(
-@@ -2510,78 +2533,94 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -2513,78 +2536,94 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          );
          this.worldData.setDataConfiguration(worldDataConfiguration);
      }
@@ -2579,7 +2581,7 @@ index c2e875a94814a23058243338b91c51dac890ea22..cf1d6bb90289f907f342567889f75c43
      }
  
      public static WorldDataConfiguration configurePackRepository(
-@@ -3274,6 +3313,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -3277,6 +3316,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.botList = botList;
      }
  
@@ -2590,7 +2592,7 @@ index c2e875a94814a23058243338b91c51dac890ea22..cf1d6bb90289f907f342567889f75c43
      public org.leavesmc.leaves.bot.BotList getBotList() {
          return botList;
      }
-@@ -3398,4 +3441,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -3401,4 +3444,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          // Folia - region threading
      }
      // Paper end - API to check if the server is sleeping
@@ -3296,7 +3298,7 @@ index 021ff2785ddd8a88376ee2f9e47f79d974b226e7..b3715395edb7cbc8eee6487a8de52e1a
  
      private void tickSpawningChunk(final LevelChunk chunk, final List<MobCategory> spawningCategories, final NaturalSpawner.SpawnState spawnCookie) {
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 8bf48a7b07e3d4d3d48a9d8bca948caec068a394..fc1b61311c9558905bbb2fc951792251cd0d7d8c 100644
+index f390c5ef1282c545b835bb95d0bbe75c0b16bea5..268e8b7dc8a41e2fcfb305ee30920c10814d89dc 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -193,6 +193,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -3361,7 +3363,7 @@ index 8bf48a7b07e3d4d3d48a9d8bca948caec068a394..fc1b61311c9558905bbb2fc951792251
              } finally { foliaProfiler.stopTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.TILE_ENTITY); } // Folia - profiler
              profiler.pop();
              } // Paper - option to disable ticking
-@@ -1199,6 +1211,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1200,6 +1212,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
                  if (bolt != null) {
                      bolt.snapTo(Vec3.atBottomCenterOf(pos));
                      bolt.setVisualOnly(isTrap);
@@ -3369,7 +3371,7 @@ index 8bf48a7b07e3d4d3d48a9d8bca948caec068a394..fc1b61311c9558905bbb2fc951792251
                      this.strikeLightning(bolt, org.bukkit.event.weather.LightningStrikeEvent.Cause.WEATHER); // CraftBukkit
                  }
              }
-@@ -1694,6 +1707,9 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1696,6 +1709,9 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      }
  
      public void updateNeighboursOnBlockSet(final BlockPos pos, final BlockState oldState) {
@@ -3379,7 +3381,7 @@ index 8bf48a7b07e3d4d3d48a9d8bca948caec068a394..fc1b61311c9558905bbb2fc951792251
          BlockState blockState = this.getBlockState(pos);
          Block newBlock = blockState.getBlock();
          boolean blockChanged = !oldState.is(newBlock);
-@@ -1936,6 +1952,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1938,6 +1954,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      }
  
      public void unload(final LevelChunk levelChunk) {
@@ -3387,7 +3389,7 @@ index 8bf48a7b07e3d4d3d48a9d8bca948caec068a394..fc1b61311c9558905bbb2fc951792251
          // Spigot start
          for (net.minecraft.world.level.block.entity.BlockEntity blockEntity : levelChunk.getBlockEntities().values()) {
              if (blockEntity instanceof net.minecraft.world.Container) {
-@@ -2224,8 +2241,9 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2226,8 +2243,9 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          final WeightedList<ExplosionParticleInfo> blockParticles,
          final Holder<SoundEvent> explosionSound
      ) {
@@ -3399,7 +3401,7 @@ index 8bf48a7b07e3d4d3d48a9d8bca948caec068a394..fc1b61311c9558905bbb2fc951792251
      }
  
      public ServerExplosion explode0(
-@@ -2261,6 +2279,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2263,6 +2281,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          final Holder<SoundEvent> explosionSound,
          java.util.function.@Nullable Consumer<ServerExplosion> configurator
      ) {
@@ -3408,7 +3410,7 @@ index 8bf48a7b07e3d4d3d48a9d8bca948caec068a394..fc1b61311c9558905bbb2fc951792251
          // CraftBukkit end
          Explosion.BlockInteraction blockInteraction = switch (interactionType) {
              case NONE -> Explosion.BlockInteraction.KEEP;
-@@ -2296,6 +2316,59 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2298,6 +2318,59 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          }
  
          return explosion; // CraftBukkit
@@ -10900,7 +10902,7 @@ index 654fdca39db9f559ad8fdce874e9d425441b4bf1..5bf6a4392cd112e49fc55e25dd9eef34
      }
  }
 diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
-index a773bcbc94fa0a8d3d8244e002c06ff561b051e1..20f7ed0cfde7c6a6d6c64b70c6820bc9daac5b7c 100644
+index dcb7e2d4038646919d48e729e1a11ebbbc5f2e52..49a855c02e437b60111cedd63708807f63206284 100644
 --- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 +++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 @@ -110,7 +110,8 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
@@ -10913,7 +10915,7 @@ index a773bcbc94fa0a8d3d8244e002c06ff561b051e1..20f7ed0cfde7c6a6d6c64b70c6820bc9
                                  Endermite entityendermite = EntityTypes.ENDERMITE.create(world, EntitySpawnReason.TRIGGERED);
  
                                  if (entityendermite != null) {
-@@ -201,7 +202,8 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+@@ -200,7 +201,8 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
                              return;
                          }
                          // CraftBukkit end
@@ -12164,7 +12166,7 @@ index bd028983cce65b73c48ef1dd1d1b2e90255042bf..b9b7589a564516272bb2f3660e351ae8
          }
  
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index 65291809faad5494b93ff5d605b12947c37f39a5..87e6ebcc3b99e5bb535452097f472262f3ad5b01 100644
+index b4867845429ec64a8d59ad5453d3ec609cd9a0d5..6b1194475c129ae03fb89ba216e31b8c7ca0e852 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -1181,7 +1181,13 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
@@ -12409,7 +12411,10 @@ index f720686163d673ca58b10827aad444e21bdd3669..33dc2c92b3a08703b1f9bd1a9ee1524b
      private static final int CHUNK_CACHE_SHIFT = 2;
      private static final int CHUNK_CACHE_MASK = (1 << CHUNK_CACHE_SHIFT) - 1;
      private static final int CHUNK_CACHE_WIDTH = 1 << CHUNK_CACHE_SHIFT;
-@@ -297,3 +338,4 @@ public class ServerExplosion implements Explosion {
+@@ -294,6 +335,7 @@ public class ServerExplosion implements Explosion {
+             }
+         }
+ 
 +        if (this.carpetProjectileDensities != null && context.isDelegated()) this.carpetDensityContextDelegated = true;
          return (float)missedRays / (float)totalRays;
      }
@@ -12964,7 +12969,8 @@ index f720686163d673ca58b10827aad444e21bdd3669..33dc2c92b3a08703b1f9bd1a9ee1524b
      }
  
      @Override
-@@ -735,5 +1198,20 @@ public class ServerExplosion implements Explosion {
+@@ -734,6 +1197,21 @@ public class ServerExplosion implements Explosion {
+ 
      // Paper start - Optimize explosions
      private float getBlockDensity(Vec3 center, Entity entity) {
 +        // Lophine - exact projectile segments have no callbacks or block mutations between these samples.

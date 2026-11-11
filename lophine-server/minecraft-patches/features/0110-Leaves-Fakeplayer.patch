@@ -46,7 +46,7 @@ index 38dc1c6cf8011ae26b54cdb6a0c1a59cc7eb909a..75d3623705dfc5f68984966fba87fe45
      private final java.util.concurrent.atomic.AtomicBoolean disconnectionHandled = new java.util.concurrent.atomic.AtomicBoolean(false); // Folia - region threading - may be called concurrently during configuration stage
      private int receivedPackets;
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index c43e8f9ac33a31fd84b596030d0467978aaf568f..ee913e73e176e261fc00246d905c580bacecba9c 100644
+index fbc4dfd82963f69215cbbf7dc6c7e81af49ffba7..bea87ca72cd989451ffffd20d0527a56c3956308 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -292,6 +292,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -58,7 +58,7 @@ index c43e8f9ac33a31fd84b596030d0467978aaf568f..ee913e73e176e261fc00246d905c580b
      public static <S extends MinecraftServer> S spin(final Function<Thread, S> factory) {
          ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry.init(); // Paper - rewrite data converter system
          AtomicReference<S> serverReference = new AtomicReference<>();
-@@ -1175,6 +1177,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1176,7 +1178,17 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.halt(wait, false);
      }
      public void halt(final boolean wait, final boolean isRestarting) {
@@ -67,6 +67,7 @@ index c43e8f9ac33a31fd84b596030d0467978aaf568f..ee913e73e176e261fc00246d905c580b
 +    }
 +
 +    public void halt(final boolean wait, final boolean isRestarting, boolean force) {
+         org.leavesmc.leaves.protocol.servux.litematics.ServuxPasteManager.shutdown(this); // Lophine - cancel queued Servux pastes before native draining
 +        if (!force && !this.getBotList().forceShutdown && !this.getBotList().removeAll()) { // Leaves - save or remove bot
 +            this.getPlayerList().broadcastSystemMessage(Component.literal("Bot Still need to save, please wait! If you want to shuntdown without bot data saving, please use /stop force"), false);
 +            return;
@@ -75,7 +76,7 @@ index c43e8f9ac33a31fd84b596030d0467978aaf568f..ee913e73e176e261fc00246d905c580b
          this.isRestarting = isRestarting;
          this.hasLoggedStop = true; // Paper - Debugging
          if (this.isDebugging()) io.papermc.paper.util.TraceUtil.dumpTraceForThread("Server stopped"); // Paper - Debugging
-@@ -1645,7 +1657,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1647,7 +1659,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          int emptyTickThreshold = this.pauseWhenEmptySeconds() * 20;
          this.removeDisabledPluginsBlockingSleep(); // Paper - API to allow/disallow tick sleeping
          if (false && emptyTickThreshold > 0) { // Folia - region threading - this is complicated to implement, and even if done correctly is messy
@@ -84,7 +85,7 @@ index c43e8f9ac33a31fd84b596030d0467978aaf568f..ee913e73e176e261fc00246d905c580b
                  this.emptyTicks++;
              } else {
                  this.emptyTicks = 0;
-@@ -1787,6 +1799,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1789,6 +1801,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              this.isSaving = true;
              if (playerSaveInterval > 0) {
                  this.playerList.saveAll(playerSaveInterval);
@@ -92,7 +93,7 @@ index c43e8f9ac33a31fd84b596030d0467978aaf568f..ee913e73e176e261fc00246d905c580b
              }
              if (region == null && fullSave) { // Folia - region threading - don't auto save level data
                  this.saveGlobalData(false);
-@@ -2040,6 +2053,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -2043,6 +2056,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
  
      protected void tickConnection() {
          this.getConnection().tick();
@@ -100,7 +101,7 @@ index c43e8f9ac33a31fd84b596030d0467978aaf568f..ee913e73e176e261fc00246d905c580b
      }
  
      public void forceGameTimeSynchronization() {
-@@ -3235,6 +3249,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -3238,6 +3252,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          return this.debugSubscribers;
      }
  
@@ -315,7 +316,7 @@ index ef8c1e81327dd3dd3535bb86920f2522f00b0b35..8e7029b560a99003858f09319f89a04f
              }
          }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index a0428d231dacb42830e12cd010cd55f68b0e1361..4c90fc1dff871d6a489d8878b1fed53a053d0fbf 100644
+index a932e2b20fcb6c1935cab2e3b08e0e504323884d..77cf1c4335a5cd1eb6546fc04b2602e0d9afcf8b 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -246,6 +246,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -334,7 +335,7 @@ index a0428d231dacb42830e12cd010cd55f68b0e1361..4c90fc1dff871d6a489d8878b1fed53a
          this.updateTickData(); // Folia - region threading - make sure it is initialised before ticked
      }
  
-@@ -2907,6 +2909,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2913,6 +2915,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          return this.players;
      }
  
@@ -347,7 +348,7 @@ index a0428d231dacb42830e12cd010cd55f68b0e1361..4c90fc1dff871d6a489d8878b1fed53a
      @Override
      public void updatePOIOnBlockStateChange(final BlockPos pos, final BlockState oldState, final BlockState newState) {
          Optional<Holder<PoiType>> oldType = PoiTypes.forState(oldState);
-@@ -3371,6 +3379,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3377,6 +3385,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              // ServerLevel.this.getChunkSource().addEntity(entity); // Paper - ignore and warn about illegal addEntity calls instead of crashing server; moved down below valid=true
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.add(player);
@@ -359,7 +360,7 @@ index a0428d231dacb42830e12cd010cd55f68b0e1361..4c90fc1dff871d6a489d8878b1fed53a
                  if (player.isReceivingWaypoints()) {
                      ServerLevel.this.getWaypointManager().addPlayer(player);
                  }
-@@ -3451,6 +3464,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3457,6 +3470,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              ServerLevel.this.getChunkSource().removeEntity(entity);
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.remove(player);
