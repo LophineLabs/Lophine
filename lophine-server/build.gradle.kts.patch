@@ -86,37 +86,8 @@
      )
  }
  
-@@ -102,11 +_,43 @@
-+// Only trusted release builds receive this value. Do not place the DSN in tracked sources.
-+val sentryBuildResources = layout.buildDirectory.dir("generated/sentry/resources")
-+val generateSentryBuildConfig = tasks.register("generateSentryBuildConfig") {
-+    val outputDirectory = sentryBuildResources
-+    val officialBuild = providers.environmentVariable("LOPHINE_OFFICIAL_BUILD").map { it == "true" }.orElse(false)
-+    val secret = providers.environmentVariable("LOPHINE_SENTRY_DSN").orElse("")
-+    // Always regenerate, including when switching back to a local/PR build without the secret.
-+    doNotTrackState("Contains a build-time Sentry DSN; regenerate without caching task state.")
-+    outputs.dir(outputDirectory)
-+    doLast {
-+        val official = officialBuild.get()
-+        val dsn = if (official) secret.get().trim() else ""
-+        if (official) {
-+            val valid = runCatching {
-+                val uri = URI(dsn)
-+                uri.scheme == "https" && !uri.host.isNullOrBlank() && !uri.rawUserInfo.isNullOrBlank() &&
-+                    !uri.rawUserInfo.contains(':') && uri.path.matches(Regex("/[0-9]+")) &&
-+                    uri.rawQuery == null && uri.rawFragment == null
-+            }.getOrDefault(false)
-+            require(valid) { "Official builds require a valid LOPHINE_SENTRY_DSN build secret." }
-+        }
-+        val resource = outputDirectory.get().file("META-INF/lophine/sentry.properties").asFile
-+        resource.parentFile.mkdirs()
-+        resource.writeText("official=$official\nrepository=LophineLabs/Lophine\ndsn=$dsn\n", Charsets.UTF_8)
-+    }
-+}
-+
- sourceSets {
+@@ -103,10 +_,14 @@
      main {
-+        resources.srcDir(generateSentryBuildConfig)
          java { srcDir("../paper-server/src/main/java") }
          resources { srcDir("../paper-server/src/main/resources") }
 +        java { srcDir("../folia-server/src/main/java") }

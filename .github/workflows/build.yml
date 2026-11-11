@@ -77,11 +77,26 @@ jobs:
       - name: Apply All Patches
         run: ./gradlew applyAllPatches
 
+      - name: Inject Sentry DSN
+        if: github.repository == 'LophineLabs/Lophine' && github.event_name != 'pull_request'
+        env:
+          LOPHINE_SENTRY_DSN: ${{ secrets.LOPHINE_SENTRY_DSN }}
+        run: |
+          set +x
+          set -euo pipefail
+          if [[ ! "${LOPHINE_SENTRY_DSN:-}" =~ ^https://[A-Za-z0-9._%~-]+@[A-Za-z0-9.-]+(:[0-9]+)?/[0-9]+$ ]]; then
+            echo "::error::Missing or invalid LOPHINE_SENTRY_DSN build secret."
+            exit 1
+          fi
+          source_file=lophine-server/src/main/java/me/earthme/luminol/config/modules/misc/SentryConfig.java
+          if [[ $(grep -Fxc '    public static final String DEFAULT_DSN = "";' "$source_file") != 1 ]]; then
+            echo "::error::Expected exactly one empty Sentry DSN build placeholder."
+            exit 1
+          fi
+          sed -i "s|^    public static final String DEFAULT_DSN = \"\";$|    public static final String DEFAULT_DSN = \"${LOPHINE_SENTRY_DSN}\";|" "$source_file"
+
       - name: Build MorninggloryClip Jar
         run: ./gradlew createMorninggloryclipJar
-        env:
-          LOPHINE_OFFICIAL_BUILD: ${{ github.repository == 'LophineLabs/Lophine' && github.event_name != 'pull_request' }}
-          LOPHINE_SENTRY_DSN: ${{ github.repository == 'LophineLabs/Lophine' && github.event_name != 'pull_request' && secrets.LOPHINE_SENTRY_DSN || '' }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v7
@@ -133,8 +148,6 @@ jobs:
         env:
           PRIVATE_MAVEN_REPO_PASSWORD: ${{ secrets.PRIVATE_MAVEN_REPO_PASSWORD }}
           PRIVATE_MAVEN_REPO_USERNAME: ${{ secrets.PRIVATE_MAVEN_REPO_USERNAME }}
-          LOPHINE_OFFICIAL_BUILD: ${{ github.repository == 'LophineLabs/Lophine' && github.event_name != 'pull_request' }}
-          LOPHINE_SENTRY_DSN: ${{ github.repository == 'LophineLabs/Lophine' && github.event_name != 'pull_request' && secrets.LOPHINE_SENTRY_DSN || '' }}
 
       - name: Create Release - Pre Process
         if: ( github.event_name != 'pull_request' && env.from_pr_merge != 'true' && !( env.unexpect == 'true' ) && env.flag_release == 'true' && env.release_exists != 'true' && !(inputs.force-release == 'false')) || inputs.force-release == 'true'
