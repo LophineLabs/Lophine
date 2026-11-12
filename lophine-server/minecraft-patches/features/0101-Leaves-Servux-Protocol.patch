@@ -7,6 +7,38 @@ Co-authored by: violetc <58360096+s-yh-china@users.noreply.github.com>
 As a part of : Leaves (https://github.com/LeavesMC/Leaves/blob/ea91106ae57fc4cc14e2e0225009cf9919072f7f/leaves-server/minecraft-patches/features/0090-Servux-Protocol.patch)
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
+Budget large Servux pastes with spare region tick time. Pause block-related work in edited sections and retain due block/fluid ticks. Cancel queued pastes before native shutdown draining.
+
+Co-authored-by: wdsj-cmd <125710718+wdsj-cmd@users.noreply.github.com>
+
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index c43e8f9ac33a31fd84b596030d0467978aaf568f..fbc4dfd82963f69215cbbf7dc6c7e81af49ffba7 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -1039,6 +1039,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+     // Folia end - region threading
+ 
+     public void stopServer() { // Folia - region threading - public
++        org.leavesmc.leaves.protocol.servux.litematics.ServuxPasteManager.shutdown(this); // Lophine - cancel queued Servux pastes before native draining
+         // Folia start - region threading
+         // halt scheduler
+         // don't wait, we may be on a scheduler thread
+@@ -1175,6 +1176,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+         this.halt(wait, false);
+     }
+     public void halt(final boolean wait, final boolean isRestarting) {
++        org.leavesmc.leaves.protocol.servux.litematics.ServuxPasteManager.shutdown(this); // Lophine - cancel queued Servux pastes before native draining
+         this.isRestarting = isRestarting;
+         this.hasLoggedStop = true; // Paper - Debugging
+         if (this.isDebugging()) io.papermc.paper.util.TraceUtil.dumpTraceForThread("Server stopped"); // Paper - Debugging
+@@ -1805,6 +1807,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+ 
+         ProfilerFiller profiler = Profiler.get();
+         //this.server.spark.executeMainThreadTasks(); // Paper - spark // Folia - region threading
++        if (region != null) org.leavesmc.leaves.protocol.servux.litematics.ServuxPasteManager.tick(region.world, scheduledEnd); // Lophine - use spare region tick time for Servux
+         // Paper start - Server Tick Events
+         long endTime = System.nanoTime();
+         long remaining = scheduledEnd - endTime; // Folia - region ticking
 diff --git a/net/minecraft/server/ServerTickRateManager.java b/net/minecraft/server/ServerTickRateManager.java
 index 8432d0ce22ddc9c9bfa98901e403697f40e53c99..9ec141359c4422c1574dac71a88b7f5043350901 100644
 --- a/net/minecraft/server/ServerTickRateManager.java
@@ -23,10 +55,37 @@ index 8432d0ce22ddc9c9bfa98901e403697f40e53c99..9ec141359c4422c1574dac71a88b7f50
 +    // Leaves end - servux
  }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index bc4d9083a1de6a79e54bc186e7d16824f2096456..a0428d231dacb42830e12cd010cd55f68b0e1361 100644
+index bc4d9083a1de6a79e54bc186e7d16824f2096456..a932e2b20fcb6c1935cab2e3b08e0e504323884d 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -2880,6 +2880,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1087,6 +1087,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+ 
+         for (int sectionIndex = 0, sectionsLen = sections.length; sectionIndex < sectionsLen; sectionIndex++) {
+             final int offsetY = (sectionIndex + minSection) << 4;
++            if (org.leavesmc.leaves.protocol.servux.litematics.ServuxPasteManager.isPaused(this, cpos.x(), sectionIndex + minSection, cpos.z())) continue; // Lophine - pause random ticks while pasting
+             final LevelChunkSection section = sections[sectionIndex];
+             final net.minecraft.world.level.chunk.PalettedContainer<net.minecraft.world.level.block.state.BlockState> states = section.getStates();
+             if (!section.isRandomlyTickingBlocks()) {
+@@ -1188,6 +1189,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+     public void tickPrecipitation(final BlockPos pos) {
+         BlockPos topPos = this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, pos);
+         BlockPos belowPos = topPos.below();
++        if (org.leavesmc.leaves.protocol.servux.litematics.ServuxPasteManager.isPaused(this, topPos) || org.leavesmc.leaves.protocol.servux.litematics.ServuxPasteManager.isPaused(this, belowPos)) return; // Lophine - pause precipitation while pasting
+         Biome biome = this.getBiome(topPos).value();
+         if (biome.shouldFreeze(this, belowPos)) {
+             org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(this, belowPos, Blocks.ICE.defaultBlockState(), Block.UPDATE_ALL, null); // CraftBukkit
+@@ -2292,6 +2294,10 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+         BlockEventData eventData;
+         while ((eventData = worldRegionData.removeFirstBlockEvent()) != null) {
+             // Folia end - regionised ticking
++            if (org.leavesmc.leaves.protocol.servux.litematics.ServuxPasteManager.isPaused(this, eventData.pos())) { // Lophine - retain paused redstone events
++                blockEventsToReschedule.add(eventData);
++                continue;
++            }
+             if (this.shouldTickBlocksAt(eventData.pos())) {
+                 if (this.doBlockEvent(eventData)) {
+                     this.server
+@@ -2880,6 +2886,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              this.server.updateEffectiveRespawnData();
          }
          // Paper end
@@ -35,3 +94,75 @@ index bc4d9083a1de6a79e54bc186e7d16824f2096456..a0428d231dacb42830e12cd010cd55f6
      }
  
      @Override
+diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
+index 65291809faad5494b93ff5d605b12947c37f39a5..b4867845429ec64a8d59ad5453d3ec609cd9a0d5 100644
+--- a/net/minecraft/world/level/Level.java
++++ b/net/minecraft/world/level/Level.java
+@@ -1564,6 +1564,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+             if (ticker.isRemoved()) {
+                 toRemove.add(ticker); // Paper - Fix MC-117075 use removeAll
+             } else if (tickBlockEntities && this.shouldTickBlocksAt(ticker.getPos())) {
++                if (org.leavesmc.leaves.protocol.servux.litematics.ServuxPasteManager.isPaused(this, ticker.getPos())) continue; // Lophine - pause pasted block entities
+                 ticker.tick();
+                 // Paper start - rewrite chunk system
+                 if ((++tickedEntities & 7) == 0) {
+diff --git a/net/minecraft/world/level/NaturalSpawner.java b/net/minecraft/world/level/NaturalSpawner.java
+index c9217d494c7cafd455c2bb75de1c31f4067be05b..0220554dec000cc6e74efe2530c3bb68fd9bcb49 100644
+--- a/net/minecraft/world/level/NaturalSpawner.java
++++ b/net/minecraft/world/level/NaturalSpawner.java
+@@ -278,6 +278,7 @@ public final class NaturalSpawner {
+                     x += level.random.nextInt(6) - level.random.nextInt(6);
+                     z += level.random.nextInt(6) - level.random.nextInt(6);
+                     pos.set(x, yStart, z);
++                    if (org.leavesmc.leaves.protocol.servux.litematics.ServuxPasteManager.isPaused(level, pos)) continue; // Lophine - pause natural spawning while pasting
+                     double xx = x + 0.5;
+                     double zz = z + 0.5;
+                     Player nearestPlayer = level.getNearestPlayer(xx, yStart, zz, -1.0, false);
+diff --git a/net/minecraft/world/level/levelgen/PhantomSpawner.java b/net/minecraft/world/level/levelgen/PhantomSpawner.java
+index db0324595d7f5b6f92bd7724daf181b0903e1da4..be181d30c536a341899988e146a836fd6c16c13a 100644
+--- a/net/minecraft/world/level/levelgen/PhantomSpawner.java
++++ b/net/minecraft/world/level/levelgen/PhantomSpawner.java
+@@ -55,7 +55,7 @@ public class PhantomSpawner implements CustomSpawner {
+                                                 .south(-10 + random.nextInt(21));
+                                             BlockState blockState = level.getBlockState(spawnPos);
+                                             FluidState fluidState = level.getFluidState(spawnPos);
+-                                            if (NaturalSpawner.isValidEmptySpawnBlock(level, spawnPos, blockState, fluidState, EntityTypes.PHANTOM)) {
++                                            if (!org.leavesmc.leaves.protocol.servux.litematics.ServuxPasteManager.isPaused(level, spawnPos) && NaturalSpawner.isValidEmptySpawnBlock(level, spawnPos, blockState, fluidState, EntityTypes.PHANTOM)) { // Lophine - pause natural spawning while pasting
+                                                 SpawnGroupData groupData = null;
+                                                 int groupSize = 1 + random.nextInt(difficulty.getDifficulty().getId() + 1);
+ 
+diff --git a/net/minecraft/world/ticks/LevelTicks.java b/net/minecraft/world/ticks/LevelTicks.java
+index 52a7da01ce84b93a4444a002effa261d20e1a707..ac75b3d72692e9543a1ec410f3766a30df09d666 100644
+--- a/net/minecraft/world/ticks/LevelTicks.java
++++ b/net/minecraft/world/ticks/LevelTicks.java
+@@ -152,7 +152,7 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
+         this.collectTicks(currentTick, maxTicksToProcess, profiler);
+         profiler.popPush("run");
+         profiler.incrementCounter("ticksToRun", this.toRunThisTick.size());
+-        this.runCollectedTicks(output);
++        this.runCollectedTicks(currentTick, output);
+         profiler.popPush("cleanup");
+         this.cleanupAfterTick();
+         profiler.pop();
+@@ -247,7 +247,7 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
+         return this.toRunThisTick.size() < maxTicksToProcess;
+     }
+ 
+-    private void runCollectedTicks(final BiConsumer<BlockPos, T> output) {
++    private void runCollectedTicks(final long currentTick, final BiConsumer<BlockPos, T> output) {
+         // Folia start - profiler
+         io.papermc.paper.threadedregions.TickRegionScheduler.getProfiler().addCounter(
+             ca.spottedleaf.leafprofiler.LProfilerRegistry.BLOCK_OR_FLUID_TICK_COUNT,
+@@ -260,6 +260,12 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
+                 this.toRunThisTickSet.remove(entry);
+             }
+ 
++            // Lophine start - keep paused ticks in their native persistent queue
++            if (org.leavesmc.leaves.protocol.servux.litematics.ServuxPasteManager.isPaused(this.world, entry.pos())) {
++                this.schedule(new ScheduledTick<>(entry.type(), entry.pos(), currentTick + 1L, entry.priority(), entry.subTickOrder()));
++                continue;
++            }
++            // Lophine end - keep paused ticks in their native persistent queue
+             this.alreadyRunThisTick.add(entry);
+             output.accept(entry.pos(), entry.type());
+         }

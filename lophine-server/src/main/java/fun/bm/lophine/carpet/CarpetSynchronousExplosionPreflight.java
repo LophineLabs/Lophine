@@ -13,11 +13,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
-import net.minecraft.world.level.EntityBasedExplosionDamageCalculator;
-import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.ExplosionDamageCalculator;
-import net.minecraft.world.level.ServerExplosion;
-import net.minecraft.world.level.SimpleExplosionDamageCalculator;
+import net.minecraft.world.level.*;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -72,7 +68,8 @@ public final class CarpetSynchronousExplosionPreflight {
                 || !Float.isFinite(power) || power < 0F) return false;
         if (ScarpetNativeWork.isDraining(world.getServer()) && ScarpetNativeWork.capture() == null) return false;
         if (!ScarpetRuntime.EVENT_DISABLED.get() && (Event.EXPLOSION.isNeeded() || Event.EXPLOSION_OUTCOME.isNeeded()
-                || Event.PLAYER_TAKES_DAMAGE.isNeeded() || Event.PLAYER_DEALS_DAMAGE.isNeeded() || Event.PLAYER_DIES.isNeeded())) return false;
+                || Event.PLAYER_TAKES_DAMAGE.isNeeded() || Event.PLAYER_DEALS_DAMAGE.isNeeded() || Event.PLAYER_DIES.isNeeded()))
+            return false;
         try {
             double physical = Math.ceil(power * 2D) + 2D;
             // Collision reads may touch block entities. This phase neither destroys blocks nor opens inventories.
@@ -90,7 +87,8 @@ public final class CarpetSynchronousExplosionPreflight {
                 if (!isNativeProjectile(target)) return false;
                 requireEntity(world, target, source);
                 // A datapack can redirect pearls, whose owner registration may involve another player actor.
-                if (target instanceof ThrownEnderpearl && target.is(EntityTypeTags.REDIRECTABLE_PROJECTILE)) return false;
+                if (target instanceof ThrownEnderpearl && target.is(EntityTypeTags.REDIRECTABLE_PROJECTILE))
+                    return false;
                 if (target.isRemoved()) return false;
                 if (!explosion.carpetOwnsDensityFootprint(target)) return false;
             }

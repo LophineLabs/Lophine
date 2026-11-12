@@ -243,7 +243,7 @@ index 1a95ccd745f4789225d711ab6fe497c677c203d6..737026031e774971b9189e2f5a44fdb4
                  // Lophine start - catch update suppression crash
                  } catch (org.leavesmc.leaves.util.UpdateSuppressionException exception) {
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 2404fa6687fc71df8505c87e4f0d1c3c3e1ea74e..0991bd3897c9b81e580b645231fb1e44940e2729 100644
+index 75701cf64cfc68560f5bedb93c8fea2219ff186a..bf97c8a69623ad0d856b19755befc8ff30d3db08 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -942,6 +942,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -254,7 +254,7 @@ index 2404fa6687fc71df8505c87e4f0d1c3c3e1ea74e..0991bd3897c9b81e580b645231fb1e44
      }
  
      protected GlobalPos selectLevelLoadFocusPos() {
-@@ -1049,7 +1050,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1050,7 +1051,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          fun.bm.lophine.carpet.CarpetRegionLease.beginShutdown(this);
          fun.bm.lophine.carpet.CarpetResourceReloadCoordinator.shutdown();
          fun.bm.lophine.carpet.CarpetPlayerTargetArea.closeAtShutdown(this);
@@ -264,7 +264,7 @@ index 2404fa6687fc71df8505c87e4f0d1c3c3e1ea74e..0991bd3897c9b81e580b645231fb1e44
          carpet.script.external.ScarpetInteractionContinuations.shutdown(this);
          fun.bm.lophine.carpet.CarpetCommandContextContinuations.shutdown(this);
          fun.bm.lophine.carpet.CarpetRegionLease.close(this);
-@@ -1206,6 +1209,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1208,6 +1211,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          carpet.script.external.ScarpetNativeWork.beginDrain(this);
          fun.bm.lophine.carpet.CarpetRegionLease.beginShutdown(this);
          if (carpet.script.external.ScarpetRuntime.beginShutdown(this, () -> this.halt(wait, isRestarting, force))) return;
@@ -272,7 +272,7 @@ index 2404fa6687fc71df8505c87e4f0d1c3c3e1ea74e..0991bd3897c9b81e580b645231fb1e44
          if (!force && !this.carpetFakePlayers.forceShutdown && !this.carpetFakePlayers.removeAll()) return;
          if (!force && !this.getBotList().forceShutdown && !this.getBotList().removeAll()) { // Leaves - save or remove bot
              this.getPlayerList().broadcastSystemMessage(Component.literal("Bot Still need to save, please wait! If you want to shuntdown without bot data saving, please use /stop force"), false);
-@@ -1747,6 +1751,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1749,6 +1753,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                      continue;
                  }
  
@@ -342,10 +342,10 @@ index a3257b552c7e76269a00cc7416f630e41cf2b3c5..0ff0f5ea29aa3c07a0eae77210a864ec
  
      private static int teleportToEntity(final CommandSourceStack source, final Collection<? extends Entity> entities, final Entity destination) throws CommandSyntaxException {
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 102f8d9b70bec950dd1331b51ed97fc2cb41a069..a1bd3294a839bb70e021a3322e9b4eef9f058f85 100644
+index da74dc17615def2477925e29a6c8358d470e1a06..4b8f4644bcb5edc9fa6f40e85f5525c6deb72214 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -1935,10 +1935,38 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1937,10 +1937,38 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              }
              // CraftBukkit end
  
@@ -385,10 +385,10 @@ index 102f8d9b70bec950dd1331b51ed97fc2cb41a069..a1bd3294a839bb70e021a3322e9b4eef
      public boolean tryAddFreshEntityWithPassengers(final Entity entity) {
          // CraftBukkit start
          return this.tryAddFreshEntityWithPassengers(entity, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.DEFAULT);
-@@ -2391,6 +2419,10 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
-         BlockEventData eventData;
-         while ((eventData = worldRegionData.removeFirstBlockEvent()) != null) {
-             // Folia end - regionised ticking
+@@ -2397,6 +2425,10 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+                 blockEventsToReschedule.add(eventData);
+                 continue;
+             }
 +            if (fun.bm.lophine.carpet.org.OrgHiddenBedrockSignals.defer(this,eventData)) {
 +                blockEventsToReschedule.add(eventData);
 +                continue;
@@ -396,7 +396,7 @@ index 102f8d9b70bec950dd1331b51ed97fc2cb41a069..a1bd3294a839bb70e021a3322e9b4eef
              if (this.shouldTickBlocksAt(eventData.pos())) {
                  if (this.doBlockEvent(eventData)) {
                      this.server
-@@ -2414,8 +2446,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2420,8 +2452,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      }
  
      private boolean doBlockEvent(final BlockEventData eventData) {
@@ -2276,10 +2276,10 @@ index 9c6ad3bfb1a467ae52c09e9c9aaf96d913a9dc46..4508f410859a6305aa6a49069233d3a0
      }
  }
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index 87e6ebcc3b99e5bb535452097f472262f3ad5b01..b24427d1d7fac988eb011c278707116d0a07d098 100644
+index 6b1194475c129ae03fb89ba216e31b8c7ca0e852..a7b8afc441ffab0c6cc10f23cd562a3c2de12a4d 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
-@@ -2102,15 +2102,16 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+@@ -2103,15 +2103,16 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
      }
  
      public boolean canHaveWeather() {
@@ -2299,10 +2299,10 @@ index 87e6ebcc3b99e5bb535452097f472262f3ad5b01..b24427d1d7fac988eb011c278707116d
  
      public boolean isRainingAt(final BlockPos pos) {
 diff --git a/net/minecraft/world/level/ServerExplosion.java b/net/minecraft/world/level/ServerExplosion.java
-index f6abb4d3b3c3999a3633ed8f7d2c4d442299509a..2032fde63b3cd96b406ff0431fcf0ef656043cc1 100644
+index bcb28e94aaa1730f719fa4d6fdd74eeff457c295..6cf0e226c093e21b4443b0ab95e26d3caec9d841 100644
 --- a/net/minecraft/world/level/ServerExplosion.java
 +++ b/net/minecraft/world/level/ServerExplosion.java
-@@ -1112,6 +1112,11 @@ public class ServerExplosion implements Explosion {
+@@ -1171,6 +1171,11 @@ public class ServerExplosion implements Explosion {
  
      @Override
      public boolean canTriggerBlocks() {
@@ -3033,7 +3033,7 @@ index b410af1f886d6b744cf05c168524cf35f689cfd7..8b7f404eaa44dadacad745de092eb8bf
                              // Paper start - Remove the Block Entity if it's invalid
                          } else {
 diff --git a/net/minecraft/world/level/levelgen/PhantomSpawner.java b/net/minecraft/world/level/levelgen/PhantomSpawner.java
-index adc4f77d8d362da78aee3ce0598e8a34c2fa316c..4645a5711962fb96c6b0f24ff6f165cf9cf582a9 100644
+index cca1e16cb178fac4973983a2bf848b816d310eb9..7ebe57a339d25795ccefe8ed9f40beee8d4fb742 100644
 --- a/net/minecraft/world/level/levelgen/PhantomSpawner.java
 +++ b/net/minecraft/world/level/levelgen/PhantomSpawner.java
 @@ -59,6 +59,13 @@ public class PhantomSpawner implements CustomSpawner {
@@ -3047,6 +3047,6 @@ index adc4f77d8d362da78aee3ce0598e8a34c2fa316c..4645a5711962fb96c6b0f24ff6f165cf
 +                                                    return;
 +                                                }
 +                                            }
-                                             if (NaturalSpawner.isValidEmptySpawnBlock(level, spawnPos, blockState, fluidState, EntityTypes.PHANTOM)) {
+                                             if (!org.leavesmc.leaves.protocol.servux.litematics.ServuxPasteManager.isPaused(level, spawnPos) && NaturalSpawner.isValidEmptySpawnBlock(level, spawnPos, blockState, fluidState, EntityTypes.PHANTOM)) { // Lophine - pause natural spawning while pasting
                                                  SpawnGroupData groupData = null;
                                                  int groupSize = 1 + random.nextInt(difficulty.getDifficulty().getId() + 1);
