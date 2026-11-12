@@ -549,7 +549,8 @@ public final class CarpetFakePlayerManager {
         var open = new java.util.ArrayList<ShutdownRemoval>();
         for (var removal : removals) {
             var completion = removal.completion();
-            if (completion.isDone() && !completion.isCompletedExceptionally() && Boolean.TRUE.equals(completion.getNow(null))) continue;
+            if (completion.isDone() && !completion.isCompletedExceptionally() && Boolean.TRUE.equals(completion.getNow(null)))
+                continue;
             open.add(removal);
         }
         if (open.isEmpty()) return;
@@ -575,7 +576,8 @@ public final class CarpetFakePlayerManager {
         try {
             java.util.concurrent.CompletableFuture.allOf(saves.toArray(java.util.concurrent.CompletableFuture[]::new))
                     .get(SHUTDOWN_SAVE_TIMEOUT_MILLIS, java.util.concurrent.TimeUnit.MILLISECONDS);
-        } catch (java.util.concurrent.TimeoutException | java.util.concurrent.ExecutionException | java.util.concurrent.CancellationException
+        } catch (java.util.concurrent.TimeoutException | java.util.concurrent.ExecutionException |
+                 java.util.concurrent.CancellationException
                  | InterruptedException notPersisted) {
             LOGGER.error("Carpet fake-player shutdown save did not finish within {} ms ({}); their latest state may be lost",
                     SHUTDOWN_SAVE_TIMEOUT_MILLIS, carpetLabels(open), notPersisted);
