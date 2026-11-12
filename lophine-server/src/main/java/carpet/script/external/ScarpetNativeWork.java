@@ -207,6 +207,14 @@ public final class ScarpetNativeWork {
         return ScarpetNativeRemovals.whenIdle(server);
     }
 
+    /**
+     * What {@link #whenIdle(net.minecraft.server.MinecraftServer)} still awaits, for coordinator logs.
+     */
+    public static String describePending(net.minecraft.server.MinecraftServer server) {
+        return ScarpetNativeRemovals.describePending(server)
+                + ", player births=" + fun.bm.lophine.carpet.CarpetPlayerBirths.pendingCount(server);
+    }
+
     public static <T> T without(Supplier<T> operation) {
         Token previous = CURRENT.get();
         if (previous == null) return operation.get();

@@ -63,6 +63,19 @@ public final class CarpetPlayerBirths {
     }
 
     /**
+     * Open admission jobs the shutdown drain still awaits; only the stored receipts are inspected.
+     */
+    public static int pendingCount(MinecraftServer server) {
+        Table table = table(server);
+        synchronized (table) {
+            int open = 0;
+            for (Entry entry : table.jobs)
+                if (!entry.actual().isDone()) open++;
+            return open;
+        }
+    }
+
+    /**
      * UUID reservation already admitted this particular new player; this is metadata only.
      */
     public static void admitPlayer(net.minecraft.server.level.ServerPlayer player, CompletableFuture<?> actual) {

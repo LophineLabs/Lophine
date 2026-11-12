@@ -51,6 +51,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class CarpetFakePlayerManager {
     private static final Logger LOGGER = LogUtils.getLogger();
+    // Folia keeps ticking while shutdown drains removals, so the drain is bounded like the Scarpet
+    // shutdown phases. The save pass below is what keeps that bound from losing player state.
+    private static final long SHUTDOWN_TIMEOUT_MILLIS = 30_000L;
+    private static final long SHUTDOWN_REPORT_MILLIS = 5_000L;
+    private static final long SHUTDOWN_SAVE_TIMEOUT_MILLIS = 10_000L;
     private final MinecraftServer server;
     public final List<CarpetFakePlayer> players = new CopyOnWriteArrayList<>();
     private final CarpetBotRegistrations<CarpetFakePlayer> carpetRegistrations = new CarpetBotRegistrations<>();
@@ -456,10 +461,10 @@ public final class CarpetFakePlayerManager {
 
     public synchronized boolean removeAll() {
         if (shutdown != null) return forceShutdown;
-        var removals = new java.util.ArrayList<java.util.concurrent.CompletableFuture<Boolean>>();
+        var removals = new java.util.ArrayList<ShutdownRemoval>();
         for (CarpetFakePlayer bot : List.copyOf(players)) {
             var actual = new java.util.concurrent.CompletableFuture<Boolean>();
-            removals.add(actual);
+            removals.add(new ShutdownRemoval(bot, bot.getScoreboardName() + "/" + bot.getStringUUID(), actual));
             Runnable task = () -> {
                 try {
                     removeAsync(bot, RemoveReason.INTERNAL, null, true, true).whenComplete((removed, failure) -> {
@@ -474,9 +479,9 @@ public final class CarpetFakePlayerManager {
             else if (!bot.getBukkitEntity().getScheduler().execute(MinecraftInternalPlugin.INSTANCE, task, () -> actual.complete(false), 1L))
                 actual.complete(false);
         }
-        shutdown = java.util.concurrent.CompletableFuture.allOf(removals.toArray(java.util.concurrent.CompletableFuture[]::new)).thenRun(() -> {
+        shutdown = java.util.concurrent.CompletableFuture.allOf(removals.stream().map(ShutdownRemoval::completion).toArray(java.util.concurrent.CompletableFuture[]::new)).thenRun(() -> {
             for (var removal : removals)
-                if (!Boolean.TRUE.equals(removal.join()))
+                if (!Boolean.TRUE.equals(removal.completion().join()))
                     throw new IllegalStateException("Carpet player removal failed during shutdown");
         });
         if (shutdown.isDone()) {
@@ -484,13 +489,120 @@ public final class CarpetFakePlayerManager {
             forceShutdown = true;
             return true;
         }
-        shutdown.whenComplete((ignored, failure) -> {
-            if (failure != null) LOGGER.error("Cannot finish Carpet player shutdown", failure);
-            else {
+        Thread.ofPlatform().name("Carpet player shutdown drain").start(() -> {
+            try {
+                carpetAwaitShutdownRemovals(removals);
+            } catch (Throwable failure) {
+                LOGGER.error("Cannot finish Carpet player shutdown", failure);
+            } finally {
                 forceShutdown = true;
                 server.stopServer();
             }
         });
         return false;
+    }
+
+    /**
+     * Waits for the removals in slices, then lets the caller halt. An abandoned or failed drain still
+     * persists every player first, so the bound delays the halt instead of losing state or hanging.
+     */
+    private void carpetAwaitShutdownRemovals(java.util.List<ShutdownRemoval> removals) {
+        var drain = this.shutdown;
+        long slice = java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(SHUTDOWN_REPORT_MILLIS);
+        long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(SHUTDOWN_TIMEOUT_MILLIS);
+        while (!drain.isDone()) {
+            long remaining = deadline - System.nanoTime();
+            if (remaining <= 0L) {
+                LOGGER.error("Carpet player shutdown removals did not finish within {} ms ({}); saving and halting anyway",
+                        SHUTDOWN_TIMEOUT_MILLIS, carpetPendingRemovals(removals));
+                break;
+            }
+            try {
+                drain.get(Math.min(remaining, slice), java.util.concurrent.TimeUnit.NANOSECONDS);
+                return;
+            } catch (java.util.concurrent.TimeoutException stillWaiting) {
+                LOGGER.info("Waiting for Carpet player shutdown removals to finish ({}; saves and halts anyway after {} ms)",
+                        carpetPendingRemovals(removals), SHUTDOWN_TIMEOUT_MILLIS);
+            } catch (InterruptedException interrupted) {
+                // The save pass and the halt below still have to run, so this dedicated shutdown
+                // thread keeps the original join semantics of not restoring the interrupt status.
+                LOGGER.error("Carpet player shutdown wait was interrupted ({}); saving and halting anyway", carpetPendingRemovals(removals));
+                break;
+            } catch (java.util.concurrent.ExecutionException failure) {
+                LOGGER.error("Cannot finish Carpet player shutdown", failure.getCause() == null ? failure : failure.getCause());
+                break;
+            } catch (java.util.concurrent.CancellationException failure) {
+                LOGGER.error("Cannot finish Carpet player shutdown", failure);
+                break;
+            }
+        }
+        carpetPersistUnsavedRemovals(removals);
+    }
+
+    /**
+     * Last-chance persistence for removals that never returned. Each own removal path saves before it
+     * marks the Entity removed, so that boundary decides on the region instead of a second guess here.
+     * The gate an in-flight removal holds is deliberately not awaited; being stuck there is why this
+     * pass exists, and a current save beats an unwritable one.
+     */
+    private void carpetPersistUnsavedRemovals(java.util.List<ShutdownRemoval> removals) {
+        var open = new java.util.ArrayList<ShutdownRemoval>();
+        for (var removal : removals) {
+            var completion = removal.completion();
+            if (completion.isDone() && !completion.isCompletedExceptionally() && Boolean.TRUE.equals(completion.getNow(null))) continue;
+            open.add(removal);
+        }
+        if (open.isEmpty()) return;
+        LOGGER.warn("Saving {} Carpet player(s) whose shutdown removal did not finish ({})", open.size(), carpetLabels(open));
+        var saves = new java.util.ArrayList<java.util.concurrent.CompletableFuture<Boolean>>();
+        var notSaved = new java.util.concurrent.atomic.AtomicInteger();
+        for (var removal : open) {
+            var bot = removal.bot();
+            saves.add(carpet.script.external.ScarpetNativeRemovals.onOwnerFuture(bot, () -> {
+                if (bot.isRemoved() || !this.players.contains(bot)) return false;
+                this.server.getPlayerList().carpetSaveFakePlayer(bot);
+                CarpetFakePlayerPersistence.recordOnline(bot);
+                return true;
+            }).handle((saved, failure) -> {
+                if (failure != null) {
+                    LOGGER.error("Cannot save Carpet fake player {} during shutdown", removal.label(), failure);
+                    notSaved.incrementAndGet();
+                    return false;
+                }
+                return Boolean.TRUE.equals(saved);
+            }));
+        }
+        try {
+            java.util.concurrent.CompletableFuture.allOf(saves.toArray(java.util.concurrent.CompletableFuture[]::new))
+                    .get(SHUTDOWN_SAVE_TIMEOUT_MILLIS, java.util.concurrent.TimeUnit.MILLISECONDS);
+        } catch (java.util.concurrent.TimeoutException | java.util.concurrent.ExecutionException | java.util.concurrent.CancellationException
+                 | InterruptedException notPersisted) {
+            LOGGER.error("Carpet fake-player shutdown save did not finish within {} ms ({}); their latest state may be lost",
+                    SHUTDOWN_SAVE_TIMEOUT_MILLIS, carpetLabels(open), notPersisted);
+            return;
+        }
+        int written = 0;
+        for (var future : saves)
+            if (Boolean.TRUE.equals(future.getNow(false))) written++;
+        LOGGER.warn("Carpet shutdown save wrote {} player(s); {} were already saved by their own removal, {} could not be saved",
+                written, open.size() - written - notSaved.get(), notSaved.get());
+    }
+
+    private String carpetPendingRemovals(java.util.List<ShutdownRemoval> removals) {
+        var open = new java.util.ArrayList<ShutdownRemoval>();
+        for (var removal : removals)
+            if (!removal.completion().isDone()) open.add(removal);
+        return "players=" + open.size() + (open.isEmpty() ? "" : carpetLabels(open))
+                + ", " + carpet.script.external.ScarpetNativeWork.describePending(this.server);
+    }
+
+    private static String carpetLabels(java.util.List<ShutdownRemoval> removals) {
+        var names = removals.stream().map(ShutdownRemoval::label).toList();
+        var shown = names.stream().limit(8L).toList();
+        return "{" + String.join(", ", shown) + (names.size() > shown.size() ? ", ..." : "") + "}";
+    }
+
+    private record ShutdownRemoval(CarpetFakePlayer bot, String label,
+                                   java.util.concurrent.CompletableFuture<Boolean> completion) {
     }
 }
