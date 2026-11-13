@@ -39,6 +39,8 @@ import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
 import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.entity.EntityRemoveEvent;
 import org.jetbrains.annotations.NotNull;
@@ -47,18 +49,24 @@ import org.leavesmc.leaves.plugin.MinecraftInternalPlugin;
 import org.slf4j.Logger;
 
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class CarpetFakePlayerManager {
     private static final Logger LOGGER = LogUtils.getLogger();
+    // Folia keeps ticking while shutdown drains removals, so the drain is bounded like the Scarpet
+    // shutdown phases. The save pass below is what keeps that bound from losing player state.
+    private static final long SHUTDOWN_TIMEOUT_MILLIS = 30_000L;
+    private static final long SHUTDOWN_REPORT_MILLIS = 5_000L;
+    private static final long SHUTDOWN_SAVE_TIMEOUT_MILLIS = 10_000L;
     private final MinecraftServer server;
     public final List<CarpetFakePlayer> players = new CopyOnWriteArrayList<>();
     private final CarpetBotRegistrations<CarpetFakePlayer> carpetRegistrations = new CarpetBotRegistrations<>();
     private final Map<UUID, CarpetFakePlayer> botsByUUID = carpetRegistrations.byUuid();
     private final Map<String, CarpetFakePlayer> botsByLowerName = carpetRegistrations.byName();
     public volatile boolean forceShutdown;
-    private volatile java.util.concurrent.CompletableFuture<Void> shutdown;
-    private final Map<UUID, java.util.concurrent.CompletableFuture<Boolean>> removing = new java.util.concurrent.ConcurrentHashMap<>();
+    private volatile CompletableFuture<Void> shutdown;
+    private final Map<UUID, CompletableFuture<Boolean>> removing = new ConcurrentHashMap<>();
 
     public CarpetFakePlayerManager(MinecraftServer server) {
         this.server = server;
@@ -83,7 +91,7 @@ public final class CarpetFakePlayerManager {
         return profile;
     }
 
-    public java.util.Optional<CompoundTag> saveState(CarpetFakePlayer bot) {
+    public Optional<CompoundTag> saveState(CarpetFakePlayer bot) {
         TickThread.ensureTickThread(bot, "Saving Carpet player off its owning region");
         server.getPlayerList().carpetSaveFakePlayer(bot);
         return server.getPlayerList().loadPlayerData(bot.nameAndId());
@@ -93,14 +101,14 @@ public final class CarpetFakePlayerManager {
         return server.getPlayerList().playerIo.getPlayerDir().toPath().resolve(bot.getStringUUID() + ".dat");
     }
 
-    public java.util.concurrent.CompletableFuture<CarpetFakePlayer> placementCompletion(CarpetFakePlayer bot) {
+    public CompletableFuture<CarpetFakePlayer> placementCompletion(CarpetFakePlayer bot) {
         var actual = bot.carpetActualPlacementFuture;
         var view = actual.copy();
         carpet.script.external.ScarpetNativeWork.aliasDependency(view, actual);
         return view;
     }
 
-    public CarpetFakePlayer place(@NotNull CarpetFakePlayer bot, ServerLevel world, net.minecraft.world.phys.Vec3 location, net.minecraft.world.phys.Vec2 rotation, ValueInput save) {
+    public CarpetFakePlayer place(@NotNull CarpetFakePlayer bot, ServerLevel world, Vec3 location, Vec2 rotation, ValueInput save) {
         if (this.shutdown != null || this.forceShutdown) throw new IllegalStateException("Carpet players are stopping");
         UUID identity = bot.getUUID();
         String name = bot.getScoreboardName();
@@ -117,7 +125,7 @@ public final class CarpetFakePlayerManager {
         }
     }
 
-    private CarpetFakePlayer carpetPlaceNewBot(@NotNull CarpetFakePlayer bot, ServerLevel world, net.minecraft.world.phys.Vec3 location, net.minecraft.world.phys.Vec2 rotation, ValueInput save,
+    private CarpetFakePlayer carpetPlaceNewBot(@NotNull CarpetFakePlayer bot, ServerLevel world, Vec3 location, Vec2 rotation, ValueInput save,
                                                CarpetBotRegistrations<CarpetFakePlayer>.Reservation reservation) {
         Optional<ValueInput> optional = Optional.ofNullable(save);
 
@@ -132,7 +140,7 @@ public final class CarpetFakePlayerManager {
         bot.getBukkitEntity().setMetadata("NPC", new org.bukkit.metadata.FixedMetadataValue(MinecraftInternalPlugin.INSTANCE, true));
         bot.setServerLevel(world);
 
-        net.minecraft.world.phys.Vec3 spawnLocation = location;
+        Vec3 spawnLocation = location;
         ServerLevel targetWorld = world;
 
         fun.bm.lophine.carpet.CarpetPlayerBirths.admitPlayer(bot, bot.carpetActualPlacementFuture);
@@ -149,7 +157,7 @@ public final class CarpetFakePlayerManager {
         var carpetPlacement = bot.carpetActualPlacementFuture;
         int carpetSpawnX = net.minecraft.util.Mth.floor(spawnLocation.x), carpetSpawnZ = net.minecraft.util.Mth.floor(spawnLocation.z);
         var carpetPlace = carpet.script.external.ScarpetRuntime.captureNativeContinuation(() ->
-                fun.bm.lophine.carpet.CarpetRegionLease.<java.util.concurrent.CompletableFuture<Void>>runValue(targetWorld,
+                fun.bm.lophine.carpet.CarpetRegionLease.<CompletableFuture<Void>>runValue(targetWorld,
                         (carpetSpawnX - 32) >> 4, (carpetSpawnZ - 32) >> 4, (carpetSpawnX + 32) >> 4, (carpetSpawnZ + 32) >> 4, lease ->
                                 carpet.script.external.ScarpetNativeWork.<Void>observeNative(bot, () -> {
                                     carpet.script.external.ScarpetNativeWork.aliasDependency(carpetPlacement,
@@ -164,10 +172,10 @@ public final class CarpetFakePlayerManager {
                                             bot.connection.teleport(bot.getX(), bot.getY(), bot.getZ(), bot.getYRot(), bot.getXRot());
                                             targetWorld.addNewPlayer(bot);
                                             if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fakePlayerSpawnNoKnockback) {
-                                                bot.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+                                                bot.setDeltaMovement(Vec3.ZERO);
                                                 bot.setRemainingFireTicks(0);
                                                 bot.fallDistance = 0.0F;
-                                                for (var effect : java.util.List.copyOf(bot.getActiveEffects())) {
+                                                for (var effect : List.copyOf(bot.getActiveEffects())) {
                                                     if (effect.getEffect().value().getCategory() == net.minecraft.world.effect.MobEffectCategory.HARMFUL) {
                                                         bot.removeEffect(effect.getEffect());
                                                     }
@@ -179,7 +187,7 @@ public final class CarpetFakePlayerManager {
                                     });
                                     var restores = carpetBirthAfterGuest(prefix).thenCompose(carpet.script.external.ScarpetRuntime.captureNativeFunction(ignored -> {
                                         if (optional.isEmpty())
-                                            return java.util.concurrent.CompletableFuture.<Void>completedFuture(null);
+                                            return CompletableFuture.<Void>completedFuture(null);
                                         var actual = fun.bm.lophine.carpet.CarpetPlayerSpawnContinuations.extras(bot, optional.get());
                                         carpet.script.external.ScarpetNativeWork.record(actual);
                                         return carpetBirthAfterGuest(actual);
@@ -240,11 +248,11 @@ public final class CarpetFakePlayerManager {
         carpet.script.external.ScarpetNativeWork.record(carpetPlacement);
         carpet.script.external.ScarpetNativeWork.trackNative(this.server, carpetPlacement);
         Runnable task = () -> {
-            java.util.concurrent.CompletableFuture<Void> actual;
+            CompletableFuture<Void> actual;
             try {
                 actual = carpetPlace.get();
             } catch (Throwable failure) {
-                actual = java.util.concurrent.CompletableFuture.failedFuture(failure);
+                actual = CompletableFuture.failedFuture(failure);
             }
             carpet.script.external.ScarpetNativeWork.aliasDependency(carpetPlacement, actual);
             actual.whenComplete((ignored, failure) -> {
@@ -268,23 +276,23 @@ public final class CarpetFakePlayerManager {
         return bot;
     }
 
-    private static java.util.concurrent.CompletableFuture<Void> carpetBirthAfterGuest(java.util.concurrent.CompletableFuture<Void> actual) {
+    private static CompletableFuture<Void> carpetBirthAfterGuest(CompletableFuture<Void> actual) {
         return actual.handle((ignored, failure) -> {
             if (failure != null && !carpet.script.external.ScarpetNativeWork.onlyGuestFailure(failure))
-                throw new java.util.concurrent.CompletionException(failure);
+                throw new CompletionException(failure);
             return null;
         });
     }
 
-    public java.util.concurrent.CompletableFuture<Boolean> removeAsync(CarpetFakePlayer bot, RemoveReason reason, @Nullable CommandSender remover, boolean save, boolean resume) {
+    public CompletableFuture<Boolean> removeAsync(CarpetFakePlayer bot, RemoveReason reason, @Nullable CommandSender remover, boolean save, boolean resume) {
         return removeAsync(bot, reason, remover, save, resume, PaperAdventure.asAdventure(Component.translatable("multiplayer.player.left", bot.getDisplayName())).color(NamedTextColor.YELLOW));
     }
 
-    public java.util.concurrent.CompletableFuture<Boolean> removeAsync(CarpetFakePlayer bot, RemoveReason reason, @Nullable CommandSender remover, boolean save, boolean resume, net.kyori.adventure.text.@Nullable Component message) {
+    public CompletableFuture<Boolean> removeAsync(CarpetFakePlayer bot, RemoveReason reason, @Nullable CommandSender remover, boolean save, boolean resume, net.kyori.adventure.text.@Nullable Component message) {
         carpet.script.external.ScarpetRetiredActors.capture(bot);
         var captured = carpet.script.external.ScarpetRuntime.captureOwnerOperation(() -> {
             try (var accepted = carpet.script.external.ScarpetPlayerInventoryGate.acceptedScope(bot)) {
-                return carpet.script.external.ScarpetNativeWork.<java.util.concurrent.CompletableFuture<Boolean>>observeNative(bot, () -> {
+                return carpet.script.external.ScarpetNativeWork.<CompletableFuture<Boolean>>observeNative(bot, () -> {
                     var completed = this.carpetPrepareBotRemoval(bot, remover, reason, save, resume, message);
                     carpet.script.external.ScarpetNativeWork.record(completed);
                     return completed;
@@ -412,8 +420,8 @@ public final class CarpetFakePlayerManager {
             this.server.getPlayerList().broadcastSystemMessage(PaperAdventure.asVanilla(event.removeMessage()), false);
     }
 
-    private java.util.concurrent.CompletableFuture<Boolean> carpetPrepareBotRemoval(CarpetFakePlayer bot, CommandSender remover, RemoveReason reason, boolean save, boolean resume, net.kyori.adventure.text.@Nullable Component message) {
-        var actual = new java.util.concurrent.CompletableFuture<Boolean>();
+    private CompletableFuture<Boolean> carpetPrepareBotRemoval(CarpetFakePlayer bot, CommandSender remover, RemoveReason reason, boolean save, boolean resume, net.kyori.adventure.text.@Nullable Component message) {
+        var actual = new CompletableFuture<Boolean>();
         var existing = removing.putIfAbsent(bot.getUUID(), actual);
         if (existing != null) {
             var view = existing.copy();
@@ -423,7 +431,7 @@ public final class CarpetFakePlayerManager {
         try {
             if (!this.players.contains(bot)) {
                 removing.remove(bot.getUUID(), actual);
-                return java.util.concurrent.CompletableFuture.completedFuture(false);
+                return CompletableFuture.completedFuture(false);
             }
             if (bot.containerMenu != bot.inventoryMenu)
                 bot.closeContainer(org.bukkit.event.inventory.InventoryCloseEvent.Reason.DISCONNECT);
@@ -456,10 +464,10 @@ public final class CarpetFakePlayerManager {
 
     public synchronized boolean removeAll() {
         if (shutdown != null) return forceShutdown;
-        var removals = new java.util.ArrayList<java.util.concurrent.CompletableFuture<Boolean>>();
+        var removals = new ArrayList<ShutdownRemoval>();
         for (CarpetFakePlayer bot : List.copyOf(players)) {
-            var actual = new java.util.concurrent.CompletableFuture<Boolean>();
-            removals.add(actual);
+            var actual = new CompletableFuture<Boolean>();
+            removals.add(new ShutdownRemoval(bot, bot.getScoreboardName() + "/" + bot.getStringUUID(), actual));
             Runnable task = () -> {
                 try {
                     removeAsync(bot, RemoveReason.INTERNAL, null, true, true).whenComplete((removed, failure) -> {
@@ -474,9 +482,9 @@ public final class CarpetFakePlayerManager {
             else if (!bot.getBukkitEntity().getScheduler().execute(MinecraftInternalPlugin.INSTANCE, task, () -> actual.complete(false), 1L))
                 actual.complete(false);
         }
-        shutdown = java.util.concurrent.CompletableFuture.allOf(removals.toArray(java.util.concurrent.CompletableFuture[]::new)).thenRun(() -> {
+        shutdown = CompletableFuture.allOf(removals.stream().map(ShutdownRemoval::completion).toArray(CompletableFuture[]::new)).thenRun(() -> {
             for (var removal : removals)
-                if (!Boolean.TRUE.equals(removal.join()))
+                if (!Boolean.TRUE.equals(removal.completion().join()))
                     throw new IllegalStateException("Carpet player removal failed during shutdown");
         });
         if (shutdown.isDone()) {
@@ -484,13 +492,120 @@ public final class CarpetFakePlayerManager {
             forceShutdown = true;
             return true;
         }
-        shutdown.whenComplete((ignored, failure) -> {
-            if (failure != null) LOGGER.error("Cannot finish Carpet player shutdown", failure);
-            else {
+        Thread.ofPlatform().name("Carpet player shutdown drain").start(() -> {
+            try {
+                carpetAwaitShutdownRemovals(removals);
+            } catch (Throwable failure) {
+                LOGGER.error("Cannot finish Carpet player shutdown", failure);
+            } finally {
                 forceShutdown = true;
                 server.stopServer();
             }
         });
         return false;
+    }
+
+    /**
+     * Waits for the removals in slices, then lets the caller halt. An abandoned or failed drain still
+     * persists every player first, so the bound delays the halt instead of losing state or hanging.
+     */
+    private void carpetAwaitShutdownRemovals(List<ShutdownRemoval> removals) {
+        var drain = this.shutdown;
+        long slice = TimeUnit.MILLISECONDS.toNanos(SHUTDOWN_REPORT_MILLIS);
+        long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(SHUTDOWN_TIMEOUT_MILLIS);
+        while (!drain.isDone()) {
+            long remaining = deadline - System.nanoTime();
+            if (remaining <= 0L) {
+                LOGGER.error("Carpet player shutdown removals did not finish within {} ms ({}); saving and halting anyway",
+                        SHUTDOWN_TIMEOUT_MILLIS, carpetPendingRemovals(removals));
+                break;
+            }
+            try {
+                drain.get(Math.min(remaining, slice), TimeUnit.NANOSECONDS);
+                return;
+            } catch (TimeoutException stillWaiting) {
+                LOGGER.info("Waiting for Carpet player shutdown removals to finish ({}; saves and halts anyway after {} ms)",
+                        carpetPendingRemovals(removals), SHUTDOWN_TIMEOUT_MILLIS);
+            } catch (InterruptedException interrupted) {
+                // The save pass and the halt below still have to run, so this dedicated shutdown
+                // thread keeps the original join semantics of not restoring the interrupt status.
+                LOGGER.error("Carpet player shutdown wait was interrupted ({}); saving and halting anyway", carpetPendingRemovals(removals));
+                break;
+            } catch (ExecutionException failure) {
+                LOGGER.error("Cannot finish Carpet player shutdown", failure.getCause() == null ? failure : failure.getCause());
+                break;
+            } catch (CancellationException failure) {
+                LOGGER.error("Cannot finish Carpet player shutdown", failure);
+                break;
+            }
+        }
+        carpetPersistUnsavedRemovals(removals);
+    }
+
+    /**
+     * Last-chance persistence for removals that never returned. Each own removal path saves before it
+     * marks the Entity removed, so that boundary decides on the region instead of a second guess here.
+     * The gate an in-flight removal holds is deliberately not awaited; being stuck there is why this
+     * pass exists, and a current save beats an unwritable one.
+     */
+    private void carpetPersistUnsavedRemovals(List<ShutdownRemoval> removals) {
+        var open = new ArrayList<ShutdownRemoval>();
+        for (var removal : removals) {
+            var completion = removal.completion();
+            if (completion.isDone() && !completion.isCompletedExceptionally() && Boolean.TRUE.equals(completion.getNow(null)))
+                continue;
+            open.add(removal);
+        }
+        if (open.isEmpty()) return;
+        LOGGER.warn("Saving {} Carpet player(s) whose shutdown removal did not finish ({})", open.size(), carpetLabels(open));
+        var saves = new ArrayList<CompletableFuture<Boolean>>();
+        var notSaved = new AtomicInteger();
+        for (var removal : open) {
+            var bot = removal.bot();
+            saves.add(carpet.script.external.ScarpetNativeRemovals.onOwnerFuture(bot, () -> {
+                if (bot.isRemoved() || !this.players.contains(bot)) return false;
+                this.server.getPlayerList().carpetSaveFakePlayer(bot);
+                CarpetFakePlayerPersistence.recordOnline(bot);
+                return true;
+            }).handle((saved, failure) -> {
+                if (failure != null) {
+                    LOGGER.error("Cannot save Carpet fake player {} during shutdown", removal.label(), failure);
+                    notSaved.incrementAndGet();
+                    return false;
+                }
+                return Boolean.TRUE.equals(saved);
+            }));
+        }
+        try {
+            CompletableFuture.allOf(saves.toArray(CompletableFuture[]::new))
+                    .get(SHUTDOWN_SAVE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException | ExecutionException | CancellationException | InterruptedException notPersisted) {
+            LOGGER.error("Carpet fake-player shutdown save did not finish within {} ms ({}); their latest state may be lost",
+                    SHUTDOWN_SAVE_TIMEOUT_MILLIS, carpetLabels(open), notPersisted);
+            return;
+        }
+        int written = 0;
+        for (var future : saves)
+            if (Boolean.TRUE.equals(future.getNow(false))) written++;
+        LOGGER.warn("Carpet shutdown save wrote {} player(s); {} were already saved by their own removal, {} could not be saved",
+                written, open.size() - written - notSaved.get(), notSaved.get());
+    }
+
+    private String carpetPendingRemovals(List<ShutdownRemoval> removals) {
+        var open = new ArrayList<ShutdownRemoval>();
+        for (var removal : removals)
+            if (!removal.completion().isDone()) open.add(removal);
+        return "players=" + open.size() + (open.isEmpty() ? "" : carpetLabels(open))
+                + ", " + carpet.script.external.ScarpetNativeWork.describePending(this.server);
+    }
+
+    private static String carpetLabels(List<ShutdownRemoval> removals) {
+        var names = removals.stream().map(ShutdownRemoval::label).toList();
+        var shown = names.stream().limit(8L).toList();
+        return "{" + String.join(", ", shown) + (names.size() > shown.size() ? ", ..." : "") + "}";
+    }
+
+    private record ShutdownRemoval(CarpetFakePlayer bot, String label,
+                                   CompletableFuture<Boolean> completion) {
     }
 }

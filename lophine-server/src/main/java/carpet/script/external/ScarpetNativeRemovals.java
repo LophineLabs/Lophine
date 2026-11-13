@@ -28,6 +28,7 @@ public final class ScarpetNativeRemovals {
         final Entity entity;
         final MinecraftServer server;
         final Runnable physicalRemoval;
+        final String description;
         ScarpetNativeWork.Token nativeToken;
         final ScarpetAttribution.Token attribution = ScarpetAttribution.capture();
         final CompletableFuture<Void> nativeBody = new CompletableFuture<>();
@@ -40,6 +41,8 @@ public final class ScarpetNativeRemovals {
             this.entity = entity;
             this.server = world.getServer();
             this.physicalRemoval = physicalRemoval;
+            // The label is read where the removal was deferred. Shutdown logs never revisit actor state.
+            this.description = entity.getClass().getSimpleName() + "/" + entity.getStringUUID();
         }
     }
 
@@ -279,6 +282,21 @@ public final class ScarpetNativeRemovals {
             }
             return whenIdle(server);
         });
+    }
+
+    /**
+     * Names only what {@link #whenIdle(MinecraftServer)} still awaits, for the shutdown coordinator's logs.
+     */
+    public static String describePending(MinecraftServer server) {
+        synchronized (PENDING) {
+            var open = PENDING.values().stream().filter(plan -> plan.server == server && !plan.completed.isDone()).toList();
+            var sample = open.stream().limit(5L).map(plan -> plan.description).toList();
+            long jobs = CALLERS.getOrDefault(server, Set.of()).stream().filter(future -> !future.isDone()).count();
+            return "removals=" + open.size()
+                    + (sample.isEmpty() ? "" : "{" + String.join(", ", sample)
+                    + (open.size() > sample.size() ? ", ..." : "") + "}")
+                    + ", native jobs=" + jobs;
+        }
     }
 
     private static Throwable unwrap(Throwable failure) {
