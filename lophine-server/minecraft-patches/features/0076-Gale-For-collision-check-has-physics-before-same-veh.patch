@@ -20,10 +20,10 @@ As part of: Akarin (https://github.com/Akarin-project/Akarin)
 Licensed under: GPL-3.0-only (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 30e1789680407d44d3d81da698bec586b53e4d5c..94c51984ef8dc30ae1df88880780ef4244550a6a 100644
+index 383f08a666f29a9340b43106df525e2eae8d6b62..d39fc9f0c382d2e6cc2f5db44bea79e600318260 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -2491,8 +2491,8 @@ public abstract class Entity
+@@ -2496,8 +2496,8 @@ public abstract class Entity
      }
  
      public void push(final Entity entity) {

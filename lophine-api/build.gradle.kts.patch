@@ -39,7 +39,7 @@
          }
      }
  }
-@@ -275,3 +_,19 @@
+@@ -270,3 +_,19 @@
  tasks.check {
      dependsOn(scanJarForBadCalls)
  }

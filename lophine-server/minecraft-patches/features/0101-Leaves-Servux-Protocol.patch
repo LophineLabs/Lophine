@@ -12,7 +12,7 @@ Budget large Servux pastes with spare region tick time. Pause block-related work
 Co-authored-by: wdsj-cmd <125710718+wdsj-cmd@users.noreply.github.com>
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index c43e8f9ac33a31fd84b596030d0467978aaf568f..fbc4dfd82963f69215cbbf7dc6c7e81af49ffba7 100644
+index cfca21ac11707e817defd6b4f40c982421c2ab90..b2d5ec4d4cb056aa732318d226097a827ede214e 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -1039,6 +1039,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -95,7 +95,7 @@ index bc4d9083a1de6a79e54bc186e7d16824f2096456..a932e2b20fcb6c1935cab2e3b08e0e50
  
      @Override
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index 65291809faad5494b93ff5d605b12947c37f39a5..b4867845429ec64a8d59ad5453d3ec609cd9a0d5 100644
+index 1ae86f669da5ce1cb25372363df9dfc9eda2951f..cc330c64dc2a2decd4c61ca2508071f8917af41b 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -1564,6 +1564,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl

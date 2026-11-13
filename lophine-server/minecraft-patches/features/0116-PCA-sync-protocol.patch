@@ -58,10 +58,10 @@ index 4e3d6b000ea80915e43093891da533dd69392f31..540027d5ce6db702e0065caf60aeac78
  
      @Override
 diff --git a/net/minecraft/world/level/block/entity/BlockEntity.java b/net/minecraft/world/level/block/entity/BlockEntity.java
-index d4cf4e9b39acce410bedf976fd8588347157ea3a..b5e422cccf56da5caa5136675b989d67d663f911 100644
+index 9e7dbbbb01866136bd998b657b03452a4fe8c96a..e024cf13aefaf938751bdf6e3c4cd11c108777a1 100644
 --- a/net/minecraft/world/level/block/entity/BlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BlockEntity.java
-@@ -228,6 +228,14 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo
+@@ -229,6 +229,14 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo
          if (!blockState.isAir()) {
              level.updateNeighbourForOutputSignal(worldPosition, blockState.getBlock());
          }

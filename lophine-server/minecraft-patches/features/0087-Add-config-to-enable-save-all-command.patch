@@ -31,10 +31,10 @@ index 805895eb6fca750b603b323a350b0daa9c3059b7..842b039d27857e6ed8bb72c0e2b351e5
          private final Reference2ReferenceOpenHashMap<RegionizedData<?>, Object> regionizedData = new Reference2ReferenceOpenHashMap<>();
  
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index 144b5a7397015a64fccca9e0f31483e079089960..2aeef416a29507a4773f9b38d1952ed8fde6e076 100644
+index c3e5a253ac82cb3f394388033765ee02dd0310f4..33f137ef12754b441b66fd59c6830d9d5525dc38 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
-@@ -303,7 +303,11 @@ public class Commands {
+@@ -309,7 +309,11 @@ public class Commands {
              PardonCommand.register(this.dispatcher);
              PardonIpCommand.register(this.dispatcher);
              //PerfCommand.register(this.dispatcher); // Folia - region threading - TODO later
@@ -48,7 +48,7 @@ index 144b5a7397015a64fccca9e0f31483e079089960..2aeef416a29507a4773f9b38d1952ed8
              SaveOnCommand.register(this.dispatcher);
              SetPlayerIdleTimeoutCommand.register(this.dispatcher);
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 699b6585d74f8332c5410c49bd07f4c4a940f013..f292cc44181beb42c12c6a0dd5418fe182e95772 100644
+index 41e78b0f918a241d375c682857dbf530c770bbbb..c1eef4f6e64ce1809d47a17214cd8d853d2e53a4 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -1633,6 +1633,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa

@@ -304,7 +304,7 @@ index 042cb4792b0084f143608f05dd08da133a31e435..120b5cfef3db88032fae0bd4e9a975a3
  
      private void write(final FriendlyByteBuf output) {
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index bf97c8a69623ad0d856b19755befc8ff30d3db08..829576cd265e46e71b7d2751d449b25f15e3e8e0 100644
+index b0599f426c925f2576b215596693ab5075e0788f..fdb1e6a337c72608bde7956c38eda9cb0704c055 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -1049,6 +1049,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -1248,7 +1248,7 @@ index 9ce50c3771e7f4c087245b500dc0432d39988a03..df6c5b7cefa43c23e8cb0ede133b5c2d
          this.age = newAge;
          if (oldAge < 0 && newAge >= 0 || oldAge >= 0 && newAge < 0) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 3081881669c0afd6ca192b66f88c010ba7c71f62..4ee593f0867ebfc1e5d4a9b3af0bc7318bc9256d 100644
+index 0b2977ece900e34e6693875b699da56247f60209..33b9da43562311584c86076aa847b1209406f7e0 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -267,6 +267,8 @@ public abstract class Entity
@@ -1422,7 +1422,7 @@ index 3081881669c0afd6ca192b66f88c010ba7c71f62..4ee593f0867ebfc1e5d4a9b3af0bc731
          List<VoxelShape> colliders = collectCollidersIgnoringWorldBorder(source, level, entityColliders, boundingBox.expandTowards(movement));
          return collideWithShapes(movement, boundingBox, colliders);
      }
-@@ -2936,8 +2984,9 @@ public abstract class Entity
+@@ -2941,8 +2989,9 @@ public abstract class Entity
              Vec3 pos = input.read("Pos", Vec3.CODEC).orElse(Vec3.ZERO);
              Vec3 motion = input.read("Motion", Vec3.CODEC).orElse(Vec3.ZERO);
              Vec2 rotation = input.read("Rotation", Vec2.CODEC).orElse(Vec2.ZERO);
@@ -1433,7 +1433,7 @@ index 3081881669c0afd6ca192b66f88c010ba7c71f62..4ee593f0867ebfc1e5d4a9b3af0bc731
              );
              this.needsSync = true;
              double maxHorizontalPosition = 3.0000512E7;
-@@ -3145,6 +3194,7 @@ public abstract class Entity
+@@ -3150,6 +3199,7 @@ public abstract class Entity
              livingEntity.deathDropItems.add(new DefaultDrop(itemStack, dropStack -> {
                  ItemEntity dropEntity = new ItemEntity(this.level, this.getX() + offset.x, this.getY() + offset.y, this.getZ() + offset.z, dropStack); // stack is copied before consumer
                  dropEntity.setDefaultPickUpDelay();
@@ -1441,7 +1441,7 @@ index 3081881669c0afd6ca192b66f88c010ba7c71f62..4ee593f0867ebfc1e5d4a9b3af0bc731
                  this.level.addFreshEntity(dropEntity);
                  if (delayedAddConsumer != null) delayedAddConsumer.accept(dropEntity);
              }));
-@@ -3167,6 +3217,7 @@ public abstract class Entity
+@@ -3172,6 +3222,7 @@ public abstract class Entity
              return null;
          }
          // CraftBukkit end
@@ -1449,7 +1449,7 @@ index 3081881669c0afd6ca192b66f88c010ba7c71f62..4ee593f0867ebfc1e5d4a9b3af0bc731
          level.addFreshEntity(entity);
          return entity;
      }
-@@ -3551,6 +3602,8 @@ public abstract class Entity
+@@ -3556,6 +3607,8 @@ public abstract class Entity
              this.setPose(Pose.STANDING);
              this.vehicle = entityToRide;
              this.vehicle.addPassenger(this);
@@ -1458,7 +1458,7 @@ index 3081881669c0afd6ca192b66f88c010ba7c71f62..4ee593f0867ebfc1e5d4a9b3af0bc731
              if (sendEventAndTriggers) {
                  this.level().gameEvent(this, GameEvent.ENTITY_MOUNT, this.vehicle.position);
                  entityToRide.getIndirectPassengersStream()
-@@ -3591,6 +3644,7 @@ public abstract class Entity
+@@ -3596,6 +3649,7 @@ public abstract class Entity
              Entity oldVehicle = this.vehicle;
              this.vehicle = null;
              if (!oldVehicle.removePassenger(this, suppressCancellation)) this.vehicle = oldVehicle; // CraftBukkit // Paper - Force entity dismount during teleportation
@@ -1466,7 +1466,7 @@ index 3081881669c0afd6ca192b66f88c010ba7c71f62..4ee593f0867ebfc1e5d4a9b3af0bc731
              Entity.RemovalReason removalReason = this.getRemovalReason();
              if (removalReason == null || removalReason.shouldDestroy()) {
                  if (!this.hasNullCallback()) this.level().gameEvent(this, GameEvent.ENTITY_DISMOUNT, oldVehicle.position); // Folia - region threading - do not fire game events for entities not added
-@@ -3676,6 +3730,43 @@ public abstract class Entity
+@@ -3681,6 +3735,43 @@ public abstract class Entity
          return true; // CraftBukkit
      }
  
@@ -1510,7 +1510,7 @@ index 3081881669c0afd6ca192b66f88c010ba7c71f62..4ee593f0867ebfc1e5d4a9b3af0bc731
      protected boolean canAddPassenger(final Entity passenger) {
          return this.passengers.isEmpty();
      }
-@@ -4653,11 +4744,13 @@ public abstract class Entity
+@@ -4658,11 +4749,13 @@ public abstract class Entity
      }
  
      protected Entity transformForAsyncTeleport(ServerLevel destination, Vec3 pos, Float yaw, Float pitch, Vec3 velocity) {
@@ -1524,7 +1524,7 @@ index 3081881669c0afd6ca192b66f88c010ba7c71f62..4ee593f0867ebfc1e5d4a9b3af0bc731
          if (copy instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) dragon.syncDragonPartsAfterTeleportTransform(); // Luminol - Sync dragon part when teleportation or firstly created
          // vanilla code used to call remove _after_ copying, and some stuff is required to be after copy - so add hook here
          // for example, clearing of inventory after switching dimensions
-@@ -4666,6 +4759,24 @@ public abstract class Entity
+@@ -4671,6 +4764,24 @@ public abstract class Entity
          return copy;
      }
  
@@ -1549,7 +1549,7 @@ index 3081881669c0afd6ca192b66f88c010ba7c71f62..4ee593f0867ebfc1e5d4a9b3af0bc731
      public final boolean teleportAsync(TeleportTransition teleportTarget, long teleportFlags,
                                         java.util.function.Consumer<Entity> teleportComplete) {
          PositionMoveRotation move = PositionMoveRotation.calculateAbsolute(PositionMoveRotation.of(this), PositionMoveRotation.of(teleportTarget), teleportTarget.relatives());
-@@ -6572,6 +6683,11 @@ public abstract class Entity
+@@ -6577,6 +6688,11 @@ public abstract class Entity
              this.removeEventCause = cause; // Paper
          }
  
@@ -1562,10 +1562,10 @@ index 3081881669c0afd6ca192b66f88c010ba7c71f62..4ee593f0867ebfc1e5d4a9b3af0bc731
              this.stopRiding();
          }
 diff --git a/net/minecraft/world/entity/EntityType.java b/net/minecraft/world/entity/EntityType.java
-index cf5acd1d337a8d3a27fad100f88f92e27a276ec5..c7e80c0ec90d861f96cb11f9072c34dd8a5bacc6 100644
+index 1cbac38303e22ee0ba2501913fcac79123b70cac..3bc278a42ff692c7f1fe79a5f40817ac5ae9e264 100644
 --- a/net/minecraft/world/entity/EntityType.java
 +++ b/net/minecraft/world/entity/EntityType.java
-@@ -167,7 +167,24 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>,
+@@ -174,7 +174,24 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>,
              postSpawnConfig = PostSpawnProcessor.nop();
          }
  
@@ -1591,7 +1591,7 @@ index cf5acd1d337a8d3a27fad100f88f92e27a276ec5..c7e80c0ec90d861f96cb11f9072c34dd
      }
  
      public static <T extends Entity> PostSpawnProcessor<T> createDefaultStackConfig(
-@@ -428,7 +445,9 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>,
+@@ -435,7 +452,9 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>,
      }
  
      public @Nullable T create(final Level level, final EntitySpawnRequest request) {
@@ -1602,7 +1602,7 @@ index cf5acd1d337a8d3a27fad100f88f92e27a276ec5..c7e80c0ec90d861f96cb11f9072c34dd
      }
  
      public static Optional<Entity> create(final ValueInput input, final Level level, final EntitySpawnRequest request) {
-@@ -582,11 +601,14 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>,
+@@ -589,11 +608,14 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>,
      }
  
      public int clientTrackingRange() {
@@ -1664,7 +1664,7 @@ index 1ded07d0477483da6489e1e603bd356547196ee5..17bf9bc1cc59aba4b5ef53c5ee29de8e
                  int remaining = this.repairPlayerItems(serverPlayer, this.getValue());
                  if (remaining > 0) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index a54f5ba7b74e25bbd5430175b67cd0a1e2fb3a11..7459f053f3dfad7cd90f8cbc01b596de6669249a 100644
+index 3d1abe61a4f975c8d70f77a3047d110fe08b3946..cdb228965da28119d976ab82a0436cef3c75e986 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -228,7 +228,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -1697,7 +1697,7 @@ index a54f5ba7b74e25bbd5430175b67cd0a1e2fb3a11..7459f053f3dfad7cd90f8cbc01b596de
              this.level().addFreshEntity(entity);
          }
  
-@@ -1943,6 +1948,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1954,6 +1959,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
  
      private java.util.concurrent.CompletableFuture<Void> carpetPerformDeathAsync(final DamageSource source) {
          if(this.isRemoved()||this.dead)return java.util.concurrent.CompletableFuture.completedFuture(null);
@@ -1705,7 +1705,7 @@ index a54f5ba7b74e25bbd5430175b67cd0a1e2fb3a11..7459f053f3dfad7cd90f8cbc01b596de
          final Entity sourceEntity=source.getEntity();
          final ServerLevel originalWorld=(ServerLevel)this.level();
          this.deathDropItems=new java.util.ArrayList<>();
-@@ -2031,6 +2037,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -2042,6 +2048,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                          return;
                      }
                      // CraftBukkit end
@@ -1713,7 +1713,7 @@ index a54f5ba7b74e25bbd5430175b67cd0a1e2fb3a11..7459f053f3dfad7cd90f8cbc01b596de
                      this.level().addFreshEntity(itemEntity);
                  }
              }
-@@ -3025,7 +3032,17 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3036,7 +3043,17 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
  
      @Override
      protected void onBelowWorld() {
@@ -2811,7 +2811,7 @@ index 6c90ed953c9bdc1aff4832fedfcd108a97fcf0ae..078d34449d80c8475625ff5ea124e7ed
                      player.awardStat(Stats.ITEM_USED.get(this));
                  }
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index a7b8afc441ffab0c6cc10f23cd562a3c2de12a4d..31ff16e2945baf91f866db90c06bd17ef3dd5100 100644
+index 695c0bd2e040c74904abecef285889b8c30ba16b..64901f65ba1271f01ec3f026d089bf76f2fd0175 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -1078,13 +1078,15 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl

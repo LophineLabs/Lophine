@@ -84,7 +84,7 @@ index efe3ba3cdada4a8713d4cae5c0e42e9475dd0240..5952362d092618adfa418bedf4520005
          } else {entity.inactiveTick();} // Paper - EAR 2
          profiler.pop();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 336cce85115c44b9f929faabcaa40316d094f0c5..1d13ef2d68f50f29e380462849aa27f6a8d8c638 100644
+index c910e133f559402d06fe997f2e6481bac10087b7..1c046ef28da3f8239d8a581c99bac0f0a744f1ba 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -393,6 +393,8 @@ public abstract class Entity
@@ -96,7 +96,7 @@ index 336cce85115c44b9f929faabcaa40316d094f0c5..1d13ef2d68f50f29e380462849aa27f6
  
      public void inactiveTick() {
      }
-@@ -3688,6 +3690,7 @@ public abstract class Entity
+@@ -3693,6 +3695,7 @@ public abstract class Entity
          } else {
              if (this.portalProcess == null || !this.portalProcess.isSamePortal(portal)) {
                  this.portalProcess = new PortalProcessor(portal, pos.immutable());
@@ -104,7 +104,7 @@ index 336cce85115c44b9f929faabcaa40316d094f0c5..1d13ef2d68f50f29e380462849aa27f6
              } else if (!this.portalProcess.isInsidePortalThisTick()) {
                  this.portalProcess.updateEntryPosition(pos.immutable());
                  this.portalProcess.setAsInsidePortalThisTick(true);
-@@ -3712,6 +3715,7 @@ public abstract class Entity
+@@ -3717,6 +3720,7 @@ public abstract class Entity
                      // Folia end - region threading
                  } else if (this.portalProcess.hasExpired()) {
                      this.portalProcess = null;
@@ -112,7 +112,7 @@ index 336cce85115c44b9f929faabcaa40316d094f0c5..1d13ef2d68f50f29e380462849aa27f6
                  }
              }
          }
-@@ -4220,6 +4224,7 @@ public abstract class Entity
+@@ -4225,6 +4229,7 @@ public abstract class Entity
              this.bukkitEntity = bukkitEntity;
          }
          // Paper end - Forward CraftEntity in teleport command
@@ -120,7 +120,7 @@ index 336cce85115c44b9f929faabcaa40316d094f0c5..1d13ef2d68f50f29e380462849aa27f6
          try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
              TagValueOutput entityData = TagValueOutput.createWithContext(reporter, oldEntity.registryAccess());
              oldEntity.saveWithoutId(entityData);
-@@ -4671,6 +4676,7 @@ public abstract class Entity
+@@ -4676,6 +4681,7 @@ public abstract class Entity
  
      public void postChangeDimension() {
          this.resetStoredPositions();

@@ -88,7 +88,7 @@ index 6c05b9276bdc267a36376f6c64592a50e4b2b36e..21d2c97b3d1e1d29c9de02b6acd58985
                      result.add(player);
                      if (result.size() >= limit) {
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index bea87ca72cd989451ffffd20d0527a56c3956308..db236670ad6f7ee1ef9097e7fd9d26913be1647d 100644
+index addc11a2a22f788f80ff1debeb29e1ecb8207099..43fa12f578264dba6c65aa10f9c7fc18afc68125 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -1893,7 +1893,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -118,7 +118,7 @@ index bea87ca72cd989451ffffd20d0527a56c3956308..db236670ad6f7ee1ef9097e7fd9d2691
              player.getBukkitEntity().taskScheduler.schedule((ServerPlayer updatedPlayer) -> { // Folia - region threading
              // Paper start - Expand PlayerGameModeChangeEvent
              org.bukkit.event.player.PlayerGameModeChangeEvent event = updatedPlayer.setGameMode(gameType, org.bukkit.event.player.PlayerGameModeChangeEvent.Cause.DEFAULT_GAMEMODE, null); // Folia - region threading
-@@ -2541,7 +2541,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -2542,7 +2542,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                  if (Thread.currentThread() != this.serverThread) return; // Paper
                  // Paper start - we don't need to save everything, just advancements
                  // this.getPlayerList().saveAll();
@@ -127,7 +127,7 @@ index bea87ca72cd989451ffffd20d0527a56c3956308..db236670ad6f7ee1ef9097e7fd9d2691
                      player.getAdvancements().save();
                  }
                  // Paper end - we don't need to save everything, just advancements
-@@ -2676,7 +2676,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -2677,7 +2677,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              PlayerList playerList = this.getPlayerList();
              UserWhiteList whiteList = playerList.getWhiteList();
  
@@ -551,7 +551,7 @@ index bc14032154e190463f26d8535032da1c90b79230..4ace3dc678a1df7520ebf8119a7d407b
          // Leaves end - fakeplayer support
  
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index c08ba60216f7898c2b567ce6a6eabbeb5661c1c8..6332abea5b2bb41f42de6de2f0e9849e9d01d684 100644
+index e012c5753d3ad18f38254381432f7219ca034b1c..ea3d6e0d7db5687c6ec3f19f93766a7a3483ceec 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -276,7 +276,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin

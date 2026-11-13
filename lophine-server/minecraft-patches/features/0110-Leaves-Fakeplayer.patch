@@ -46,7 +46,7 @@ index 38dc1c6cf8011ae26b54cdb6a0c1a59cc7eb909a..75d3623705dfc5f68984966fba87fe45
      private final java.util.concurrent.atomic.AtomicBoolean disconnectionHandled = new java.util.concurrent.atomic.AtomicBoolean(false); // Folia - region threading - may be called concurrently during configuration stage
      private int receivedPackets;
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index fbc4dfd82963f69215cbbf7dc6c7e81af49ffba7..bea87ca72cd989451ffffd20d0527a56c3956308 100644
+index b2d5ec4d4cb056aa732318d226097a827ede214e..addc11a2a22f788f80ff1debeb29e1ecb8207099 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -292,6 +292,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -101,7 +101,7 @@ index fbc4dfd82963f69215cbbf7dc6c7e81af49ffba7..bea87ca72cd989451ffffd20d0527a56
      }
  
      public void forceGameTimeSynchronization() {
-@@ -3238,6 +3252,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -3239,6 +3253,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          return this.debugSubscribers;
      }
  
@@ -419,7 +419,7 @@ index fd0d6ab5c3b221116af34a7f77f4916cfc0b0ce2..6a6e4b04ccbcb213fb9b57dc77da2406
          org.bukkit.event.player.PlayerChangedWorldEvent changeEvent = new org.bukkit.event.player.PlayerChangedWorldEvent(this.getBukkitEntity(), oldLevel.getWorld());
          this.level().getCraftServer().getPluginManager().callEvent(changeEvent);
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 44c9b2c2e1d0f89e4fd0bb273892e0ec7750d56a..035a80db1bca34b94a19553fad57631b5eb7f888 100644
+index b79583c79b3fad648f122d3bb28e3060be68d9d0..397bee3bf81652b068d814ff0783febdba45d79c 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -3969,7 +3969,7 @@ public class ServerGamePacketListenerImpl
@@ -584,7 +584,7 @@ index 404fed955358cfd574f0b7d192f4023644bd86ff..bc14032154e190463f26d8535032da1c
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 20fd25f25c7899e0ad616ed5b20276d7db870031..7c17a752b1b56ef41c9c96fb21830b3e1cda9611 100644
+index b46e05c0ff972edee76a02a266cbbf7d4f676832..0badbddf6e02c9335e69b8cab8582c0079b7effb 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1295,7 +1295,7 @@ public abstract class Entity
@@ -605,7 +605,7 @@ index 20fd25f25c7899e0ad616ed5b20276d7db870031..7c17a752b1b56ef41c9c96fb21830b3e
          // Paper start - optimise collisions
          final boolean xZero = movement.x == 0.0;
          final boolean yZero = movement.y == 0.0;
-@@ -6028,7 +6028,7 @@ public abstract class Entity
+@@ -6033,7 +6033,7 @@ public abstract class Entity
          return MoveSimulationType.AUTHORITATIVE_SIDE;
      }
  
@@ -615,10 +615,10 @@ index 20fd25f25c7899e0ad616ed5b20276d7db870031..7c17a752b1b56ef41c9c96fb21830b3e
              case SERVER_AND_CLIENT -> true;
              case AUTHORITATIVE_SIDE -> this.isLocalInstanceAuthoritative();
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 8c66dc24c3a67bfd5c89b96fe2dc9db8520af847..c08ba60216f7898c2b567ce6a6eabbeb5661c1c8 100644
+index f7b57c47b94dac3bd5f1abe182f14f94f0ee25a1..e012c5753d3ad18f38254381432f7219ca034b1c 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -2009,7 +2009,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -2020,7 +2020,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          return 0; // CraftBukkit
      }
  
@@ -627,7 +627,7 @@ index 8c66dc24c3a67bfd5c89b96fe2dc9db8520af847..c08ba60216f7898c2b567ce6a6eabbeb
          // CraftBukkit start - Update getExpReward() above if the removed if() changes!
          if (!(this instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon)) { // CraftBukkit - SPIGOT-2420: Special case ender dragon will drop the xp over time
              ExperienceOrb.awardWithDirection(level, this.position(), Vec3.ZERO, this.expToDrop, this instanceof ServerPlayer ? org.bukkit.entity.ExperienceOrb.SpawnReason.PLAYER_DEATH : org.bukkit.entity.ExperienceOrb.SpawnReason.ENTITY_DEATH, entity, this); // Paper
-@@ -3343,7 +3343,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3354,7 +3354,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      private void travelRidden(final Player controller, final Vec3 selfInput) {
          Vec3 riddenInput = this.getRiddenInput(controller, selfInput);
          this.tickRidden(controller, riddenInput);
@@ -636,7 +636,7 @@ index 8c66dc24c3a67bfd5c89b96fe2dc9db8520af847..c08ba60216f7898c2b567ce6a6eabbeb
              this.setSpeed(this.getRiddenSpeed(controller));
              this.travel(riddenInput);
          } else {
-@@ -4289,7 +4289,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4300,7 +4300,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          // Paper start - lag compensate eating
          // we add 1 to the expected time to avoid lag compensating when we should not
          final boolean shouldLagCompensate = this.useItem.has(DataComponents.FOOD) && this.eatStartTime != -1 && (System.nanoTime() - this.eatStartTime) > ((1L + this.totalEatTimeTicks) * 50L * (1000L * 1000L));
@@ -645,7 +645,7 @@ index 8c66dc24c3a67bfd5c89b96fe2dc9db8520af847..c08ba60216f7898c2b567ce6a6eabbeb
              this.useItemRemaining = 0;
              // Paper end - lag compensate eating
              this.completeUsingItem();
-@@ -4479,6 +4479,23 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4490,6 +4490,23 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.stopUsingItem();
      }
  

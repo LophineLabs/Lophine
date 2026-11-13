@@ -228,7 +228,7 @@ index 5a72fa0d72bfdb927293abe921c57f6ae964a6ec..f8344f640f119e3865f2718d1abd0ede
  
      private void uncaughtException(final Thread thread, final Throwable thr) {
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index c63247848c5250412f3fdc32496901d5ae35c95a..ad59a3445db83dd4f0344b039a2e59f63ecbbbd4 100644
+index 1256581535abe85a2e6ffe08b78242ef54193cd1..ecb7a64fb3aaed24f873dbf27dcb4480726e8f84 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -233,7 +233,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -429,7 +429,7 @@ index 9fad06eda81b4c2c1889a9cfa7a6948e7ee01862..854f8954ccfd8c34c9f9c91fd1805260
          private final Vec2 spawnAngle;
  
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index a316a862aaf5f5956de6ca2c571c90a3bd7995b4..c7359748d6863242dd134161c38e9ac6c355aa07 100644
+index dca8db1ba08a497aabc15665829dcc464827590f..15459edb21d026344d6b4fde5d8d504043b92185 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -399,6 +399,9 @@ public abstract class Entity
@@ -442,7 +442,7 @@ index a316a862aaf5f5956de6ca2c571c90a3bd7995b4..c7359748d6863242dd134161c38e9ac6
      // CraftBukkit end
  
      // Paper start
-@@ -4655,6 +4658,17 @@ public abstract class Entity
+@@ -4660,6 +4663,17 @@ public abstract class Entity
              }
          }
  
@@ -460,7 +460,7 @@ index a316a862aaf5f5956de6ca2c571c90a3bd7995b4..c7359748d6863242dd134161c38e9ac6
          // TODO any events that can modify go HERE
  
          // check for same region
-@@ -4673,6 +4687,14 @@ public abstract class Entity
+@@ -4678,6 +4692,14 @@ public abstract class Entity
              }
  
              for (EntityTreeNode entity : passengerTree.getFullTree()) {
@@ -475,7 +475,7 @@ index a316a862aaf5f5956de6ca2c571c90a3bd7995b4..c7359748d6863242dd134161c38e9ac6
                  entity.root.teleportSyncSameRegion(pos, yaw, pitch, velocity);
              }
  
-@@ -4688,8 +4710,8 @@ public abstract class Entity
+@@ -4693,8 +4715,8 @@ public abstract class Entity
                  // performs add/remove from world logic which will also perform add/remove tracker logic
              }
  
@@ -486,7 +486,7 @@ index a316a862aaf5f5956de6ca2c571c90a3bd7995b4..c7359748d6863242dd134161c38e9ac6
              }
              return true;
          }
-@@ -4706,7 +4728,7 @@ public abstract class Entity
+@@ -4711,7 +4733,7 @@ public abstract class Entity
              node.root = node.root.transformForAsyncTeleport(destination, pos, yaw, pitch, velocity);
          }
  
@@ -495,7 +495,7 @@ index a316a862aaf5f5956de6ca2c571c90a3bd7995b4..c7359748d6863242dd134161c38e9ac6
  
          return true;
      }
-@@ -4987,6 +5009,13 @@ public abstract class Entity
+@@ -4992,6 +5014,13 @@ public abstract class Entity
              ca.spottedleaf.moonrise.common.util.CoordinateUtils.getChunkX(initialPosition),
              ca.spottedleaf.moonrise.common.util.CoordinateUtils.getChunkZ(initialPosition)
          );
@@ -509,7 +509,7 @@ index a316a862aaf5f5956de6ca2c571c90a3bd7995b4..c7359748d6863242dd134161c38e9ac6
  
          // first, remove entity/passengers from world
          EntityTreeNode passengerTree = this.detachPassengers();
-@@ -5044,6 +5073,10 @@ public abstract class Entity
+@@ -5049,6 +5078,10 @@ public abstract class Entity
                      if (info.postTeleportTransition() != null) {
                          info.postTeleportTransition().onTransition(teleported);
                      }

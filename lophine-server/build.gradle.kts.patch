@@ -1,9 +1,10 @@
 --- a/folia-server/build.gradle.kts
 +++ b/folia-server/build.gradle.kts
-@@ -1,21 +_,40 @@
- import io.papermc.fill.model.BuildChannel
- import io.papermc.paperweight.attribute.DevBundleOutput
+@@ -3,20 +_,42 @@
  import io.papermc.paperweight.util.*
+ import java.time.Instant
+ 
++// Lophine start - imports
 +import java.net.URI
 +import java.net.http.HttpClient
 +import java.net.http.HttpRequest
@@ -12,7 +13,6 @@
 +import java.nio.file.StandardCopyOption
 +import java.security.MessageDigest
 +import java.time.Duration
- import java.time.Instant
 +import java.util.HexFormat
 +import java.util.concurrent.Callable
 +import java.util.concurrent.Executors
@@ -23,13 +23,15 @@
 +import java.util.zip.ZipFile
 +import java.util.zip.ZipInputStream
 +import java.util.zip.ZipOutputStream
- 
++// Lophine end
++
  plugins {
      `java-library`
      `maven-publish`
      idea
 -    id("io.papermc.paperweight.core")
 +    id("fun.bm.comfreyweight.core")
+     id("io.papermc.paperweight.paper-checkstyle")
      id("io.papermc.fill.gradle") version "1.0.14"
  }
  
@@ -37,13 +39,13 @@
 +val bacteriawaMavenPublicUrl = "https://repo.bacteriawa.com/repository/maven-public/"
  
  dependencies {
-     mache("io.papermc:mache:26.3+build.1")
+     mache("io.papermc:mache:26.3+build.2")
 -    paperclip("io.papermc:paperclip:3.0.4")
 +    morninggloryclip("fun.bm:morninggloryclip:${providers.gradleProperty("clipVersion").get()}")
  }
  
  paperweight {
-@@ -23,7 +_,8 @@
+@@ -24,7 +_,8 @@
      filterPatches = false
      gitFilePatches = false
  
@@ -53,7 +55,7 @@
          upstream.patchDir("paperServer") {
              upstreamPath = "paper-server"
              excludes = setOf("src/minecraft", "patches", "build.gradle.kts")
-@@ -32,7 +_,23 @@
+@@ -33,7 +_,23 @@
          }
      }
  
@@ -78,7 +80,7 @@
  
  
      updatingMinecraft {
-@@ -44,6 +_,7 @@
+@@ -49,6 +_,7 @@
      libraryRepositories.addAll(
          "https://repo.maven.apache.org/maven2/",
          paperMavenPublicUrl,
@@ -86,7 +88,7 @@
      )
  }
  
-@@ -103,10 +_,14 @@
+@@ -108,10 +_,14 @@
      main {
          java { srcDir("../paper-server/src/main/java") }
          resources { srcDir("../paper-server/src/main/resources") }
@@ -101,7 +103,7 @@
      }
  }
  val log4jPlugins = sourceSets.create("log4jPlugins") {
-@@ -134,7 +_,21 @@
+@@ -139,7 +_,21 @@
  }
  
  dependencies {
@@ -124,12 +126,12 @@
      implementation(platform("ca.spottedleaf.leafpile:bom:1.3.2"))
      implementation("ca.spottedleaf.leafpile:common")
      implementation("ca.spottedleaf.leafpile:concurrentutil")
-@@ -193,31 +_,56 @@
+@@ -198,31 +_,56 @@
          val git = Git(rootProject.layout.projectDirectory.path)
          val mcVersion = rootProject.providers.gradleProperty("mcVersion").get()
          val build = System.getenv("BUILD_NUMBER") ?: null
 -        val buildTime = providers.environmentVariable("BUILD_STARTED_AT").map(Instant::parse).orElse(Instant.EPOCH).get()
-+        val buildTime = Instant.now() // Always use current as build time
++        val buildTime = Instant.now() // Lophine - Always use current as build time
          val gitHash = git.exec(providers, "rev-parse", "--short=7", "HEAD").get().trim()
          val implementationVersion = "$mcVersion-${build ?: "DEV"}-$gitHash"
          val date = git.exec(providers, "show", "-s", "--format=%ci", gitHash).get().trim()
@@ -187,7 +189,7 @@
  
  // Compile tests with -parameters for better junit parameterized test names
  tasks.compileTestJava {
-@@ -366,6 +_,13 @@
+@@ -371,6 +_,13 @@
      classpath(tasks.createPaperclipJar.flatMap { it.outputZip })
      mainClass.set(null as String?)
  }
@@ -201,7 +203,7 @@
  
  fill {
      project("folia")
-@@ -383,3 +_,425 @@
+@@ -388,3 +_,425 @@
          }
      }
  }
@@ -291,7 +293,7 @@
 +                        val sBytes = serverEntries[name] ?: continue
 +                        val vBytes = zv.getInputStream(ve).use { it.readBytes() }
 +                        val matches = vBytes.contentEquals(sBytes) ||
-+                            (!isBinaryResource(name) && normalizeText(vBytes).contentEquals(normalizeText(sBytes)))
++                                (!isBinaryResource(name) && normalizeText(vBytes).contentEquals(normalizeText(sBytes)))
 +                        if (matches) {
 +                            writeParentDirs(out, name, ve.time)
 +                            out.putNextEntry(ZipEntry(name).also {
@@ -417,8 +419,8 @@
 +                    val country = parse(response.body())
 +                    if (country.isNotBlank()) {
 +                        return country.equals("China", ignoreCase = true) ||
-+                            country.equals("CN", ignoreCase = true) ||
-+                            country.equals("PRC", ignoreCase = true)
++                                country.equals("CN", ignoreCase = true) ||
++                                country.equals("PRC", ignoreCase = true)
 +                    }
 +                }
 +            } catch (_: Exception) {
@@ -606,7 +608,7 @@
 +            fun mb(bytes: Long) = "%.2f MB".format(bytes / 1024.0 / 1024.0)
 +            logger.lifecycle(
 +                "createMorninggloryclipJar: removed ${removedLibs.size} libraries, kept ${bundled.size - removedLibs.size}; " +
-+                    "${mb(input.length())} -> ${mb(Files.size(output))}"
++                        "${mb(input.length())} -> ${mb(Files.size(output))}"
 +            )
 +        }
 +    }

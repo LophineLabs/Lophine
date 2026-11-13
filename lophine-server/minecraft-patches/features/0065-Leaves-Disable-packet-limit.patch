@@ -20,7 +20,7 @@ index c0462e5952467504b8a079737a1e7a13b71e57b1..38dc1c6cf8011ae26b54cdb6a0c1a59c
                  synchronized (PACKET_LIMIT_LOCK) {
                      if (this.allPacketCounts != null) {
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 599ae90309074707f274e231ff9a80de7b39668c..07cf1f17cfee2fdc20e75f2112e5bd705ba79e13 100644
+index b0772a4dd1357b6640895e3941aa7531d9b1cf9e..60dc5757e12840d9fdc12869e1946249d46d2665 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -911,7 +911,7 @@ public class ServerGamePacketListenerImpl

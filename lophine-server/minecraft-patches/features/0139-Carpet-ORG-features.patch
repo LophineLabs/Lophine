@@ -42,10 +42,10 @@ index 4ac4169e13b4605daf16676f29294be256f91b0c..cb4ab180fdb836408854499d0a888f4b
  
          return null;
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index 441a22c296f7f64d77391e9fbf69bfc76a6f237e..9a72aed3ff9859e35c23fcc034a198dc48928b94 100644
+index 0b668429b17d12cbd4020e1b22794dcee0177c87..76aca222f3fcb06fe5c2035d9b991a8785e630c4 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
-@@ -345,7 +345,14 @@ public class Commands {
+@@ -351,7 +351,14 @@ public class Commands {
  
          fun.bm.lophine.carpet.CarpetCompatCommand.register(this.dispatcher, context);
          fun.bm.lophine.carpet.ams.AmsPlayerChunkLoading.register(this.dispatcher);
@@ -60,7 +60,7 @@ index 441a22c296f7f64d77391e9fbf69bfc76a6f237e..9a72aed3ff9859e35c23fcc034a198dc
          fun.bm.lophine.carpet.ams.AmsClientQueryCommands.register(this.dispatcher);
          fun.bm.lophine.carpet.ams.AmsManagementCommands.register(this.dispatcher, context);
          fun.bm.lophine.carpet.ams.AmsAdministratorProtection.apply(this.dispatcher);
-@@ -425,6 +432,9 @@ public class Commands {
+@@ -431,6 +438,9 @@ public class Commands {
          }
          try {
              if (commandChain != null) {
@@ -243,7 +243,7 @@ index 1a95ccd745f4789225d711ab6fe497c677c203d6..737026031e774971b9189e2f5a44fdb4
                  // Lophine start - catch update suppression crash
                  } catch (org.leavesmc.leaves.util.UpdateSuppressionException exception) {
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 75701cf64cfc68560f5bedb93c8fea2219ff186a..bf97c8a69623ad0d856b19755befc8ff30d3db08 100644
+index 37caf4fdd200e1fdd74b5c487a93b18420d878ac..b0599f426c925f2576b215596693ab5075e0788f 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -942,6 +942,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -870,10 +870,10 @@ index 75c4e1966008826060047eead980b7b0f6e09ae4..15172777006c6116b50145850775ac6d
              return Component.translatable("death.attack.generic", this.mob.getDisplayName());
          } else {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index d96029a879af52e197dde9d39d5705da51979485..3081881669c0afd6ca192b66f88c010ba7c71f62 100644
+index 40a68c18914a602760b9af9fab1ac1a8493dd103..0b2977ece900e34e6693875b699da56247f60209 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -6524,6 +6524,11 @@ public abstract class Entity
+@@ -6529,6 +6529,11 @@ public abstract class Entity
      }
  
      public float maxUpStep() {
@@ -885,7 +885,7 @@ index d96029a879af52e197dde9d39d5705da51979485..3081881669c0afd6ca192b66f88c010b
          return 0.0F;
      }
  
-@@ -6555,6 +6560,10 @@ public abstract class Entity
+@@ -6560,6 +6565,10 @@ public abstract class Entity
          // Paper end - rewrite chunk system
          org.bukkit.craftbukkit.event.CraftEventFactory.callEntityRemoveEvent(this, cause); // CraftBukkit
          final boolean alreadyRemoved = this.removalReason != null; // Paper - Folia schedulers
@@ -913,7 +913,7 @@ index c609d9c4d6b7e0670025f13cbe8d956694f3c1b5..1ded07d0477483da6489e1e603bd3565
          long carpetTotal = (long) this.getValue() * this.count + (long) orb.getValue() * orb.count;
          if (carpetCombineDifferentValues(this) && carpetTotal > Short.MAX_VALUE) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..a54f5ba7b74e25bbd5430175b67cd0a1e2fb3a11 100644
+index d6235d9e0f19c7383ed5ac3a55604ce21acb5954..3d1abe61a4f975c8d70f77a3047d110fe08b3946 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -360,7 +360,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -925,7 +925,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..a54f5ba7b74e25bbd5430175b67cd0a1
      }
  
      @Override
-@@ -1544,9 +1544,28 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1555,9 +1555,28 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              if (damage <= carpetLastHurt) return false;
              event = this.handleEntityDamage(source, damage, carpetLastHurt);
              tookFullDamage = false;
@@ -957,7 +957,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..a54f5ba7b74e25bbd5430175b67cd0a1
              damage = this.computeAmountFromEntityDamageEvent(event);
              float finalDamage = (float)event.getFinalDamage();
              boolean applied = deferred ? carpet.script.external.ScarpetDamageContinuations.resumeInner(this, () -> this.actuallyHurt(level, source, finalDamage, event))
-@@ -1818,6 +1837,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1829,6 +1848,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          // CraftBukkit start
          InteractionHand usedHand = null;
          ItemStack itemStack = ItemStack.EMPTY;
@@ -965,7 +965,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..a54f5ba7b74e25bbd5430175b67cd0a1
          for (InteractionHand hand : InteractionHand.values()) {
              itemStack = this.getItemInHand(hand);
              protection = itemStack.get(DataComponents.DEATH_PROTECTION);
-@@ -1829,6 +1849,14 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1840,6 +1860,14 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              }
          }
  
@@ -980,7 +980,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..a54f5ba7b74e25bbd5430175b67cd0a1
          final org.bukkit.inventory.EquipmentSlot handSlot = (usedHand != null) ? org.bukkit.craftbukkit.CraftEquipmentSlot.getHand(usedHand) : null;
          final EntityResurrectEvent event = new EntityResurrectEvent(this.getBukkitEntity(), handSlot);
          event.setCancelled(protectionItem == null);
-@@ -1838,7 +1866,12 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1849,7 +1877,12 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              protection = null;
          } else {
              if (!itemStack.isEmpty() && protectionItem != null) { // Paper - only reduce item if actual totem was found
@@ -994,7 +994,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..a54f5ba7b74e25bbd5430175b67cd0a1
              }
              // Paper start - fix NPE when pre-cancelled EntityResurrectEvent is uncancelled
              // restore the previous behavior in that case by defaulting to vanilla's totem of undying effect
-@@ -1855,7 +1888,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1866,7 +1899,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
  
              this.setHealth(1.0F);
              protection.applyEffects(protectionItem, this);
@@ -1006,7 +1006,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..a54f5ba7b74e25bbd5430175b67cd0a1
          }
  
          return protection != null;
-@@ -3013,6 +3050,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3024,6 +3061,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      }
  
      public ItemStack getMainHandItem() {
@@ -1014,7 +1014,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..a54f5ba7b74e25bbd5430175b67cd0a1
          return this.getItemBySlot(EquipmentSlot.MAINHAND);
      }
  
-@@ -3051,6 +3089,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3062,6 +3100,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      }
  
      public ItemStack getItemInHand(final InteractionHand hand) {
@@ -1022,7 +1022,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..a54f5ba7b74e25bbd5430175b67cd0a1
          if (hand == InteractionHand.MAIN_HAND) {
              return this.getItemBySlot(EquipmentSlot.MAINHAND);
          } else if (hand == InteractionHand.OFF_HAND) {
-@@ -3879,7 +3918,23 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3890,7 +3929,23 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          for (EquipmentSlot slot : EquipmentSlot.VALUES_ARRAY) { // Gale - JettPack - reduce array allocations
              ItemStack previous = lastEquipmentItems.get(slot);
              ItemStack current = this.getItemBySlot(slot);
@@ -1047,7 +1047,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..a54f5ba7b74e25bbd5430175b67cd0a1
                  // Paper start - EntityEquipmentChangedEvent, PlayerArmorChangeEvent
                  final org.bukkit.inventory.ItemStack oldItem = CraftItemStack.asBukkitCopy(previous);
                  final org.bukkit.inventory.ItemStack newItem = CraftItemStack.asBukkitCopy(current);
-@@ -3906,7 +3961,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3917,7 +3972,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                  EquipmentSlot slot = entry.getKey();
                  ItemStack current = entry.getValue();
                  if (!current.isEmpty() && !current.isBroken()) {
@@ -1058,7 +1058,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..a54f5ba7b74e25bbd5430175b67cd0a1
                          AttributeInstance instance = this.attributes.getInstance(attribute);
                          if (instance != null) {
                              instance.removeModifier(modifier.id());
-@@ -4474,6 +4531,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4485,6 +4542,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      // Paper end - Properly cancel usable items
      // Paper start - lag compensate eating
      protected long eatStartTime;
@@ -1067,7 +1067,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..a54f5ba7b74e25bbd5430175b67cd0a1
      protected int totalEatTimeTicks;
      // Paper end - lag compensate eating
      private void updatingUsingItem() {
-@@ -4634,6 +4693,19 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4645,6 +4704,19 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      }
  
      public void completeUsingItem() {
@@ -1087,7 +1087,7 @@ index 9f9d8d24e956eeb1a971dc80cb60acdf08f82bda..a54f5ba7b74e25bbd5430175b67cd0a1
          if (!this.level().isClientSide() || this.isUsingItem()) {
              InteractionHand hand = this.getUsedItemHand();
              if (!this.useItem.equals(this.getItemInHand(hand))) {
-@@ -4674,7 +4746,12 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4685,7 +4757,12 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                      // Paper end
                      // CraftBukkit end
                      if (result != this.useItem) {
@@ -2276,7 +2276,7 @@ index 9c6ad3bfb1a467ae52c09e9c9aaf96d913a9dc46..4508f410859a6305aa6a49069233d3a0
      }
  }
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index 6b1194475c129ae03fb89ba216e31b8c7ca0e852..a7b8afc441ffab0c6cc10f23cd562a3c2de12a4d 100644
+index 36987e5357da7d798e3f2fc008a8da80236c2506..695c0bd2e040c74904abecef285889b8c30ba16b 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -2103,15 +2103,16 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
@@ -2747,15 +2747,15 @@ index be3deb846821af87cfc1b5a0f0efd6651ccf56fa..da2281e86f9a4ab9008aa78b0b257fd1
          return beaconLevel >= 4 && !Objects.equals(primaryEffect, secondaryEffect) && secondaryEffect != null;
      }
 diff --git a/net/minecraft/world/level/block/entity/BlockEntity.java b/net/minecraft/world/level/block/entity/BlockEntity.java
-index 944e59d3a27975fd5c7658ada6f3036670c7b81d..cbe4f9b522c1238127126bff29438ae2e4e46562 100644
+index 866d4fba727576500da32dd8a47519ef06eca3ee..e20814ae756fe300a3f68bf3b10980162731c883 100644
 --- a/net/minecraft/world/level/block/entity/BlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BlockEntity.java
-@@ -221,6 +221,7 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo
+@@ -222,6 +222,7 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo
      }
  
      public void setChanged() {
 +        fun.bm.lophine.carpet.org.OrgItemShadowGroups.observe(this);
-         if (this.level != null) {
+         if (this.level != null && this.real) { // Paper - don't broadcast for fake block entities
              if (IGNORE_TILE_UPDATES.get().booleanValue()) return; // Paper - Perf: Optimize Hoppers // Folia - region threading
              setChanged(this.level, this.worldPosition, this.blockState);
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java

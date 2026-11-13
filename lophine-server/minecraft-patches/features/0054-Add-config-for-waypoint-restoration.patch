@@ -5,10 +5,10 @@ Subject: [PATCH] Add config for waypoint restoration
 
 
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index 292176773c3a707dd1facb8a0b726deb74202423..144b5a7397015a64fccca9e0f31483e079089960 100644
+index 6d7ad8c4875b7ad62528353e69fda8661c4c42a6..c3e5a253ac82cb3f394388033765ee02dd0310f4 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
-@@ -271,7 +271,7 @@ public class Commands {
+@@ -277,7 +277,7 @@ public class Commands {
          TimeCommand.register(this.dispatcher, context);
          TitleCommand.register(this.dispatcher, context);
          //TriggerCommand.register(this.dispatcher); // Folia - region threading - TODO later
@@ -18,10 +18,10 @@ index 292176773c3a707dd1facb8a0b726deb74202423..144b5a7397015a64fccca9e0f31483e0
          WorldBorderCommand.register(this.dispatcher);
          if (JvmProfiler.INSTANCE.isAvailable()) {
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 186dac139aa429b224fb63037a4ea887dcd64c82..f8717592571f22ba36d02697c3fdb3c35b3f86fb 100644
+index 0adf040f5372b503c1e231251646a0804119a063..9f2a1b1a21367095b20f01439fd6ee866f9d65f2 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -3117,8 +3117,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -3118,8 +3118,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              level.players().forEach(playerx -> playerx.connection.send(packet)); // Paper - per-world game rules
          } else if (rule == GameRules.LOCATOR_BAR) {
              // this.getAllLevels().forEach(level -> { // Paper - per-world game rules

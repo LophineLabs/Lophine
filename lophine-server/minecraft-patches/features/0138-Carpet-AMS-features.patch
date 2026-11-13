@@ -17,10 +17,10 @@ index ebec3e3100da251e881ff0562308dfd333f77e9a..8dc55bb7bebd51535df255fd4eb8bd7f
              final int currentChunkX = playerPos.x();
              final int currentChunkZ = playerPos.z();
 diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
-index a3d5f0211cf9e3b96523e70de6b4365a873c2606..441a22c296f7f64d77391e9fbf69bfc76a6f237e 100644
+index 875f20f06a963f773e52893901d871498486448c..0b668429b17d12cbd4020e1b22794dcee0177c87 100644
 --- a/net/minecraft/commands/Commands.java
 +++ b/net/minecraft/commands/Commands.java
-@@ -344,7 +344,13 @@ public class Commands {
+@@ -350,7 +350,13 @@ public class Commands {
          java.util.List<CommandNode<CommandSourceStack>> minecraftNodes = new java.util.ArrayList<>(this.dispatcher.getRoot().getChildren());
  
          fun.bm.lophine.carpet.CarpetCompatCommand.register(this.dispatcher, context);
@@ -34,7 +34,7 @@ index a3d5f0211cf9e3b96523e70de6b4365a873c2606..441a22c296f7f64d77391e9fbf69bfc7
  
          java.util.List<CommandNode<CommandSourceStack>> carpetNodes = new java.util.ArrayList<>(this.dispatcher.getRoot().getChildren());
          carpetNodes.removeAll(minecraftNodes);
-@@ -546,6 +552,70 @@ public class Commands {
+@@ -552,6 +558,70 @@ public class Commands {
          COMMAND_SENDING_POOL.execute(() -> this.sendAsync(player, rootNode));
      }
  
@@ -106,7 +106,7 @@ index a3d5f0211cf9e3b96523e70de6b4365a873c2606..441a22c296f7f64d77391e9fbf69bfc7
      public static final java.util.concurrent.ExecutorService COMMAND_SENDING_POOL = new java.util.concurrent.ThreadPoolExecutor(
          2, 2, 0, java.util.concurrent.TimeUnit.MILLISECONDS,
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index e99995f1f2a3f98e241027e5488a0ca57531d9cc..75701cf64cfc68560f5bedb93c8fea2219ff186a 100644
+index b3f6b06ba5537b25a2302bc9b6fdcb711f63358b..37caf4fdd200e1fdd74b5c487a93b18420d878ac 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -630,7 +630,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -367,7 +367,7 @@ index 6541fe108f60d2c55a47f0bb5ba3b17f270cd5fa..9ce50c3771e7f4c087245b500dc0432d
              return this.entityData.get(DATA_BABY_ID) ? -1 : 1;
          } else {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index a5a29c08228e88a5ab07bd11480d2b50c1ce28a6..d96029a879af52e197dde9d39d5705da51979485 100644
+index a7e9ec7b9260d72b7011abf75240c2871b7da17b..40a68c18914a602760b9af9fab1ac1a8493dd103 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -807,7 +807,7 @@ public abstract class Entity
@@ -379,7 +379,7 @@ index a5a29c08228e88a5ab07bd11480d2b50c1ce28a6..d96029a879af52e197dde9d39d5705da
      }
  
      public boolean hasPose(final Pose pose) {
-@@ -3097,7 +3097,22 @@ public abstract class Entity
+@@ -3102,7 +3102,22 @@ public abstract class Entity
      }
  
      public @Nullable ItemEntity spawnAtLocation(final ServerLevel level, final ItemStack itemStack) {
@@ -403,7 +403,7 @@ index a5a29c08228e88a5ab07bd11480d2b50c1ce28a6..d96029a879af52e197dde9d39d5705da
      }
  
      public @Nullable ItemEntity spawnAtLocation(final ServerLevel level, final ItemStack itemStack, final Vec3 offset) {
-@@ -4904,7 +4919,8 @@ public abstract class Entity
+@@ -4909,7 +4924,8 @@ public abstract class Entity
                                      destination, finalPos, this.getDeltaMovement(), Direction.WEST.toYRot(), 0.0f, // Kaiiju - Vanilla end teleportation
                                      false, false,
                                      /*Relative.union(Relative.DELTA, Set.of(Relative.X_ROT))*/Set.of(), // Kaiiju - Vanilla end teleportation
@@ -413,7 +413,7 @@ index a5a29c08228e88a5ab07bd11480d2b50c1ce28a6..d96029a879af52e197dde9d39d5705da
                                      org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.END_PORTAL,
                                      TeleportTransition.PassengerTeleportationMode.POSITION_RIDER
                                  )
-@@ -4941,7 +4957,8 @@ public abstract class Entity
+@@ -4946,7 +4962,8 @@ public abstract class Entity
                                      destination, finalPos, this.getDeltaMovement(), 0.0f, 0.0f, // Kaiiju - Vanilla end teleportation
                                      false, false,
                                      Relative.union(Relative.DELTA, Relative.ROTATION),
@@ -460,7 +460,7 @@ index 284ba0c3742d5d5ab0b344a84a9c8e2c2a98a74a..1705c6c7813a71b3136f483048c1257b
  
      default double leashElasticDistance() {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 690d64a1e3535e3a18704595a8517dbd3193e70f..9f9d8d24e956eeb1a971dc80cb60acdf08f82bda 100644
+index a6c32e8066ccb15a50fb5744c40d6e121956e254..d6235d9e0f19c7383ed5ac3a55604ce21acb5954 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -1091,6 +1091,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -474,7 +474,7 @@ index 690d64a1e3535e3a18704595a8517dbd3193e70f..9f9d8d24e956eeb1a971dc80cb60acdf
          return Mth.clamp(visibilityPercent, 0.0, 10.0);
      }
  
-@@ -1946,6 +1950,24 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1957,6 +1961,24 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              &&this.level() instanceof ServerLevel level&&level.getGameRules().get(GameRules.SHOW_DEATH_MESSAGES)){
              if(org.spigotmc.SpigotConfig.logNamedDeaths)LOGGER.info("Named entity {} died: {}",this,this.getCombatTracker().getDeathMessage().getString());
          }
@@ -499,7 +499,7 @@ index 690d64a1e3535e3a18704595a8517dbd3193e70f..9f9d8d24e956eeb1a971dc80cb60acdf
      }
  
      protected void handleKillingBlow() {
-@@ -2079,6 +2101,53 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -2090,6 +2112,53 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          if (!lootTable.isEmpty()) {
              this.dropFromLootTable(level, source, playerKilled, lootTable.get());
          }
@@ -2127,7 +2127,7 @@ index 8342a97427ac0dd9fd0e8d9603800de0e3a1e5e9..9c1c8af50e1d592b9eabf1d0a976f8e3
          }
  
 diff --git a/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java b/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
-index 87e20e38ccff1a28ee65c2489e17e881fc123324..adb808a8e6c9c898f7a030a21f6dcb22958b77fa 100644
+index c6a28b78fe1fa350081c889a241c7d891c2cbb30..29b36efda74f2f6d2448337f496bcd6644e487fb 100644
 --- a/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/ShulkerBoxBlockEntity.java
 @@ -42,7 +42,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl

@@ -18,7 +18,7 @@ index f5601ee683c9daef74ab34c96b70d990ac6cf534..ef8c1e81327dd3dd3535bb86920f2522
                      double rangeY = level.paperConfig().entities.trackingRangeY.get(this.entity, -1);
                      if (rangeY != -1) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index b4488827e3a2c9d9e1814017d01a296b2538521e..20fd25f25c7899e0ad616ed5b20276d7db870031 100644
+index b2a10b0ccfb26d5f792e64dc819f2e019f530de4..b46e05c0ff972edee76a02a266cbbf7d4f676832 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -166,7 +166,7 @@ public abstract class Entity
@@ -30,7 +30,7 @@ index b4488827e3a2c9d9e1814017d01a296b2538521e..20fd25f25c7899e0ad616ed5b20276d7
      // CraftBukkit start
      private static final int CURRENT_LEVEL = 2;
      static boolean isLevelAtLeast(ValueInput input, int level) {
-@@ -6773,4 +6773,48 @@ public abstract class Entity
+@@ -6778,4 +6778,48 @@ public abstract class Entity
      // Leaf end - Lithium - equipment tracking
  
      public boolean shouldTickHot() { return this.tickCount > 20 * 10 && this.isAlive(); } // KioCG
@@ -80,7 +80,7 @@ index b4488827e3a2c9d9e1814017d01a296b2538521e..20fd25f25c7899e0ad616ed5b20276d7
 +    // Lophine end - Add config to enable raytracing tracker
  }
 diff --git a/net/minecraft/world/entity/EntityType.java b/net/minecraft/world/entity/EntityType.java
-index 996679150fbd51ce8fdef4ec72ea2c9b6daec208..f287eb4022a1c75ad4c0157c3e1929f91844ac57 100644
+index 140866de69fb9ad894c486c96e0c4dca280bf111..b6812bc20e6f4f29bc37c39169decab35013c3fa 100644
 --- a/net/minecraft/world/entity/EntityType.java
 +++ b/net/minecraft/world/entity/EntityType.java
 @@ -87,6 +87,11 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>,

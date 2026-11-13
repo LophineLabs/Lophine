@@ -17,7 +17,7 @@ index a6d9b95c42926754acd2e54e7af7ade3f7d2c322..5b19c0f63cc0057aa3e8069168560a17
              Bootstrap.bootStrap();
              Bootstrap.validate();
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 7336ed6fce34e0aae96893b18cd142d448e2fcfa..8dd8644745a7b18471bff7da3849024a782b278b 100644
+index e21c43b5fce8273874b127f6dc1eb391e68245d6..06747594cbecb1b232a3018f96ac97528d33e837 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -1151,6 +1151,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -66,7 +66,7 @@ index 3d352bb9b0606236d789a70897d7bec12bcf6846..efe3ba3cdada4a8713d4cae5c0e42e94
              savedDataStorage.saveAndJoin();
          } else {
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index 7c61b018508c24ae1e338763393dd6a9c5db60d9..7acff82e2e0e83e57b86cc996fce84c2e6f223a6 100644
+index cb569d164a29e4d910d47644a4d1691e6b15eeea..a177d266f9eda1d29cfc7f8248faa35bc97a3809 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -159,6 +159,15 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl

@@ -150,7 +150,7 @@ index 2500a3cf1cdd99b6941378b9a4b004feca2f5812..dea9e6128695180c7f43870cfa406509
                      this.getInventory().equipment.set(value, net.minecraft.world.item.ItemStack.EMPTY);
                  }
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 6e4292f9fb338c30d93bcb5f3f270fe9d27dcf87..08abc1994197209480fa79faf047d06ff5aa6e4e 100644
+index 2ff6fbb4f49f956895235d54bcce27e329764498..20599936e1f248f0bb852a0b0aa7d1d95513f2d8 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -3087,7 +3087,7 @@ public class ServerGamePacketListenerImpl
@@ -252,10 +252,10 @@ index 4b018c64d3123bb7a0687491d2ac3a535302890c..0e4d6c9a35d29c240a0cf30694211ea3
  
      private static Map<EquipmentSlot, Float> createForAllSlots(final List<EquipmentSlot> slots, final float dropChance) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 1b753b9fc59c56e6db9f4a5e1beba1a5ca0ae012..7150a56a3d553d41f04e3f0f9030827ac2b87d84 100644
+index d85b9cd4689a1e476ed95959e3cae1112c29d4b1..31d06cd4ee6e920fb07af02c448c86c2d8e905fb 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -3609,7 +3609,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3620,7 +3620,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          Map<org.bukkit.inventory.EquipmentSlot, io.papermc.paper.event.entity.EntityEquipmentChangedEvent.EquipmentChange> equipmentChanges = null;
          // Paper end - EntityEquipmentChangedEvent
  
@@ -264,7 +264,7 @@ index 1b753b9fc59c56e6db9f4a5e1beba1a5ca0ae012..7150a56a3d553d41f04e3f0f9030827a
              ItemStack previous = lastEquipmentItems.get(slot);
              ItemStack current = this.getItemBySlot(slot);
              if (this.equipmentHasChanged(previous, current)) {
-@@ -3894,7 +3894,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3905,7 +3905,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
  
      protected boolean canGlide() {
          if (!this.onGround() && !this.isPassenger() && !this.hasEffect(MobEffects.LEVITATION)) {
@@ -361,7 +361,7 @@ index 9c667a09fcea23b4072c0616837b685e256e0462..d170ee3c74d0352fed4044cad9a87c8b
              if (predicate.test(item)) {
                  ItemEnchantments enchantments = item.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index 24e6370683a54f535ddfc4b57cd7583e713853bb..65291809faad5494b93ff5d605b12947c37f39a5 100644
+index bb41c5ad864e6b6dfd90b29250b9934715104156..1ae86f669da5ce1cb25372363df9dfc9eda2951f 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -1955,7 +1955,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl

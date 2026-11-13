@@ -105,7 +105,7 @@ index 39ea7198f3bbe4525e686504887e0074de80854d..fbfe30f48dbe1340ce6110d0fdb7e8b6
  
      public @Nullable BlockState setBlockState(final BlockPos pos, final BlockState state) {
 diff --git a/net/minecraft/world/level/chunk/ChunkGenerator.java b/net/minecraft/world/level/chunk/ChunkGenerator.java
-index a27c82876e6e343f1ffc795520f50dcc2d381a94..9682bedbd3cc5380804bb06990867f05bcd697fc 100644
+index 51de0e755660678892a1243ae31b9eb874b80716..366776ff631fca7dc6e3f7457facb39c8cc6ad9c 100644
 --- a/net/minecraft/world/level/chunk/ChunkGenerator.java
 +++ b/net/minecraft/world/level/chunk/ChunkGenerator.java
 @@ -389,7 +389,11 @@ public abstract class ChunkGenerator {
@@ -121,7 +121,7 @@ index a27c82876e6e343f1ffc795520f50dcc2d381a94..9682bedbd3cc5380804bb06990867f05
              long decorationSeed = random.setDecorationSeed(level.getSeed(), origin.getX(), origin.getZ());
              Set<Holder<Biome>> possibleBiomes = new ObjectArraySet<>();
              ChunkPos.rangeClosed(sectionPos.chunk(), 1).forEach(chunkPos -> {
-@@ -620,8 +624,15 @@ public abstract class ChunkGenerator {
+@@ -711,8 +715,15 @@ public abstract class ChunkGenerator {
                              } else {
                                  ArrayList<StructureSet.StructureSelectionEntry> options = new ArrayList<>(structures.size());
                                  options.addAll(structures);

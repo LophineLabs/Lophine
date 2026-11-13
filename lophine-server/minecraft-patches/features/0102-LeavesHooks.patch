@@ -5,10 +5,10 @@ Subject: [PATCH] LeavesHooks
 
 
 diff --git a/ca/spottedleaf/moonrise/paper/PaperHooks.java b/ca/spottedleaf/moonrise/paper/PaperHooks.java
-index a18c44332b6f2db441575b8f3cfb9045a65062d5..03085e7ff54e70302ced15a62ea1586c9ac90348 100644
+index da6537b74798778cfacdefa13c4f26c8ebf6c338..95022f109f495277d4915a6ae8b4a569c1d830fa 100644
 --- a/ca/spottedleaf/moonrise/paper/PaperHooks.java
 +++ b/ca/spottedleaf/moonrise/paper/PaperHooks.java
-@@ -29,7 +29,7 @@ import net.minecraft.world.phys.AABB;
+@@ -30,7 +30,7 @@ import net.minecraft.world.phys.AABB;
  import java.util.List;
  import java.util.function.Predicate;
  

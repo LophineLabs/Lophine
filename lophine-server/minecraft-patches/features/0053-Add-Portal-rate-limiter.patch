@@ -81,7 +81,7 @@ index 97c514673a454b752ab86b944fd143725ca8090d..805895eb6fca750b603b323a350b0daa
          private final AtomicBoolean hasPackets = new AtomicBoolean(false);
  
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 7a653dc96dde2cebc995674888536061b544a425..186dac139aa429b224fb63037a4ea887dcd64c82 100644
+index 59605b5b6490cf6be40380293be96f86ebb2b452..0adf040f5372b503c1e231251646a0804119a063 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -1960,6 +1960,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -142,10 +142,10 @@ index e81a90a0ca727490617cf3a959bdcf408f323899..d3575e2c9c8ac23b8f240fad794f988c
              }
              // Folia end - region threading
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index e322d54cc5985a58c1d19f767d9090b4791bf171..42abed17558a92f69b3440ddcfb22fe16866fdd1 100644
+index e293814e8177a9179c222b62d0d44a04b2e5bf62..7c628692a16caed644f383d133febedbe33fae39 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -5077,6 +5077,31 @@ public abstract class Entity
+@@ -5082,6 +5082,31 @@ public abstract class Entity
              return false;
          }
          // Luminol end
