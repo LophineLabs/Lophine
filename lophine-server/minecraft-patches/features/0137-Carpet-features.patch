@@ -12204,7 +12204,7 @@ index b4867845429ec64a8d59ad5453d3ec609cd9a0d5..6b1194475c129ae03fb89ba216e31b8c
                  y = this.getMinY();
              }
 diff --git a/net/minecraft/world/level/NaturalSpawner.java b/net/minecraft/world/level/NaturalSpawner.java
-index d99b82edbe7c9fbb14bd5bfd5f125ab5daf28954..c5121ba40ae854a31d5250bc540c77ae589d1363 100644
+index 0e13047a960b169f4c8d3b66aaebee659a3ba67c..f085038a5f32db95427cdeb5877cc7c9e9d62e0f 100644
 --- a/net/minecraft/world/level/NaturalSpawner.java
 +++ b/net/minecraft/world/level/NaturalSpawner.java
 @@ -134,14 +134,14 @@ public final class NaturalSpawner {
@@ -12242,7 +12242,7 @@ index d99b82edbe7c9fbb14bd5bfd5f125ab5daf28954..c5121ba40ae854a31d5250bc540c77ae
          if (categoryLimit < 1) {
              return categoryLimit;
          }
-@@ -283,6 +283,12 @@ public final class NaturalSpawner {
+@@ -284,6 +284,12 @@ public final class NaturalSpawner {
                      Player nearestPlayer = level.getNearestPlayer(xx, yStart, zz, -1.0, false);
                      if (nearestPlayer != null) {
                          double nearestPlayerDistanceSqr = nearestPlayer.distanceToSqr(xx, yStart, zz);
@@ -12255,7 +12255,7 @@ index d99b82edbe7c9fbb14bd5bfd5f125ab5daf28954..c5121ba40ae854a31d5250bc540c77ae
                          if (level.isLoadedAndInBounds(pos) && isRightDistanceToPlayerAndSpawnPoint(level, chunk, pos, nearestPlayerDistanceSqr)) { // Paper - don't load chunks for mob spawn
                              if (currentSpawnData == null) {
                                  Optional<MobSpawnSettings.SpawnerData> nextSpawnData = getRandomSpawnMobAt(
-@@ -316,13 +322,19 @@ public final class NaturalSpawner {
+@@ -317,13 +323,19 @@ public final class NaturalSpawner {
  
                                  mob.snapTo(xx, yStart, zz, level.random.nextFloat() * 360.0F, 0.0F);
                                  if (isValidPositionForMob(level, mob, nearestPlayerDistanceSqr)) {
@@ -12277,7 +12277,7 @@ index d99b82edbe7c9fbb14bd5bfd5f125ab5daf28954..c5121ba40ae854a31d5250bc540c77ae
                                          clusterSize++;
                                          groupSize++;
                                          spawnCallback.run(mob, chunk);
-@@ -402,11 +414,24 @@ public final class NaturalSpawner {
+@@ -403,11 +415,24 @@ public final class NaturalSpawner {
              && canSpawnMobAt(level, structureManager, generator, mobCategory, currentSpawnData, pos)
              && SpawnPlacements.isSpawnPositionOk(type, level, pos)
              && SpawnPlacements.checkSpawnRules(type, level, EntitySpawnReason.NATURAL, pos, level.random)
@@ -12303,7 +12303,7 @@ index d99b82edbe7c9fbb14bd5bfd5f125ab5daf28954..c5121ba40ae854a31d5250bc540c77ae
          try {
              if (type.create(level, EntitySpawnReason.NATURAL) instanceof Mob mob) {
                  return mob;
-@@ -525,7 +550,11 @@ public final class NaturalSpawner {
+@@ -526,7 +551,11 @@ public final class NaturalSpawner {
                                      float width = spawnerData.type().getWidth();
                                      double fx = Mth.clamp(x, (double)xo + width, xo + 16.0 - width);
                                      double fz = Mth.clamp(z, (double)zo + width, zo + 16.0 - width);
@@ -12316,7 +12316,7 @@ index d99b82edbe7c9fbb14bd5bfd5f125ab5daf28954..c5121ba40ae854a31d5250bc540c77ae
                                          || !SpawnPlacements.checkSpawnRules(
                                              spawnerData.type(),
                                              level,
-@@ -557,6 +586,11 @@ public final class NaturalSpawner {
+@@ -558,6 +587,11 @@ public final class NaturalSpawner {
                                              level, level.getCurrentDifficultyAt(mob.blockPosition()), EntitySpawnReason.CHUNK_GENERATION, groupSpawnData
                                          );
                                          level.addFreshEntityWithPassengers(mob, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CHUNK_GEN); // CraftBukkit
@@ -12328,7 +12328,7 @@ index d99b82edbe7c9fbb14bd5bfd5f125ab5daf28954..c5121ba40ae854a31d5250bc540c77ae
                                          success = true;
                                      }
                                  }
-@@ -612,6 +646,8 @@ public final class NaturalSpawner {
+@@ -613,6 +647,8 @@ public final class NaturalSpawner {
          private final int spawnableChunkCount;
          private final Object2IntOpenHashMap<MobCategory> mobCategoryCounts;
          private final PotentialCalculator spawnPotential;
@@ -12337,7 +12337,7 @@ index d99b82edbe7c9fbb14bd5bfd5f125ab5daf28954..c5121ba40ae854a31d5250bc540c77ae
          private final Object2IntMap<MobCategory> unmodifiableMobCategoryCounts;
          private final LocalMobCapCalculator localMobCapCalculator;
          private @Nullable BlockPos lastCheckedPos;
-@@ -677,6 +713,11 @@ public final class NaturalSpawner {
+@@ -678,6 +714,11 @@ public final class NaturalSpawner {
              return this.unmodifiableMobCategoryCounts;
          }
  

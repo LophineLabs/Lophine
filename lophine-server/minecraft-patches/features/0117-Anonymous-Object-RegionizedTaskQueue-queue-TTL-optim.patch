@@ -133,10 +133,10 @@ index fe0a6bd90cba4869a0ee11723832f2dee5039f62..53579b6faa9d55485088d59ec2fd1e42
                  throw new IllegalStateException("Negative reference count");
              }
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 08806f6ddb714165ba8dcb4896d1bde0293a0c55..f72a0b9e17a93e9077a4d790ad77fbdf1b4954fa 100644
+index db236670ad6f7ee1ef9097e7fd9d26913be1647d..bb6ba7869ab997df02675f609d8f5e6b550cf7a7 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1737,6 +1737,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1739,6 +1739,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                  foliaProfiler.stopTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.PASSENGER_DESYNC_CHECK);
              }
              // Folia end - fix passenger desync

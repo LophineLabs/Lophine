@@ -16,9 +16,7 @@ import net.kyori.adventure.text.Component;
 import net.minecraft.locale.DeprecatedTranslationsInfo;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.StringDecomposer;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
@@ -368,11 +366,7 @@ public class ServerI18nUtil {
 
             @Override
             public @NotNull FormattedCharSequence getVisualOrder(@NotNull FormattedText text) {
-                return sink -> text.visit(
-                                (style, content) -> StringDecomposer.iterateFormatted(content, style, sink) ? Optional.empty() : FormattedText.STOP_ITERATION,
-                                Style.EMPTY
-                        )
-                        .isPresent();
+                return I18nBidi.visualOrder(text, defaultRightToLeft);
             }
         };
     }

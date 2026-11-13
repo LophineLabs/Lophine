@@ -106,7 +106,7 @@ index a3d5f0211cf9e3b96523e70de6b4365a873c2606..441a22c296f7f64d77391e9fbf69bfc7
      public static final java.util.concurrent.ExecutorService COMMAND_SENDING_POOL = new java.util.concurrent.ThreadPoolExecutor(
          2, 2, 0, java.util.concurrent.TimeUnit.MILLISECONDS,
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index cf1d6bb90289f907f342567889f75c434b9134bc..2404fa6687fc71df8505c87e4f0d1c3c3e1ea74e 100644
+index e99995f1f2a3f98e241027e5488a0ca57531d9cc..75701cf64cfc68560f5bedb93c8fea2219ff186a 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -630,7 +630,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -121,7 +121,7 @@ index cf1d6bb90289f907f342567889f75c434b9134bc..2404fa6687fc71df8505c87e4f0d1c3c
          boolean startedWorldLoadProfiling = !JvmProfiler.INSTANCE.isRunning()
              && SharedConstants.DEBUG_JFR_PROFILING_ENABLE_LEVEL_LOADING
              && JvmProfiler.INSTANCE.start(Environment.from(this));
-@@ -1054,6 +1057,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1055,6 +1058,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          fun.bm.lophine.carpet.CarpetProfileService.reset();
          fun.bm.lophine.carpet.CarpetSpawnReporter.reset();
          fun.bm.lophine.carpet.CarpetMobAI.resetTrackers();
@@ -130,7 +130,7 @@ index cf1d6bb90289f907f342567889f75c434b9134bc..2404fa6687fc71df8505c87e4f0d1c3c
          // Folia start - region threading
          // halt scheduler
          // don't wait, we may be on a scheduler thread
-@@ -1074,6 +1079,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1075,6 +1080,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          }
          if (!this.hasLoggedStop && this.isDebugging()) io.papermc.paper.util.TraceUtil.dumpTraceForThread("Server stopped"); // Paper - Debugging
          this.shutdownThread = Thread.currentThread(); // Paper - Improved watchdog support
@@ -139,7 +139,7 @@ index cf1d6bb90289f907f342567889f75c434b9134bc..2404fa6687fc71df8505c87e4f0d1c3c
          org.spigotmc.WatchdogThread.doStop(); // Paper - Improved watchdog support
          // CraftBukkit end
          //this.packetProcessor.close(); // Folia - region threading
-@@ -1672,7 +1679,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1674,7 +1681,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          // Folia end - region threading
          org.spigotmc.WatchdogThread.tick(); // Spigot
          long nano = startTime; // Folia - region threading
@@ -202,7 +202,7 @@ index 8e7029b560a99003858f09319f89a04f9c458bbb..03b4614473addb5777434657a51e4865
      }
  
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index fc1b61311c9558905bbb2fc951792251cd0d7d8c..102f8d9b70bec950dd1331b51ed97fc2cb41a069 100644
+index 268e8b7dc8a41e2fcfb305ee30920c10814d89dc..da74dc17615def2477925e29a6c8358d470e1a06 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -845,6 +845,9 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -802,7 +802,7 @@ index c3c5a57829f7cdbefc6a2e4f8cf2b8f0d4b3a40c..99f7841a0574a102e423f87905a46793
              ItemStack itemStack = this.getItem();
              Item item = itemStack.getItem();
 diff --git a/net/minecraft/world/entity/item/PrimedTnt.java b/net/minecraft/world/entity/item/PrimedTnt.java
-index 48991cbe86dc890a4db52a82c86e3e0823dc915c..be538470c76cdb2975942b45d717e79e7ccb1bab 100644
+index 8674ceac1376276c23028acc3ef9b1d12899d40c..5aa868610571f22697939608aa9ff843c015dd69 100644
 --- a/net/minecraft/world/entity/item/PrimedTnt.java
 +++ b/net/minecraft/world/entity/item/PrimedTnt.java
 @@ -74,6 +74,14 @@ public class PrimedTnt extends Entity implements TraceableEntity {
@@ -1562,7 +1562,7 @@ index 6cb51b25dd9a9415680771cd7b6b1a0047dbafc7..cfeb2fcf0e57377c5a79b695f5d6af0c
  
      public int startTick() {
 diff --git a/net/minecraft/world/level/NaturalSpawner.java b/net/minecraft/world/level/NaturalSpawner.java
-index c5121ba40ae854a31d5250bc540c77ae589d1363..86d9f48c2bb1232e5697dbe3e01f7aaf5acbacdf 100644
+index f085038a5f32db95427cdeb5877cc7c9e9d62e0f..ae9e51269c6e5cf0932c4c4cecd6e3acc27234ee 100644
 --- a/net/minecraft/world/level/NaturalSpawner.java
 +++ b/net/minecraft/world/level/NaturalSpawner.java
 @@ -157,6 +157,13 @@ public final class NaturalSpawner {
@@ -1580,10 +1580,10 @@ index c5121ba40ae854a31d5250bc540c77ae589d1363..86d9f48c2bb1232e5697dbe3e01f7aaf
              final boolean canSpawn;
              int maxSpawns = Integer.MAX_VALUE;
 diff --git a/net/minecraft/world/level/ServerExplosion.java b/net/minecraft/world/level/ServerExplosion.java
-index d40f34cd1dcf691a87debc404a493427ded728f9..f6abb4d3b3c3999a3633ed8f7d2c4d442299509a 100644
+index 33dc2c92b3a08703b1f9bd1a9ee1524bbb2871a4..bcb28e94aaa1730f719fa4d6fdd74eeff457c295 100644
 --- a/net/minecraft/world/level/ServerExplosion.java
 +++ b/net/minecraft/world/level/ServerExplosion.java
-@@ -604,7 +604,12 @@ public class ServerExplosion implements Explosion {
+@@ -612,7 +612,12 @@ public class ServerExplosion implements Explosion {
                              // Paper end - knockback events
                          }
                          // CraftBukkit end
@@ -1597,7 +1597,7 @@ index d40f34cd1dcf691a87debc404a493427ded728f9..f6abb4d3b3c3999a3633ed8f7d2c4d44
                          if (entity.is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && entity instanceof Projectile projectile) {
                              projectile.setOwner(this.damageSource.getEntity());
                          } else if (entity instanceof Player player && !player.isSpectator() && (!player.isCreative() || !player.getAbilities().flying) && !level.paperConfig().environment.disableExplosionKnockback) { // Paper - Option to disable explosion knockback
-@@ -990,9 +995,12 @@ public class ServerExplosion implements Explosion {
+@@ -1049,9 +1054,12 @@ public class ServerExplosion implements Explosion {
                              // Paper end - knockback events
                          }
                          // CraftBukkit end
@@ -2351,7 +2351,7 @@ index 9c58323e78c889d299a264a5774277eba08ba56d..007bdc63b15cd5801ff027a2708fb452
              }
              if (eggEvent.callEvent()) {
 diff --git a/net/minecraft/world/level/levelgen/PhantomSpawner.java b/net/minecraft/world/level/levelgen/PhantomSpawner.java
-index ec3a437bd8a7d0e95e1e5fa0ff4462a70391ecf9..adc4f77d8d362da78aee3ce0598e8a34c2fa316c 100644
+index 7c79ee351df1cb3e38ac24a58154db14058054c6..cca1e16cb178fac4973983a2bf848b816d310eb9 100644
 --- a/net/minecraft/world/level/levelgen/PhantomSpawner.java
 +++ b/net/minecraft/world/level/levelgen/PhantomSpawner.java
 @@ -78,6 +78,7 @@ public class PhantomSpawner implements CustomSpawner {

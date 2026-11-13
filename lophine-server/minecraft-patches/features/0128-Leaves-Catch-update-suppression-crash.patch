@@ -36,10 +36,10 @@ index 20fa23988efbfb50c664fa48cc823adbe8e6ce58..1a95ccd745f4789225d711ab6fe497c6
                          throw PacketUtils.makeReportedException(e, this.packet, this.listener);
                      }
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index f72a0b9e17a93e9077a4d790ad77fbdf1b4954fa..c2e875a94814a23058243338b91c51dac890ea22 100644
+index bb6ba7869ab997df02675f609d8f5e6b550cf7a7..6c9bf50eb9b86ef9014711c698d6c7fa5fe22bb2 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1987,11 +1987,30 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1990,11 +1990,30 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              try {
                  foliaProfiler.startTimer(level.tickTimerId); try { // Folia - profiler
                  level.tick(haveTime, region); // Folia - region threading
@@ -74,7 +74,7 @@ index f72a0b9e17a93e9077a4d790ad77fbdf1b4954fa..c2e875a94814a23058243338b91c51da
  
              profiler.pop();
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 72fa2362995e775610a1db9b52816dcacb0bcc64..b684aead63b2e39d8372cea9b4a6ae6520435a17 100644
+index bedde3831da4cb590d5010d513f20006e65a7130..9e0b8cfa511aff002e5800680fc4908e3ee78b0e 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -965,7 +965,18 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet

@@ -2885,7 +2885,7 @@ index a7b8afc441ffab0c6cc10f23cd562a3c2de12a4d..31ff16e2945baf91f866db90c06bd17e
                  if ((++tickedEntities & 7) == 0) {
                      ((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemLevel)(Level)(Object)this).moonrise$midTickTasks();
 diff --git a/net/minecraft/world/level/NaturalSpawner.java b/net/minecraft/world/level/NaturalSpawner.java
-index 86d9f48c2bb1232e5697dbe3e01f7aaf5acbacdf..7dd7f1b0c91bac3cc7ed81c7820753dfe51aec9b 100644
+index ae9e51269c6e5cf0932c4c4cecd6e3acc27234ee..bf2b404c8f19f438548200df27364a97afd5cb5b 100644
 --- a/net/minecraft/world/level/NaturalSpawner.java
 +++ b/net/minecraft/world/level/NaturalSpawner.java
 @@ -191,9 +191,15 @@ public final class NaturalSpawner {
@@ -2923,7 +2923,7 @@ index 86d9f48c2bb1232e5697dbe3e01f7aaf5acbacdf..7dd7f1b0c91bac3cc7ed81c7820753df
      }
  
      @VisibleForDebug
-@@ -510,11 +520,41 @@ public final class NaturalSpawner {
+@@ -511,11 +521,41 @@ public final class NaturalSpawner {
          ChunkPos pos = chunk.getPos();
          int x = pos.getMinBlockX() + level.random.nextInt(16);
          int z = pos.getMinBlockZ() + level.random.nextInt(16);

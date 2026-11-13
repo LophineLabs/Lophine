@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Fri, 13 Nov 2026 12:24:40 +0800
+Subject: [PATCH] Server I18n
+
+
+diff --git a/src/main/java/io/papermc/paper/adventure/PaperAdventure.java b/src/main/java/io/papermc/paper/adventure/PaperAdventure.java
+index 401353b63873fdfa56c9e1dbba4bf117f5602bac..eedef0b4d5eeba6d546ff550219f98dda7b01f62 100644
+--- a/src/main/java/io/papermc/paper/adventure/PaperAdventure.java
++++ b/src/main/java/io/papermc/paper/adventure/PaperAdventure.java
+@@ -115,7 +115,16 @@ public final class PaperAdventure {
+         })
+         .build();
+     public static final AttributeKey<Locale> LOCALE_ATTRIBUTE = AttributeKey.valueOf("adventure:locale"); // init after FLATTENER because classloading triggered here might create a logger
+-    public static final ANSIComponentSerializer ANSI_SERIALIZER = ANSIComponentSerializer.builder().flattener(FLATTENER).build();
++    public static final ANSIComponentSerializer ANSI_SERIALIZER = wrapAnsi(ANSIComponentSerializer.builder().flattener(FLATTENER).build()); // Lophine - console RTL
++
++    private static ANSIComponentSerializer wrapAnsi(final ANSIComponentSerializer inner) {
++        return new ANSIComponentSerializer() {
++            @Override
++            public @NotNull String serialize(final @NotNull Component component) {
++                return inner.serialize(fun.bm.lophine.utils.I18nBidi.visual(component, FLATTENER));
++            }
++        };
++    }
+     private static final TagParser<Tag> NBT_PARSER = TagParser.create(NbtOps.INSTANCE);
+     public static final Codec<Tag, String, CommandSyntaxException, RuntimeException> NBT_CODEC = new Codec<>() {
+         @Override

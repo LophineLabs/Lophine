@@ -98,7 +98,7 @@ index f300ffb5ec076d9eeb637d5d81b8f83abd77760f..4799d3530105737305aa5e85604f5fb2
  
          level.removePlayerImmediately(player, Entity.RemovalReason.UNLOADED_WITH_PLAYER);
 diff --git a/net/minecraft/world/entity/item/PrimedTnt.java b/net/minecraft/world/entity/item/PrimedTnt.java
-index 30d63b6114b4bfcb8a1e3b34b2ec36e7d52c7be9..180df4c44adf5b6ea1bbb4285e7d6df70048fa03 100644
+index 0eb04134eb60ef85f720a162d3f0af0c96890954..3188378550a571320d37ffff8c852e5eebbbbd56 100644
 --- a/net/minecraft/world/entity/item/PrimedTnt.java
 +++ b/net/minecraft/world/entity/item/PrimedTnt.java
 @@ -141,7 +141,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
