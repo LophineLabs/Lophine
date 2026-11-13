@@ -98,7 +98,7 @@ index f300ffb5ec076d9eeb637d5d81b8f83abd77760f..4799d3530105737305aa5e85604f5fb2
  
          level.removePlayerImmediately(player, Entity.RemovalReason.UNLOADED_WITH_PLAYER);
 diff --git a/net/minecraft/world/entity/item/PrimedTnt.java b/net/minecraft/world/entity/item/PrimedTnt.java
-index 30d63b6114b4bfcb8a1e3b34b2ec36e7d52c7be9..180df4c44adf5b6ea1bbb4285e7d6df70048fa03 100644
+index 0eb04134eb60ef85f720a162d3f0af0c96890954..3188378550a571320d37ffff8c852e5eebbbbd56 100644
 --- a/net/minecraft/world/entity/item/PrimedTnt.java
 +++ b/net/minecraft/world/entity/item/PrimedTnt.java
 @@ -141,7 +141,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
@@ -111,7 +111,7 @@ index 30d63b6114b4bfcb8a1e3b34b2ec36e7d52c7be9..180df4c44adf5b6ea1bbb4285e7d6df7
          this.applyGravity();
          if (carpet.script.external.ScarpetExplosionContinuations.pending(this)) return;
 diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
-index b38a4b84a98dae51587883d3da8d9976cb0814cb..76b1c2151f1e3fefb3dca6e62525023863995205 100644
+index b38a4b84a98dae51587883d3da8d9976cb0814cb..ac3360f3aeb27531ed5211f45e81709ceae3b556 100644
 --- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 +++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 @@ -31,7 +31,11 @@ import net.minecraft.world.phys.Vec3;
@@ -212,6 +212,15 @@ index b38a4b84a98dae51587883d3da8d9976cb0814cb..76b1c2151f1e3fefb3dca6e625250238
      private static @Nullable Entity findOwnerIncludingDeadPlayer(final ServerLevel serverLevel, final UUID uuid) {
          Entity owner = serverLevel.getEntityInAnyDimension(uuid);
          return owner != null ? owner : serverLevel.getServer().getPlayerList().getPlayer(uuid);
+@@ -185,7 +244,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+                 }
+                 Entity entity = this.getOwnerRaw();
+                 if (entity != null) {
+-                    attemptTeleport(entity, (ServerLevel)this.level(), this.position());
++                    attemptTeleport(entity, (ServerLevel)this.level(), this.oldPosition()); // Lophine - match vanilla's pre-impact teleport destination
+                 }
+                 this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.HIT);
+                 return;
 @@ -291,6 +350,9 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
                      && owner instanceof ServerPlayer serverPlayer) {
                      this.ticketTimer = serverPlayer.registerAndUpdateEnderPearlTicket(this);

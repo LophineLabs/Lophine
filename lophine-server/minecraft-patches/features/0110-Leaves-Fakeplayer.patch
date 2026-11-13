@@ -848,7 +848,7 @@ index df068a03663411e723a83a5c998e7a3f17b7e628..3071e93408565509c7ebba6353024d91
                              double dx = deltaMovement.x;
                              double dy = deltaMovement.y;
 diff --git a/net/minecraft/world/level/levelgen/PhantomSpawner.java b/net/minecraft/world/level/levelgen/PhantomSpawner.java
-index db0324595d7f5b6f92bd7724daf181b0903e1da4..ec3a437bd8a7d0e95e1e5fa0ff4462a70391ecf9 100644
+index be181d30c536a341899988e146a836fd6c16c13a..7c79ee351df1cb3e38ac24a58154db14058054c6 100644
 --- a/net/minecraft/world/level/levelgen/PhantomSpawner.java
 +++ b/net/minecraft/world/level/levelgen/PhantomSpawner.java
 @@ -49,6 +49,10 @@ public class PhantomSpawner implements CustomSpawner {
