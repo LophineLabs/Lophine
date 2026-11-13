@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrHua269 <mrhua269@gmail.com>
+Date: Sat, 18 Apr 2026 09:15:22 +0800
+Subject: [PATCH] Add force the data command to be enabled config
+
+
+diff --git a/net/minecraft/commands/Commands.java b/net/minecraft/commands/Commands.java
+index 21626d39f3a91f4579f5bdb8ad96ec79e0300bdc..bda9c26c286b2727771aa51f7dd1624ca56a8bdc 100644
+--- a/net/minecraft/commands/Commands.java
++++ b/net/minecraft/commands/Commands.java
+@@ -211,7 +211,9 @@ public class Commands {
+         //CloneCommands.register(this.dispatcher, context); // Folia - region threading - TODO
+         //ComputeCommand.register(this.dispatcher, context); // Folia - region threading - TODO
+         DamageCommand.register(this.dispatcher, context);
+-        //DataCommands.register(this.dispatcher, context); // Folia - region threading - TODO
++        if(me.earthme.luminol.config.modules.experiment.CommandConfig.data) { // Luminol - Config for data command
++        DataCommands.register(this.dispatcher, context); // Folia - region threading - TODO // Luminol - Config for data command
++        } // Luminol - Config for data command
+         //DataPackCommand.register(this.dispatcher, context); // Folia - region threading - TODO
+         //DebugCommand.register(this.dispatcher); // Folia - region threading - TODO
+         DefaultGameModeCommands.register(this.dispatcher);

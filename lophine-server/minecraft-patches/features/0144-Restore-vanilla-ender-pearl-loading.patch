@@ -1,0 +1,277 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Bacteriawa <A3167717663@hotmail.com>
+Date: Wed, 24 Jun 2026 00:00:00 +0800
+Subject: [PATCH] Restore vanilla ender pearl loading
+
+
+diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
+index 1033b605856b8c7bd9b22d40ba4c522aa5d3eb0b..dcb9a91100cfd9a1e6ef4eb054d0558e8efc4171 100644
+--- a/net/minecraft/server/level/ServerPlayer.java
++++ b/net/minecraft/server/level/ServerPlayer.java
+@@ -281,7 +281,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+     private @Nullable BlockPos raidOmenPosition;
+     private Vec3 lastKnownClientMovement = Vec3.ZERO;
+     private Input lastClientInput = Input.EMPTY;
+-    private final Set<ThrownEnderpearl> enderPearls = new HashSet<>();
++    private final Set<ThrownEnderpearl> enderPearls = java.util.concurrent.ConcurrentHashMap.newKeySet(); // Lophine - restore vanilla ender pearl loading on Folia
+     private boolean postEffectsDirty = true;
+     private long timeEntitySatOnShoulder;
+     private CompoundTag shoulderEntityLeft = new CompoundTag();
+@@ -765,16 +765,17 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+ 
+     private void saveEnderPearls(final ValueOutput playerOutput) {
+         if (!this.enderPearls.isEmpty()) {
+-            ValueOutput.ValueOutputList pearlsOutput = playerOutput.childrenList("ender_pearls");
+-
++            // Lophine start - restore vanilla ender pearl loading on Folia
++            ValueOutput.TypedOutputList<CompoundTag> pearlsOutput = null;
+             for (ThrownEnderpearl enderPearl : this.enderPearls) {
+-                if (enderPearl.level().paperConfig().misc.legacyEnderPearlBehavior) continue; // Paper - Allow using old ender pearl behavior
+-                if (enderPearl.isRemoved()) {
+-                    LOGGER.warn("Trying to save removed ender pearl, skipping");
++                CompoundTag pearlTag = enderPearl.getLastSavedEnderPearlTag();
++                if (pearlTag == null) {
++                    LOGGER.warn("Trying to save ender pearl without a region-owned snapshot, skipping");
+                 } else {
+-                    ValueOutput pearlTag = pearlsOutput.addChild();
+-                    enderPearl.save(pearlTag);
+-                    pearlTag.store("ender_pearl_dimension", Level.RESOURCE_KEY_CODEC, enderPearl.level().dimension());
++                    if (pearlsOutput == null) {
++                        pearlsOutput = playerOutput.list(ServerPlayer.ENDER_PEARLS_TAG, CompoundTag.CODEC);
++                    }
++                    pearlsOutput.add(pearlTag);
+                 }
+             }
+         }
+@@ -1185,6 +1186,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+                         );
+                 }
+             }
++            // Lophine end - restore vanilla ender pearl loading on Folia
+         }
+     }
+ 
+@@ -2558,7 +2560,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+         // Lophine - Carpet features: fake players never send teleport ACKs, so isChangingDimension
+         // would otherwise remain true after respawn / End return and make them permanently invulnerable.
+         return (super.isInvulnerableTo(level, source) || this.isChangingDimension() && !this.isFakePlayer() && !source.is(DamageTypes.ENDER_PEARL) || !this.connection.hasClientLoaded())
+-            || (!this.level().paperConfig().collisions.allowPlayerCrammingDamage && source.is(DamageTypes.CRAMMING));
++            || (!fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled.get() && !this.level().paperConfig().collisions.allowPlayerCrammingDamage && source.is(DamageTypes.CRAMMING)); // Lophine - Vanilla-like experience
+         // Paper end - disable player cramming
+     }
+ 
+@@ -3787,11 +3789,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+     }
+ 
+     public void registerEnderPearl(final ThrownEnderpearl enderPearl) {
+-        //this.enderPearls.add(enderPearl); // Folia - region threading - do not track ender pearls
++        this.enderPearls.add(enderPearl); // Lophine - restore vanilla ender pearl loading on Folia
+     }
+ 
+     public void deregisterEnderPearl(final ThrownEnderpearl enderPearl) {
+-        //this.enderPearls.remove(enderPearl); // Folia - region threading - do not track ender pearls
++        this.enderPearls.remove(enderPearl); // Lophine - restore vanilla ender pearl loading on Folia
+     }
+ 
+     public Set<ThrownEnderpearl> getEnderPearls() {
+diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
+index f300ffb5ec076d9eeb637d5d81b8f83abd77760f..4799d3530105737305aa5e85604f5fb2dac3733d 100644
+--- a/net/minecraft/server/players/PlayerList.java
++++ b/net/minecraft/server/players/PlayerList.java
+@@ -802,11 +802,13 @@ public abstract class PlayerList {
+         player.unRide();
+ 
+         for (ThrownEnderpearl enderpearl : player.getEnderPearls()) {
+-            // Paper start - Allow using old ender pearl behavior
+-            if (!enderpearl.level().paperConfig().misc.legacyEnderPearlBehavior) {
+-                enderpearl.setRemoved(Entity.RemovalReason.UNLOADED_WITH_PLAYER, org.bukkit.event.entity.EntityRemoveEvent.Cause.PLAYER_QUIT); // CraftBukkit - add Bukkit remove cause
+-            }
+-            // Paper end - Allow using old ender pearl behavior
++            // Lophine start - restore vanilla ender pearl loading on Folia
++            enderpearl.getBukkitEntity().taskScheduler.scheduleOrExecute((Entity pearl) -> {
++                if (!pearl.isRemoved()) {
++                    pearl.setRemoved(Entity.RemovalReason.UNLOADED_WITH_PLAYER, org.bukkit.event.entity.EntityRemoveEvent.Cause.PLAYER_QUIT); // CraftBukkit - add Bukkit remove cause
++                }
++            });
++            // Lophine end - restore vanilla ender pearl loading on Folia
+         }
+ 
+         level.removePlayerImmediately(player, Entity.RemovalReason.UNLOADED_WITH_PLAYER);
+diff --git a/net/minecraft/world/entity/item/PrimedTnt.java b/net/minecraft/world/entity/item/PrimedTnt.java
+index 0eb04134eb60ef85f720a162d3f0af0c96890954..3188378550a571320d37ffff8c852e5eebbbbd56 100644
+--- a/net/minecraft/world/entity/item/PrimedTnt.java
++++ b/net/minecraft/world/entity/item/PrimedTnt.java
+@@ -141,7 +141,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
+ 
+     @Override
+     public void tick() {
+-        if (this.level().spigotConfig.maxTntTicksPerTick > 0 && ++this.level().getCurrentWorldData().currentPrimedTnt > this.level().spigotConfig.maxTntTicksPerTick) { return; } // Spigot // Folia - region threading
++        if (!fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled.get() && this.level().spigotConfig.maxTntTicksPerTick > 0 && ++this.level().getCurrentWorldData().currentPrimedTnt > this.level().spigotConfig.maxTntTicksPerTick) { return; } // Spigot // Folia - region threading // Lophine - Vanilla-like experience
+         //this.handlePortal(); // Folia - region threading
+         this.applyGravity();
+         if (carpet.script.external.ScarpetExplosionContinuations.pending(this)) return;
+diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
+index b38a4b84a98dae51587883d3da8d9976cb0814cb..ac3360f3aeb27531ed5211f45e81709ceae3b556 100644
+--- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
++++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
+@@ -31,7 +31,11 @@ import net.minecraft.world.phys.Vec3;
+ import org.jspecify.annotations.Nullable;
+ 
+ public class ThrownEnderpearl extends ThrowableItemProjectile {
++    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger(); // Lophine - restore vanilla ender pearl loading on Folia
+     private long ticketTimer = 0L;
++    // Lophine start - restore vanilla ender pearl loading on Folia
++    private volatile net.minecraft.nbt.@Nullable CompoundTag lastSavedEnderPearlTag;
++    // Lophine end - restore vanilla ender pearl loading on Folia
+ 
+     public ThrownEnderpearl(final EntityType<? extends ThrownEnderpearl> type, final Level level) {
+         super(type, level);
+@@ -39,6 +43,9 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+ 
+     public ThrownEnderpearl(final Level level, final LivingEntity mob, final ItemStack itemStack) {
+         super(EntityTypes.ENDER_PEARL, mob, level, itemStack);
++        // Lophine start - restore vanilla ender pearl loading on Folia
++        this.updateLastSavedEnderPearlTag();
++        // Lophine end - restore vanilla ender pearl loading on Folia
+     }
+ 
+     @Override
+@@ -51,21 +58,73 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+         this.deregisterFromCurrentOwner();
+         super.setOwner(owner);
+         this.registerToCurrentOwner();
++        // Lophine start - restore vanilla ender pearl loading on Folia
++        this.updateLastSavedEnderPearlTag();
++        // Lophine end - restore vanilla ender pearl loading on Folia
+     }
+ 
+     private void deregisterFromCurrentOwner() {
+-        // Folia - region threading - we remove the registration logic, we do not need to fetch the owner
++        // Lophine start - restore vanilla ender pearl loading on Folia
++        if (this.owner != null && this.level() instanceof ServerLevel serverLevel && serverLevel.getServer().getPlayerList().getPlayer(this.owner.getUUID()) instanceof ServerPlayer serverPlayer) {
++            serverPlayer.deregisterEnderPearl(this);
++        }
++        // Lophine end - restore vanilla ender pearl loading on Folia
+     }
+ 
+     private void registerToCurrentOwner() {
+-        // Folia - region threading - we remove the registration logic, we do not need to fetch the owner
++        // Lophine start - restore vanilla ender pearl loading on Folia
++        if (this.owner != null
++            && this.level() instanceof ServerLevel serverLevel
++            && !serverLevel.paperConfig().misc.legacyEnderPearlBehavior
++            && serverLevel.getServer().getPlayerList().getPlayer(this.owner.getUUID()) instanceof ServerPlayer serverPlayer) {
++            serverPlayer.registerEnderPearl(this);
++        }
++        // Lophine end - restore vanilla ender pearl loading on Folia
+     }
+ 
++    // Lophine start - restore vanilla ender pearl loading on Folia
++    public net.minecraft.nbt.@Nullable CompoundTag getLastSavedEnderPearlTag() {
++        net.minecraft.nbt.CompoundTag tag = this.lastSavedEnderPearlTag;
++        return tag == null ? null : tag.copy();
++    }
++
++    public void updateLastSavedEnderPearlTag() {
++        if (this.owner == null || this.isRemoved() || !(this.level() instanceof ServerLevel serverLevel) || serverLevel.paperConfig().misc.legacyEnderPearlBehavior) {
++            this.lastSavedEnderPearlTag = null;
++            return;
++        }
++        try (net.minecraft.util.ProblemReporter.ScopedCollector problemReporter = new net.minecraft.util.ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
++            net.minecraft.world.level.storage.TagValueOutput pearlOutput = net.minecraft.world.level.storage.TagValueOutput.createWithContext(problemReporter, this.registryAccess());
++            if (this.save(pearlOutput)) {
++                pearlOutput.store(ServerPlayer.ENDER_PEARL_DIMENSION_TAG, Level.RESOURCE_KEY_CODEC, this.level().dimension());
++                this.lastSavedEnderPearlTag = pearlOutput.buildResult();
++            } else {
++                this.lastSavedEnderPearlTag = null;
++            }
++        }
++    }
++    // Lophine end - restore vanilla ender pearl loading on Folia
++
+     @Override
+     public @Nullable Entity getOwner() {
+         return this.owner != null && this.level() instanceof ServerLevel serverLevel ? this.owner.getEntity(serverLevel, Entity.class) : super.getOwner();
+     }
+ 
++    // Lophine start - restore vanilla ender pearl loading on Folia
++    @Override
++    protected void readAdditionalSaveData(final net.minecraft.world.level.storage.ValueInput input) {
++        super.readAdditionalSaveData(input);
++        this.updateLastSavedEnderPearlTag();
++    }
++
++    @Override
++    public void restoreFrom(final Entity oldEntity) {
++        super.restoreFrom(oldEntity);
++        this.registerToCurrentOwner();
++        this.updateLastSavedEnderPearlTag();
++    }
++    // Lophine end - restore vanilla ender pearl loading on Folia
++
+     private static @Nullable Entity findOwnerIncludingDeadPlayer(final ServerLevel serverLevel, final UUID uuid) {
+         Entity owner = serverLevel.getEntityInAnyDimension(uuid);
+         return owner != null ? owner : serverLevel.getServer().getPlayerList().getPlayer(uuid);
+@@ -185,7 +244,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+                 }
+                 Entity entity = this.getOwnerRaw();
+                 if (entity != null) {
+-                    attemptTeleport(entity, (ServerLevel)this.level(), this.position());
++                    attemptTeleport(entity, (ServerLevel)this.level(), this.oldPosition()); // Lophine - match vanilla's pre-impact teleport destination
+                 }
+                 this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.HIT);
+                 return;
+@@ -291,6 +350,9 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+                     && owner instanceof ServerPlayer serverPlayer) {
+                     this.ticketTimer = serverPlayer.registerAndUpdateEnderPearlTicket(this);
+                 }
++                // Lophine start - restore vanilla ender pearl loading on Folia
++                this.updateLastSavedEnderPearlTag();
++                // Lophine end - restore vanilla ender pearl loading on Folia
+             }
+         } else {
+             super.tick();
+@@ -338,6 +400,9 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+     public void onRemoval(final Entity.RemovalReason reason) {
+         if (reason != Entity.RemovalReason.UNLOADED_WITH_PLAYER) {
+             this.deregisterFromCurrentOwner();
++            // Lophine start - restore vanilla ender pearl loading on Folia
++            this.lastSavedEnderPearlTag = null;
++            // Lophine end - restore vanilla ender pearl loading on Folia
+         }
+ 
+         super.onRemoval(reason);
+diff --git a/net/minecraft/world/item/EnderpearlItem.java b/net/minecraft/world/item/EnderpearlItem.java
+index 98001b04d9c7b252fb9fac803ff9cdfafb838d58..53acb2b4de9f7aa1fe35eb408f03d67417e6313c 100644
+--- a/net/minecraft/world/item/EnderpearlItem.java
++++ b/net/minecraft/world/item/EnderpearlItem.java
+@@ -27,6 +27,7 @@ public class EnderpearlItem extends Item {
+             final Projectile.Delayed<ThrownEnderpearl> thrownEnderpearl = Projectile.spawnProjectileFromRotationDelayed(ThrownEnderpearl::new, serverLevel, itemStack, player, 0.0F, EnderpearlItem.PROJECTILE_SHOOT_POWER, 1.0F);
+             com.destroystokyo.paper.event.player.PlayerLaunchProjectileEvent event = new com.destroystokyo.paper.event.player.PlayerLaunchProjectileEvent((org.bukkit.entity.Player) player.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitMirror(itemStack), (org.bukkit.entity.Projectile) thrownEnderpearl.projectile().getBukkitEntity());
+             if (event.callEvent() && thrownEnderpearl.attemptSpawn()) {
++                thrownEnderpearl.projectile().updateLastSavedEnderPearlTag(); // Lophine - restore vanilla ender pearl loading on Folia
+                 if (event.shouldConsume()) {
+                     itemStack.consume(1, player);
+                 } else {
+diff --git a/net/minecraft/world/level/block/piston/PistonBaseBlock.java b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
+index c9db95c97cad5224e707f4d5cd191ce292a59d39..758982c48559ed1e728cdd9be5373492b3da88ee 100644
+--- a/net/minecraft/world/level/block/piston/PistonBaseBlock.java
++++ b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
+@@ -142,7 +142,7 @@ public class PistonBaseBlock extends DirectionalBlock {
+         if (!carpetOrgBedrock) {
+         // Paper start - Protect Bedrock and End Portal/Frames from being destroyed; prevent retracting when we're facing the wrong way (we were replaced before retraction could occur)
+         Direction directionQueuedAs = Direction.from3DDataValue(b1 & 7); // Paper - copied from below
+-        if (!io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPermanentBlockBreakExploits && direction != directionQueuedAs) {
++        if (!fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled.get() && !io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPermanentBlockBreakExploits && direction != directionQueuedAs) { // Lophine - Vanilla-like experience
+             return false;
+         }
+         // Paper end - Protect Bedrock and End Portal/Frames from being destroyed
+@@ -230,7 +230,7 @@ public class PistonBaseBlock extends DirectionalBlock {
+                 } else {
+                 // Paper start - Protect Bedrock and End Portal/Frames from being destroyed; fix headless pistons breaking blocks
+                 BlockPos headPos = pos.relative(direction);
+-                if (io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPermanentBlockBreakExploits || level.getBlockState(headPos) == Blocks.PISTON_HEAD.defaultBlockState().setValue(FACING, direction)) { // double check to make sure we're not a headless piston
++                if (fun.bm.lophine.config.modules.fixes.VanillaLikeExperienceConfig.enabled.get() || io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowPermanentBlockBreakExploits || level.getBlockState(headPos) == Blocks.PISTON_HEAD.defaultBlockState().setValue(FACING, direction)) { // double check to make sure we're not a headless piston // Lophine - Vanilla-like experience
+                     level.removeBlock(headPos, false);
+                 } else {
+                     ((ServerLevel) level).getChunkSource().blockChanged(headPos); // ... fix client desync
