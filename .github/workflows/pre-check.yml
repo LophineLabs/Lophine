@@ -23,19 +23,26 @@ jobs:
         id: check-pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
         run: |
-          pr_count=$(gh pr list \
-            --repo ${{ github.repository }} \
-            --head ${{ github.repository_owner }}:${{ github.ref_name }} \
+          # Do not pass --head owner:branch. Unencoded # in the branch name is
+          # treated as a URL fragment, so branches like fix/#221 never match.
+          prs=$(gh pr list \
+            --repo "$REPO" \
             --state open \
-            --json number,isCrossRepository \
-            --jq '[.[] | select(.isCrossRepository == false)] | length')
+            --limit 1000 \
+            --json number,headRefName,isCrossRepository)
+          pr_count=$(printf '%s\n' "$prs" | jq --arg branch "$BRANCH" \
+            '[.[] | select(.headRefName == $branch and .isCrossRepository == false)] | length')
+          pr_numbers=$(printf '%s\n' "$prs" | jq -r --arg branch "$BRANCH" \
+            '[.[] | select(.headRefName == $branch and .isCrossRepository == false) | .number] | join(",")')
           if [ "$pr_count" -gt 0 ]; then
-            echo "Open same-repo PR exists for branch ${{ github.ref_name }}, skipping push CI"
-            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Open same-repo PR exists for branch $BRANCH ($pr_numbers), skipping push CI"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
           else
-            echo "No open same-repo PR for branch ${{ github.ref_name }}"
-            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "No open same-repo PR for branch $BRANCH"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
   dispatch-build:
