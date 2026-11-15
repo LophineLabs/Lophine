@@ -792,7 +792,7 @@ index 44f6e716afbd4ac6b543802fdd0fb2113dc7f98f..c1e5c993386081fbe2518f8d9987088f
              Optional<ValueInput> loadedData = this.server
                  .getPlayerList()
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 5191d2a68d672a3863f9042586088b61bae9c12f..f300ffb5ec076d9eeb637d5d81b8f83abd77760f 100644
+index 018339ec79754035ba2d439b160618dd0991e036..3a1617c378ee33a98de2df8fc66ae538a437105e 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -810,6 +810,21 @@ public abstract class PlayerList {

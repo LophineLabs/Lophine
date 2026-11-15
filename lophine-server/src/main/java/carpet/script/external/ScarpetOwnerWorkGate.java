@@ -58,6 +58,15 @@ final class ScarpetOwnerWorkGate {
                     .map(entry -> mandatoryCleanup ? entry.getKey().handle((ignored, failure) -> null) : entry.getKey())
                     .toArray(CompletableFuture[]::new));
         }
+        if (mandatoryCleanup) {
+            // Lophine fix: bound the wait for accepted native work. A stuck continuation used to
+            // block this future forever, silently leaving the ServerPlayer in playersByUUID
+            // (ghost session that rejects every later login). After the budget the snapshot still
+            // runs on the owner, and an already retired owner fails the schedule instead.
+            pending = pending.orTimeout(ScarpetPlayerInventoryGate.REMOVAL_IDLE_TIMEOUT_MILLIS,
+                            java.util.concurrent.TimeUnit.MILLISECONDS)
+                    .exceptionally(ignored -> null);
+        }
         var result = new CompletableFuture<T>();
         var lifetime = new Snapshot<T>(result, this::release);
         try {

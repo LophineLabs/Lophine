@@ -11,6 +11,13 @@ import java.util.function.Supplier;
  * Inventory snapshots wait for accepted native tails and suspend new native item operations.
  */
 public final class ScarpetPlayerInventoryGate {
+    /**
+     * Lophine fix: a player removal must never wait forever on accepted native work that can no
+     * longer finish (a stuck continuation, a third-party fake player that never answers). When the
+     * budget expires the snapshot still runs on the owner; if the owner is gone the scheduler
+     * reports retirement and the caller drops the session from the online list.
+     */
+    static final long REMOVAL_IDLE_TIMEOUT_MILLIS = 10000L;
     private static final WeakIdentityMap<ServerPlayer, ScarpetOwnerWorkGate> GATES = new WeakIdentityMap<>();
     private static final WeakIdentityMap<ServerPlayer, IntentQueue> INTENTS = new WeakIdentityMap<>();
     private static final ThreadLocal<java.util.Set<ServerPlayer>> ACCEPTED = ThreadLocal.withInitial(java.util.Set::of);
