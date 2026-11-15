@@ -297,7 +297,7 @@ index 277f8a0bbf526c74f33fc499cc76a9b0ce2dd21e..9f7748037f172fa6622ab3755fa610e3
              LOGGER.warn(
                  "Player {} tried to change game mode to {} without required permissions",
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 0f4bcc74ba5ca07fa2659fb77d7c09bf22eb82d3..5191d2a68d672a3863f9042586088b61bae9c12f 100644
+index 73e547f04998f4b6d80c7e93725a0d23fa9621e5..018339ec79754035ba2d439b160618dd0991e036 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -577,6 +577,7 @@ public abstract class PlayerList {

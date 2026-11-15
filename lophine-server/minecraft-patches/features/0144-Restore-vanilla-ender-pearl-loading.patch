@@ -75,7 +75,7 @@ index 1033b605856b8c7bd9b22d40ba4c522aa5d3eb0b..dcb9a91100cfd9a1e6ef4eb054d0558e
  
      public Set<ThrownEnderpearl> getEnderPearls() {
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index f300ffb5ec076d9eeb637d5d81b8f83abd77760f..4799d3530105737305aa5e85604f5fb2dac3733d 100644
+index 3a1617c378ee33a98de2df8fc66ae538a437105e..a46ada083d9ea0db75c4759a64d3f896c968c4d6 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -802,11 +802,13 @@ public abstract class PlayerList {
