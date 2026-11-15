@@ -801,7 +801,7 @@ index 2861be26fc9a25b093e43e13eae87af1ba7a35be..997335d1fe104c491a43ec338b7697fb
          final Player player, final ClickAction clickAction, final Slot slot, final ItemStack clicked, final ItemStack carried
      ) {
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index 11a20cfc114d3bb3e34da66b2fa5e4cf4c59ccc8..857e1ba7c8a8819f4b5ed4a86d1c932f359b64c2 100644
+index 8ce6fca0a6a13964e1679a07a6cb00b249717e45..08c0c5ff316472a9b35b26457b0b94dfe48a145d 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
 @@ -459,7 +459,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
@@ -813,7 +813,7 @@ index 11a20cfc114d3bb3e34da66b2fa5e4cf4c59ccc8..857e1ba7c8a8819f4b5ed4a86d1c932f
                      result = InteractionResult.FAIL; // cancel placement
                      // PAIL: Remove this when MC-99075 fixed
                      player.containerMenu.forceHeldSlot(hand);
-@@ -968,6 +968,20 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
+@@ -969,6 +969,20 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
          }
      }
  

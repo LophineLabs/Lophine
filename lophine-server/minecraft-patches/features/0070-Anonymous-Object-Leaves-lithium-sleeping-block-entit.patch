@@ -950,7 +950,7 @@ index bb584da75d693254a9843fc1c856bacfcdd7d149..a3d0837bd1546edb4c44f1d57c1885cc
              ItemStack itemStack = container.getItem(i);
              if (!itemStack.isEmpty()) {
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index 34e2f33709007a821025c4efcc25c71bb7210b74..a17ed0116984d590152f583f9c94e265b3b61f12 100644
+index 9581ea1ea59af5e04dc32470ddf4cef9b62e4d97..da871a6cece784194e96b658052147c80b1b7020 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
 @@ -100,7 +100,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -973,7 +973,7 @@ index 34e2f33709007a821025c4efcc25c71bb7210b74..a17ed0116984d590152f583f9c94e265
  
      public static DataResult<ItemStack> validateStrict(final ItemStack itemStack) {
          DataResult<?> result = validateComponents(itemStack.getComponents());
-@@ -1245,10 +1249,17 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
+@@ -1246,10 +1250,17 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
      // CraftBukkit start
      @Deprecated
      public void setItem(Item item) {
@@ -991,7 +991,7 @@ index 34e2f33709007a821025c4efcc25c71bb7210b74..a17ed0116984d590152f583f9c94e265
          this.applyComponents(patch);
          // Paper end - change base component prototype
      }
-@@ -1304,6 +1315,21 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
+@@ -1305,6 +1316,21 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
      }
  
      public void setCount(final int count) {
@@ -1013,7 +1013,7 @@ index 34e2f33709007a821025c4efcc25c71bb7210b74..a17ed0116984d590152f583f9c94e265
          this.count = count;
      }
  
-@@ -1371,4 +1397,87 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
+@@ -1372,4 +1398,87 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
              .or(() -> Optional.ofNullable(this.getItem().getItemDamageSource(attacker)))
              .orElseGet(attacker::createDamageSource);
      }

@@ -1308,10 +1308,10 @@ index 9f1285c172b4c3a19587da287c3336d0f49d0172..6a5e709059e0e14b055757a86f14ea2c
      }
  
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index 75099d439d367c29911c3a64e06a16fc3aa88473..5692f352a1c34ed2061458c3be698691f8be5cbc 100644
+index ac06fb820bfa7c2a729f267866b38a1cbe03d16e..68c2a1da4bb4196d923973b849287e72056fa2e8 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
-@@ -595,6 +595,12 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
+@@ -596,6 +596,12 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
      }
  
      private InteractionResult carpetOrgUse(final Level level, final Player player, final InteractionHand hand) {
@@ -1324,7 +1324,7 @@ index 75099d439d367c29911c3a64e06a16fc3aa88473..5692f352a1c34ed2061458c3be698691
          ItemStack stackBeforeUse = this.copy();
          boolean isInstantlyUsed = this.getUseDuration(player) <= 0;
          InteractionResult result = this.getItem().use(level, player, hand);
-@@ -707,6 +713,11 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
+@@ -708,6 +714,11 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
      }
      private int processDurabilityChange(final int amount, final ServerLevel level, final @Nullable LivingEntity player, final boolean force) {
          // Paper end - itemstack damage api

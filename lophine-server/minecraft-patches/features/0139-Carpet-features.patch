@@ -11392,7 +11392,7 @@ index 9ca967093bc4b355ce5cec3f43798bb8bbcd194f..0d8be525a9fc63532015af552fdce669
      }
  }
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index 857e1ba7c8a8819f4b5ed4a86d1c932f359b64c2..75099d439d367c29911c3a64e06a16fc3aa88473 100644
+index 08c0c5ff316472a9b35b26457b0b94dfe48a145d..ac06fb820bfa7c2a729f267866b38a1cbe03d16e 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
 @@ -108,7 +108,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
@@ -11413,7 +11413,7 @@ index 857e1ba7c8a8819f4b5ed4a86d1c932f359b64c2..75099d439d367c29911c3a64e06a16fc
                      output.writeVarInt(io.papermc.paper.util.sanitizer.ItemComponentSanitizer.sanitizeCount(io.papermc.paper.util.sanitizer.ItemObfuscationSession.currentSession(), encodedStack, encodedStack.getCount())); // Paper - potentially sanitize count
                      Item.STREAM_CODEC.encode(output, encodedStack.typeHolder());
                      // Paper start - adventure; conditionally render translatable components
-@@ -417,113 +417,159 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
+@@ -417,86 +417,133 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
                  net.minecraft.world.level.block.SaplingBlock.treeTypeRT.set(null); // Folia - region threading
              }
  
@@ -11602,18 +11602,9 @@ index 857e1ba7c8a8819f4b5ed4a86d1c932f359b64c2..75099d439d367c29911c3a64e06a16fc
 -                        if (blockEntity instanceof net.minecraft.world.level.block.entity.SkullBlockEntity placedSkull) {
 -                            net.minecraft.world.level.block.WitherSkullBlock.checkSpawn(level, placedPos, placedSkull);
 -                        }
--                    }
 +                    level.notifyAndUpdatePhysics(newPos, null, oldBlock, block, level.getBlockState(newPos), snapshot.getFlags(), net.minecraft.world.level.block.Block.UPDATE_LIMIT); // send null chunk as chunk.k() returns false by this point
 +                }
- 
--                    if (placedPos != null) {
--                        if (level.getBlockState(placedPos).getBlock() instanceof net.minecraft.world.level.block.SignBlock sign
--                            && level.getBlockEntity(placedPos) instanceof net.minecraft.world.level.block.entity.SignBlockEntity signEntity
--                            && !signEntity.isWaxed()
--                            && signEntity.getText(net.minecraft.world.level.block.entity.SignTextSlot.FRONT).hasEditableText(player.isTextFilteringEnabled())
--                        ) {
--                            sign.openTextEdit(player, signEntity, net.minecraft.world.level.block.entity.SignTextSlot.FRONT, io.papermc.paper.event.player.PlayerOpenSignEvent.Cause.PLACE);
--                        }
++
 +                BlockPos placedPos = success.paperSuccessContext().placedPos();
 +                if (usedItem == Items.WITHER_SKELETON_SKULL && placedPos != null) { // Special case skulls to allow wither spawns to be cancelled
 +                    net.minecraft.world.level.block.entity.BlockEntity blockEntity = level.getBlockEntity(placedPos);
@@ -11622,20 +11613,18 @@ index 857e1ba7c8a8819f4b5ed4a86d1c932f359b64c2..75099d439d367c29911c3a64e06a16fc
                      }
 +                }
  
+                     if (placedPos != null) {
+                         if (level.getBlockState(placedPos).getBlock() instanceof net.minecraft.world.level.block.SignBlock sign
+@@ -509,22 +556,21 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
+                         }
+                     }
+ 
 -                    if (usedItem instanceof BlockItem blockItem && placedPos != null) {
 -                        BlockState placedState = level.getBlockState(placedPos);
 -                        net.minecraft.world.level.block.SoundType soundType = placedState.getSoundType();
 -                        level.playSound(player, pos, blockItem.getPlaceSound(placedState), net.minecraft.sounds.SoundSource.BLOCKS, (soundType.getVolume() + 1.0F) / 2.0F, soundType.getPitch() * 0.8F);
-+                if (placedPos != null) {
-+                    if (level.getBlockState(placedPos).getBlock() instanceof net.minecraft.world.level.block.SignBlock sign
-+                        && level.getBlockEntity(placedPos) instanceof net.minecraft.world.level.block.entity.SignBlockEntity signEntity
-+                        && !signEntity.isWaxed()
-+                        && signEntity.getText(net.minecraft.world.level.block.entity.SignTextSlot.FRONT).hasEditableText(player.isTextFilteringEnabled())
-+                    ) {
-+                        sign.openTextEdit(player, signEntity, net.minecraft.world.level.block.entity.SignTextSlot.FRONT, io.papermc.paper.event.player.PlayerOpenSignEvent.Cause.PLACE);
-                     }
-+                }
- 
+-                    }
+-
 -                    player.awardStat(Stats.ITEM_USED.get(usedItem));
 -                    ItemStack transformTo = success.heldItemTransformedTo() == null ? this : success.heldItemTransformedTo();
 -                    ItemStack resultItemStack = transformTo.applyAfterUseComponentSideEffects(player, stackBeforeUse);
@@ -11662,7 +11651,7 @@ index 857e1ba7c8a8819f4b5ed4a86d1c932f359b64c2..75099d439d367c29911c3a64e06a16fc
          }
      }
  
-@@ -532,9 +578,33 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
+@@ -533,9 +579,33 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
      }
  
      public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
@@ -11696,7 +11685,7 @@ index 857e1ba7c8a8819f4b5ed4a86d1c932f359b64c2..75099d439d367c29911c3a64e06a16fc
          if (isInstantlyUsed && result instanceof InteractionResult.Success success) {
              ItemStack transformTo = success.heldItemTransformedTo() == null ? this : success.heldItemTransformedTo();
              ItemStack resultItemStack = transformTo.applyAfterUseComponentSideEffects(player, stackBeforeUse);
-@@ -647,10 +717,19 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
+@@ -648,10 +718,19 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
      }
  
      private void applyDamage(final int newDamage, final @Nullable LivingEntity player, final Consumer<ItemStack> onBreak) { // Paper - Add EntityDamageItemEvent
@@ -11716,7 +11705,7 @@ index 857e1ba7c8a8819f4b5ed4a86d1c932f359b64c2..75099d439d367c29911c3a64e06a16fc
          this.setDamageValue(newDamage);
          if (this.isBroken()) {
              ItemStack broken = this.copy();
-@@ -706,6 +785,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
+@@ -707,6 +786,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
      public void hurtAndBreak(final int amount, final LivingEntity owner, final EquipmentSlot slot, final boolean force) {
          // Paper end - add param to skip infinite mats check
          if (owner.level() instanceof ServerLevel serverLevel) {
@@ -11724,7 +11713,7 @@ index 857e1ba7c8a8819f4b5ed4a86d1c932f359b64c2..75099d439d367c29911c3a64e06a16fc
              this.hurtAndBreak(
                  amount, serverLevel, owner, brokenItem -> {if (slot != null) owner.onEquippedItemBroken(brokenItem, slot); }, force // Paper - Add EntityDamageItemEvent & itemstack damage API - do not process entity related callbacks when damaging from API
              );
-@@ -762,6 +842,19 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
+@@ -763,6 +843,19 @@ public final class ItemStack implements DataComponentHolder, ItemInstance, net.c
          }
      }
  
