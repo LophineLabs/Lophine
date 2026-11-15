@@ -4,10 +4,13 @@ package carpet.script.external;
 import ca.spottedleaf.moonrise.common.util.TickThread;
 import ca.spottedleaf.moonrise.patches.collisions.CollisionUtil;
 import fun.bm.lophine.carpet.CarpetRegionLease;
+import fun.bm.lophine.config.modules.misc.TntConfig;
 import io.papermc.paper.threadedregions.TickRegionScheduler;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.vehicle.minecart.MinecartTNT;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ServerExplosion;
 import net.minecraft.world.level.block.Blocks;
@@ -157,6 +160,12 @@ public final class ScarpetExplosionDensity {
     }
 
     private static final ThreadLocal<OwnerBudget> BUDGETS = ThreadLocal.withInitial(OwnerBudget::new);
+
+    private static boolean skipDelayedTntCalculation(ServerExplosion explosion) {
+        if (!TntConfig.skipDelayedCalculation.get()) return false;
+        Entity source = explosion.getDirectSourceEntity();
+        return source instanceof PrimedTnt || source instanceof MinecartTNT;
+    }
 
     private static Budget ownerBudget() {
         if (ca.spottedleaf.moonrise.common.util.TickThread.isShutdownThread()) {
@@ -342,7 +351,9 @@ public final class ScarpetExplosionDensity {
 
         @Override
         public Budget budget() {
-            return ownerBudget();
+            return skipDelayedTntCalculation(this.explosion)
+                    ? new Budget(Integer.MAX_VALUE, Long.MAX_VALUE, () -> 0L)
+                    : ownerBudget();
         }
 
         @Override
@@ -368,7 +379,7 @@ public final class ScarpetExplosionDensity {
                 maxZ = Math.max(maxZ, position.getZ() >> 4);
             }
             Supplier<Boolean> owned = ScarpetRuntime.captureNativeContinuation(() -> {
-                Budget budget = ownerBudget();
+                Budget budget = budget();
                 try (var slice = budget.slice()) {
                     if (!slice.available()) return false;
                     // At most 32 reads; include them in the shared budget, allowing one bounded batch of overshoot.
