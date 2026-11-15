@@ -2338,7 +2338,7 @@ index 5eb7d46bf0d84720662125711fa7b544e9299446..3fc3ee73ef31e67f7b6cd6059cd93d28
          i -> i.group(
                  ComponentSerialization.CODEC.lenientOptionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description),
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index c9bd3adfc7bc22d110f4ddfdd529bfb4dd6a5543..b3f6b06ba5537b25a2302bc9b6fdcb711f63358b 100644
+index c9bd3adfc7bc22d110f4ddfdd529bfb4dd6a5543..2dd62a3b761c510bdfa92681b81c9881a49154b0 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -1041,7 +1041,20 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -2421,7 +2421,7 @@ index c9bd3adfc7bc22d110f4ddfdd529bfb4dd6a5543..b3f6b06ba5537b25a2302bc9b6fdcb71
      public void saveDatapacks(Collection<String> selectedPacks) {
          this.packRepository.setSelected(selectedPacks, false); // Paper - add pendingReload flag to determine required pack loading - false as this is *after* a reload (see above)
          WorldDataConfiguration worldDataConfiguration = new WorldDataConfiguration(
-@@ -2513,79 +2536,95 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -2513,79 +2536,98 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          );
          this.worldData.setDataConfiguration(worldDataConfiguration);
      }
@@ -2534,12 +2534,15 @@ index c9bd3adfc7bc22d110f4ddfdd529bfb4dd6a5543..b3f6b06ba5537b25a2302bc9b6fdcb71
 +        final List<String> previousSelection = List.copyOf(this.packRepository.getSelectedIds());
 +        final List<Registry.PendingTags<?>> rollbackTags = new java.util.ArrayList<>();
 +        this.registries.compositeAccess().registries().forEach(entry -> rollbackTags.add(carpetSnapshotTags(entry.value())));
++        final var itemRegistry = this.registries.compositeAccess().lookupOrThrow(Registries.ITEM);
++        final var runtimeEnchantmentTags = fun.bm.lophine.carpet.RuntimeEnchantmentTags.snapshot(itemRegistry, previous.resourceManager());
 +        try {
 +            io.papermc.paper.command.brigadier.PaperBrigadier.moveBukkitCommands(previous.managers().getCommands(), prepared.managers().getCommands());
 +            this.resources = prepared;
 +            this.packRepository.setSelected(selected, false);
 +            this.worldData.setDataConfiguration(new WorldDataConfiguration(getSelectedPacks(this.packRepository, true), this.worldData.enabledFeatures()));
 +            prepared.managers().updateComponentsAndStaticRegistryTags();
++            fun.bm.lophine.carpet.RuntimeEnchantmentTags.restore(itemRegistry, runtimeEnchantmentTags);
 +            prepared.managers().getRecipeManager().finalizeRecipeLoading(this.worldData.enabledFeatures());
 +            prepared.managers().carpetBindCommands();
 +            this.functionManager.replaceLibrary(prepared.managers().getFunctionLibrary());
@@ -2583,7 +2586,7 @@ index c9bd3adfc7bc22d110f4ddfdd529bfb4dd6a5543..b3f6b06ba5537b25a2302bc9b6fdcb71
      }
  
      public static WorldDataConfiguration configurePackRepository(
-@@ -3278,6 +3317,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -3278,6 +3320,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.botList = botList;
      }
  
@@ -2594,7 +2597,7 @@ index c9bd3adfc7bc22d110f4ddfdd529bfb4dd6a5543..b3f6b06ba5537b25a2302bc9b6fdcb71
      public org.leavesmc.leaves.bot.BotList getBotList() {
          return botList;
      }
-@@ -3402,4 +3445,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -3402,4 +3448,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          // Folia - region threading
      }
      // Paper end - API to check if the server is sleeping

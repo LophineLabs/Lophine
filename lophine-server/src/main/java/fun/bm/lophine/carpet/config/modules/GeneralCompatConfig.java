@@ -1777,14 +1777,7 @@ public class GeneralCompatConfig {
         fun.bm.lophine.carpet.ams.AmsFakePlayers.refresh();
         fun.bm.lophine.carpet.CarpetDistanceRuleLifecycle.refresh();
         fun.bm.lophine.carpet.CarpetInventoryRuleLifecycle.refresh();
-        List<Boolean> recipes = recipeRuleValues();
-        if (!recipes.equals(appliedRecipeRules)) {
-            appliedRecipeRules = recipes;
-            net.minecraft.server.MinecraftServer server = net.minecraft.server.MinecraftServer.getServer();
-            if (server != null && server.isRunning()) {
-                carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.ams.AmsRecipeLifecycle.changed(server));
-            }
-        }
+        refreshRecipeRules();
         if (appliedStackableDiscounts == null || appliedStackableDiscounts != stackableDiscounts) {
             net.minecraft.world.entity.ai.gossip.GossipType.MINOR_POSITIVE.max = stackableDiscounts ? 200 : 25;
             net.minecraft.world.entity.ai.gossip.GossipType.MAJOR_POSITIVE.max = stackableDiscounts ? 100 : 20;
@@ -1792,5 +1785,18 @@ public class GeneralCompatConfig {
             appliedStackableDiscounts = stackableDiscounts;
         }
         if (!fun.bm.lophine.carpet.CarpetRuleChanges.isChanging()) CarpetProtocalDataBase.apply();
+    }
+
+    static void refreshRecipeRules() {
+        List<Boolean> recipes = recipeRuleValues();
+        List<Boolean> previous = appliedRecipeRules;
+        appliedRecipeRules = recipes;
+        // Initial recipes are loaded during startup; only later rule changes need a resource reload.
+        if (previous != null && !recipes.equals(previous)) {
+            net.minecraft.server.MinecraftServer server = net.minecraft.server.MinecraftServer.getServer();
+            if (server != null && server.isRunning()) {
+                carpet.script.external.ScarpetNativeWork.record(fun.bm.lophine.carpet.ams.AmsRecipeLifecycle.changed(server));
+            }
+        }
     }
 }

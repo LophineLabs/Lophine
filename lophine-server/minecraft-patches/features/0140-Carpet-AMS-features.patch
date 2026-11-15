@@ -106,7 +106,7 @@ index 549191940f9c5cc32d53272bc5ae750fab278ad8..0069c90c6e710380796fa595cfc3221f
      public static final java.util.concurrent.ExecutorService COMMAND_SENDING_POOL = new java.util.concurrent.ThreadPoolExecutor(
          2, 2, 0, java.util.concurrent.TimeUnit.MILLISECONDS,
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index b3f6b06ba5537b25a2302bc9b6fdcb711f63358b..37caf4fdd200e1fdd74b5c487a93b18420d878ac 100644
+index 2dd62a3b761c510bdfa92681b81c9881a49154b0..d66c18992303ff05c176c4c93c301a92140676fe 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -630,7 +630,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa

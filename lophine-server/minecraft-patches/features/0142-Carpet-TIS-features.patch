@@ -304,7 +304,7 @@ index 042cb4792b0084f143608f05dd08da133a31e435..120b5cfef3db88032fae0bd4e9a975a3
  
      private void write(final FriendlyByteBuf output) {
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index b0599f426c925f2576b215596693ab5075e0788f..fdb1e6a337c72608bde7956c38eda9cb0704c055 100644
+index d84164350bfe4c5611fa623d52e6f75c8726c8ac..a4556d9124ac81c0996c2b5a48713b4d4cb828dd 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -1049,6 +1049,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
