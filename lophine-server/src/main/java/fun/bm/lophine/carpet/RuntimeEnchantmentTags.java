@@ -12,7 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Preserves code-bound Aiyatsbus item tags across a resource reload. */
+/**
+ * Preserves code-bound Aiyatsbus item tags across a resource reload.
+ */
 public final class RuntimeEnchantmentTags {
     private RuntimeEnchantmentTags() {
     }
