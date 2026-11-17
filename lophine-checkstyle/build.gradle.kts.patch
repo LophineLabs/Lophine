@@ -1,0 +1,26 @@
+--- a/folia-checkstyle/build.gradle.kts
++++ b/folia-checkstyle/build.gradle.kts
+@@ -13,10 +_,14 @@
+     main {
+         java.srcDir(file("../paper-checkstyle/src/main/java"))
+         resources.srcDir(file("../paper-checkstyle/src/main/resources"))
++        java.srcDir(file("../folia-checkstyle/src/main/java"))
++        resources.srcDir(file("../folia-checkstyle/src/main/resources"))
+     }
+     test {
+         java.srcDir(file("../paper-checkstyle/src/test/java"))
+         resources.srcDir(file("../paper-checkstyle/src/test/resources"))
++        java.srcDir(file("../folia-checkstyle/src/test/java"))
++        resources.srcDir(file("../folia-checkstyle/src/test/resources"))
+     }
+ }
+ testData.java.srcDir(file("../paper-checkstyle/src/testData/java"))
+@@ -33,7 +_,7 @@
+     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+     testData.implementationConfigurationName("org.jspecify:jspecify:1.0.0")
+ 
+-    checkstyle(project(":folia-checkstyle"))
++    checkstyle(project(":lophine-checkstyle"))
+ }
+ 
+ tasks {

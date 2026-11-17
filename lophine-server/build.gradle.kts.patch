@@ -80,7 +80,7 @@
  
  
      updatingMinecraft {
-@@ -49,6 +_,7 @@
+@@ -53,6 +_,7 @@
      libraryRepositories.addAll(
          "https://repo.maven.apache.org/maven2/",
          paperMavenPublicUrl,
@@ -88,7 +88,7 @@
      )
  }
  
-@@ -108,10 +_,14 @@
+@@ -112,10 +_,14 @@
      main {
          java { srcDir("../paper-server/src/main/java") }
          resources { srcDir("../paper-server/src/main/resources") }
@@ -103,7 +103,7 @@
      }
  }
  val log4jPlugins = sourceSets.create("log4jPlugins") {
-@@ -139,7 +_,21 @@
+@@ -143,7 +_,21 @@
  }
  
  dependencies {
@@ -126,7 +126,7 @@
      implementation(platform("ca.spottedleaf.leafpile:bom:1.3.2"))
      implementation("ca.spottedleaf.leafpile:common")
      implementation("ca.spottedleaf.leafpile:concurrentutil")
-@@ -198,31 +_,56 @@
+@@ -202,31 +_,56 @@
          val git = Git(rootProject.layout.projectDirectory.path)
          val mcVersion = rootProject.providers.gradleProperty("mcVersion").get()
          val build = System.getenv("BUILD_NUMBER") ?: null
@@ -189,7 +189,7 @@
  
  // Compile tests with -parameters for better junit parameterized test names
  tasks.compileTestJava {
-@@ -371,6 +_,13 @@
+@@ -375,6 +_,13 @@
      classpath(tasks.createPaperclipJar.flatMap { it.outputZip })
      mainClass.set(null as String?)
  }
@@ -203,7 +203,7 @@
  
  fill {
      project("folia")
-@@ -388,3 +_,425 @@
+@@ -392,3 +_,425 @@
          }
      }
  }
