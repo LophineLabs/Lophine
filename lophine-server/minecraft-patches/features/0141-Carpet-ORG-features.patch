@@ -243,7 +243,7 @@ index 1a95ccd745f4789225d711ab6fe497c677c203d6..737026031e774971b9189e2f5a44fdb4
                  // Lophine start - catch update suppression crash
                  } catch (org.leavesmc.leaves.util.UpdateSuppressionException exception) {
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 37caf4fdd200e1fdd74b5c487a93b18420d878ac..b0599f426c925f2576b215596693ab5075e0788f 100644
+index d66c18992303ff05c176c4c93c301a92140676fe..d84164350bfe4c5611fa623d52e6f75c8726c8ac 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -942,6 +942,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
