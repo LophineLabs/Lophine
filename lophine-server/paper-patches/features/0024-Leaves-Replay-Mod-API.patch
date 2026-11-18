@@ -68,7 +68,7 @@ index c8dbe90423598a5a7e313a821e4185bb2b43564d..7f23db18b098035d0a3e4d85541e07a1
          // Special case complex part, since there is no extra entity type for them
          if (entity instanceof EnderDragonPart complexPart) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index be4f5f49b7b7df60fa8dec518cdd7d3b743620ba..1d18e6b991638cec03c399ce800a51ea4c49fa8f 100644
+index 68c2618e75d3212b552e69b9deb2e6a423a23a3b..eefcbdec20dc0913d41e24ecf16488aae14c965c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -2096,7 +2096,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa

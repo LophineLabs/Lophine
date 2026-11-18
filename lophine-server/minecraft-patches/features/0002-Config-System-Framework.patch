@@ -41,7 +41,7 @@ index 762822ce2ccf98952dc92be4824c48fe6bc1bacb..dcbdffd521fd37fe7de222023ed3b933
          // Paper start - fix converting txt to json file; convert old users earlier after PlayerList creation but before file load/save
          if (this.convertOldUsers()) {
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 3d352bb9b0606236d789a70897d7bec12bcf6846..efe3ba3cdada4a8713d4cae5c0e42e9475dd0240 100644
+index 537bb7ed376639e2c5a795ec7815de5d52ef5490..8d7a26d28067d04b1c70ed271078d81202397287 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -608,6 +608,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -57,7 +57,7 @@ index 3d352bb9b0606236d789a70897d7bec12bcf6846..efe3ba3cdada4a8713d4cae5c0e42e94
          this.customSpawners = customSpawners;
          this.serverLevelData = levelData;
          ChunkGenerator generator = levelStem.generator();
-@@ -1630,6 +1636,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1628,6 +1634,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      public void saveLevelData(final boolean sync) { // Folia - public
          SavedDataStorage savedDataStorage = this.getChunkSource().getDataStorage();
          savedDataStorage.computeIfAbsent(io.papermc.paper.world.saveddata.PaperWorldPDC.TYPE).setFrom(this.persistentDataContainer); // Paper
