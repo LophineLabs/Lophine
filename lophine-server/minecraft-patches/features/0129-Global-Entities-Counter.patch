@@ -1,0 +1,211 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Helvetica Volubi <suisuroru@blue-millennium.fun>
+Date: Wed, 3 Dec 2025 16:28:34 +0800
+Subject: [PATCH] Global Entities Counter
+
+
+diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
+index de25cf15b00cdb00b9283d7430d1ee7b27259b2f..3d86e6c37c1231410b57671e193576156176fc04 100644
+--- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
++++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
+@@ -503,6 +503,9 @@ public final class RegionizedWorldData {
+     // Environment attribute system
+     public Reference2ObjectOpenHashMap<EnvironmentAttribute<?>, EnvironmentAttributeSystem.ValueSampler<?>> attributeSamplers;
+ 
++    public int uniqueId = -1; // Lophine - Global Entities Counter
++    public boolean underGlobalEntitiesCounter = false; // Lophine - Global Entities Counter
++
+     public final TickRegions.TickRegionData regionData;
+ 
+     public RegionizedWorldData(final ServerLevel world, final TickRegions.TickRegionData regionData) {
+@@ -519,6 +522,15 @@ public final class RegionizedWorldData {
+         this.turbo = new io.papermc.paper.redstone.RedstoneWireTurbo((RedstoneWireBlock)Blocks.REDSTONE_WIRE);
+         this.regionData = regionData;
+ 
++        // Lophine start - Global Entities Counter
++        if (fun.bm.lophine.config.modules.experiment.GlobalEntitiesCounter.isEnabled()) {
++            uniqueId = fun.bm.lophine.utils.EntitiesCounterUtil.generateUniqueId();
++            fun.bm.lophine.utils.EntitiesCounterUtil.reportAreaMap(world, spawnChunkTracker, uniqueId);
++            if (!fun.bm.lophine.config.modules.experiment.GlobalEntitiesCounter.isDefaultModule()) fun.bm.lophine.utils.EntitiesCounterUtil.addDataToLoaded(world, loadedEntities, uniqueId);
++            underGlobalEntitiesCounter = true;
++        }
++        // Lophine end - Global Entities Counter
++
+         // tasks may be drained before the region ticks, so we must set up the tick data early just in case
+         this.updateTickData();
+     }
+diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
+index c1ba9f45837a718099461d8e1a84c3dfc2468489..021ff2785ddd8a88376ee2f9e47f79d974b226e7 100644
+--- a/net/minecraft/server/level/ServerChunkCache.java
++++ b/net/minecraft/server/level/ServerChunkCache.java
+@@ -526,6 +526,26 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+         this.chunkMap.tick(haveTime);
+         profiler.pop();
+         this.clearCache();
++        // Lophine start - Global Entities Counter
++        if (fun.bm.lophine.config.modules.experiment.GlobalEntitiesCounter.isEnabled()) {
++            io.papermc.paper.threadedregions.RegionizedWorldData regionizedWorldData = this.level.getCurrentWorldData();
++            if (regionizedWorldData != null) {
++                if (regionizedWorldData.underGlobalEntitiesCounter) {
++                    if (regionizedWorldData.getLocalPlayers().isEmpty()) {
++                        fun.bm.lophine.utils.EntitiesCounterUtil.onWorldDataUnload(level, regionizedWorldData.uniqueId);
++                        regionizedWorldData.underGlobalEntitiesCounter = false;
++                    }
++                } else {
++                    if (!regionizedWorldData.getLocalPlayers().isEmpty()) {
++                        regionizedWorldData.uniqueId = fun.bm.lophine.utils.EntitiesCounterUtil.generateUniqueId();
++                        fun.bm.lophine.utils.EntitiesCounterUtil.reportAreaMap(level, regionizedWorldData.spawnChunkTracker, regionizedWorldData.uniqueId);
++                        fun.bm.lophine.utils.EntitiesCounterUtil.addDataToLoaded(level, (ca.spottedleaf.moonrise.common.list.ReferenceList<Entity>) regionizedWorldData.getLoadedEntities(), regionizedWorldData.uniqueId);
++                        regionizedWorldData.underGlobalEntitiesCounter = true;
++                    }
++                }
++            }
++        }
++        // Lophine end - Global Entities Counter
+     }
+ 
+     private void tickChunks() {
+@@ -587,7 +607,13 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+             }
+             spawnCookie = NaturalSpawner.createState(chunkCount, this.level, this::getFullChunk, null, true);
+         } else {
+-            spawnCookie = NaturalSpawner.createState(chunkCount, this.level, this::getFullChunk, !this.level.paperConfig().entities.spawning.perPlayerMobSpawns ? new LocalMobCapCalculator(this.chunkMap) : null, false);
++            // Lophine start - Global Entities Counter
++            if (fun.bm.lophine.config.modules.experiment.GlobalEntitiesCounter.isEnabled()) {
++                spawnCookie = fun.bm.lophine.utils.EntitiesCounterUtil.createSpawnState(this.level, regionizedWorldData.getLoadedEntities(), this::getFullChunk, !this.level.paperConfig().entities.spawning.perPlayerMobSpawns ? new LocalMobCapCalculator(this.chunkMap) : null, false);
++            } else {
++                spawnCookie = NaturalSpawner.createState(chunkCount, this.level, this::getFullChunk, !this.level.paperConfig().entities.spawning.perPlayerMobSpawns ? new LocalMobCapCalculator(this.chunkMap) : null, false);
++            }
++            // Lophine end - Global Entities Counter
+         }
+         } finally { foliaProfiler.stopTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.MOB_SPAWN_ENTITY_COUNT); } // Folia - profiler
+         // Paper end - Optional per player mob spawns
+@@ -595,7 +621,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+         boolean doMobSpawning = this.level.getGameRules().get(GameRules.SPAWN_MOBS) && !this.level.getLocalPlayers().isEmpty(); // CraftBukkit // Folia - region threading
+         int tickSpeed = this.level.getGameRules().get(GameRules.RANDOM_TICK_SPEED);
+         List<MobCategory> spawningCategories;
+-        if (doMobSpawning && (this.spawnEnemies || this.spawnFriendlies)) { // Paper
++        if (spawnCookie != null && doMobSpawning && (this.spawnEnemies || this.spawnFriendlies)) { // Paper // Lophine - Global Entities Counter
+             // Paper start - PlayerNaturallySpawnCreaturesEvent
+             for (ServerPlayer player : this.level.getLocalPlayers()) { // Folia - region threading
+                 int chunkRange = Math.min(level.spigotConfig.mobSpawnRange, player.getBukkitEntity().getViewDistance());
+@@ -653,7 +679,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+             this.level.tickThunder(chunk);
+         }
+ 
+-        if (!spawningCategories.isEmpty()) {
++        if (spawnCookie != null && !spawningCategories.isEmpty()) { // Lophine - Global Entities Counter
+             if (this.level.getWorldBorder().isWithinBounds(chunkPos)) { // Paper - rewrite chunk system
+                 NaturalSpawner.spawnForChunk(this.level, chunk, spawnCookie, spawningCategories);
+             }
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index db20a321f69d0a99f66848266d41309cc7ffe552..439dc853ebe440ad73b6ee7e91ed5dac252ed5ad 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -834,6 +834,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+     }
+ 
+     public void tick(BooleanSupplier haveTime, final io.papermc.paper.threadedregions.TickRegions.TickRegionData region) { // Folia - regionised ticking
++        // Lophine start - Global Entities Counter
++        if (fun.bm.lophine.config.modules.experiment.GlobalEntitiesCounter.isEnabled()) {
++            if (fun.bm.lophine.utils.EntitiesCounterUtil.canRunNewTask(this)) fun.bm.lophine.utils.EntitiesCounterUtil.tick(this);
++        }
++        // Lophine end - Global Entities Counter
+         final io.papermc.paper.threadedregions.RegionizedWorldData regionizedWorldData = this.getCurrentWorldData(); // Folia - regionised ticking
+         final ca.spottedleaf.leafprofiler.RegionizedProfiler.Handle foliaProfiler = io.papermc.paper.threadedregions.TickRegionScheduler.getProfiler(); // Folia - profiler
+         ProfilerFiller profiler = Profiler.get();
+@@ -3193,6 +3198,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+     public void close() throws IOException {
+         super.close();
+         //this.entityManager.close(); // Paper - rewrite chunk system
++        // Lophine start - Precise mob cap
++        if (!fun.bm.lophine.config.modules.experiment.GlobalEntitiesCounter.isDefaultModule()) {
++            fun.bm.lophine.utils.EntitiesCounterUtil.onWorldUnload(this);
++        }
++        // Lophine end - Precise mob cap
+     }
+ 
+     @Override
+@@ -3412,6 +3422,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+             entity.inWorld = true; // CraftBukkit - Mark entity as in world
+             entity.valid = true; // CraftBukkit
+             ServerLevel.this.getChunkSource().addEntity(entity); // Paper - ignore and warn about illegal addEntity calls instead of crashing server
++            // Lophine start - Precise mob cap
++            if (fun.bm.lophine.config.modules.experiment.GlobalEntitiesCounter.isEnabled() && !fun.bm.lophine.config.modules.experiment.GlobalEntitiesCounter.isDefaultModule()) {
++                fun.bm.lophine.utils.EntitiesCounterUtil.onEntityTrackingStart(ServerLevel.this, entity);
++            }
++            // Lophine end - Precise mob cap
+             // Paper start - Entity origin API
+             if (entity.origin == null) {
+                 entity.origin = entity.position();
+@@ -3427,6 +3442,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+         @Override
+         public void onTrackingEnd(final Entity entity) {
+             org.spigotmc.AsyncCatcher.catchOp("entity unregister"); // Spigot
++            // Lophine start - Precise mob cap
++            if (fun.bm.lophine.config.modules.experiment.GlobalEntitiesCounter.isEnabled() && !fun.bm.lophine.config.modules.experiment.GlobalEntitiesCounter.isDefaultModule()) {
++                fun.bm.lophine.utils.EntitiesCounterUtil.onEntityTrackingEnd(ServerLevel.this, entity);
++            }
++            // Lophine end - Precise mob cap
+             ServerLevel.this.getCurrentWorldData().removeLoadedEntity(entity); // Folia - region threading
+             // Paper start - Rework map holder tracking - remove the player from the maps they are subscribed to
+             if (entity instanceof Player player) {
+diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
+index 9c27498c94fe38bd48f48eb2c0e5b067210636c8..dc1997ce7529aa0cff51333603e18aa0ea614bba 100644
+--- a/net/minecraft/world/entity/Mob.java
++++ b/net/minecraft/world/entity/Mob.java
+@@ -835,6 +835,41 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
+                     this.noActionTime = 0;
+                 }
+             }
++            // Lophine start - fix some bug if player is cross scheduler >> to remove monster if the region don't have any valid player
++            if (player == null && fun.bm.lophine.config.modules.experiment.GlobalEntitiesCounter.isEnabled()) {
++                List<net.minecraft.server.level.ServerPlayer> playerList = this.level().getServer().getPlayerList().getPlayers();
++                if (!playerList.isEmpty()) {
++                    double d = -1.0;
++                    Vec3 vec3 = null;
++                    for (net.minecraft.server.level.ServerPlayer player1 : playerList) {
++                        if (player1.level() != this.level()) continue;
++                        double d1 = player1.distanceToSqr(this.position());
++                        if (d == -1.0 || d1 < d) {
++                            d = d1;
++                            vec3 = player1.position();
++                        }
++                    }
++                    if (vec3 != null) {
++                        final io.papermc.paper.configuration.WorldConfiguration.Entities.Spawning.DespawnRangePair despawnRangePair = this.level().paperConfig().entities.spawning.despawnRanges.get(this.getType().getCategory());
++                        final io.papermc.paper.configuration.type.DespawnRange.Shape shape = this.level().paperConfig().entities.spawning.despawnRangeShape;
++                        final double dy = Math.abs(vec3.y - this.getY());
++                        final double dySqr = Mth.square(dy);
++                        final double dxSqr = Mth.square(vec3.x - this.getX());
++                        final double dzSqr = Mth.square(vec3.z - this.getZ());
++                        final double distanceSquared = dxSqr + dzSqr + dySqr;
++                        if (!isPersistent && despawnRangePair.hard().shouldDespawn(shape, dxSqr, dySqr, dzSqr, dy) && this.removeWhenFarAway(distanceSquared)) {
++                            this.discard(EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
++                        }
++                        if (!isPersistent && despawnRangePair.soft().shouldDespawn(shape, dxSqr, dySqr, dzSqr, dy)) {
++                            if (this.noActionTime > 600 && this.random.nextInt(800) == 0 && this.removeWhenFarAway(distanceSquared)) {
++                                this.discard(EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
++                            }
++                        }
++                    }
++                }
++                this.noActionTime = 0;
++            }
++            // Lophine end - fix some bug if player is cross scheduler >> to remove monster if the region don't have any valid player
+         }
+     }
+ 
+diff --git a/net/minecraft/world/level/NaturalSpawner.java b/net/minecraft/world/level/NaturalSpawner.java
+index 0220554dec000cc6e74efe2530c3bb68fd9bcb49..0e13047a960b169f4c8d3b66aaebee659a3ba67c 100644
+--- a/net/minecraft/world/level/NaturalSpawner.java
++++ b/net/minecraft/world/level/NaturalSpawner.java
+@@ -619,7 +619,7 @@ public final class NaturalSpawner {
+         private @Nullable EntityType<?> lastCheckedType;
+         private double lastCharge;
+ 
+-        private SpawnState(
++        public SpawnState( // Lophine - protected -> public
+             final int spawnableChunkCount,
+             final Object2IntOpenHashMap<MobCategory> mobCategoryCounts,
+             final PotentialCalculator spawnPotential,
