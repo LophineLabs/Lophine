@@ -6,19 +6,14 @@ build
 
 /run
 
-/.checkstyle
-
 /paper-server
 /paper-api
-/paper-checkstyle
 
 /folia-api
 /folia-server
-/folia-checkstyle
 
 /lophine-server/build.gradle.kts
 /lophine-api/build.gradle.kts
-/lophine-checkstyle/build.gradle.kts
 /lophine-server/src/minecraft
 
 /lophine-generator.settings.gradle.kts
