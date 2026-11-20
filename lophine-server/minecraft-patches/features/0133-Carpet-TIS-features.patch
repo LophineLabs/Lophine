@@ -1248,7 +1248,7 @@ index 9ce50c3771e7f4c087245b500dc0432d39988a03..df6c5b7cefa43c23e8cb0ede133b5c2d
          this.age = newAge;
          if (oldAge < 0 && newAge >= 0 || oldAge >= 0 && newAge < 0) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 464a798edffa1ff3d0482e017fe1c9e64789eb1c..6cdf10c30e40aa96ed8e6b3660eda332b21259b2 100644
+index 464a798edffa1ff3d0482e017fe1c9e64789eb1c..5de2a78cc8f2ba08d462e2522d45789150b9efab 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -267,6 +267,8 @@ public abstract class Entity
@@ -1510,7 +1510,7 @@ index 464a798edffa1ff3d0482e017fe1c9e64789eb1c..6cdf10c30e40aa96ed8e6b3660eda332
      protected boolean canAddPassenger(final Entity passenger) {
          return this.passengers.isEmpty();
      }
-@@ -4658,11 +4749,14 @@ public abstract class Entity
+@@ -4658,11 +4749,13 @@ public abstract class Entity
      }
  
      protected Entity transformForAsyncTeleport(ServerLevel destination, Vec3 pos, Float yaw, Float pitch, Vec3 velocity) {
@@ -1521,11 +1521,10 @@ index 464a798edffa1ff3d0482e017fe1c9e64789eb1c..6cdf10c30e40aa96ed8e6b3660eda332
          copy.restoreFrom(this);
          copy.transform(pos, yaw, pitch, velocity);
 +        fun.bm.lophine.carpet.tis.TisLifetimeTracker.afterTeleport(this, copy, destination);
-+        if (copy instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) dragon.syncDragonPartsAfterTeleportTransform(); // Luminol - Sync dragon part when teleportation or firstly created
          // vanilla code used to call remove _after_ copying, and some stuff is required to be after copy - so add hook here
          // for example, clearing of inventory after switching dimensions
          this.postRemoveAfterChangingDimensions();
-@@ -4670,6 +4764,23 @@ public abstract class Entity
+@@ -4670,6 +4763,23 @@ public abstract class Entity
          return copy;
      }
  
@@ -1549,7 +1548,7 @@ index 464a798edffa1ff3d0482e017fe1c9e64789eb1c..6cdf10c30e40aa96ed8e6b3660eda332
      public final boolean teleportAsync(TeleportTransition teleportTarget, long teleportFlags,
                                         java.util.function.Consumer<Entity> teleportComplete) {
          PositionMoveRotation move = PositionMoveRotation.calculateAbsolute(PositionMoveRotation.of(this), PositionMoveRotation.of(teleportTarget), teleportTarget.relatives());
-@@ -6580,6 +6691,11 @@ public abstract class Entity
+@@ -6580,6 +6690,11 @@ public abstract class Entity
              this.removeEventCause = cause; // Paper
          }
  
