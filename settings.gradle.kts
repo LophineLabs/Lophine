@@ -1,5 +1,5 @@
 pluginManagement {
-    val weightVersion: String by settings
+    val weightVersion = providers.gradleProperty("weightVersion").get()
 
     repositories {
         gradlePluginPortal()
