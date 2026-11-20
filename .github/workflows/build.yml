@@ -1,7 +1,20 @@
 name: Lophine CI
 
 on:
+  push:
+    branches:
+      - "**"
+    paths:
+      - 'lophine-server/**'
+      - 'lophine-api/**'
+      - 'lophine-checkstyle/**'
+      - '.github/workflows/**'
+      - 'gradle.properties'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
   pull_request:
+    branches:
+      - "**"
     paths:
       - 'lophine-server/**'
       - 'lophine-api/**'
@@ -150,7 +163,7 @@ jobs:
           PRIVATE_MAVEN_REPO_USERNAME: ${{ secrets.PRIVATE_MAVEN_REPO_USERNAME }}
 
       - name: Create Release - Pre Process
-        if: ( github.event_name != 'pull_request' && env.from_pr_merge != 'true' && !( env.unexpect == 'true' ) && env.flag_release == 'true' && env.release_exists != 'true' && !(inputs.force-release == 'false')) || inputs.force-release == 'true'
+        if: ( github.event_name != 'pull_request' && !( env.unexpect == 'true' ) && env.flag_release == 'true' && env.release_exists != 'true' && !(inputs.force-release == 'false')) || inputs.force-release == 'true'
         run: |
           if [ "${{ inputs.comments }}" == "" ]; then
             echo "No comments provided"
