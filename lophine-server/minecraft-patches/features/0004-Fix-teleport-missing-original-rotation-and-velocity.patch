@@ -17,16 +17,3 @@ index 2a64a5b2cf049661fe3f5a22ddfa39979624f5ec..335e9775e0d9a61f0e9641aba691a3bd
                              cause, teleportFlags, onComplete
                          );
                      },
-diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
-index 0d6739bfc20a93367944eeca3a23b381da27aebe..ccf229c92dc00bd2493fb90022399b47e2e94d48 100644
---- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
-+++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
-@@ -99,7 +99,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
-                 }
- 
-                 entity.teleportAsync(
--                    checkWorld, to, null, null, null,
-+                    checkWorld, to, null, null, entity.getDeltaMovement(), // Camellia - Fix teleport missing original rotation and velocity
-                     org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.ENDER_PEARL,
-                     // chunk could have been unloaded
-                     Entity.TELEPORT_FLAG_TELEPORT_PASSENGERS | Entity.TELEPORT_FLAG_LOAD_CHUNK,

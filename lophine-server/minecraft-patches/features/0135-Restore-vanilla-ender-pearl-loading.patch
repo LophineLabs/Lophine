@@ -111,7 +111,7 @@ index 0eb04134eb60ef85f720a162d3f0af0c96890954..3188378550a571320d37ffff8c852e5e
          this.applyGravity();
          if (carpet.script.external.ScarpetExplosionContinuations.pending(this)) return;
 diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
-index f16a7e2cf2e25229686dd7f6daa0c5640e19004e..675d28f0613b2161bbdd84564e615df80f24e353 100644
+index 030e71a5eab114700e58fa23cda33fbb5063193d..14047c198dd6e856c3fd80d67bf355af4b5fd123 100644
 --- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 +++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 @@ -31,7 +31,11 @@ import net.minecraft.world.phys.Vec3;

@@ -1096,7 +1096,7 @@ index 7ba325b4e0b6590699b023ad58b2489b41a28395..7ce890fb87f1f30ff0ae8254f421039f
                              return (Void)null;
                          })));
 diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
-index ead0be0d86da4193ed8787037685172295d23235..a93cf421c86f5aea48578b9f520c3581b30327dc 100644
+index ef030835ee1f94d0ce9830fe073c6bca0d8f0d7d..1a3d8b55065fb7927af3867fb4801dd47f3a5687 100644
 --- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 +++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 @@ -77,6 +77,10 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {

@@ -1573,7 +1573,7 @@ index 3c328afbe635dee08a49f6e0554f83e1124ad395..084a81ef57e9bea4043b1f2573e6498c
  
          for (int y = -1; y <= 2; y++) {
 diff --git a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
-index a93cf421c86f5aea48578b9f520c3581b30327dc..f16a7e2cf2e25229686dd7f6daa0c5640e19004e 100644
+index 1a3d8b55065fb7927af3867fb4801dd47f3a5687..030e71a5eab114700e58fa23cda33fbb5063193d 100644
 --- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 +++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownEnderpearl.java
 @@ -142,7 +142,9 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
