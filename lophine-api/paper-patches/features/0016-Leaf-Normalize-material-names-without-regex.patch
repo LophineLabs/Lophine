@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrlingXD <90316914+wling-art@users.noreply.github.com>
+Date: Sun, 16 Aug 2026 07:47:55 +0800
+Subject: [PATCH] Leaf: Normalize material names without regex
+
+Keep the existing namespace removal, Locale.ROOT uppercase conversion, and legacy resolution. Replace the two regex passes with one equivalent scan, including separate whitespace runs around stripped punctuation or Unicode characters.
+
+Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-api/paper-patches/features/0022-Avoid-regex-in-Material-matchMaterial.patch
+
+diff --git a/src/main/java/org/bukkit/Material.java b/src/main/java/org/bukkit/Material.java
+index 2e9beb0ec931b1ebc8c88012863842b5b35bac0e..93195d266569a8ce6bb002d8099ea2f2d4131683 100644
+--- a/src/main/java/org/bukkit/Material.java
++++ b/src/main/java/org/bukkit/Material.java
+@@ -3244,10 +3244,40 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
+ 
+         filtered = filtered.toUpperCase(Locale.ROOT);
+ 
+-        filtered = filtered.replaceAll("\\s+", "_").replaceAll("\\W", "");
++        filtered = matchMaterialStrip(filtered); // Leaf - Avoid regex in Material#matchMaterial
+         return getMaterial(filtered, legacyName);
+     }
+ 
++    // Leaf start - Avoid regex in Material#matchMaterial
++    private static String matchMaterialStrip(final String filtered) {
++        final int length = filtered.length();
++        char[] buffer = null;
++        int written = 0;
++        for (int index = 0; index < length; index++) {
++            final char character = filtered.charAt(index);
++            if ((character >= 'A' && character <= 'Z') || (character >= '0' && character <= '9') || character == '_') {
++                if (buffer != null) {
++                    buffer[written++] = character;
++                }
++                continue;
++            }
++            if (buffer == null) {
++                buffer = new char[length];
++                filtered.getChars(0, index, buffer, 0);
++                written = index;
++            }
++            if (isMatchMaterialWhitespace(character) && (index == 0 || !isMatchMaterialWhitespace(filtered.charAt(index - 1)))) {
++                buffer[written++] = '_';
++            }
++        }
++        return buffer == null ? filtered : new String(buffer, 0, written);
++    }
++
++    private static boolean isMatchMaterialWhitespace(final char character) {
++        return character == ' ' || character == '\t' || character == '\n' || character == 0x0B || character == '\f' || character == '\r';
++    }
++    // Leaf end - Avoid regex in Material#matchMaterial
++
+     static {
+         for (Material material : values()) {
+             BY_NAME.put(material.name(), material);

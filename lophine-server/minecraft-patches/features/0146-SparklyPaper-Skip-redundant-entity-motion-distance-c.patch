@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <git@mrpowergamerbr.com>
+Date: Wed, 15 Nov 2023 23:39:36 -0300
+Subject: [PATCH] SparklyPaper: Skip redundant entity motion distance checks
+
+Avoid subtracting an unchanged vanilla Vec3 instance. Keep custom Vec3 dispatch, the existing packet threshold, and the projectile and zero-velocity branches.
+
+Original project: https://github.com/SparklyPower/SparklyPaper
+Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0101-SparklyPaper-Skip-distanceToSqr-call-in-ServerEntity.patch
+
+diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
+index 06dc255104a940a8a950ac0002ecd2b6a5ed3abf..b350716130d0e3ebd0cea841c277a092a3e6665f 100644
+--- a/net/minecraft/server/level/ServerEntity.java
++++ b/net/minecraft/server/level/ServerEntity.java
+@@ -195,7 +195,11 @@ public class ServerEntity {
+ 
+                 if (this.entity.needsSync || this.trackDelta || this.entity instanceof LivingEntity livingEntity && livingEntity.isFallFlying()) {
+                     Vec3 movement = this.entity.getDeltaMovement();
+-                    double diff = movement.distanceToSqr(this.lastSentMovement);
++                    // SparklyPaper start - skip distanceToSqr call in ServerEntity#sendChanges if the delta movement hasn't changed
++                    double diff = movement == this.lastSentMovement && movement.getClass() == Vec3.class
++                        ? 0.0
++                        : movement.distanceToSqr(this.lastSentMovement);
++                    // SparklyPaper end
+                     if (diff > 1.0E-7 || diff > 0.0 && movement.lengthSqr() == 0.0) {
+                         this.lastSentMovement = movement;
+                         if (this.entity instanceof AbstractHurtingProjectile projectile) {

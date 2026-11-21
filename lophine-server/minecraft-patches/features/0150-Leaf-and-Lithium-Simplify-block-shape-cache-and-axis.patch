@@ -1,0 +1,92 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+Date: Fri, 7 Jun 2024 17:43:43 +0800
+Subject: [PATCH] Leaf and Lithium: Simplify block shape cache and axis mapping
+
+Scan shape axes with a short-circuiting loop, reuse private enum arrays in block-state initialization, and select the existing AxisCycle table index without modulo. Preserve the shape check order and the public AxisCycle axis table.
+
+Leaf shape scan: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0117-Remove-stream-in-BlockBehaviour-cache-blockstate.patch
+Leaf cached enum arrays: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0150-Cache-blockstate-cache-array.patch
+Leaf Lithium port: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0155-Lithium-fast-util.patch
+Lithium axis mapping (LGPL-3.0-only): https://github.com/CaffeineMC/lithium/blob/mc26.3-0.26.4/common/src/main/java/net/caffeinemc/mods/lithium/mixin/math/fast_util/AxisCycleDirectionMixin.java
+
+Co-authored-by: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+Co-authored-by: Taiyou06 <kaandindar21@gmail.com>
+Co-authored-by: 2No2Name <2No2Name@web.de>
+Co-authored-by: JellySquid <jellysquid3@users.noreply.github.com>
+
+diff --git a/net/minecraft/core/AxisCycle.java b/net/minecraft/core/AxisCycle.java
+index 3cfba9780ba9c03eb1c44898f8fe41ba96887341..d5fd8aabf09f524634e7b52fe25542ef8d403a23 100644
+--- a/net/minecraft/core/AxisCycle.java
++++ b/net/minecraft/core/AxisCycle.java
+@@ -35,7 +35,13 @@ public enum AxisCycle {
+ 
+         @Override
+         public Direction.Axis cycle(final Direction.Axis axis) {
+-            return AXIS_VALUES[Math.floorMod(axis.ordinal() + 1, 3)];
++            // Leaf start - Lithium - fast util
++            return AXIS_VALUES[switch (axis) {
++                case X -> 1;
++                case Y -> 2;
++                case Z -> 0;
++            }];
++            // Leaf end - Lithium - fast util
+         }
+ 
+         @Override
+@@ -56,7 +62,13 @@ public enum AxisCycle {
+ 
+         @Override
+         public Direction.Axis cycle(final Direction.Axis axis) {
+-            return AXIS_VALUES[Math.floorMod(axis.ordinal() - 1, 3)];
++            // Leaf start - Lithium - fast util
++            return AXIS_VALUES[switch (axis) {
++                case X -> 2;
++                case Y -> 0;
++                case Z -> 1;
++            }];
++            // Leaf end - Lithium - fast util
+         }
+ 
+         @Override
+diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
+index ea8c61664cec07abf58fa6b7060a3ce63baff3c4..3a8550f12c9089435eab0db93a3c3ac7b752bec7 100644
+--- a/net/minecraft/world/level/block/state/BlockBehaviour.java
++++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
+@@ -1182,7 +1182,11 @@ public abstract class BlockBehaviour implements FeatureElement, net.caffeinemc.m
+ 
+         private static final class Cache {
+             private static final Direction[] DIRECTIONS = Direction.values();
+-            private static final int SUPPORT_TYPE_COUNT = SupportType.values().length;
++            // Leaf start - Cache blockstate cache array
++            private static final SupportType[] SUPPORT_TYPE_VALUES = SupportType.values();
++            private static final Direction.Axis[] DIRECTION_AXIS_VALUES = Direction.Axis.values();
++            // Leaf end - Cache blockstate cache array
++            private static final int SUPPORT_TYPE_COUNT = SUPPORT_TYPE_VALUES.length;
+             public final VoxelShape collisionShape;
+             public final boolean largeCollisionShape;
+             private final boolean[] faceSturdy;
+@@ -1201,12 +1205,20 @@ public abstract class BlockBehaviour implements FeatureElement, net.caffeinemc.m
+                     );
+                 }
+ 
+-                this.largeCollisionShape = Arrays.stream(Direction.Axis.values())
+-                    .anyMatch(axis -> this.collisionShape.min(axis) < 0.0 || this.collisionShape.max(axis) > 1.0);
++                // Leaf start - Remove stream in BlockBehaviour cache blockstate
++                boolean largeCollisionShape = false;
++                for (Direction.Axis axis : DIRECTION_AXIS_VALUES) {
++                    if (this.collisionShape.min(axis) < 0.0 || this.collisionShape.max(axis) > 1.0) {
++                        largeCollisionShape = true;
++                        break;
++                    }
++                }
++                this.largeCollisionShape = largeCollisionShape;
++                // Leaf end - Remove stream in BlockBehaviour cache blockstate
+                 this.faceSturdy = new boolean[DIRECTIONS.length * SUPPORT_TYPE_COUNT];
+ 
+                 for (Direction direction : DIRECTIONS) {
+-                    for (SupportType type : SupportType.values()) {
++                    for (SupportType type : SUPPORT_TYPE_VALUES) { // Leaf - Cache blockstate cache array
+                         this.faceSturdy[getFaceSupportIndex(direction, type)] = type.isSupporting(state, EmptyBlockGetter.INSTANCE, BlockPos.ZERO, direction);
+                     }
+                 }
