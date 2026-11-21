@@ -5,36 +5,36 @@ Subject: [PATCH] Lithium: Cache retracting piston collision shapes
 
 Adapt Leaf 0302, itself based on Lithium by 2No2Name <2No2Name@web.de> (LGPL-3.0-only), revision 11ea08adce6f94627d3eaaa65506a60e0451c8b6.
 
-Store built-in geometry independently of live piston data. Preserve no-clip and fall back for mismatched facing, other progress and other blocks.
+Share immutable built-in base and head shapes across all matching retractions. Use the precomputed unions at tick progress values and preserve the original geometry composition at other offsets. Keep the original path for no-clip, mismatched bases and other blocks.
 
 https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0302-Lithium-Cache-retracting-piston-collision-shapes.patch
 
 diff --git a/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java b/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
-index cc15fc307b426de70faf04ed656b8c34af7bea28..11b4502750302363be6b1561eeca959e799de71d 100644
+index cc15fc307b426de70faf04ed656b8c34af7bea28..2489af7221492472971c6f45b9ba5668e30925e0 100644
 --- a/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
 +++ b/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
-@@ -429,6 +429,16 @@ public class PistonMovingBlockEntity extends BlockEntity {
-             return pistonHeadShape;
-         }
+@@ -417,6 +417,15 @@ public class PistonMovingBlockEntity extends BlockEntity {
+     }
  
-+        float extendedProgress = this.getExtendedProgress(this.progress);
+     public VoxelShape getCollisionShape(final BlockGetter level, final BlockPos pos) {
 +        // Leaf start - Lithium - cache retracting piston collision shapes
 +        if (!this.extending && this.isSourcePiston
 +            && (this.movedState.is(Blocks.PISTON) || this.movedState.is(Blocks.STICKY_PISTON))
 +            && this.movedState.getValue(PistonBaseBlock.FACING) == this.direction
-+            && (extendedProgress == 0.0F || extendedProgress == 0.5F || extendedProgress == 1.0F)) {
-+            return RetractingShapes.SHAPES[this.direction.get3DDataValue()][(int)(2.0F * extendedProgress)];
++            && !(this.progress < 1.0F && NOCLIP.get() == this.getMovementDirection())) {
++            return RetractingShapes.BY_DIRECTION[this.direction.get3DDataValue()].at(this.direction, 1.0F - this.progress);
 +        }
 +        // Leaf end - Lithium - cache retracting piston collision shapes
 +
-         BlockState blockState;
-         if (this.isSourcePiston()) {
-             blockState = Blocks.PISTON_HEAD
-@@ -439,13 +449,41 @@ public class PistonMovingBlockEntity extends BlockEntity {
+         VoxelShape pistonHeadShape;
+         if (!this.extending && this.isSourcePiston && this.movedState.getBlock() instanceof PistonBaseBlock) {
+             pistonHeadShape = this.movedState.setValue(PistonBaseBlock.EXTENDED, true).getCollisionShape(level, pos);
+@@ -439,13 +448,54 @@ public class PistonMovingBlockEntity extends BlockEntity {
              blockState = this.movedState;
          }
  
 -        float extendedProgress = this.getExtendedProgress(this.progress);
++        float extendedProgress = this.getExtendedProgress(this.progress);
          double dx = this.direction.getStepX() * extendedProgress;
          double dy = this.direction.getStepY() * extendedProgress;
          double dz = this.direction.getStepZ() * extendedProgress;
@@ -42,30 +42,42 @@ index cc15fc307b426de70faf04ed656b8c34af7bea28..11b4502750302363be6b1561eeca959e
      }
  
 +    // Leaf start - Lithium - cache retracting piston collision shapes
-+    private static final class RetractingShapes {
-+        private static final VoxelShape[][] SHAPES = create();
++    private record RetractingShapes(VoxelShape base, VoxelShape shortHead, VoxelShape longHead, VoxelShape[] shapes) {
++        private static final RetractingShapes[] BY_DIRECTION = create();
 +
-+        private static VoxelShape[][] create() {
++        private static RetractingShapes[] create() {
 +            Direction[] directions = Direction.values();
-+            VoxelShape[][] shapes = new VoxelShape[directions.length][3];
++            RetractingShapes[] shapes = new RetractingShapes[directions.length];
 +            var level = net.minecraft.world.level.EmptyBlockGetter.INSTANCE;
 +            for (Direction direction : directions) {
 +                VoxelShape base = Blocks.PISTON.defaultBlockState()
 +                    .setValue(PistonBaseBlock.EXTENDED, true)
 +                    .setValue(PistonBaseBlock.FACING, direction)
 +                    .getCollisionShape(level, BlockPos.ZERO);
-+                for (int index = 0; index < 3; ++index) {
++                BlockState head = Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.FACING, direction);
++                VoxelShape shortHead = head.setValue(PistonHeadBlock.SHORT, true).getCollisionShape(level, BlockPos.ZERO);
++                VoxelShape longHead = head.setValue(PistonHeadBlock.SHORT, false).getCollisionShape(level, BlockPos.ZERO);
++                VoxelShape[] offsets = new VoxelShape[3];
++                for (int index = 0; index < offsets.length; ++index) {
 +                    float offset = index * 0.5F;
-+                    VoxelShape head = Blocks.PISTON_HEAD.defaultBlockState()
-+                        .setValue(PistonHeadBlock.FACING, direction)
-+                        .setValue(PistonHeadBlock.SHORT, offset < 0.25F)
-+                        .getCollisionShape(level, BlockPos.ZERO);
-+                    shapes[direction.get3DDataValue()][index] = Shapes.or(base, head.move(
-+                        direction.getStepX() * offset, direction.getStepY() * offset, direction.getStepZ() * offset
-+                    ));
++                    offsets[index] = combine(base, offset < 0.25F ? shortHead : longHead, direction, offset);
 +                }
++                shapes[direction.get3DDataValue()] = new RetractingShapes(base, shortHead, longHead, offsets);
 +            }
 +            return shapes;
++        }
++
++        private VoxelShape at(final Direction direction, final float offset) {
++            if (offset == 0.0F || offset == 0.5F || offset == 1.0F) {
++                return this.shapes[(int)(2.0F * offset)];
++            }
++            return combine(this.base, offset < 0.25F ? this.shortHead : this.longHead, direction, offset);
++        }
++
++        private static VoxelShape combine(final VoxelShape base, final VoxelShape head, final Direction direction, final float offset) {
++            return Shapes.or(base, head.move(
++                direction.getStepX() * offset, direction.getStepY() * offset, direction.getStepZ() * offset
++            ));
 +        }
 +    }
 +    // Leaf end - Lithium - cache retracting piston collision shapes

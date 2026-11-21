@@ -1,0 +1,75 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Thu, 7 Nov 2024 19:45:31 +0100
+Subject: [PATCH] C2ME: Reuse bounded ore visitation bitmaps
+
+Lease a thread-local BitSet until the placement finishes, including on exceptions. Nested placements use independent storage and large bitmaps are discarded. Leave ore placement iteration and random calls unchanged.
+
+Original Leaf port: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0154-C2ME-Reduce-Allocations.patch
+Original project: https://github.com/RelativityMC/C2ME-fabric
+Original mixin: com/ishland/c2me/opts/allocs/mixin/object_pooling_caching/MixinOreFeature.java
+License: MIT (https://opensource.org/licenses/MIT)
+
+Co-authored-by: ishland <ishlandmc@yeah.net>
+
+diff --git a/net/minecraft/world/level/levelgen/feature/OreFeature.java b/net/minecraft/world/level/levelgen/feature/OreFeature.java
+index 7be78b7247f9f8245b0fcc9bee7fa09db14ca57e..623ff08876464ed05152b7b0b4e40e64b8f1ca12 100644
+--- a/net/minecraft/world/level/levelgen/feature/OreFeature.java
++++ b/net/minecraft/world/level/levelgen/feature/OreFeature.java
+@@ -17,6 +17,10 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
+ 
+ public class OreFeature extends AbstractOreFeature {
+     public static final MapCodec<OreFeature> CODEC = makeCodec(OreFeature::new);
++    // Leaf start - C2ME - Reduce Allocations
++    private static final int MAX_CACHED_TEST_BITS = 65_536;
++    private static final ThreadLocal<BitSet> TESTED_POSITIONS = new ThreadLocal<>();
++    // Leaf end - C2ME - Reduce Allocations
+ 
+     public OreFeature(final List<BlockReplacement> targetStates, final int size, final float discardChanceOnAirExposure) {
+         super(targetStates, size, discardChanceOnAirExposure);
+@@ -78,9 +82,44 @@ public class OreFeature extends AbstractOreFeature {
+         final int zStart,
+         final int sizeXZ,
+         final int sizeY
++    ) {
++        // Leaf start - C2ME - Reduce Allocations
++        final int bitCount = sizeXZ * sizeY * sizeXZ;
++        if (bitCount < 0 || bitCount > MAX_CACHED_TEST_BITS) {
++            return this.doPlace(level, random, x0, x1, z0, z1, y0, y1, xStart, yStart, zStart, sizeXZ, sizeY, new BitSet(bitCount));
++        }
++
++        final BitSet cached = TESTED_POSITIONS.get();
++        final BitSet tested = cached == null ? new BitSet(bitCount) : cached;
++        TESTED_POSITIONS.set(null);
++        try {
++            return this.doPlace(level, random, x0, x1, z0, z1, y0, y1, xStart, yStart, zStart, sizeXZ, sizeY, tested);
++        } finally {
++            if (tested.size() <= MAX_CACHED_TEST_BITS) {
++                tested.clear();
++                TESTED_POSITIONS.set(tested);
++            }
++        }
++        // Leaf end - C2ME - Reduce Allocations
++    }
++
++    private boolean doPlace(
++        final WorldGenLevel level,
++        final RandomSource random,
++        final double x0,
++        final double x1,
++        final double z0,
++        final double z1,
++        final double y0,
++        final double y1,
++        final int xStart,
++        final int yStart,
++        final int zStart,
++        final int sizeXZ,
++        final int sizeY,
++        final BitSet tested
+     ) {
+         int placed = 0;
+-        BitSet tested = new BitSet(sizeXZ * sizeY * sizeXZ);
+         BlockPos.MutableBlockPos orePos = new BlockPos.MutableBlockPos();
+         double[] data = new double[this.size * 4];
+ 

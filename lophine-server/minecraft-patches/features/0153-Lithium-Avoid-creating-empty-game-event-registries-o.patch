@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: 2No2Name <2no2name@web.de>
+Date: Sun, 5 Jan 2025 14:50:55 +0000
+Subject: [PATCH] Lithium: Avoid creating empty game event registries on
+ dispatch
+
+Separate read-only dispatch lookup from registry creation. Keep chunk ownership checks, plugin event dispatch, listener traversal, and deferred listener edits for existing registries.
+
+Lithium game event dispatch: https://github.com/CaffeineMC/lithium/tree/mc26.3-0.26.4/common/src/main/java/net/caffeinemc/mods/lithium/mixin/world/game_events/dispatch
+Upstream revision: https://github.com/CaffeineMC/lithium/commit/3bdc1392867c784d8de6095de0b824f1461eb81a
+License: LGPL-3.0-only (https://www.gnu.org/licenses/lgpl-3.0.html)
+
+diff --git a/net/minecraft/world/level/chunk/ChunkAccess.java b/net/minecraft/world/level/chunk/ChunkAccess.java
+index 52a816916b648e0d8a71764ee6876db043de7381..91fafdd6e5f24590dc2cd7b123e117dbf1b25512 100644
+--- a/net/minecraft/world/level/chunk/ChunkAccess.java
++++ b/net/minecraft/world/level/chunk/ChunkAccess.java
+@@ -204,6 +204,10 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
+         return GameEventListenerRegistry.NOOP;
+     }
+ 
++    public GameEventListenerRegistry getListenerRegistryIfPresent(final int section) {
++        return this.getListenerRegistry(section); // Lithium - read-only game event registry lookup
++    }
++
+     // Leaf start - Matter - Secure Seed
+     public boolean isSlimeChunk() {
+         if (!hasComputedSlimeChunk) {
+diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
+index 346a91fbad1c76603296c7ac1511f0cac5bc60e9..cdedc5270178640a317216afbe48c938bd28e04b 100644
+--- a/net/minecraft/world/level/chunk/LevelChunk.java
++++ b/net/minecraft/world/level/chunk/LevelChunk.java
+@@ -292,6 +292,11 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+             : super.getListenerRegistry(section);
+     }
+ 
++    @Override
++    public GameEventListenerRegistry getListenerRegistryIfPresent(final int section) {
++        return this.gameEventListenerRegistrySections.getOrDefault(section, GameEventListenerRegistry.NOOP); // Lithium - avoid allocating empty game event registries
++    }
++
+     // Paper start - Perf: Reduce instructions and provide final method
+     @Override
+     public BlockState getBlockState(final int x, final int y, final int z) {
+diff --git a/net/minecraft/world/level/gameevent/GameEventDispatcher.java b/net/minecraft/world/level/gameevent/GameEventDispatcher.java
+index 3d7fb3510e633294f5d60b55a0d40d1afe8be8ee..cc0f5e2b5d1ed3cd720bacfa41cb637d449182c7 100644
+--- a/net/minecraft/world/level/gameevent/GameEventDispatcher.java
++++ b/net/minecraft/world/level/gameevent/GameEventDispatcher.java
+@@ -57,7 +57,7 @@ public class GameEventDispatcher {
+                 ChunkAccess chunk = this.level.getChunkIfLoadedImmediately(chunkX, chunkZ); // Paper - Use getChunkIfLoadedImmediately
+                 if (chunk != null) {
+                     for (int section = sectionMinY; section <= sectionMaxY; section++) {
+-                        applicable |= chunk.getListenerRegistry(section).visitInRangeListeners(gameEvent, position, context, visitListeners);
++                        applicable |= chunk.getListenerRegistryIfPresent(section).visitInRangeListeners(gameEvent, position, context, visitListeners); // Lithium - avoid allocating empty game event registries
+                     }
+                 }
+             }

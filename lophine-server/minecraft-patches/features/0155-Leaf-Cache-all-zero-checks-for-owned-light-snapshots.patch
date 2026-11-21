@@ -1,0 +1,134 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Mon, 14 Apr 2025 20:07:52 +0200
+Subject: [PATCH] Leaf: Cache all-zero checks for owned light snapshots
+
+Reuse the all-zero result under the existing visible-state monitor. Invalidate it on publication and stop using it after the backing array escapes. Loader copies retain their current isolation and save copies keep the existing format.
+
+Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0189-Optimise-chunkUnloads.patch
+
+diff --git a/ca/spottedleaf/moonrise/patches/starlight/light/SWMRNibbleArray.java b/ca/spottedleaf/moonrise/patches/starlight/light/SWMRNibbleArray.java
+index 39dbe98382d7f87738d87033d6f32c6d38a471de..4180dd767f01a139502460e8797de34910a0cc9e 100644
+--- a/ca/spottedleaf/moonrise/patches/starlight/light/SWMRNibbleArray.java
++++ b/ca/spottedleaf/moonrise/patches/starlight/light/SWMRNibbleArray.java
+@@ -48,16 +48,30 @@ public final class SWMRNibbleArray {
+         } else if (nibble.isEmpty()) {
+             return new SWMRNibbleArray();
+         } else {
+-            return new SWMRNibbleArray(nibble.getData().clone()); // make sure we don't write to the parameter later
++            return copyOfSavedData(nibble.getData(), INIT_STATE_INIT); // make sure we don't write to the parameter later
+         }
+     }
+ 
++    public static SWMRNibbleArray copyOfSavedData(final byte[] bytes, final int state) {
++        final SWMRNibbleArray nibble = new SWMRNibbleArray(bytes.clone(), state);
++        nibble.ownsVisibleBytes = true; // Leaf - cache the all-zero result for private visible arrays
++        return nibble;
++    }
++
+     private int stateUpdating;
+     private volatile int stateVisible;
+ 
+     private byte[] storageUpdating;
+     private boolean updatingDirty; // only returns whether storageUpdating is dirty
+     private volatile byte[] storageVisible;
++    // Leaf start - cache the all-zero result for private visible arrays
++    // These fields are used with the same monitor as the visible save state.
++    private static final byte ZERO_UNKNOWN = 0;
++    private static final byte ZERO_YES = 1;
++    private static final byte ZERO_NO = 2;
++    private boolean ownsVisibleBytes;
++    private byte visibleZero = ZERO_UNKNOWN;
++    // Leaf end - cache the all-zero result for private visible arrays
+ 
+     public SWMRNibbleArray() {
+         this(null, false); // lazy init
+@@ -145,10 +159,23 @@ public final class SWMRNibbleArray {
+             if (state == INIT_STATE_UNINIT) {
+                 return new SaveState(null, state);
+             }
+-            final boolean zero = isAllZero(data);
++            // Leaf start - cache the all-zero result for private visible arrays
++            final boolean zero;
++            if (this.ownsVisibleBytes && this.visibleZero != ZERO_UNKNOWN) {
++                zero = this.visibleZero == ZERO_YES;
++            } else {
++                zero = isAllZero(data);
++                if (this.ownsVisibleBytes) {
++                    this.visibleZero = zero ? ZERO_YES : ZERO_NO;
++                }
++            }
++            // Leaf end - cache the all-zero result for private visible arrays
+             if (zero) {
+                 return state == INIT_STATE_INIT ? new SaveState(null, INIT_STATE_UNINIT) : null;
+             } else {
++                if (!copy) {
++                    this.ownsVisibleBytes = false; // Leaf - a caller can mutate the visible array after a no-copy save
++                }
+                 return new SaveState(copy ? data.clone() : data, state);
+             }
+         }
+@@ -338,9 +365,11 @@ public final class SWMRNibbleArray {
+         synchronized (this) {
+             if (this.stateUpdating == INIT_STATE_NULL || this.stateUpdating == INIT_STATE_UNINIT) {
+                 this.storageVisible = null;
++                this.ownsVisibleBytes = false; // Leaf - cache the all-zero result for private visible arrays
+             } else {
+                 if (this.storageVisible == null) {
+                     this.storageVisible = this.storageUpdating.clone();
++                    this.ownsVisibleBytes = true; // Leaf - cache the all-zero result for private visible arrays
+                 } else {
+                     if (this.storageUpdating != this.storageVisible) {
+                         System.arraycopy(this.storageUpdating, 0, this.storageVisible, 0, ARRAY_SIZE);
+@@ -352,6 +381,7 @@ public final class SWMRNibbleArray {
+                 }
+                 this.storageUpdating = this.storageVisible;
+             }
++            this.visibleZero = ZERO_UNKNOWN; // Leaf - invalidate the cached all-zero result on publication
+             this.updatingDirty = false;
+             this.stateVisible = this.stateUpdating;
+         }
+diff --git a/ca/spottedleaf/moonrise/patches/starlight/util/SaveUtil.java b/ca/spottedleaf/moonrise/patches/starlight/util/SaveUtil.java
+index 884a0c334d71bafa57205e2c113f67e3e523ea8d..3b64f575507e04292e81d911fb7378513410fef4 100644
+--- a/ca/spottedleaf/moonrise/patches/starlight/util/SaveUtil.java
++++ b/ca/spottedleaf/moonrise/patches/starlight/util/SaveUtil.java
+@@ -166,7 +166,7 @@ public final class SaveUtil {
+                 final byte[] blockLight = sectionData.getByteArray("BlockLight").orElse(null);
+                 if (blockLight != null) {
+                     // this is where our diff is
+-                    blockNibbles[y - minSection] = new SWMRNibbleArray(blockLight.clone(), sectionData.getIntOr(BLOCKLIGHT_STATE_TAG, 0)); // clone for data safety
++                    blockNibbles[y - minSection] = SWMRNibbleArray.copyOfSavedData(blockLight, sectionData.getIntOr(BLOCKLIGHT_STATE_TAG, 0)); // clone for data safety
+                 } else {
+                     blockNibbles[y - minSection] = new SWMRNibbleArray(null, sectionData.getIntOr(BLOCKLIGHT_STATE_TAG, 0));
+                 }
+@@ -179,7 +179,7 @@ public final class SaveUtil {
+                         // however, for compatibility we store chunks as unlit so vanilla
+                         // is forced to re-light them if it encounters our data. It's too much of a burden
+                         // to try and maintain compatibility with a broken and inferior skylight management system.
+-                        skyNibbles[y - minSection] = new SWMRNibbleArray(skyLight.clone(), sectionData.getIntOr(SKYLIGHT_STATE_TAG, 0)); // clone for data safety
++                        skyNibbles[y - minSection] = SWMRNibbleArray.copyOfSavedData(skyLight, sectionData.getIntOr(SKYLIGHT_STATE_TAG, 0)); // clone for data safety
+                     } else {
+                         skyNibbles[y - minSection] = new SWMRNibbleArray(null, sectionData.getIntOr(SKYLIGHT_STATE_TAG, 0));
+                     }
+diff --git a/net/minecraft/world/level/chunk/storage/SerializableChunkData.java b/net/minecraft/world/level/chunk/storage/SerializableChunkData.java
+index b55ac8ce0cef229bd30d5e8a361c1f4c75611dc7..2b99257ef6029a8a89e9474d58caa40870b91b46 100644
+--- a/net/minecraft/world/level/chunk/storage/SerializableChunkData.java
++++ b/net/minecraft/world/level/chunk/storage/SerializableChunkData.java
+@@ -274,7 +274,7 @@ public record SerializableChunkData(
+ 
+                 if (blockState >= 0) {
+                     if (blockLight != null) {
+-                        blockNibbles[y - minSection] = new ca.spottedleaf.moonrise.patches.starlight.light.SWMRNibbleArray(ca.spottedleaf.moonrise.common.util.MixinWorkarounds.clone(blockLight.getData()), blockState); // clone for data safety
++                        blockNibbles[y - minSection] = ca.spottedleaf.moonrise.patches.starlight.light.SWMRNibbleArray.copyOfSavedData(blockLight.getData(), blockState); // clone for data safety
+                     } else {
+                         blockNibbles[y - minSection] = new ca.spottedleaf.moonrise.patches.starlight.light.SWMRNibbleArray(null, blockState);
+                     }
+@@ -282,7 +282,7 @@ public record SerializableChunkData(
+ 
+                 if (skyState >= 0 && hasSkyLight) {
+                     if (skyLight != null) {
+-                        skyNibbles[y - minSection] = new ca.spottedleaf.moonrise.patches.starlight.light.SWMRNibbleArray(ca.spottedleaf.moonrise.common.util.MixinWorkarounds.clone(skyLight.getData()), skyState); // clone for data safety
++                        skyNibbles[y - minSection] = ca.spottedleaf.moonrise.patches.starlight.light.SWMRNibbleArray.copyOfSavedData(skyLight.getData(), skyState); // clone for data safety
+                     } else {
+                         skyNibbles[y - minSection] = new ca.spottedleaf.moonrise.patches.starlight.light.SWMRNibbleArray(null, skyState);
+                     }

@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <git@mrpowergamerbr.com>
+Date: Fri, 30 Oct 2026 01:31:48 -0300
+Subject: [PATCH] SparklyPaper: Skip ticker cleanup when nothing was removed
+
+Skip cleanup when no ticker was retired. Track the first observed identity directly and allocate the removal set only for distinct retired tickers. After ticking, remove all occurrences of the observed identities and null entries without rechecking their removed state.
+
+Inspired by SparklyPaper ticker cleanup: https://github.com/SparklyPower/SparklyPaper/blob/68ffbc524dd690c048a20d3f1c2f735173b09bac/sparklypaper-server/minecraft-patches/features/0004-Fix-MC-117075-TE-Unload-Lag-Spike.patch
+
+diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
+index 64f3401a0209d582c36342e60ec3b621fddf9c7e..e6d7616e1106ff36c87d7b50a56df8a105bde194 100644
+--- a/net/minecraft/world/level/Level.java
++++ b/net/minecraft/world/level/Level.java
+@@ -1567,13 +1567,24 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+ 
+         int tickedEntities = 0; // Paper - rewrite chunk system
+         // Paper start - Fix MC-117075 use removeAll
+-        final it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<@Nullable TickingBlockEntity> toRemove = new it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<>();
+-        toRemove.add(null);
++        TickingBlockEntity firstRemoved = null; // SparklyPaper - avoid cleanup work when no tickers were removed
++        it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<@Nullable TickingBlockEntity> toRemove = null;
+         for (int tickerIndex = 0; tickerIndex < blockEntityTickers.size(); tickerIndex++) { // Folia - regionised ticking
+             final TickingBlockEntity ticker = blockEntityTickers.get(tickerIndex); // Folia - regionised ticking
+         // Paper end - Fix MC-117075 use removeAll
+             if (ticker.isRemoved()) {
+-                toRemove.add(ticker); // Paper - Fix MC-117075 use removeAll
++                // SparklyPaper start - avoid cleanup work when no tickers were removed
++                if (toRemove != null) {
++                    toRemove.add(ticker); // Paper - Fix MC-117075 use removeAll
++                } else if (firstRemoved == null) {
++                    firstRemoved = ticker;
++                } else if (ticker != firstRemoved) {
++                    toRemove = new it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<>();
++                    toRemove.add(null);
++                    toRemove.add(firstRemoved);
++                    toRemove.add(ticker);
++                }
++                // SparklyPaper end - avoid cleanup work when no tickers were removed
+             } else if (tickBlockEntities && this.shouldTickBlocksAt(ticker.getPos())) {
+                 if (org.leavesmc.leaves.protocol.servux.litematics.ServuxPasteManager.isPaused(this, ticker.getPos())) continue; // Lophine - pause pasted block entities
+                 int carpetTimer = profiler.getOrCreateTimerAndStart(() -> "Block Entity Tick: " + ticker.getType());
+@@ -1590,7 +1601,11 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+             }
+         }
+ 
+-        blockEntityTickers.removeAll(toRemove); // Paper - Fix MC-117075 use removeAll // Folia - regionised ticking
++        if (toRemove != null) { // SparklyPaper - avoid cleanup work when no tickers were removed
++            blockEntityTickers.removeAll(toRemove); // Paper - Fix MC-117075 use removeAll // Folia - regionised ticking
++        } else if (firstRemoved != null) {
++            blockEntityTickers.removeAll(new it.unimi.dsi.fastutil.objects.ReferenceArraySet<>(new TickingBlockEntity[]{null, firstRemoved}));
++        }
+         } finally { profiler.stopTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.TILE_ENTITY_TICK); } // Folia - profiler
+         regionizedWorldData.setTickingBlockEntities(false); // Folia - regionised ticking
+     }

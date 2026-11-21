@@ -1,0 +1,135 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+Date: Sat, 21 Nov 2026 22:17:15 +0800
+Subject: [PATCH] Leaf: Bound the POI visited-section bitmap
+
+Use a bitmap only when the search and its one-section halo fit the budget and the existing packed coordinates round trip. Preserve neighbor enqueue order and use the original packed-key set as fallback.
+
+Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0295-Optimize-PoiAccess-visited-section-tracking.patch
+
+License: GPL-3.0-only (https://www.gnu.org/licenses/gpl-3.0.html)
+
+Additional term under GNU GPLv3 section 7(b):
+Any copy or modified version containing a substantial portion of the
+original contributions in this patch must preserve the following
+author attribution in the patch header, source code, or another
+prominent legal notice accompanying the corresponding source:
+
+Original patch by HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>, co-authored by MrlingXD <90316914+wling-art@users.noreply.github.com>
+
+Co-authored-by: MrlingXD <90316914+wling-art@users.noreply.github.com>
+
+diff --git a/ca/spottedleaf/moonrise/patches/poi_lookup/PoiAccess.java b/ca/spottedleaf/moonrise/patches/poi_lookup/PoiAccess.java
+index 4036ea88d4536fd3cfdfdf143fac9ff80c35098b..df96ac873259ac9879e247efb8a829c6f15dc707 100644
+--- a/ca/spottedleaf/moonrise/patches/poi_lookup/PoiAccess.java
++++ b/ca/spottedleaf/moonrise/patches/poi_lookup/PoiAccess.java
+@@ -31,6 +31,69 @@ public final class PoiAccess {
+ 
+     public static final boolean LOAD_FOR_SEARCHING = true;
+ 
++    // Leaf start - Optimize PoiAccess visited section tracking
++    private static final class SectionVisitSet {
++        private static final int MAX_BITMAP_SECTIONS = 16_384;
++        private final int minX;
++        private final int minY;
++        private final int minZ;
++        private final int sizeX;
++        private final int sizeY;
++        private final long[] words;
++        private final LongOpenHashSet sparse;
++
++        private SectionVisitSet(
++            final int lowerX, final int lowerY, final int lowerZ,
++            final int upperX, final int upperY, final int upperZ,
++            final int centerX, final int centerY, final int centerZ
++        ) {
++            // The queue also sees neighbors one section beyond the search bounds.
++            this.minX = lowerX - 1;
++            this.minY = lowerY - 1;
++            this.minZ = lowerZ - 1;
++            final long width = (long)upperX - lowerX + 3L;
++            final long height = (long)upperY - lowerY + 3L;
++            final long depth = (long)upperZ - lowerZ + 3L;
++            this.sizeX = (int)width;
++            this.sizeY = (int)height;
++            if (centerX >= lowerX && centerX <= upperX && centerY >= lowerY && centerY <= upperY && centerZ >= lowerZ && centerZ <= upperZ
++                && width <= MAX_BITMAP_SECTIONS && height <= MAX_BITMAP_SECTIONS && depth <= MAX_BITMAP_SECTIONS
++                && width * height * depth <= MAX_BITMAP_SECTIONS
++                && canPack(this.minX, this.minY, this.minZ)
++                && canPack(upperX + 1, upperY + 1, upperZ + 1)) {
++                this.words = new long[(int)((width * height * depth + 63L) >>> 6)];
++                this.sparse = null;
++            } else {
++                this.words = null;
++                this.sparse = new LongOpenHashSet();
++            }
++        }
++
++        private static boolean canPack(final int x, final int y, final int z) {
++            final long key = CoordinateUtils.getChunkSectionKey(x, y, z);
++            return CoordinateUtils.getChunkSectionX(key) == x
++                && CoordinateUtils.getChunkSectionY(key) == y
++                && CoordinateUtils.getChunkSectionZ(key) == z;
++        }
++
++        private boolean add(final int x, final int y, final int z, final long key) {
++            if (this.words == null) {
++                return this.sparse.add(key);
++            }
++
++            final int index = ((z - this.minZ) * this.sizeX + (x - this.minX)) * this.sizeY + (y - this.minY);
++            final int word = index >>> 6;
++            final long mask = 1L << (index & 63);
++            final long old = this.words[word];
++            if ((old & mask) != 0L) {
++                return false;
++            }
++            this.words[word] = old | mask;
++            return true;
++        }
++    }
++    // Leaf end - Optimize PoiAccess visited section tracking
++
+     public static int compareDistances(final double d1, final double d2) {
+         // we assume that the values are reasonably finite
+ 
+@@ -117,8 +180,8 @@ public final class PoiAccess {
+         final long centerKey = CoordinateUtils.getChunkSectionKey(centerX, centerY, centerZ);
+ 
+         final LongArrayFIFOQueue queue = new LongArrayFIFOQueue();
+-        final LongOpenHashSet seen = new LongOpenHashSet();
+-        seen.add(centerKey);
++        final SectionVisitSet seen = new SectionVisitSet(lowerX, lowerY, lowerZ, upperX, upperY, upperZ, centerX, centerY, centerZ); // Leaf - Optimize PoiAccess visited section tracking
++        seen.add(centerX, centerY, centerZ, centerKey);
+         queue.enqueue(centerKey);
+ 
+         while (!queue.isEmpty()) {
+@@ -160,7 +223,7 @@ public final class PoiAccess {
+                         final int neighbourZ = sectionZ + dz;
+ 
+                         final long neighbourKey = CoordinateUtils.getChunkSectionKey(neighbourX, neighbourY, neighbourZ);
+-                        if (seen.add(neighbourKey)) {
++                        if (seen.add(neighbourX, neighbourY, neighbourZ, neighbourKey)) { // Leaf - Optimize PoiAccess visited section tracking
+                             queue.enqueue(neighbourKey);
+                         }
+                     }
+@@ -360,8 +423,8 @@ public final class PoiAccess {
+         final long centerKey = CoordinateUtils.getChunkSectionKey(centerX, centerY, centerZ);
+ 
+         final LongArrayFIFOQueue queue = new LongArrayFIFOQueue();
+-        final LongOpenHashSet seen = new LongOpenHashSet();
+-        seen.add(centerKey);
++        final SectionVisitSet seen = new SectionVisitSet(lowerX, lowerY, lowerZ, upperX, upperY, upperZ, centerX, centerY, centerZ); // Leaf - Optimize PoiAccess visited section tracking
++        seen.add(centerX, centerY, centerZ, centerKey);
+         queue.enqueue(centerKey);
+ 
+         while (!queue.isEmpty()) {
+@@ -404,7 +467,7 @@ public final class PoiAccess {
+                         final int neighbourZ = sectionZ + dz;
+ 
+                         final long neighbourKey = CoordinateUtils.getChunkSectionKey(neighbourX, neighbourY, neighbourZ);
+-                        if (seen.add(neighbourKey)) {
++                        if (seen.add(neighbourX, neighbourY, neighbourZ, neighbourKey)) { // Leaf - Optimize PoiAccess visited section tracking
+                             queue.enqueue(neighbourKey);
+                         }
+                     }

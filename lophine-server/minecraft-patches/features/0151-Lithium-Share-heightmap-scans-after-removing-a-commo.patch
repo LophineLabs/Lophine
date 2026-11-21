@@ -1,0 +1,124 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Wed, 30 Jul 2025 23:18:41 +0200
+Subject: [PATCH] Lithium: Share heightmap scans after removing a common top
+ block
+
+Scan the same column once when all four live maps need to scan below an air replacement in their shared chunk. Skip empty LevelChunk sections only when their canonical air state has already failed each predicate. Keep the original heightmap write order and the sequential update for other cases.
+
+Original Leaf port: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0232-Lithium-combined-heightmap-update.patch
+Original Lithium implementation: https://github.com/CaffeineMC/lithium/blob/mc26.3-0.26.4/common/src/main/java/net/caffeinemc/mods/lithium/common/world/chunk/heightmap/CombinedHeightmapUpdate.java
+License: LGPL-3.0-only (https://www.gnu.org/licenses/lgpl-3.0.html)
+
+Co-authored-by: 2No2Name <2No2Name@web.de>
+
+diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
+index 640c40153f914cfcd1164cd82a08e6a0e771b4c1..74a5ff50ff7a787341334148486f19fdd2119814 100644
+--- a/net/minecraft/world/level/chunk/LevelChunk.java
++++ b/net/minecraft/world/level/chunk/LevelChunk.java
+@@ -413,10 +413,13 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+         Block newBlock = state.getBlock();
+         // Lophine start - catch update suppression crash
+         try {
+-        this.heightmaps.get(Heightmap.Types.MOTION_BLOCKING).update(localX, y, localZ, state);
+-        this.heightmaps.get(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES).update(localX, y, localZ, state);
+-        this.heightmaps.get(Heightmap.Types.OCEAN_FLOOR).update(localX, y, localZ, state);
+-        this.heightmaps.get(Heightmap.Types.WORLD_SURFACE).update(localX, y, localZ, state);
++        Heightmap.updateLiveHeightmaps( // Lithium - combined heightmap update
++            localX, y, localZ, state,
++            this.heightmaps.get(Heightmap.Types.MOTION_BLOCKING),
++            this.heightmaps.get(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES),
++            this.heightmaps.get(Heightmap.Types.OCEAN_FLOOR),
++            this.heightmaps.get(Heightmap.Types.WORLD_SURFACE)
++        );
+         boolean isEmpty = section.hasOnlyAir();
+         if (wasEmpty != isEmpty) {
+             this.level.getChunkSource().getLightEngine().updateSectionStatus(pos, isEmpty);
+diff --git a/net/minecraft/world/level/levelgen/Heightmap.java b/net/minecraft/world/level/levelgen/Heightmap.java
+index 6e9c66eeadcb5fead1f1efdd57378eaa18e8ab64..be94a27c0f23c5519126f83a3c55f9d742762910 100644
+--- a/net/minecraft/world/level/levelgen/Heightmap.java
++++ b/net/minecraft/world/level/levelgen/Heightmap.java
+@@ -21,6 +21,7 @@ import net.minecraft.util.StringRepresentable;
+ import net.minecraft.world.level.block.Blocks;
+ import net.minecraft.world.level.block.state.BlockState;
+ import net.minecraft.world.level.chunk.ChunkAccess;
++import net.minecraft.world.level.chunk.LevelChunk;
+ import org.slf4j.Logger;
+ 
+ public class Heightmap {
+@@ -119,6 +120,75 @@ public class Heightmap {
+         return false;
+     }
+ 
++    // Lithium start - combined heightmap update
++    public static void updateLiveHeightmaps(
++        final int x, final int y, final int z, final BlockState state,
++        final Heightmap motionBlocking, final Heightmap motionBlockingNoLeaves, final Heightmap oceanFloor, final Heightmap worldSurface
++    ) {
++        if (state.isAir()
++            && motionBlocking != null && motionBlockingNoLeaves != null && oceanFloor != null && worldSurface != null
++            && motionBlocking.chunk == motionBlockingNoLeaves.chunk
++            && motionBlocking.chunk == oceanFloor.chunk && motionBlocking.chunk == worldSurface.chunk
++            && motionBlocking.needsDownwardSearch(x, y, z, state)
++            && motionBlockingNoLeaves.needsDownwardSearch(x, y, z, state)
++            && oceanFloor.needsDownwardSearch(x, y, z, state)
++            && worldSurface.needsDownwardSearch(x, y, z, state)) {
++            final ChunkAccess chunk = motionBlocking.chunk;
++            final int minY = chunk.getMinY();
++            // A match has height scanY + 1, so minY also marks an unresolved search.
++            int motionHeight = minY;
++            int noLeavesHeight = minY;
++            int oceanHeight = minY;
++            int surfaceHeight = minY;
++            int remaining = 4;
++            final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
++
++            for (int scanY = y - 1; scanY >= minY && remaining > 0; --scanY) {
++                final BlockState below = chunk.getBlockState(pos.set(x, scanY, z));
++                if (below == state) {
++                    if (chunk.getClass() == LevelChunk.class && below == Blocks.AIR.defaultBlockState()) {
++                        final int sectionIndex = chunk.getSectionIndex(scanY);
++                        if (sectionIndex >= 0 && sectionIndex < chunk.getSections().length && chunk.getSection(sectionIndex).hasOnlyAir()) {
++                            scanY &= ~15;
++                        }
++                    }
++                    continue;
++                }
++                if (motionHeight == minY && motionBlocking.isOpaque.test(below)) {
++                    motionHeight = scanY + 1;
++                    --remaining;
++                }
++                if (noLeavesHeight == minY && motionBlockingNoLeaves.isOpaque.test(below)) {
++                    noLeavesHeight = scanY + 1;
++                    --remaining;
++                }
++                if (oceanHeight == minY && oceanFloor.isOpaque.test(below)) {
++                    oceanHeight = scanY + 1;
++                    --remaining;
++                }
++                if (surfaceHeight == minY && worldSurface.isOpaque.test(below)) {
++                    surfaceHeight = scanY + 1;
++                    --remaining;
++                }
++            }
++
++            motionBlocking.setHeight(x, z, motionHeight);
++            motionBlockingNoLeaves.setHeight(x, z, noLeavesHeight);
++            oceanFloor.setHeight(x, z, oceanHeight);
++            worldSurface.setHeight(x, z, surfaceHeight);
++        } else {
++            motionBlocking.update(x, y, z, state);
++            motionBlockingNoLeaves.update(x, y, z, state);
++            oceanFloor.update(x, y, z, state);
++            worldSurface.update(x, y, z, state);
++        }
++    }
++
++    private boolean needsDownwardSearch(final int x, final int y, final int z, final BlockState state) {
++        return this.getFirstAvailable(x, z) - 1 == y && !this.isOpaque.test(state);
++    }
++    // Lithium end - combined heightmap update
++
+     public int getFirstAvailable(final int x, final int z) {
+         return this.getFirstAvailable(getIndex(x, z));
+     }
