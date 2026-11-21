@@ -1,0 +1,48 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hayanesuru <hayanesuru@outlook.jp>
+Date: Thu, 19 Mar 2026 20:11:58 +0900
+Subject: [PATCH] Leaf: Reduce enchantment iteration allocations
+
+Iterate the same ordered entries in the two internal enchantment visitor paths. Keep the public entrySet contract and the order of equipment and enchantment callbacks.
+
+Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0266-reduce-enchantment-allocations.patch
+
+diff --git a/net/minecraft/world/item/enchantment/EnchantmentHelper.java b/net/minecraft/world/item/enchantment/EnchantmentHelper.java
+index 800c736bece30f670210684249abbaa95d8dd078..548d4d9f09bb626ab5b9fd1e1b9497ef636b6810 100644
+--- a/net/minecraft/world/item/enchantment/EnchantmentHelper.java
++++ b/net/minecraft/world/item/enchantment/EnchantmentHelper.java
+@@ -132,7 +132,7 @@ public class EnchantmentHelper {
+     private static void runIterationOnItem(final ItemStack piece, final EnchantmentHelper.EnchantmentVisitor method) {
+         ItemEnchantments enchantments = piece.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+ 
+-        for (Entry<Holder<Enchantment>> entry : enchantments.entrySet()) {
++        for (Entry<Holder<Enchantment>> entry : enchantments.entriesForIteration()) { // Leaf - reduce enchantment allocations
+             method.accept(entry.getKey(), entry.getIntValue());
+         }
+     }
+@@ -145,7 +145,7 @@ public class EnchantmentHelper {
+             if (itemEnchantments != null && !itemEnchantments.isEmpty()) {
+                 EnchantedItemInUse itemInUse = new EnchantedItemInUse(piece, slot, owner);
+ 
+-                for (Entry<Holder<Enchantment>> entry : itemEnchantments.entrySet()) {
++                for (Entry<Holder<Enchantment>> entry : itemEnchantments.entriesForIteration()) { // Leaf - reduce enchantment allocations
+                     Holder<Enchantment> enchantment = entry.getKey();
+                     if (enchantment.value().matchingSlot(slot)) {
+                         method.accept(enchantment, entry.getIntValue(), itemInUse);
+diff --git a/net/minecraft/world/item/enchantment/ItemEnchantments.java b/net/minecraft/world/item/enchantment/ItemEnchantments.java
+index 5c55e9b4ad1f3d7226e49c5d476ea01c6d4963a2..afad9973df9d89af9b0855d7401ef0cc50b14f99 100644
+--- a/net/minecraft/world/item/enchantment/ItemEnchantments.java
++++ b/net/minecraft/world/item/enchantment/ItemEnchantments.java
+@@ -101,6 +101,12 @@ public class ItemEnchantments implements TooltipProvider {
+         return Collections.unmodifiableSet(this.enchantments.object2IntEntrySet());
+     }
+ 
++    // Leaf start - reduce enchantment allocations
++    Set<Entry<Holder<Enchantment>>> entriesForIteration() {
++        return this.enchantments.object2IntEntrySet();
++    }
++    // Leaf end - reduce enchantment allocations
++
+     public int size() {
+         return this.enchantments.size();
+     }

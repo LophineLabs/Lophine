@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+Date: Sat, 2 Nov 2024 04:15:20 -0400
+Subject: [PATCH] Leaf: Reuse cached Moonrise chunk keys
+
+Read the precomputed key in CoordinateUtils when a ChunkPos is already available. Preserve the other overloads and the signed coordinate packing used by existing callers.
+
+Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0158-Cache-chunk-key.patch
+
+diff --git a/src/main/java/ca/spottedleaf/moonrise/common/util/CoordinateUtils.java b/src/main/java/ca/spottedleaf/moonrise/common/util/CoordinateUtils.java
+index 9cf0983f0d47ba78511a174138d37c0f1b82ed31..c36c71cd6e086c42c5945ff2754bb8ec6fcc4e85 100644
+--- a/src/main/java/ca/spottedleaf/moonrise/common/util/CoordinateUtils.java
++++ b/src/main/java/ca/spottedleaf/moonrise/common/util/CoordinateUtils.java
+@@ -17,11 +17,11 @@ public final class CoordinateUtils {
+ 
+     public static long getChunkKey(final Entity entity) {
+         final ChunkPos pos = entity.chunkPosition();
+-        return ((long)pos.z() << 32) | (pos.x() & 0xFFFFFFFFL);
++        return pos.longKey(); // Leaf - Cache chunk key
+     }
+ 
+     public static long getChunkKey(final ChunkPos pos) {
+-        return ((long)pos.z() << 32) | (pos.x() & 0xFFFFFFFFL);
++        return pos.longKey(); // Leaf - Cache chunk key
+     }
+ 
+     public static long getChunkKey(final SectionPos pos) {

@@ -1,0 +1,119 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Angeline <jellysquid3@users.noreply.github.com>
+Date: Wed, 15 Apr 2020 18:54:46 +0000
+Subject: [PATCH] Lithium and Pluto: Reuse redstone direction arrays
+
+Keep the original enum order in piston signal and slime branching checks, vanilla wire notifications, and Alternate Current update-order selection. Keep the cached arrays private to their readers.
+
+Lithium piston source (LGPL-3.0): https://github.com/CaffeineMC/lithium/commit/a1a656df731e1b2f6d0fddb16debb1dd0d591b30
+Lithium redstone source (LGPL-3.0): https://github.com/CaffeineMC/lithium/commit/12faf9e356161f4c158c46d6c2f0daa1d087b643
+Lithium 26.3 source: https://github.com/CaffeineMC/lithium/tree/mc26.3-0.26.4/common/src/main/java/net/caffeinemc/mods/lithium/mixin/alloc/enum_values
+Pluto source (GPL-3.0-only), via Leaf: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0251-Pluto-reduce-allocation.patch
+Original project: https://github.com/Yive/Pluto
+
+Co-authored-by: 2No2Name <2No2Name@web.de>
+Co-authored-by: Yive <6853318+Yive@users.noreply.github.com>
+
+diff --git a/alternate/current/wire/WireHandler.java b/alternate/current/wire/WireHandler.java
+index fcf889a3125008333f2574598ccdd656496311be..48401ca15e240737bfd7a1f270d999004640db87 100644
+--- a/alternate/current/wire/WireHandler.java
++++ b/alternate/current/wire/WireHandler.java
+@@ -136,6 +136,8 @@ import net.minecraft.world.level.redstone.Redstone;
+  */
+ public class WireHandler {
+ 
++    private static final UpdateOrder[] UPDATE_ORDERS = UpdateOrder.values(); // Pluto - reduce allocation
++
+     public static class Directions {
+ 
+         public static final Direction[] ALL        = { Direction.WEST, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.DOWN, Direction.UP };
+@@ -489,7 +491,7 @@ public class WireHandler {
+             }
+         }
+ 
+-        updateOrder = UpdateOrder.values()[level.paperConfig().misc.alternateCurrentUpdateOrder.ordinal()];
++        updateOrder = UPDATE_ORDERS[level.paperConfig().misc.alternateCurrentUpdateOrder.ordinal()]; // Pluto - reduce allocation
+     }
+ 
+     /**
+diff --git a/net/minecraft/world/level/block/RedstoneWireBlock.java b/net/minecraft/world/level/block/RedstoneWireBlock.java
+index 17a1e488a20a48a1cde452872c60520c589bf0d0..5a6d91af560e95a8158f9b3a98234792300b58ee 100644
+--- a/net/minecraft/world/level/block/RedstoneWireBlock.java
++++ b/net/minecraft/world/level/block/RedstoneWireBlock.java
+@@ -60,6 +60,7 @@ public class RedstoneWireBlock extends Block {
+         }
+     });
+     private static final float PARTICLE_DENSITY = 0.2F;
++    private static final Direction[] DIRECTIONS = Direction.values(); // Lithium - avoid direction array allocations
+     private final Function<BlockState, VoxelShape> shapes;
+     private final BlockState crossState;
+     private final RedstoneWireEvaluator evaluator = new DefaultRedstoneWireEvaluator(this);
+@@ -362,7 +363,7 @@ public class RedstoneWireBlock extends Block {
+         if (level.getBlockState(pos).is(this)) {
+             level.updateNeighborsAt(pos, this);
+ 
+-            for (Direction direction : Direction.values()) {
++            for (Direction direction : DIRECTIONS) {
+                 level.updateNeighborsAt(pos.relative(direction), this);
+             }
+         }
+@@ -393,7 +394,7 @@ public class RedstoneWireBlock extends Block {
+     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+         if (!isMoving && !state.is(newState.getBlock())) {
+             super.onRemove(state, level, pos, newState, isMoving);
+-            for (Direction direction : Direction.values()) {
++            for (Direction direction : DIRECTIONS) {
+                 level.updateNeighborsAt(pos.relative(direction), this);
+             }
+ 
+@@ -414,7 +415,7 @@ public class RedstoneWireBlock extends Block {
+     @Override
+     protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
+         if (!movedByPiston) {
+-            for (Direction direction : Direction.values()) {
++            for (Direction direction : DIRECTIONS) {
+                 level.updateNeighborsAt(pos.relative(direction), this);
+             }
+ 
+diff --git a/net/minecraft/world/level/block/piston/PistonBaseBlock.java b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
+index dc2580f0071e98f53cb2770eac154c31181ee327..e3a607695d82e6c23ad9e54efd36ce89de7dfc19 100644
+--- a/net/minecraft/world/level/block/piston/PistonBaseBlock.java
++++ b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
+@@ -47,6 +47,7 @@ public class PistonBaseBlock extends DirectionalBlock {
+     public static final int TRIGGER_CONTRACT = 1;
+     public static final int TRIGGER_DROP = 2;
+     public static final int PLATFORM_THICKNESS = 4;
++    private static final Direction[] DIRECTIONS = Direction.values(); // Lithium - avoid direction array allocations
+     private static final Map<Direction, VoxelShape> SHAPES = Shapes.rotateAll(Block.boxZ(16.0, 4.0, 16.0));
+     private final boolean isSticky;
+ 
+@@ -119,7 +120,7 @@ public class PistonBaseBlock extends DirectionalBlock {
+     }
+ 
+     private boolean getNeighborSignal(final SignalGetter level, final BlockPos pos, final Direction pushDirection) {
+-        for (Direction direction : Direction.values()) {
++        for (Direction direction : DIRECTIONS) {
+             if (direction != pushDirection && level.hasSignal(pos.relative(direction), direction)) {
+                 return true;
+             }
+diff --git a/net/minecraft/world/level/block/piston/PistonStructureResolver.java b/net/minecraft/world/level/block/piston/PistonStructureResolver.java
+index 5a17404ddd479dc88ec2eb67648e5785155a2d8a..d107bee76681ebcdc9d0ff2f69c42c18276d267d 100644
+--- a/net/minecraft/world/level/block/piston/PistonStructureResolver.java
++++ b/net/minecraft/world/level/block/piston/PistonStructureResolver.java
+@@ -11,6 +11,7 @@ import net.minecraft.world.level.material.PushReaction;
+ 
+ public class PistonStructureResolver {
+     public static final int MAX_PUSH_DEPTH = 12;
++    private static final Direction[] DIRECTIONS = Direction.values(); // Lithium - avoid direction array allocations
+     private final Level level;
+     private final BlockPos pistonPos;
+     private final boolean extending;
+@@ -218,7 +219,7 @@ public class PistonStructureResolver {
+         if (!this.carpetOwns(fromPos)) return false;
+         BlockState fromState = this.level.getBlockState(fromPos);
+ 
+-        for (Direction direction : Direction.values()) {
++        for (Direction direction : DIRECTIONS) {
+             if (direction.getAxis() != this.pushDirection.getAxis()) {
+                 BlockPos neighbourPos = fromPos.relative(direction);
+                 if (!this.carpetOwns(neighbourPos)) return false;

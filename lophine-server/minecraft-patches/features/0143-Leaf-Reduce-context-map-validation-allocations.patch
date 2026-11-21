@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Sat, 22 Mar 2025 00:08:11 +0100
+Subject: [PATCH] Leaf: Reduce context map validation allocations
+
+Test key membership directly on success. Keep the original difference views on error so both diagnostic order and key formatting stay the same.
+
+Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0183-Optimize-ContextMap.create.patch
+
+diff --git a/net/minecraft/util/context/ContextMap.java b/net/minecraft/util/context/ContextMap.java
+index 2354566c5e4e7e7c13801fc2a7b47fb83f299370..85f6541b505a136b24d002facab4f2a4f52789f2 100644
+--- a/net/minecraft/util/context/ContextMap.java
++++ b/net/minecraft/util/context/ContextMap.java
+@@ -67,17 +67,28 @@ public final class ContextMap {
+         }
+ 
+         public ContextMap buildAndValidate(final ContextKeySet paramSet) {
+-            Set<ContextKey<?>> notAllowed = Sets.difference(this.params.keySet(), paramSet.allowed());
+-            if (!notAllowed.isEmpty()) {
+-                throw new IllegalArgumentException("Parameters not allowed in this parameter set: " + notAllowed);
+-            } else {
+-                Set<ContextKey<?>> missingRequired = Sets.difference(paramSet.required(), this.params.keySet());
+-                if (!missingRequired.isEmpty()) {
+-                    throw new IllegalArgumentException("Missing required parameters: " + missingRequired);
+-                } else {
+-                    return this.build();
++            // Leaf start - Optimize ContextMap.create
++            final Set<ContextKey<?>> keys = this.params.keySet();
++            final Set<ContextKey<?>> allowed = paramSet.allowed();
++
++            // Check for any parameters that are not allowed
++            for (ContextKey<?> key : keys) {
++                if (!allowed.contains(key)) {
++                    throw new IllegalArgumentException("Parameters not allowed in this parameter set: " + Sets.difference(keys, allowed));
+                 }
+             }
++
++            final Set<ContextKey<?>> required = paramSet.required();
++
++            // Check for any required parameters that are missing
++            for (ContextKey<?> key : required) {
++                if (!keys.contains(key)) {
++                    throw new IllegalArgumentException("Missing required parameters: " + Sets.difference(required, keys));
++                }
++            }
++
++            return this.build();
++            // Leaf end - Optimize ContextMap.create
+         }
+     }
+ }
