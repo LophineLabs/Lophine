@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Mon, 14 Apr 2025 18:07:21 +0200
+Subject: [PATCH] Leaf: Optimize dig speed effect lookups
+
+Read the Haste and Conduit Power effects once each in their original order and keep the existing amplifier calculation.
+
+Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0188-Optimise-MobEffectUtil-getDigSpeedAmplification.patch
+
+diff --git a/net/minecraft/world/effect/MobEffectUtil.java b/net/minecraft/world/effect/MobEffectUtil.java
+index 6dce240a64781f3fb578bc328ab4a79964b03371..37ce1e5d72a6fdcfe0c73adac8f5669fa82dd88d 100644
+--- a/net/minecraft/world/effect/MobEffectUtil.java
++++ b/net/minecraft/world/effect/MobEffectUtil.java
+@@ -27,17 +27,21 @@ public final class MobEffectUtil {
+     }
+ 
+     public static int getDigSpeedAmplification(final LivingEntity mob) {
+-        int a = 0;
+-        int b = 0;
+-        if (mob.hasEffect(MobEffects.HASTE)) {
+-            a = mob.getEffect(MobEffects.HASTE).getAmplifier();
++        // Leaf start - Optimise MobEffectUtil#getDigSpeedAmplification
++        int digAmplifier = 0;
++        int conduitAmplifier = 0;
++        MobEffectInstance digEffect = mob.getEffect(MobEffects.HASTE);
++        if (digEffect != null) {
++            digAmplifier = digEffect.getAmplifier();
+         }
+ 
+-        if (mob.hasEffect(MobEffects.CONDUIT_POWER)) {
+-            b = mob.getEffect(MobEffects.CONDUIT_POWER).getAmplifier();
++        MobEffectInstance conduitEffect = mob.getEffect(MobEffects.CONDUIT_POWER);
++        if (conduitEffect != null) {
++            conduitAmplifier = conduitEffect.getAmplifier();
+         }
+ 
+-        return Math.max(a, b);
++        return Math.max(digAmplifier, conduitAmplifier);
++        // Leaf end - Optimise MobEffectUtil#getDigSpeedAmplification
+     }
+ 
+     public static boolean hasWaterBreathing(final LivingEntity mob) {
