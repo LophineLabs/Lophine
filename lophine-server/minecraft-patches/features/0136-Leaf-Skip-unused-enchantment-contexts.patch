@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hayanesuru <hayanesuru@outlook.jp>
+Date: Sat, 21 Nov 2026 20:32:25 +0800
+Subject: [PATCH] Leaf: Skip unused enchantment contexts
+
+Adapt Leaf 0266 (hayanesuru) at 06c9c91a17e61aeed16bcfc846ebe91aa70d6c84. Skip constructing a loot context only when no effects can consume it.
+
+https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0266-reduce-enchantment-allocations.patch
+
+diff --git a/net/minecraft/world/item/enchantment/Enchantment.java b/net/minecraft/world/item/enchantment/Enchantment.java
+index e7ad11131097ab803a9420eb416058750543904e..cdbde1307e7aa3ad38531419fa8d941478e202cb 100644
+--- a/net/minecraft/world/item/enchantment/Enchantment.java
++++ b/net/minecraft/world/item/enchantment/Enchantment.java
+@@ -210,9 +210,15 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
+     }
+ 
+     public boolean isImmuneToDamage(final ServerLevel serverLevel, final int enchantmentLevel, final Entity victim, final DamageSource source) {
++        // Leaf start - reduce enchantment allocations
++        List<ConditionalEffect<DamageImmunity>> effects = this.getEffects(EnchantmentEffectComponents.DAMAGE_IMMUNITY);
++        if (effects.isEmpty()) {
++            return false;
++        }
++        // Leaf end - reduce enchantment allocations
+         LootContext context = damageContext(serverLevel, enchantmentLevel, victim, source);
+ 
+-        for (ConditionalEffect<DamageImmunity> filteredEffect : this.getEffects(EnchantmentEffectComponents.DAMAGE_IMMUNITY)) {
++        for (ConditionalEffect<DamageImmunity> filteredEffect : effects) { // Leaf - reduce enchantment allocations
+             if (filteredEffect.matches(context)) {
+                 return true;
+             }
+@@ -414,8 +420,14 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
+     }
+ 
+     public void tick(final ServerLevel serverLevel, final int enchantmentLevel, final EnchantedItemInUse item, final Entity entity) {
++        // Leaf start - reduce enchantment allocations
++        List<ConditionalEffect<EnchantmentEntityEffect>> effects = this.getEffects(EnchantmentEffectComponents.TICK);
++        if (effects.isEmpty()) {
++            return;
++        }
++        // Leaf end - reduce enchantment allocations
+         applyEffects(
+-            this.getEffects(EnchantmentEffectComponents.TICK),
++            effects, // Leaf - reduce enchantment allocations
+             entityContext(serverLevel, enchantmentLevel, entity, entity.position()),
+             e -> e.apply(serverLevel, enchantmentLevel, item, entity, entity.position())
+         );

@@ -1,0 +1,66 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hayanesuru <hayanesuru@outlook.jp>
+Date: Sat, 21 Nov 2026 20:32:25 +0800
+Subject: [PATCH] Leaf: Reduce chunk packet construction allocations
+
+Adapt Leaf 0310. Retain HashMap iteration on the wire and heightmap snapshot ownership.
+
+https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0310-Optimize-chunk-packet-construction.patch
+
+diff --git a/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java b/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java
+index ff356905b5a784857d31252aac513dbff8af5c90..3ca2b6b34fe3d2be6e323084423b9f3074027b59 100644
+--- a/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java
++++ b/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java
+@@ -4,11 +4,11 @@ import com.google.common.collect.Lists;
+ import io.netty.buffer.ByteBuf;
+ import io.netty.buffer.Unpooled;
+ import java.util.EnumMap;
++import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Optional;
+ import java.util.Map.Entry;
+-import java.util.stream.Collectors;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.core.SectionPos;
+ import net.minecraft.core.registries.Registries;
+@@ -68,10 +68,14 @@ public class ClientboundLevelChunkPacketData {
+     }
+     public ClientboundLevelChunkPacketData(final LevelChunk levelChunk, final io.papermc.paper.antixray.ChunkPacketInfo<net.minecraft.world.level.block.state.BlockState> chunkPacketInfo) {
+         // Paper end - Anti-Xray - Add chunk packet info
+-        this.heightmaps = levelChunk.getHeightmaps()
+-            .stream()
+-            .filter(entryx -> ((Heightmap.Types)entryx.getKey()).sendToClient())
+-            .collect(Collectors.toMap(Entry::getKey, entryx -> (long[])((Heightmap)entryx.getValue()).getRawData().clone()));
++        // Leaf start - Optimize chunk packet construction
++        this.heightmaps = new HashMap<>();
++        for (Entry<Heightmap.Types, Heightmap> entry : levelChunk.getHeightmaps()) {
++            if (entry.getKey().sendToClient()) {
++                this.heightmaps.put(entry.getKey(), entry.getValue().getRawData().clone());
++            }
++        }
++        // Leaf end - Optimize chunk packet construction
+         this.buffer = new byte[calculateChunkSize(levelChunk)];
+         // Paper start - Anti-Xray - Add chunk packet info
+         if (chunkPacketInfo != null) {
+@@ -81,17 +85,17 @@ public class ClientboundLevelChunkPacketData {
+         this.blockEntitiesData = Lists.newArrayList();
+         int totalTileEntities = 0; // Paper - Handle oversized block entities in chunks
+ 
+-        for (Entry<BlockPos, BlockEntity> entry : levelChunk.getBlockEntities().entrySet()) {
++        for (BlockEntity blockEntity : levelChunk.getBlockEntities().values()) { // Leaf - Optimize chunk packet construction
+             // Paper start - Handle oversized block entities in chunks
+             if (++totalTileEntities > BLOCK_ENTITY_LIMIT) {
+-                net.minecraft.network.protocol.Packet<ClientGamePacketListener> packet = entry.getValue().getUpdatePacket();
++                net.minecraft.network.protocol.Packet<ClientGamePacketListener> packet = blockEntity.getUpdatePacket(); // Leaf - Optimize chunk packet construction
+                 if (packet != null) {
+                     this.extraPackets.add(packet);
+                     continue;
+                 }
+             }
+             // Paper end - Handle oversized block entities in chunks
+-            this.blockEntitiesData.add(ClientboundLevelChunkPacketData.BlockEntityInfo.create(entry.getValue()));
++            this.blockEntitiesData.add(ClientboundLevelChunkPacketData.BlockEntityInfo.create(blockEntity)); // Leaf - Optimize chunk packet construction
+         }
+     }
+ 

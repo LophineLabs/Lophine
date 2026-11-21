@@ -1,0 +1,75 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>
+Date: Sat, 21 Nov 2026 20:32:26 +0800
+Subject: [PATCH] Lithium: Cache retracting piston collision shapes
+
+Adapt Leaf 0302, itself based on Lithium by 2No2Name <2No2Name@web.de> (LGPL-3.0-only), revision 11ea08adce6f94627d3eaaa65506a60e0451c8b6.
+
+Store built-in geometry independently of live piston data. Preserve no-clip and fall back for mismatched facing, other progress and other blocks.
+
+https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0302-Lithium-Cache-retracting-piston-collision-shapes.patch
+
+diff --git a/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java b/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
+index cc15fc307b426de70faf04ed656b8c34af7bea28..11b4502750302363be6b1561eeca959e799de71d 100644
+--- a/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
++++ b/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
+@@ -429,6 +429,16 @@ public class PistonMovingBlockEntity extends BlockEntity {
+             return pistonHeadShape;
+         }
+ 
++        float extendedProgress = this.getExtendedProgress(this.progress);
++        // Leaf start - Lithium - cache retracting piston collision shapes
++        if (!this.extending && this.isSourcePiston
++            && (this.movedState.is(Blocks.PISTON) || this.movedState.is(Blocks.STICKY_PISTON))
++            && this.movedState.getValue(PistonBaseBlock.FACING) == this.direction
++            && (extendedProgress == 0.0F || extendedProgress == 0.5F || extendedProgress == 1.0F)) {
++            return RetractingShapes.SHAPES[this.direction.get3DDataValue()][(int)(2.0F * extendedProgress)];
++        }
++        // Leaf end - Lithium - cache retracting piston collision shapes
++
+         BlockState blockState;
+         if (this.isSourcePiston()) {
+             blockState = Blocks.PISTON_HEAD
+@@ -439,13 +449,41 @@ public class PistonMovingBlockEntity extends BlockEntity {
+             blockState = this.movedState;
+         }
+ 
+-        float extendedProgress = this.getExtendedProgress(this.progress);
+         double dx = this.direction.getStepX() * extendedProgress;
+         double dy = this.direction.getStepY() * extendedProgress;
+         double dz = this.direction.getStepZ() * extendedProgress;
+         return Shapes.or(pistonHeadShape, blockState.getCollisionShape(level, pos).move(dx, dy, dz));
+     }
+ 
++    // Leaf start - Lithium - cache retracting piston collision shapes
++    private static final class RetractingShapes {
++        private static final VoxelShape[][] SHAPES = create();
++
++        private static VoxelShape[][] create() {
++            Direction[] directions = Direction.values();
++            VoxelShape[][] shapes = new VoxelShape[directions.length][3];
++            var level = net.minecraft.world.level.EmptyBlockGetter.INSTANCE;
++            for (Direction direction : directions) {
++                VoxelShape base = Blocks.PISTON.defaultBlockState()
++                    .setValue(PistonBaseBlock.EXTENDED, true)
++                    .setValue(PistonBaseBlock.FACING, direction)
++                    .getCollisionShape(level, BlockPos.ZERO);
++                for (int index = 0; index < 3; ++index) {
++                    float offset = index * 0.5F;
++                    VoxelShape head = Blocks.PISTON_HEAD.defaultBlockState()
++                        .setValue(PistonHeadBlock.FACING, direction)
++                        .setValue(PistonHeadBlock.SHORT, offset < 0.25F)
++                        .getCollisionShape(level, BlockPos.ZERO);
++                    shapes[direction.get3DDataValue()][index] = Shapes.or(base, head.move(
++                        direction.getStepX() * offset, direction.getStepY() * offset, direction.getStepZ() * offset
++                    ));
++                }
++            }
++            return shapes;
++        }
++    }
++    // Leaf end - Lithium - cache retracting piston collision shapes
++
+     public long getLastTicked() {
+         return this.lastTicked;
+     }
