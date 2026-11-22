@@ -54,6 +54,10 @@ public class ConfigManager {
                 .toArray(CompletableFuture[]::new);
         CompletableFuture.allOf(futures).join();
         acceptTransformedConfigs();
+        CompletableFuture<?>[] futures1 = configfiles.values().stream()
+                .map(config -> CompletableFuture.runAsync(config::runBeforeServerInit))
+                .toArray(CompletableFuture[]::new);
+        CompletableFuture.allOf(futures1).join();
     }
 
     public static void loadConfigFiles() {

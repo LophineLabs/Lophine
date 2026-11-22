@@ -70,21 +70,21 @@ public class CpuAffinityConfig {
         return chunkSystemIoRunnableWrapper == null ? in : chunkSystemIoRunnableWrapper.wrap(in);
     }
 
-    @NeedRun(when = EnumRunnableType.ON_LOADED)
+    @NeedRun(when = EnumRunnableType.BEFORE_SERVER_INIT)
     public void onLoaded() {
         if (enabledForTickRegion) {
-            tickRegionRunnableWrapper = new AffinityRunnableWrapper("tick_region", parseAffinity(tickRegionAffinity));
+            tickRegionRunnableWrapper = new AffinityRunnableWrapper("tick_region", parseAffinity("tick_region", tickRegionAffinity));
             LOGGER.info("Tick region thread now bound to: {}", tickRegionRunnableWrapper.getAffinity());
         }
 
         if (enabledForChunkSystemIo) {
-            chunkSystemIoRunnableWrapper = new AffinityRunnableWrapper("chunk_system_io", parseAffinity(chunkSystemIoAffinity));
+            chunkSystemIoRunnableWrapper = new AffinityRunnableWrapper("chunk_system_io", parseAffinity("chunk_system_io", chunkSystemIoAffinity));
             LOGGER.info("Chunk system I/O thread now bound to: {}", chunkSystemIoRunnableWrapper.getAffinity());
         }
 
         if (enabledForChunkSystemWorker) {
-            chunkSystemWorkerRunnableWrapper = new AffinityRunnableWrapper("chunk_system_worker", parseAffinity(chunkSystemWorkerAffinity));
-            LOGGER.info("Chunk system worker thread now bound to: {}", chunkSystemIoRunnableWrapper.getAffinity());
+            chunkSystemWorkerRunnableWrapper = new AffinityRunnableWrapper("chunk_system_worker", parseAffinity("chunk_system_worker", chunkSystemWorkerAffinity));
+            LOGGER.info("Chunk system worker thread now bound to: {}", chunkSystemWorkerRunnableWrapper.getAffinity());
         }
 
         if (!inited) {
@@ -92,7 +92,7 @@ public class CpuAffinityConfig {
         }
     }
 
-    private @NonNull BitSet parseAffinity(@NonNull List<String> affinity) {
+    private @NonNull BitSet parseAffinity(@NonNull String name, @NonNull List<String> affinity) {
         int maxAvailable = Runtime.getRuntime().availableProcessors();
         BitSet affinitySet = new BitSet(affinity.size());
         affinity.stream()
@@ -114,6 +114,9 @@ public class CpuAffinityConfig {
                     }
                 })
                 .forEach(affinitySet::set);
+        if (affinitySet.isEmpty() && !affinity.isEmpty()) {
+            LOGGER.warn("All configured cpu ids for {} were filtered out (available processors = {}), the affinity mask is empty and binding will be skipped for these threads.", name, maxAvailable);
+        }
         return affinitySet;
     }
 }

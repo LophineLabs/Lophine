@@ -999,6 +999,12 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         saveConfigs();
     }
 
+    public void runBeforeServerInit() {
+        for (Map.Entry<Object, Set<Exception>> entry : allInstanced.entrySet()) {
+            invokeNeedRunMethods(entry.getKey(), EnumRunnableType.BEFORE_SERVER_INIT, entry.getValue());
+        }
+    }
+
     private void invokeNeedRunMethods(Object module, EnumRunnableType type, @Nullable Set<Exception> exs) {
         for (Method method : module.getClass().getDeclaredMethods()) {
             NeedRun needRun = method.getAnnotation(NeedRun.class);
