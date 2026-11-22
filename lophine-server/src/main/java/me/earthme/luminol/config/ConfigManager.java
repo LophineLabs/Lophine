@@ -63,6 +63,7 @@ public class ConfigManager {
                 .toArray(CompletableFuture[]::new);
         CompletableFuture.allOf(futures).join();
         acceptTransformedConfigs();
+        runForEachConfig(ConfigsInstance::runBeforeServerInit);
     }
 
     public static void loadConfigFiles() {
