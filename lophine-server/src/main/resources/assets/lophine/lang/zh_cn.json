@@ -1549,6 +1549,8 @@
   "luminol.optimizations.cpu_affinity.enable_for_chunksystem_io.comment": "启用区块 I/O 线程的 CPU 亲和性绑定。CPU 编号来自对应的亲和性列表；此设置需要重启。",
   "luminol.optimizations.cpu_affinity.enable_for_chunksystem_worker": "为区块工作线程绑定 CPU",
   "luminol.optimizations.cpu_affinity.enable_for_chunksystem_worker.comment": "启用区块工作线程的 CPU 亲和性绑定。CPU 编号来自对应的亲和性列表；此设置需要重启。",
+  "luminol.optimizations.cpu_affinity.enable_for_netty_io": "启用 netty I/O 线程的 CPU 亲和性绑定",
+  "luminol.optimizations.cpu_affinity.enable_for_netty_io.comment": "启用 netty I/O 线程的 CPU 亲和性绑定。CPU 编号来自匹配的亲和性列表；此设置需要重启。",
   "luminol.optimizations.cpu_affinity.enabled_for_tickregion": "启用 Tick 区域 CPU 亲和性",
   "luminol.optimizations.cpu_affinity.enabled_for_tickregion.comment": "使用此项可以将 tick region scheduler 的线程（以下相同）固定到后续配置 tickregion_affinity 中列出的 CPU 核心，\n这对带有 P 核和 E 核的 CPU（如第 12/13/14 代 Intel Core CPU 等）很有用。",
   "luminol.optimizations.cpu_affinity.tickregion_affinity": "区域刻线程 CPU 编号列表",

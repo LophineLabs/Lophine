@@ -8,7 +8,7 @@ Skip cleanup when no ticker was retired. Track the first observed identity direc
 Inspired by SparklyPaper ticker cleanup: https://github.com/SparklyPower/SparklyPaper/blob/68ffbc524dd690c048a20d3f1c2f735173b09bac/sparklypaper-server/minecraft-patches/features/0004-Fix-MC-117075-TE-Unload-Lag-Spike.patch
 
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index 64f3401a0209d582c36342e60ec3b621fddf9c7e..e6d7616e1106ff36c87d7b50a56df8a105bde194 100644
+index 64901f65ba1271f01ec3f026d089bf76f2fd0175..8f986069e7c1ebdad217704252a7489ceeb82626 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -1567,13 +1567,24 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl

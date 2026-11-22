@@ -1549,6 +1549,8 @@
   "luminol.optimizations.cpu_affinity.enable_for_chunksystem_io.comment": "Enable CPU affinity for chunk I/O threads. CPU IDs come from the matching affinity list; this setting requires a restart.",
   "luminol.optimizations.cpu_affinity.enable_for_chunksystem_worker": "Bind chunk worker threads to CPUs",
   "luminol.optimizations.cpu_affinity.enable_for_chunksystem_worker.comment": "Enable CPU affinity for chunk worker threads. CPU IDs come from the matching affinity list; this setting requires a restart.",
+  "luminol.optimizations.cpu_affinity.enable_for_netty_io": "Bind netty I/O threads to CPUs",
+  "luminol.optimizations.cpu_affinity.enable_for_netty_io.comment": "Enable CPU affinity for netty I/O threads. CPU IDs come from the matching affinity list; this setting requires a restart.",
   "luminol.optimizations.cpu_affinity.enabled_for_tickregion": "Enable CPU affinity for tick regions",
   "luminol.optimizations.cpu_affinity.enabled_for_tickregion.comment": "Using this you could pin the threads of tick region scheduler(Following are the same) to cpu cores listed in the config 'tickregion_affinity' following,\nwhich is useful for those CPU with P and E cores (such as 12/13/14 gen Intel Core CPUs and so on.)",
   "luminol.optimizations.cpu_affinity.tickregion_affinity": "CPU IDs for region tick threads",

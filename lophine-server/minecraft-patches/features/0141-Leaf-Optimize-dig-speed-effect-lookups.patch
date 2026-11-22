@@ -8,7 +8,7 @@ Read the Haste and Conduit Power effects once each in their original order and k
 Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0188-Optimise-MobEffectUtil-getDigSpeedAmplification.patch
 
 diff --git a/net/minecraft/world/effect/MobEffectUtil.java b/net/minecraft/world/effect/MobEffectUtil.java
-index 6dce240a64781f3fb578bc328ab4a79964b03371..37ce1e5d72a6fdcfe0c73adac8f5669fa82dd88d 100644
+index f1c57bc4310784999784d77678ea88912d6e41db..581aea02f6ed53d072caf47ddc051b497798fa33 100644
 --- a/net/minecraft/world/effect/MobEffectUtil.java
 +++ b/net/minecraft/world/effect/MobEffectUtil.java
 @@ -27,17 +27,21 @@ public final class MobEffectUtil {

@@ -17,3 +17,17 @@ index 6f27d78de14e49f1c8aac1f8b964c9a20af08871..ae424c8931a2f82c6c8d4ddd8422a2c1
                  ret.setUncaughtExceptionHandler(TickRegionScheduler.this::uncaughtException);
                  return ret;
              }
+diff --git a/net/minecraft/server/network/EventLoopGroupHolder.java b/net/minecraft/server/network/EventLoopGroupHolder.java
+index 9544eaee7e02d00226d957ea0b79cd1a1fb0c4d0..0714fc9042c852553f8f79cb43638f49f863bbfe 100644
+--- a/net/minecraft/server/network/EventLoopGroupHolder.java
++++ b/net/minecraft/server/network/EventLoopGroupHolder.java
+@@ -98,7 +98,8 @@ public abstract class EventLoopGroupHolder {
+     }
+ 
+     private ThreadFactory createThreadFactory() {
+-        return new ThreadFactoryBuilder().setNameFormat("Netty " + this.type + " IO #%d").setDaemon(true).setUncaughtExceptionHandler(new net.minecraft.DefaultUncaughtExceptionHandlerWithName(net.minecraft.server.MinecraftServer.LOGGER)).build(); // Paper
++        var origin = new ThreadFactoryBuilder().setNameFormat("Netty " + this.type + " IO #%d").setDaemon(true).setUncaughtExceptionHandler(new net.minecraft.DefaultUncaughtExceptionHandlerWithName(net.minecraft.server.MinecraftServer.LOGGER)).build(); // Paper // Luminol - cpu affinity
++        return run -> origin.newThread(me.earthme.luminol.config.modules.optimizations.CpuAffinityConfig.wrapForNettyIo(run)); // Luminol - cpu affinity
+     }
+ 
+     protected abstract IoHandlerFactory ioHandlerFactory();

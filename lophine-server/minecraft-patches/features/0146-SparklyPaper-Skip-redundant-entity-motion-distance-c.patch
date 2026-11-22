@@ -9,7 +9,7 @@ Original project: https://github.com/SparklyPower/SparklyPaper
 Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0101-SparklyPaper-Skip-distanceToSqr-call-in-ServerEntity.patch
 
 diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
-index 06dc255104a940a8a950ac0002ecd2b6a5ed3abf..b350716130d0e3ebd0cea841c277a092a3e6665f 100644
+index 83edcd4c3645bd2a97636598c54dd5eb9e9f7ba4..fe69c486b5d51b310f9ee80ab2f87858b99da24c 100644
 --- a/net/minecraft/server/level/ServerEntity.java
 +++ b/net/minecraft/server/level/ServerEntity.java
 @@ -195,7 +195,11 @@ public class ServerEntity {

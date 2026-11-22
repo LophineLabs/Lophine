@@ -11,7 +11,7 @@ Upstream revision: https://github.com/CaffeineMC/lithium/commit/3bdc1392867c784d
 License: LGPL-3.0-only (https://www.gnu.org/licenses/lgpl-3.0.html)
 
 diff --git a/net/minecraft/world/level/chunk/ChunkAccess.java b/net/minecraft/world/level/chunk/ChunkAccess.java
-index 52a816916b648e0d8a71764ee6876db043de7381..91fafdd6e5f24590dc2cd7b123e117dbf1b25512 100644
+index fbfe30f48dbe1340ce6110d0fdb7e8b6f9aef2e1..a1834d0855d41aac9f25f39852fffa97f599f20e 100644
 --- a/net/minecraft/world/level/chunk/ChunkAccess.java
 +++ b/net/minecraft/world/level/chunk/ChunkAccess.java
 @@ -204,6 +204,10 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
@@ -26,7 +26,7 @@ index 52a816916b648e0d8a71764ee6876db043de7381..91fafdd6e5f24590dc2cd7b123e117db
      public boolean isSlimeChunk() {
          if (!hasComputedSlimeChunk) {
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index 346a91fbad1c76603296c7ac1511f0cac5bc60e9..cdedc5270178640a317216afbe48c938bd28e04b 100644
+index 427b85ff5e20690c39accd572f187d3f9970e1a1..04995c55b08a67edf0747a8c2517aab6d4c028f4 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -292,6 +292,11 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
@@ -42,7 +42,7 @@ index 346a91fbad1c76603296c7ac1511f0cac5bc60e9..cdedc5270178640a317216afbe48c938
      @Override
      public BlockState getBlockState(final int x, final int y, final int z) {
 diff --git a/net/minecraft/world/level/gameevent/GameEventDispatcher.java b/net/minecraft/world/level/gameevent/GameEventDispatcher.java
-index 3d7fb3510e633294f5d60b55a0d40d1afe8be8ee..cc0f5e2b5d1ed3cd720bacfa41cb637d449182c7 100644
+index ae5983e5a173145c44b62f9fb6bb9a0c31924b00..736a9fbea5dfe625221910845adfaace8fbb0e2e 100644
 --- a/net/minecraft/world/level/gameevent/GameEventDispatcher.java
 +++ b/net/minecraft/world/level/gameevent/GameEventDispatcher.java
 @@ -57,7 +57,7 @@ public class GameEventDispatcher {

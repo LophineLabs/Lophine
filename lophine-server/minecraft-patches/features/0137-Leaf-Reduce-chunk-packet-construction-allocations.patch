@@ -8,7 +8,7 @@ Adapt Leaf 0310. Retain HashMap iteration on the wire and heightmap snapshot own
 https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0310-Optimize-chunk-packet-construction.patch
 
 diff --git a/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java b/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java
-index ff356905b5a784857d31252aac513dbff8af5c90..3ca2b6b34fe3d2be6e323084423b9f3074027b59 100644
+index 06f0088b4bdbd86c5942d523889386a81764a240..69660cc0a5a1673d5f54b93053d5457aaff3c6af 100644
 --- a/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java
 +++ b/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java
 @@ -4,11 +4,11 @@ import com.google.common.collect.Lists;

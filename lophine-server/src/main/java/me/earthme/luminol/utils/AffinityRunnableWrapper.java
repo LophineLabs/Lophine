@@ -1,20 +1,16 @@
 package me.earthme.luminol.utils;
 
 import net.openhft.affinity.Affinity;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.BitSet;
 
-public class AffinityRunnableWrapper {
-    private final BitSet affinity;
-    private final String name;
+public record AffinityRunnableWrapper(String name, BitSet affinity) {
 
-    public AffinityRunnableWrapper(String name, BitSet affinity) {
-        this.name = name;
-        this.affinity = affinity;
-    }
-
-    public Runnable wrap(Runnable original) {
+    @Contract(pure = true)
+    public @NonNull Runnable wrap(Runnable original) {
         return () -> {
             Affinity.setAffinity(this.affinity);
 
@@ -22,13 +18,15 @@ public class AffinityRunnableWrapper {
         };
     }
 
+    @Override
     @NotNull
-    public String getName() {
+    public String name() {
         return this.name;
     }
 
+    @Override
     @NotNull
-    public BitSet getAffinity() {
+    public BitSet affinity() {
         return this.affinity;
     }
 }

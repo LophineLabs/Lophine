@@ -8,7 +8,7 @@ Iterate the same ordered entries in the two internal enchantment visitor paths. 
 Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0266-reduce-enchantment-allocations.patch
 
 diff --git a/net/minecraft/world/item/enchantment/EnchantmentHelper.java b/net/minecraft/world/item/enchantment/EnchantmentHelper.java
-index 800c736bece30f670210684249abbaa95d8dd078..548d4d9f09bb626ab5b9fd1e1b9497ef636b6810 100644
+index 63ac4988d3ddc43335252478e16e818e4533eb17..757e101baedd5542957887d3157c3c754c0c5455 100644
 --- a/net/minecraft/world/item/enchantment/EnchantmentHelper.java
 +++ b/net/minecraft/world/item/enchantment/EnchantmentHelper.java
 @@ -132,7 +132,7 @@ public class EnchantmentHelper {
@@ -30,7 +30,7 @@ index 800c736bece30f670210684249abbaa95d8dd078..548d4d9f09bb626ab5b9fd1e1b9497ef
                      if (enchantment.value().matchingSlot(slot)) {
                          method.accept(enchantment, entry.getIntValue(), itemInUse);
 diff --git a/net/minecraft/world/item/enchantment/ItemEnchantments.java b/net/minecraft/world/item/enchantment/ItemEnchantments.java
-index 5c55e9b4ad1f3d7226e49c5d476ea01c6d4963a2..afad9973df9d89af9b0855d7401ef0cc50b14f99 100644
+index 6d2d9b0718368760977fdb8c072e8cbafdf6fe2e..b5852cedb5f13f98c1d3a282eede17d1b301fa8c 100644
 --- a/net/minecraft/world/item/enchantment/ItemEnchantments.java
 +++ b/net/minecraft/world/item/enchantment/ItemEnchantments.java
 @@ -101,6 +101,12 @@ public class ItemEnchantments implements TooltipProvider {

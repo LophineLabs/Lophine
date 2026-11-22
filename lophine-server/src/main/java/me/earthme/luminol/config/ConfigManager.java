@@ -16,6 +16,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Consumer;
 
 public class ConfigManager {
     private static boolean initialized = false;
@@ -52,16 +53,13 @@ public class ConfigManager {
     }
 
     public static void preLoad() {
-        CompletableFuture<?>[] futures = configfiles.values().stream()
-                .map(config -> CompletableFuture.runAsync(() -> {
-                    try {
-                        config.preLoadConfig();
-                    } catch (IOException e) {
-                        throw new RuntimeException("Failed to preload config", e);
-                    }
-                }))
-                .toArray(CompletableFuture[]::new);
-        CompletableFuture.allOf(futures).join();
+        runForEachConfig(config -> {
+            try {
+                config.preLoadConfig();
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to preload config", e);
+            }
+        });
         acceptTransformedConfigs();
         runForEachConfig(ConfigsInstance::runBeforeServerInit);
     }
@@ -69,10 +67,7 @@ public class ConfigManager {
     public static void loadConfigFiles() {
         runTaskBeforeFinalLoad();
         // Finalize loading
-        CompletableFuture<?>[] futures = configfiles.values().stream()
-                .map(config -> CompletableFuture.runAsync(config::finalizeLoadConfig))
-                .toArray(CompletableFuture[]::new);
-        CompletableFuture.allOf(futures).join();
+        runForEachConfig(ConfigsInstance::finalizeLoadConfig);
         CommandRegister.register(); // register command after config loaded to enable some command didn't depend on config files
         initialized = true;
     }
@@ -105,10 +100,8 @@ public class ConfigManager {
     }
 
     public static void saveConfigs(boolean sync) {
-        CompletableFuture<?>[] futures = configfiles.values().stream()
-                .map(config -> CompletableFuture.runAsync(config::saveConfigs))
-                .toArray(CompletableFuture[]::new);
-        if (sync) CompletableFuture.allOf(futures).join();
+        CompletableFuture<Void> future = submitForEachConfig(ConfigsInstance::saveConfigs);
+        if (sync) future.join();
         saveWorldConfigs();
     }
 
@@ -212,11 +205,22 @@ public class ConfigManager {
     }
 
     public static void reloadComments() {
-        CompletableFuture<?>[] futures = configfiles.values().stream()
-                .map(config -> CompletableFuture.runAsync(() -> {
-                    config.reload(false, false);
-                }))
-                .toArray(CompletableFuture[]::new);
-        CompletableFuture.allOf(futures).join();
+        runForEachConfig(config -> config.reload(false, false));
+    }
+
+    /**
+     * Run {@code action} against every registered {@link ConfigsInstance} concurrently without waiting for them.
+     */
+    private static CompletableFuture<Void> submitForEachConfig(@NotNull Consumer<ConfigsInstance> action) {
+        return CompletableFuture.allOf(configfiles.values().stream()
+                .map(config -> CompletableFuture.runAsync(() -> action.accept(config)))
+                .toArray(CompletableFuture[]::new));
+    }
+
+    /**
+     * Run {@code action} against every registered {@link ConfigsInstance} concurrently and block until all of them finish.
+     */
+    private static void runForEachConfig(@NotNull Consumer<ConfigsInstance> action) {
+        submitForEachConfig(action).join();
     }
 }

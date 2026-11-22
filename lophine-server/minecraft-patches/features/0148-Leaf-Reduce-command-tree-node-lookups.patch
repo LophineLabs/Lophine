@@ -8,7 +8,7 @@ Insert a new command node with one hash table probe and enqueue its children and
 Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0291-optimize-ClientboundCommandsPacket-enumerateNodes.patch
 
 diff --git a/net/minecraft/network/protocol/game/ClientboundCommandsPacket.java b/net/minecraft/network/protocol/game/ClientboundCommandsPacket.java
-index c87aabe87cdb6eb05bb6a39e3eda2af14415f978..29019439b625e28b0b7024d90327882b9c04d4f2 100644
+index d2585a69b978e00cf3b9e8829807d63128fc0b55..1261171a83e9f3112d507eb7662287a32fbe7d4c 100644
 --- a/net/minecraft/network/protocol/game/ClientboundCommandsPacket.java
 +++ b/net/minecraft/network/protocol/game/ClientboundCommandsPacket.java
 @@ -84,14 +84,16 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene

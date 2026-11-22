@@ -8,7 +8,7 @@ Pass the midpoint coordinates directly to the distance check. Retain the empty p
 Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0294-optimize-PathNavigation-shouldRecomputePath.patch
 
 diff --git a/net/minecraft/world/entity/ai/navigation/PathNavigation.java b/net/minecraft/world/entity/ai/navigation/PathNavigation.java
-index 806bb89be59064d49d47ccaa15ed53afcce7efac..3a5faf647040913ac460f8cea75492a24037a073 100644
+index 08193c9644e534553c1a2986b0ae87db906d09a0..3b79c449a675081c129cda2d30bac8eec36c076c 100644
 --- a/net/minecraft/world/entity/ai/navigation/PathNavigation.java
 +++ b/net/minecraft/world/entity/ai/navigation/PathNavigation.java
 @@ -491,10 +491,19 @@ public abstract class PathNavigation {

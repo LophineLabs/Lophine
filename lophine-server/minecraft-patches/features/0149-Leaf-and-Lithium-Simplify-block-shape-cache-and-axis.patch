@@ -16,7 +16,7 @@ Co-authored-by: 2No2Name <2No2Name@web.de>
 Co-authored-by: JellySquid <jellysquid3@users.noreply.github.com>
 
 diff --git a/net/minecraft/core/AxisCycle.java b/net/minecraft/core/AxisCycle.java
-index 3cfba9780ba9c03eb1c44898f8fe41ba96887341..d5fd8aabf09f524634e7b52fe25542ef8d403a23 100644
+index e3524e706e02683d891a8de1e552a0bd0595b0f4..2cbc2c976602fd28523cf18f0490bba16dd7c3a7 100644
 --- a/net/minecraft/core/AxisCycle.java
 +++ b/net/minecraft/core/AxisCycle.java
 @@ -35,7 +35,13 @@ public enum AxisCycle {
@@ -50,7 +50,7 @@ index 3cfba9780ba9c03eb1c44898f8fe41ba96887341..d5fd8aabf09f524634e7b52fe25542ef
  
          @Override
 diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
-index ea8c61664cec07abf58fa6b7060a3ce63baff3c4..3a8550f12c9089435eab0db93a3c3ac7b752bec7 100644
+index 28b9b6f91609c6d7a22950dd6afb04cfa4197f06..c3b84d315501ff4413505b138fbabe8e7be4110d 100644
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
 @@ -1182,7 +1182,11 @@ public abstract class BlockBehaviour implements FeatureElement, net.caffeinemc.m

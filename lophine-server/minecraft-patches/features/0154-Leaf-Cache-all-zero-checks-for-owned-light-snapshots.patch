@@ -8,7 +8,7 @@ Reuse the all-zero result under the existing visible-state monitor. Invalidate i
 Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0189-Optimise-chunkUnloads.patch
 
 diff --git a/ca/spottedleaf/moonrise/patches/starlight/light/SWMRNibbleArray.java b/ca/spottedleaf/moonrise/patches/starlight/light/SWMRNibbleArray.java
-index 39dbe98382d7f87738d87033d6f32c6d38a471de..4180dd767f01a139502460e8797de34910a0cc9e 100644
+index 240416aba0ad4649e1db401aff2565f972f5ca11..623dcb8e372a751d06b0dbf9233f7039c093ab47 100644
 --- a/ca/spottedleaf/moonrise/patches/starlight/light/SWMRNibbleArray.java
 +++ b/ca/spottedleaf/moonrise/patches/starlight/light/SWMRNibbleArray.java
 @@ -48,16 +48,30 @@ public final class SWMRNibbleArray {
@@ -89,7 +89,7 @@ index 39dbe98382d7f87738d87033d6f32c6d38a471de..4180dd767f01a139502460e8797de349
              this.stateVisible = this.stateUpdating;
          }
 diff --git a/ca/spottedleaf/moonrise/patches/starlight/util/SaveUtil.java b/ca/spottedleaf/moonrise/patches/starlight/util/SaveUtil.java
-index 884a0c334d71bafa57205e2c113f67e3e523ea8d..3b64f575507e04292e81d911fb7378513410fef4 100644
+index 95154636727366adfb4fb67e7db8b09f3684f853..525d9869bd833d5f2e3d93d30fb00e89365bfe7c 100644
 --- a/ca/spottedleaf/moonrise/patches/starlight/util/SaveUtil.java
 +++ b/ca/spottedleaf/moonrise/patches/starlight/util/SaveUtil.java
 @@ -166,7 +166,7 @@ public final class SaveUtil {
@@ -111,7 +111,7 @@ index 884a0c334d71bafa57205e2c113f67e3e523ea8d..3b64f575507e04292e81d911fb737851
                          skyNibbles[y - minSection] = new SWMRNibbleArray(null, sectionData.getIntOr(SKYLIGHT_STATE_TAG, 0));
                      }
 diff --git a/net/minecraft/world/level/chunk/storage/SerializableChunkData.java b/net/minecraft/world/level/chunk/storage/SerializableChunkData.java
-index b55ac8ce0cef229bd30d5e8a361c1f4c75611dc7..2b99257ef6029a8a89e9474d58caa40870b91b46 100644
+index f40a1d56d7c5e47d20bce5fe7ea0e29a1afeadec..5f8e6041e5e1e65a0b714174423939719ea2675c 100644
 --- a/net/minecraft/world/level/chunk/storage/SerializableChunkData.java
 +++ b/net/minecraft/world/level/chunk/storage/SerializableChunkData.java
 @@ -274,7 +274,7 @@ public record SerializableChunkData(

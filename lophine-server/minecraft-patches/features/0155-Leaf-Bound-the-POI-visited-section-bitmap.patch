@@ -20,7 +20,7 @@ Original patch by HaHaWTH <102713261+HaHaWTH@users.noreply.github.com>, co-autho
 Co-authored-by: MrlingXD <90316914+wling-art@users.noreply.github.com>
 
 diff --git a/ca/spottedleaf/moonrise/patches/poi_lookup/PoiAccess.java b/ca/spottedleaf/moonrise/patches/poi_lookup/PoiAccess.java
-index 4036ea88d4536fd3cfdfdf143fac9ff80c35098b..df96ac873259ac9879e247efb8a829c6f15dc707 100644
+index 85d80b3952a76b0ca7f67401a659cf35dd55b082..8e4f0ef9bfadf531175d705c65514ca7db634486 100644
 --- a/ca/spottedleaf/moonrise/patches/poi_lookup/PoiAccess.java
 +++ b/ca/spottedleaf/moonrise/patches/poi_lookup/PoiAccess.java
 @@ -31,6 +31,69 @@ public final class PoiAccess {

@@ -9,7 +9,7 @@ Original Lithium patch: https://github.com/CaffeineMC/lithium/commit/ccb7e7f433a
 License: LGPL-3.0-only (https://www.gnu.org/licenses/lgpl-3.0.html)
 
 diff --git a/net/minecraft/world/entity/InsideBlockEffectApplier.java b/net/minecraft/world/entity/InsideBlockEffectApplier.java
-index 17cc64b553f7f8014e6f8d8e17bb6d8ac4267cf1..4d6a61b77cbfd8162ad96d6adff06d0334661ad4 100644
+index c2f124383be06ae777c1ee7f0820c959c8359f87..5ce69c2217fe5b33075c06bef5e2c310aa360bf9 100644
 --- a/net/minecraft/world/entity/InsideBlockEffectApplier.java
 +++ b/net/minecraft/world/entity/InsideBlockEffectApplier.java
 @@ -41,6 +41,7 @@ public interface InsideBlockEffectApplier {

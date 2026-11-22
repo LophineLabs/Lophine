@@ -10,7 +10,7 @@ Share immutable built-in base and head shapes across all matching retractions. U
 https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0302-Lithium-Cache-retracting-piston-collision-shapes.patch
 
 diff --git a/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java b/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
-index cc15fc307b426de70faf04ed656b8c34af7bea28..2489af7221492472971c6f45b9ba5668e30925e0 100644
+index 2aea785630227d7380ee462a4442924973f151d4..60a434ed7ea63dd12318e5c13511d545284d2b5a 100644
 --- a/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
 +++ b/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
 @@ -417,6 +417,15 @@ public class PistonMovingBlockEntity extends BlockEntity {
@@ -29,15 +29,7 @@ index cc15fc307b426de70faf04ed656b8c34af7bea28..2489af7221492472971c6f45b9ba5668
          VoxelShape pistonHeadShape;
          if (!this.extending && this.isSourcePiston && this.movedState.getBlock() instanceof PistonBaseBlock) {
              pistonHeadShape = this.movedState.setValue(PistonBaseBlock.EXTENDED, true).getCollisionShape(level, pos);
-@@ -439,13 +448,54 @@ public class PistonMovingBlockEntity extends BlockEntity {
-             blockState = this.movedState;
-         }
- 
--        float extendedProgress = this.getExtendedProgress(this.progress);
-+        float extendedProgress = this.getExtendedProgress(this.progress);
-         double dx = this.direction.getStepX() * extendedProgress;
-         double dy = this.direction.getStepY() * extendedProgress;
-         double dz = this.direction.getStepZ() * extendedProgress;
+@@ -446,6 +455,47 @@ public class PistonMovingBlockEntity extends BlockEntity {
          return Shapes.or(pistonHeadShape, blockState.getCollisionShape(level, pos).move(dx, dy, dz));
      }
  

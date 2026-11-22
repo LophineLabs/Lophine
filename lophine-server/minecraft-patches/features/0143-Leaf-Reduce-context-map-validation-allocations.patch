@@ -8,7 +8,7 @@ Test key membership directly on success. Keep the original difference views on e
 Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0183-Optimize-ContextMap.create.patch
 
 diff --git a/net/minecraft/util/context/ContextMap.java b/net/minecraft/util/context/ContextMap.java
-index 2354566c5e4e7e7c13801fc2a7b47fb83f299370..85f6541b505a136b24d002facab4f2a4f52789f2 100644
+index 71715124fa318e47d0d8f3b4e2ef532a722219c7..0993ed972022500b44bb29cddab75342ce8d43eb 100644
 --- a/net/minecraft/util/context/ContextMap.java
 +++ b/net/minecraft/util/context/ContextMap.java
 @@ -67,17 +67,28 @@ public final class ContextMap {

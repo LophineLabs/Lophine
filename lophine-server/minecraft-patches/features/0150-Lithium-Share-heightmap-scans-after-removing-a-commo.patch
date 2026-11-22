@@ -13,7 +13,7 @@ License: LGPL-3.0-only (https://www.gnu.org/licenses/lgpl-3.0.html)
 Co-authored-by: 2No2Name <2No2Name@web.de>
 
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index 640c40153f914cfcd1164cd82a08e6a0e771b4c1..74a5ff50ff7a787341334148486f19fdd2119814 100644
+index 94da167d05f8c0e3f44c51f0bb3071aaaed886ef..427b85ff5e20690c39accd572f187d3f9970e1a1 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -413,10 +413,13 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
@@ -35,7 +35,7 @@ index 640c40153f914cfcd1164cd82a08e6a0e771b4c1..74a5ff50ff7a787341334148486f19fd
          if (wasEmpty != isEmpty) {
              this.level.getChunkSource().getLightEngine().updateSectionStatus(pos, isEmpty);
 diff --git a/net/minecraft/world/level/levelgen/Heightmap.java b/net/minecraft/world/level/levelgen/Heightmap.java
-index 6e9c66eeadcb5fead1f1efdd57378eaa18e8ab64..be94a27c0f23c5519126f83a3c55f9d742762910 100644
+index 6010e94dcbac139c297db7fe3bf46c48303ab74c..6bb4f9c5a5393cff0a141cd49e5e36c9134dc7d3 100644
 --- a/net/minecraft/world/level/levelgen/Heightmap.java
 +++ b/net/minecraft/world/level/levelgen/Heightmap.java
 @@ -21,6 +21,7 @@ import net.minecraft.util.StringRepresentable;

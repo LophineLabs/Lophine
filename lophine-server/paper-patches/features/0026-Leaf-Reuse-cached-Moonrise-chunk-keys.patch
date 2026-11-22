@@ -8,7 +8,7 @@ Read the precomputed key in CoordinateUtils when a ChunkPos is already available
 Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0158-Cache-chunk-key.patch
 
 diff --git a/src/main/java/ca/spottedleaf/moonrise/common/util/CoordinateUtils.java b/src/main/java/ca/spottedleaf/moonrise/common/util/CoordinateUtils.java
-index 9cf0983f0d47ba78511a174138d37c0f1b82ed31..c36c71cd6e086c42c5945ff2754bb8ec6fcc4e85 100644
+index 47d2f0cd01619cb6ba4eed7145aeaf573141d047..16a32af38618cc958896f774e8b1877ad9e8aa55 100644
 --- a/src/main/java/ca/spottedleaf/moonrise/common/util/CoordinateUtils.java
 +++ b/src/main/java/ca/spottedleaf/moonrise/common/util/CoordinateUtils.java
 @@ -17,11 +17,11 @@ public final class CoordinateUtils {

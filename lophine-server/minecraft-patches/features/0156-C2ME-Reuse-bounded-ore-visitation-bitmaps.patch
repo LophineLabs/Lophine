@@ -13,7 +13,7 @@ License: MIT (https://opensource.org/licenses/MIT)
 Co-authored-by: ishland <ishlandmc@yeah.net>
 
 diff --git a/net/minecraft/world/level/levelgen/feature/OreFeature.java b/net/minecraft/world/level/levelgen/feature/OreFeature.java
-index 7be78b7247f9f8245b0fcc9bee7fa09db14ca57e..623ff08876464ed05152b7b0b4e40e64b8f1ca12 100644
+index e6aee6a38f45b47413aa3bbddf3632bc0c6a93f5..b98d056935e079b4dc3fe25059257f850577472a 100644
 --- a/net/minecraft/world/level/levelgen/feature/OreFeature.java
 +++ b/net/minecraft/world/level/levelgen/feature/OreFeature.java
 @@ -17,6 +17,10 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;

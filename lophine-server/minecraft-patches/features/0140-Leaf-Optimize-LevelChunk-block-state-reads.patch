@@ -8,7 +8,7 @@ Reuse the selected section for the empty-section check and the palette read. Kee
 Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0240-optimize-LevelChunk-getBlockStateFinal.patch
 
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index 67c1f10f9322f5b86d38d0461d7ff7fa2e2016ff..917b873fd3901cac48f3d56c57d942dbc53eee8d 100644
+index d58e47fe7d655a720f3f415d986853e5ff2eec4d..94da167d05f8c0e3f44c51f0bb3071aaaed886ef 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -300,12 +300,18 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot

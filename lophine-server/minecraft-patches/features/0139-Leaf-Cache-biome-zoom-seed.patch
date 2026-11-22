@@ -8,7 +8,7 @@ Compute the vanilla hashed seed once per WorldOptions and reuse it for world cre
 Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0216-cache-biome-zoom-seed.patch
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 0564d53dde7c95051359d4adb3bab431ad79dc97..c5436995d353d8d45eb4d484b3383b7b7fc47040 100644
+index cbdaa095b56e91fc95c9a3ac71150398e1c6b0cd..15ea3db109f248df7810ef525e404d0bffe8cb94 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -154,7 +154,6 @@ import net.minecraft.world.level.Level;
@@ -30,7 +30,7 @@ index 0564d53dde7c95051359d4adb3bab431ad79dc97..c5436995d353d8d45eb4d484b3383b7b
              new PhantomSpawner(), new PatrolSpawner(), new CatSpawner(), new VillageSiege(), new WanderingTraderSpawner(savedDataStorage) // Paper - save to world data
          );
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index d7a5bae03b6033c3b7ba9e58701df75ce9eae15b..37aa2da2b0eefbceabc42bd52901563cdc8f41fa 100644
+index 8bb1ee3fde4ce34ff2d153c3e20f38f7727758ba..05c0e6d2ce05e998548396ed552fbe16d68c16e8 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -178,7 +178,6 @@ import net.minecraft.world.item.trading.MerchantOffers;
@@ -51,7 +51,7 @@ index d7a5bae03b6033c3b7ba9e58701df75ce9eae15b..37aa2da2b0eefbceabc42bd52901563c
              Optional.ofNullable(this.gameMode.getPreviousGameModeForPlayer()),
              level.isDebug(),
 diff --git a/net/minecraft/server/level/WorldGenRegion.java b/net/minecraft/server/level/WorldGenRegion.java
-index 0fee2fea9f1d73840608c3f5c30f29f7e26e94e0..c4f081a0dd276e4851c8411ae7e2344168430aeb 100644
+index 71d184614e2ba7aa67fa757ac6ba4546ddd72d1f..eb80ebf090c4503fe07b97fbf27cb9b192224667 100644
 --- a/net/minecraft/server/level/WorldGenRegion.java
 +++ b/net/minecraft/server/level/WorldGenRegion.java
 @@ -138,7 +138,7 @@ public class WorldGenRegion implements WorldGenLevel {
@@ -64,7 +64,7 @@ index 0fee2fea9f1d73840608c3f5c30f29f7e26e94e0..c4f081a0dd276e4851c8411ae7e23441
          this.centerChunkX = centerPos.x();
          this.centerChunkZ = centerPos.z();
 diff --git a/net/minecraft/world/level/levelgen/WorldOptions.java b/net/minecraft/world/level/levelgen/WorldOptions.java
-index a5201850d69248cd3535f545bf54c2258bd6b42c..437041422da776b35b7de1e339bdfc448720db82 100644
+index a69125378431b9baf9a063d35ab4a068243e395b..9fe68734e5c7663c2b8bc48f30caf4f76dbbb3a6 100644
 --- a/net/minecraft/world/level/levelgen/WorldOptions.java
 +++ b/net/minecraft/world/level/levelgen/WorldOptions.java
 @@ -38,6 +38,7 @@ public class WorldOptions {

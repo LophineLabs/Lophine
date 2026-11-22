@@ -14,7 +14,7 @@ Co-authored-by: fxmorin <28154542+fxmorin@users.noreply.github.com>
 Co-authored-by: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
 
 diff --git a/net/minecraft/world/item/crafting/RecipeManager.java b/net/minecraft/world/item/crafting/RecipeManager.java
-index 22998d4fe642a2e3f70ad8b2187f891339e10817..cd82d0ad939b25c2b2f957930d33f28babeb2933 100644
+index 1481626d2d26498e1a32b8135ca08e5f623d931b..a740b6288bb7996cf1e3abb42b25f476617f3c86 100644
 --- a/net/minecraft/world/item/crafting/RecipeManager.java
 +++ b/net/minecraft/world/item/crafting/RecipeManager.java
 @@ -262,7 +262,20 @@ public class RecipeManager implements RecipeAccess {

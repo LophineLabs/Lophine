@@ -15,7 +15,7 @@ Co-authored-by: 2No2Name <2No2Name@web.de>
 Co-authored-by: Yive <6853318+Yive@users.noreply.github.com>
 
 diff --git a/alternate/current/wire/WireHandler.java b/alternate/current/wire/WireHandler.java
-index fcf889a3125008333f2574598ccdd656496311be..48401ca15e240737bfd7a1f270d999004640db87 100644
+index 259b301b2c8b64cb7974a235afb260e0e991af54..2c3dcd7e21f5e79ec12c9ffff3cd3c7f9da28b73 100644
 --- a/alternate/current/wire/WireHandler.java
 +++ b/alternate/current/wire/WireHandler.java
 @@ -136,6 +136,8 @@ import net.minecraft.world.level.redstone.Redstone;
@@ -37,7 +37,7 @@ index fcf889a3125008333f2574598ccdd656496311be..48401ca15e240737bfd7a1f270d99900
  
      /**
 diff --git a/net/minecraft/world/level/block/RedstoneWireBlock.java b/net/minecraft/world/level/block/RedstoneWireBlock.java
-index 17a1e488a20a48a1cde452872c60520c589bf0d0..5a6d91af560e95a8158f9b3a98234792300b58ee 100644
+index 111d18b122cec791087e359bac2cfc326394fc70..6db68e9e16b7168d59f70577eaf211baa6b74761 100644
 --- a/net/minecraft/world/level/block/RedstoneWireBlock.java
 +++ b/net/minecraft/world/level/block/RedstoneWireBlock.java
 @@ -60,6 +60,7 @@ public class RedstoneWireBlock extends Block {
@@ -76,7 +76,7 @@ index 17a1e488a20a48a1cde452872c60520c589bf0d0..5a6d91af560e95a8158f9b3a98234792
              }
  
 diff --git a/net/minecraft/world/level/block/piston/PistonBaseBlock.java b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
-index dc2580f0071e98f53cb2770eac154c31181ee327..e3a607695d82e6c23ad9e54efd36ce89de7dfc19 100644
+index 758982c48559ed1e728cdd9be5373492b3da88ee..13ad603a6dd2bafdf4cc4201a687f118f1300bdf 100644
 --- a/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 +++ b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 @@ -47,6 +47,7 @@ public class PistonBaseBlock extends DirectionalBlock {
@@ -97,7 +97,7 @@ index dc2580f0071e98f53cb2770eac154c31181ee327..e3a607695d82e6c23ad9e54efd36ce89
                  return true;
              }
 diff --git a/net/minecraft/world/level/block/piston/PistonStructureResolver.java b/net/minecraft/world/level/block/piston/PistonStructureResolver.java
-index 5a17404ddd479dc88ec2eb67648e5785155a2d8a..d107bee76681ebcdc9d0ff2f69c42c18276d267d 100644
+index 46e12c148096fa0c91c9b04b64a99b2f9634b9f7..0e4cd1c1b8afac45f3d33b607a3337f6cf101eb2 100644
 --- a/net/minecraft/world/level/block/piston/PistonStructureResolver.java
 +++ b/net/minecraft/world/level/block/piston/PistonStructureResolver.java
 @@ -11,6 +11,7 @@ import net.minecraft.world.level.material.PushReaction;

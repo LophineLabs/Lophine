@@ -8,7 +8,7 @@ Only resolve a nonzero delayed leash holder ID on the client. Retain the existin
 Original patch: https://github.com/Winds-Studio/Leaf/blob/06c9c91a17e61aeed16bcfc846ebe91aa70d6c84/leaf-server/minecraft-patches/features/0287-Optimize-getLeashHolder.patch
 
 diff --git a/net/minecraft/world/entity/Leashable.java b/net/minecraft/world/entity/Leashable.java
-index 2de239e50bb91069ae74390acdb3babc8f6a844d..a98177df63acbc019a7a3833bbe2baa5f10e5565 100644
+index 8bec3de958e129e25955459cccfa1e8f9ec059d1..2321aa34ce1271692335cedd4b7452ac7ed75916 100644
 --- a/net/minecraft/world/entity/Leashable.java
 +++ b/net/minecraft/world/entity/Leashable.java
 @@ -372,10 +372,15 @@ public interface Leashable {
