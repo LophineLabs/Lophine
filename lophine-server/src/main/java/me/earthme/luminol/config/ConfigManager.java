@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,13 +52,7 @@ public class ConfigManager {
     }
 
     public static void preLoad() {
-        runForEachConfig(config -> {
-            try {
-                config.preLoadConfig();
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to preload config", e);
-            }
-        });
+        runForEachConfig(ConfigsInstance::preLoadConfig);
         acceptTransformedConfigs();
         runForEachConfig(ConfigsInstance::runBeforeServerInit);
     }

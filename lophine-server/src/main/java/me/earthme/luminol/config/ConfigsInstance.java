@@ -181,76 +181,28 @@ public class ConfigsInstance implements LuminolConfigsInstance {
         }
     }
 
-    /**
-     * Re-apply staged configuration values to module fields after beforeFinalLoad tasks
-     * This ensures that any config changes made in beforeFinalLoad are properly reflected
-     */
-    public void reApplyStagedConfigs() {
-        if (stagedConfigMap.isEmpty()) {
-            return;
-        }
-
-        // For each staged config value, update the corresponding field
-        for (Map.Entry<Object, Set<Exception>> entry : allInstanced.entrySet()) {
-            Object module = entry.getKey();
-
-            Field[] fields = module.getClass().getDeclaredFields();
-
-            for (Field field : fields) {
-                if (!isManagedConfigField(field)) {
-                    continue;
-                }
-
-                ConfigInfo configInfo = field.getAnnotation(ConfigInfo.class);
-                DoNotLoad doNotLoad = field.getAnnotation(DoNotLoad.class);
-                if (configInfo == null || (doNotLoad != null && doNotLoad.when() == EnumLoadType.ALWAYS)) {
-                    continue;
-                }
-
-                // Build full configuration key
-                ConfigClassInfo classInfo = getConfigClassInfo(module);
-                if (classInfo == null) continue;
-
-                final String fullConfigKeyName = ConfigPaths.resolve(classInfo, configInfo);
-
-                // Check if this config has a staged value
-                if (stagedConfigMap.containsKey(fullConfigKeyName)) {
-                    try {
-                        field.setAccessible(true);
-                        Object stagedValue = getActualConfigValue(fullConfigKeyName);
-                        if (stagedValue != null) {
-                            stagedValue = tryTransform(field, stagedValue);
-                            writeConfigValue(field, stagedValue);
-                        }
-                    } catch (Exception e) {
-                        logger.error("Failed to re-apply staged config value for {}", fullConfigKeyName, e);
-                    }
-                }
-            }
-        }
-        if (isWorldConfig()) {
-            ConfigManager.refreshWorldSnapshots();
-        }
-    }
-
     // Configuration loading methods
     // ========================================================================
 
     /**
      * Preload configuration with default settings (keeping comments)
      */
-    public void preLoadConfig() throws IOException {
+    public void preLoadConfig() {
         preLoadConfig(true);
     }
 
     /**
      * Preload configuration with option to keep comments
      */
-    public void preLoadConfig(boolean keepComments) throws IOException {
+    public void preLoadConfig(boolean keepComments) {
         baseConfigFolder.mkdirs();
 
         if (!baseConfigFile.exists()) {
-            baseConfigFile.createNewFile();
+            try {
+                baseConfigFile.createNewFile();
+            } catch (IOException e) {
+                logger.error("Failed to create config file {}", baseConfigFile.getName(), e);
+            }
         }
         if (configFileInstance != null) {
             configFileInstance.close();
