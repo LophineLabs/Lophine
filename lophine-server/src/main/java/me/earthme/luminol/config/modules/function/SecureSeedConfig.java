@@ -2,6 +2,8 @@ package me.earthme.luminol.config.modules.function;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import fun.bm.lophine.LophineLogger;
+import me.earthme.luminol.api.config.WorldValue;
+import me.earthme.luminol.api.config.WorldValues;
 import me.earthme.luminol.api.config.annotation.ConfigClassInfo;
 import me.earthme.luminol.api.config.annotation.ConfigInfo;
 import me.earthme.luminol.api.config.annotation.DoNotLoad;
@@ -14,7 +16,7 @@ import me.earthme.luminol.api.config.enums.EnumRunnableType;
 public class SecureSeedConfig {
     @ConfigInfo(name = "enabled")
     @DoNotLoad(when = EnumLoadType.RELOAD)
-    public static boolean enabled = false;
+    public static WorldValue<Boolean> enabled = WorldValues.key(false);
 
     @NeedRun(when = EnumRunnableType.ON_LOADED)
     public static void checkUseV2(CommentedFileConfig configInstance) {

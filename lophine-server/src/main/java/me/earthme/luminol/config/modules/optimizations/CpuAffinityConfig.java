@@ -1,6 +1,8 @@
 package me.earthme.luminol.config.modules.optimizations;
 
 import com.mojang.logging.LogUtils;
+import me.earthme.luminol.api.config.WorldValue;
+import me.earthme.luminol.api.config.WorldValues;
 import me.earthme.luminol.api.config.annotation.ConfigClassInfo;
 import me.earthme.luminol.api.config.annotation.ConfigInfo;
 import me.earthme.luminol.api.config.annotation.DoNotLoad;
@@ -20,40 +22,40 @@ import java.util.List;
 public class CpuAffinityConfig {
     @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "enabled_for_tickregion")
-    public static boolean enabledForTickRegion = false;
+    public static WorldValue<Boolean> enabledForTickRegion = WorldValues.key(false);
     @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "enable_for_chunksystem_worker")
-    public static boolean enabledForChunkSystemWorker = false;
+    public static WorldValue<Boolean> enabledForChunkSystemWorker = WorldValues.key(false);
     @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "enable_for_chunksystem_io")
-    public static boolean enabledForChunkSystemIo = false;
+    public static WorldValue<Boolean> enabledForChunkSystemIo = WorldValues.key(false);
     @ConfigInfo(name = "enable_for_netty_io")
-    public static boolean enableForNettyIo = false;
+    public static WorldValue<Boolean> enableForNettyIo = WorldValues.key(false);
 
     @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "tickregion_affinity")
-    public static List<String> tickRegionAffinity = Affinity.getAffinity()
+    public static WorldValue<List<String>> tickRegionAffinity = WorldValues.key(Affinity.getAffinity()
             .stream()
             .mapToObj(String::valueOf)
-            .toList();
+            .toList());
     @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "chunksystem_worker_affinity")
-    public static List<String> chunkSystemWorkerAffinity = Affinity.getAffinity()
+    public static WorldValue<List<String>> chunkSystemWorkerAffinity = WorldValues.key(Affinity.getAffinity()
             .stream()
             .mapToObj(String::valueOf)
-            .toList();
+            .toList());
     @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "chunksystem_io_affinity")
-    public static List<String> chunkSystemIoAffinity = Affinity.getAffinity()
+    public static WorldValue<List<String>> chunkSystemIoAffinity = WorldValues.key(Affinity.getAffinity()
             .stream()
             .mapToObj(String::valueOf)
-            .toList();
+            .toList());
     @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "netty_io_affinity")
-    public static List<String> nettyIoAffinity = Affinity.getAffinity()
+    public static WorldValue<List<String>> nettyIoAffinity = WorldValues.key(Affinity.getAffinity()
             .stream()
             .mapToObj(String::valueOf)
-            .toList();
+            .toList());
 
     @DoNotLoad
     private static boolean inited = false;
@@ -91,23 +93,23 @@ public class CpuAffinityConfig {
         }
         inited = true;
 
-        if (enabledForTickRegion) {
-            tickRegionRunnableWrapper = new AffinityRunnableWrapper("tick_region", parseAffinity("tick_region", tickRegionAffinity));
+        if (enabledForTickRegion.get()) {
+            tickRegionRunnableWrapper = new AffinityRunnableWrapper("tick_region", parseAffinity("tick_region", tickRegionAffinity.get()));
             LOGGER.info("Tick region thread now bound to: {}", tickRegionRunnableWrapper.affinity());
         }
 
-        if (enabledForChunkSystemIo) {
-            chunkSystemIoRunnableWrapper = new AffinityRunnableWrapper("chunk_system_io", parseAffinity("chunk_system_io", chunkSystemIoAffinity));
+        if (enabledForChunkSystemIo.get()) {
+            chunkSystemIoRunnableWrapper = new AffinityRunnableWrapper("chunk_system_io", parseAffinity("chunk_system_io", chunkSystemIoAffinity.get()));
             LOGGER.info("Chunk system I/O thread now bound to: {}", chunkSystemIoRunnableWrapper.affinity());
         }
 
-        if (enabledForChunkSystemWorker) {
-            chunkSystemWorkerRunnableWrapper = new AffinityRunnableWrapper("chunk_system_worker", parseAffinity("chunk_system_worker", chunkSystemWorkerAffinity));
+        if (enabledForChunkSystemWorker.get()) {
+            chunkSystemWorkerRunnableWrapper = new AffinityRunnableWrapper("chunk_system_worker", parseAffinity("chunk_system_worker", chunkSystemWorkerAffinity.get()));
             LOGGER.info("Chunk system worker thread now bound to: {}", chunkSystemWorkerRunnableWrapper.affinity());
         }
 
-        if (enableForNettyIo) {
-            nettyIoRunnableWrapper = new AffinityRunnableWrapper("netty_io", parseAffinity("netty_io", nettyIoAffinity));
+        if (enableForNettyIo.get()) {
+            nettyIoRunnableWrapper = new AffinityRunnableWrapper("netty_io", parseAffinity("netty_io", nettyIoAffinity.get()));
             LOGGER.info("Netty I/O thread now bound to: {}", nettyIoRunnableWrapper.affinity());
         }
     }
