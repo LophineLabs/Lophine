@@ -300,7 +300,7 @@ index 824602c421affc4ea25fec62464f3a172bc08900..251cccb97a943658bd3cfd15e1a4f5c1
              @Override
              public <T> void visit(final GameRule<T> gameRule) {
 diff --git a/net/minecraft/server/commands/SeedCommand.java b/net/minecraft/server/commands/SeedCommand.java
-index 2a2b8e2cb1517d008aa305c6d7d9064ec2997abc..3b14c6600e9f02f425dd8575ff60315badcf703e 100644
+index a85df8f9e4f88b6bacd27034f45cbb418f5b5252..6570816ab437f605d8b04b6dd93b2bc6ce930b19 100644
 --- a/net/minecraft/server/commands/SeedCommand.java
 +++ b/net/minecraft/server/commands/SeedCommand.java
 @@ -9,7 +9,9 @@ import net.minecraft.network.chat.ComponentUtils;

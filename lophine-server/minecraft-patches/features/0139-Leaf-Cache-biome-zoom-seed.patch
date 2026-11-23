@@ -64,7 +64,7 @@ index 71d184614e2ba7aa67fa757ac6ba4546ddd72d1f..eb80ebf090c4503fe07b97fbf27cb9b1
          this.centerChunkX = centerPos.x();
          this.centerChunkZ = centerPos.z();
 diff --git a/net/minecraft/world/level/levelgen/WorldOptions.java b/net/minecraft/world/level/levelgen/WorldOptions.java
-index a69125378431b9baf9a063d35ab4a068243e395b..9fe68734e5c7663c2b8bc48f30caf4f76dbbb3a6 100644
+index 815e6c2dd154cd700d44b98730060a2b6bd90c5f..224567e95586ffe2188963ab4968bba0a25cdfa5 100644
 --- a/net/minecraft/world/level/levelgen/WorldOptions.java
 +++ b/net/minecraft/world/level/levelgen/WorldOptions.java
 @@ -38,6 +38,7 @@ public class WorldOptions {

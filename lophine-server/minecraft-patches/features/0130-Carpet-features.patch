@@ -14512,7 +14512,7 @@ index ed5a5fb38bfe8fb9216c7eab00b833485c4bbade..d95dde38b3f5f6d510866ec595625c4a
      ) {
          for (int x = 0; x < this.width; x++) {
 diff --git a/net/minecraft/world/level/chunk/ChunkGenerator.java b/net/minecraft/world/level/chunk/ChunkGenerator.java
-index 366776ff631fca7dc6e3f7457facb39c8cc6ad9c..9574fae1835d5b0024a38f9974226529caca67c8 100644
+index 748b8a70dfeedb40964ccfbb824c6c63d0af37ec..ce3f7810991d5bbc5c153d8353f82db47ca4c60e 100644
 --- a/net/minecraft/world/level/chunk/ChunkGenerator.java
 +++ b/net/minecraft/world/level/chunk/ChunkGenerator.java
 @@ -654,6 +654,32 @@ public abstract class ChunkGenerator {

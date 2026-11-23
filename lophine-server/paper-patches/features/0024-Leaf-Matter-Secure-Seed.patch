@@ -7,7 +7,7 @@ As part of: Leaf (https://github.com/Winds-Studio/Leaf)
 Licensed under: GPL-3.0 (https://github.com/Winds-Studio/Leaf/blob/7f3e240bbe0970683c40279a7a65f0fde47503b6/licenses/GPL-3.0.txt)
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftChunk.java b/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
-index c1954a651c2527e4ff6911326244ac7f8a076dd6..525b91a16d4e65ee8a00db8377daef287499f45c 100644
+index c1954a651c2527e4ff6911326244ac7f8a076dd6..d00572a4db484588765cd9b08c443cd412628639 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
 @@ -191,7 +191,14 @@ public class CraftChunk implements Chunk {
@@ -19,7 +19,7 @@ index c1954a651c2527e4ff6911326244ac7f8a076dd6..525b91a16d4e65ee8a00db8377daef28
 +        if (this.level.paperConfig().entities.spawning.allChunksAreSlimeChunks) {
 +            return true;
 +        }
-+        return me.earthme.luminol.config.modules.function.SecureSeedConfig.enabled
++        return me.earthme.luminol.config.modules.function.SecureSeedConfig.enabled.get()
 +            ? level.getChunk(this.getX(), this.getZ()).isSlimeChunk()
 +            : WorldgenRandom.seedSlimeChunk(this.getX(), this.getZ(), this.getWorld().getSeed(), level.spigotConfig.slimeSeed).nextInt(10) == 0; // Paper;
 +        // Leaf end - Matter - Secure Seed
@@ -27,7 +27,7 @@ index c1954a651c2527e4ff6911326244ac7f8a076dd6..525b91a16d4e65ee8a00db8377daef28
  
      @Override
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 2d201e6e28a7055b00517782a0845d439410675f..4ff18c1529cb06cb24e50e0e329f4e519d54e49b 100644
+index 2d201e6e28a7055b00517782a0845d439410675f..f85e7f2889d3e53fd149d3a5e3adc6a090aae553 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -1248,7 +1248,11 @@ public final class CraftServer implements Server {
@@ -36,7 +36,7 @@ index 2d201e6e28a7055b00517782a0845d439410675f..4ff18c1529cb06cb24e50e0e329f4e51
          if (worldGenSettings == null) {
 -            WorldOptions worldOptions = new WorldOptions(creator.seed(), creator.generateStructures(), creator.bonusChest());
 +            // Leaf start - Matter - Secure Seed
-+            WorldOptions worldOptions = me.earthme.luminol.config.modules.function.SecureSeedConfig.enabled
++            WorldOptions worldOptions = me.earthme.luminol.config.modules.function.SecureSeedConfig.enabled.get()
 +                ? new WorldOptions(creator.seed(), su.plo.matter.Globals.createRandomWorldSeed(), creator.generateStructures(), creator.bonusChest())
 +                : new WorldOptions(creator.seed(), creator.generateStructures(), creator.bonusChest());
 +            // Leaf end - Matter - Secure Seed
