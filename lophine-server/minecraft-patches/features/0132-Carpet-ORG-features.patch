@@ -342,10 +342,10 @@ index a3257b552c7e76269a00cc7416f630e41cf2b3c5..0ff0f5ea29aa3c07a0eae77210a864ec
  
      private static int teleportToEntity(final CommandSourceStack source, final Collection<? extends Entity> entities, final Entity destination) throws CommandSyntaxException {
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 7d16ab6f41f7d941efdb9b61171e901ff3c78bde..7869426b5825f9e4e623bfb0da3c284063a51b24 100644
+index fd2b4b3edd036a40675dc43876f215f46a10cba8..2fae7a8eedb8d1ed151a90aad58d39c93baddb62 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -1935,10 +1935,38 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1936,10 +1936,38 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              }
              // CraftBukkit end
  
@@ -385,7 +385,7 @@ index 7d16ab6f41f7d941efdb9b61171e901ff3c78bde..7869426b5825f9e4e623bfb0da3c2840
      public boolean tryAddFreshEntityWithPassengers(final Entity entity) {
          // CraftBukkit start
          return this.tryAddFreshEntityWithPassengers(entity, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.DEFAULT);
-@@ -2395,6 +2423,10 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2396,6 +2424,10 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
                  blockEventsToReschedule.add(eventData);
                  continue;
              }
@@ -396,7 +396,7 @@ index 7d16ab6f41f7d941efdb9b61171e901ff3c78bde..7869426b5825f9e4e623bfb0da3c2840
              if (this.shouldTickBlocksAt(eventData.pos())) {
                  if (this.doBlockEvent(eventData)) {
                      this.server
-@@ -2418,8 +2450,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2419,8 +2451,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      }
  
      private boolean doBlockEvent(final BlockEventData eventData) {
@@ -739,7 +739,7 @@ index 279b5072596c062a7c800510ed914a9df8ce0698..c625c12d85d81ec0c5447a9b6b4944bc
          // Paper start - Implement click callbacks with custom click action
          final io.papermc.paper.event.player.PaperPlayerCustomClickEvent event = new io.papermc.paper.event.player.PaperPlayerCustomClickEvent(io.papermc.paper.adventure.PaperAdventure.asAdventure(packet.id()), this.getApiConnection(), packet.payload().orElse(null));
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 9f7748037f172fa6622ab3755fa610e33861ac87..2a385dba5e61e941512ff084d24e7ad4240ff892 100644
+index 3c03bfe49255a6f97c55cc081b721215ffc68160..b5b97e6a82635f5e9f5dc7532484bb4120098829 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -892,7 +892,10 @@ public class ServerGamePacketListenerImpl
@@ -754,7 +754,7 @@ index 9f7748037f172fa6622ab3755fa610e33861ac87..2a385dba5e61e941512ff084d24e7ad4
      }
  
      @Override
-@@ -3903,11 +3906,13 @@ public class ServerGamePacketListenerImpl
+@@ -3905,11 +3908,13 @@ public class ServerGamePacketListenerImpl
              if (!this.player.containerMenu.stillValid(this.player)) {
                  LOGGER.debug("Player {} interacted with invalid menu {}", this.player, this.player.containerMenu);
              } else {

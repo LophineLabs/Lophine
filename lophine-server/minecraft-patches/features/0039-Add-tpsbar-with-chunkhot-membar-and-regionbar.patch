@@ -68,10 +68,10 @@ index 7fbc003c095e281dc57a817afd509e363ba01b76..46d897e39ba3ff7ab3fb5aa7f41f6e72
              this.lastServerStatus = nano;
              this.status = this.buildServerStatus();
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index c880b7f55fc9e326c452810234ab8d70e9b99f8e..29a570cbd697e86369e55eeba41e723565e7b9f4 100644
+index 27d7f8511c19b31ad357de15374fca359ac9fc95..ba96f4f0690d3eee31c392bcdb8c9f5f732b4f56 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -1504,6 +1504,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1505,6 +1505,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      public void tickNonPassenger(final Entity entity) {
          // Paper start - log detailed entity tick information
          ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread("Cannot tick an entity off-main");
@@ -80,7 +80,7 @@ index c880b7f55fc9e326c452810234ab8d70e9b99f8e..29a570cbd697e86369e55eeba41e7235
          try {
              // Folia - region threading
              // Paper end - log detailed entity tick information
-@@ -1601,6 +1603,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1602,6 +1604,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          } finally {
              // Folia - region threading
          }
@@ -88,7 +88,7 @@ index c880b7f55fc9e326c452810234ab8d70e9b99f8e..29a570cbd697e86369e55eeba41e7235
          // Paper end - log detailed entity tick information
      }
  
-@@ -1612,6 +1615,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1613,6 +1616,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              final int timerId = isActive ? entity.getType().tickTimerId : entity.getType().inactiveTickTimerId;
              final ca.spottedleaf.leafprofiler.RegionizedProfiler.Handle foliaProfiler = io.papermc.paper.threadedregions.TickRegionScheduler.getProfiler();
              foliaProfiler.startTimer(timerId);
@@ -97,7 +97,7 @@ index c880b7f55fc9e326c452810234ab8d70e9b99f8e..29a570cbd697e86369e55eeba41e7235
              try {
                  // Folia end - profiler
              ProfilerFiller profiler = Profiler.get();
-@@ -1644,6 +1649,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1645,6 +1650,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
                  this.tickPassenger(entity, passenger, isActive); // Paper - EAR 2
              }
              } finally { foliaProfiler.stopTimer(timerId); } // Folia - profiler
