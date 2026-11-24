@@ -23,7 +23,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ServerWorldValues extends WorldValues {
     private final List<WorldValue<?>> allKeys = new CopyOnWriteArrayList<>();
-    private final Map<String, WorldValue<?>> byId = new ConcurrentHashMap<>();
+    // Nested lookup: configName -> path -> WorldValue. Avoids synthesizing a
+    // configName+'\0'+path key on every findValue/bindValue call.
+    private final Map<String, Map<String, WorldValue<?>>> byConfigAndPath = new ConcurrentHashMap<>();
     private final AtomicInteger nextIndex = new AtomicInteger();
 
     @Override
@@ -50,12 +52,16 @@ public class ServerWorldValues extends WorldValues {
 
     @Override
     protected void bindValue(@NotNull WorldValue<?> key, @NotNull String configName, @NotNull String path) {
-        byId.put(id(configName, path), key);
+        byConfigAndPath
+                .computeIfAbsent(configName, _ -> new ConcurrentHashMap<>())
+                .put(path, key);
+        key.bindTo(configName, path);
     }
 
     @Override
     protected @Nullable WorldValue<?> findValue(@NotNull String configName, @NotNull String path) {
-        return byId.get(id(configName, path));
+        Map<String, WorldValue<?>> byPath = byConfigAndPath.get(configName);
+        return byPath == null ? null : byPath.get(path);
     }
 
     @Override
@@ -73,10 +79,6 @@ public class ServerWorldValues extends WorldValues {
     private static <T> T valueOf(Level level, WorldValue<T> key) {
         T value = level.luminolWorldConfig().get(key);
         return value != null ? value : key.global();
-    }
-
-    private static String id(String configName, String path) {
-        return configName + '\0' + path;
     }
 
     private final class BuilderImpl<T> implements WorldValueBuilder<T> {
@@ -107,6 +109,8 @@ public class ServerWorldValues extends WorldValues {
     private static final class SimpleWorldValue<T> extends WorldValue<T> {
         private volatile int index = -1;
         private volatile T global;
+        private volatile String boundConfigName;
+        private volatile String boundPath;
 
         private SimpleWorldValue(T global) {
             this.global = global;
@@ -136,6 +140,22 @@ public class ServerWorldValues extends WorldValues {
         @SuppressWarnings("unchecked")
         public void setGlobal(Object value) {
             this.global = (T) value;
+        }
+
+        @Override
+        public void bindTo(@NotNull String configName, @NotNull String path) {
+            this.boundConfigName = configName;
+            this.boundPath = path;
+        }
+
+        @Override
+        public @Nullable String boundConfigName() {
+            return boundConfigName;
+        }
+
+        @Override
+        public @Nullable String boundPath() {
+            return boundPath;
         }
     }
 }

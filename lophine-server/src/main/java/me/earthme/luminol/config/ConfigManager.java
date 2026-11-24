@@ -99,17 +99,23 @@ public class ConfigManager {
     }
 
     public static WorldConfigHolder loadWorldConfigs(@NotNull String worldName, @NotNull File worldFolder) {
-        Map<String, WorldConfigInstance> instances = new LinkedHashMap<>();
+        List<String> names = new ArrayList<>();
+        List<WorldConfigInstance> loaded = new ArrayList<>();
         for (ConfigsInstance config : configfiles.values()) {
             if (!config.isWorldConfig()) {
                 continue;
             }
             WorldConfigInstance instance = WorldConfigInstance.load(config, worldName, worldFolder);
             if (instance != null) {
-                instances.put(config.getName(), instance);
+                names.add(config.getName());
+                loaded.add(instance);
             }
         }
-        WorldConfigHolder holder = new WorldConfigHolder(worldName, Map.copyOf(instances));
+        WorldConfigHolder holder = new WorldConfigHolder(
+                worldName,
+                names.toArray(new String[0]),
+                loaded.toArray(new WorldConfigInstance[0])
+        );
         WorldConfigHolder previous = worldHolders.put(worldName, holder);
         if (previous != null && previous != holder) {
             previous.close();

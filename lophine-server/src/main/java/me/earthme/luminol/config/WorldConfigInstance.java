@@ -26,7 +26,9 @@ public class WorldConfigInstance {
     private final ConfigsInstance parent;
     private final String worldName;
     private final File configFile;
-    private Map<String, Object> overrides;
+    // Keyed by WorldValue reference so snapshot rebuilds read index() directly
+    // instead of re-resolving a concatenated string on every entry.
+    private Map<WorldValue<?>, Object> overrides;
     private CommentedFileConfig file;
     private WorldConfigHolder holder;
 
@@ -74,13 +76,21 @@ public class WorldConfigInstance {
 
     @SuppressWarnings("unchecked")
     public <T> T getOverride(String key) {
-        Map<String, Object> map = overrides;
-        return map == null ? null : (T) map.get(key);
+        WorldValue<?> wv = WorldValues.keyOf(parent.getName(), key);
+        if (wv == null) {
+            return null;
+        }
+        Map<WorldValue<?>, Object> map = overrides;
+        return map == null ? null : (T) map.get(wv);
     }
 
     public boolean hasOverride(String key) {
-        Map<String, Object> map = overrides;
-        return map != null && map.containsKey(key);
+        WorldValue<?> wv = WorldValues.keyOf(parent.getName(), key);
+        if (wv == null) {
+            return false;
+        }
+        Map<WorldValue<?>, Object> map = overrides;
+        return map != null && map.containsKey(wv);
     }
 
     public boolean set(String key, Object value) {
@@ -151,16 +161,12 @@ public class WorldConfigInstance {
     }
 
     void applyOverridesTo(Object[] snapshot) {
-        Map<String, Object> map = overrides;
+        Map<WorldValue<?>, Object> map = overrides;
         if (map == null || map.isEmpty()) {
             return;
         }
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            WorldValue<?> key = WorldValues.keyOf(parent.getName(), entry.getKey());
-            if (key == null) {
-                continue;
-            }
-            int index = key.index();
+        for (Map.Entry<WorldValue<?>, Object> entry : map.entrySet()) {
+            int index = entry.getKey().index();
             if (index >= 0 && index < snapshot.length) {
                 snapshot[index] = entry.getValue();
             }
@@ -187,27 +193,35 @@ public class WorldConfigInstance {
     }
 
     private void putOverride(String key, Object value) {
-        Map<String, Object> map = overrides;
+        WorldValue<?> wv = WorldValues.keyOf(parent.getName(), key);
+        if (wv == null) {
+            // Path is not bound to a WorldValue yet; nothing to overlay on the snapshot.
+            return;
+        }
+        Map<WorldValue<?>, Object> map = overrides;
         if (map == null) {
             map = new ConcurrentHashMap<>(8);
             overrides = map;
         }
-        map.put(key, value);
+        map.put(wv, value);
     }
 
     private void dropOverride(String key) {
-        Map<String, Object> map = overrides;
+        Map<WorldValue<?>, Object> map = overrides;
         if (map == null) {
             return;
         }
-        map.remove(key);
+        WorldValue<?> wv = WorldValues.keyOf(parent.getName(), key);
+        if (wv != null) {
+            map.remove(wv);
+        }
         if (map.isEmpty()) {
             overrides = null;
         }
     }
 
     private void persistOverrides() {
-        Map<String, Object> map = overrides;
+        Map<WorldValue<?>, Object> map = overrides;
         if (map == null || map.isEmpty()) {
             closeFile();
             deleteFileIfPresent();
@@ -215,9 +229,13 @@ public class WorldConfigInstance {
         }
         ensureFile();
         file.clear();
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            file.set(entry.getKey(), serialize(entry.getValue()));
-            copyComment(entry.getKey());
+        for (Map.Entry<WorldValue<?>, Object> entry : map.entrySet()) {
+            String path = entry.getKey().boundPath();
+            if (path == null) {
+                continue;
+            }
+            file.set(path, serialize(entry.getValue()));
+            copyComment(path);
         }
         file.save();
     }

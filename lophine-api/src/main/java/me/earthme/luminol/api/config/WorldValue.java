@@ -2,6 +2,7 @@ package me.earthme.luminol.api.config;
 
 import org.bukkit.World;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -61,4 +62,31 @@ public abstract class WorldValue<T> {
      */
     @ApiStatus.Internal
     public abstract void setGlobal(Object value);
+
+    /**
+     * Records the owning configuration instance and the dotted config path this value
+     * was bound to. The default implementation is a no-op; the server factory stores
+     * these so overlays can be applied without re-hashing concatenated string keys.
+     *
+     * @param configName the configuration instance name
+     * @param path       the dotted config path
+     */
+    @ApiStatus.Internal
+    public abstract void bindTo(@NotNull String configName, @NotNull String path);
+
+    /**
+     * The configuration instance name supplied to {@link #bindTo(String, String)}.
+     *
+     * @return the bound name, or {@code null} if this value was never bound
+     */
+    @ApiStatus.Internal
+    public abstract @Nullable String boundConfigName();
+
+    /**
+     * The dotted config path supplied to {@link #bindTo(String, String)}.
+     *
+     * @return the bound path, or {@code null} if this value was never bound
+     */
+    @ApiStatus.Internal
+    public abstract @Nullable String boundPath();
 }
