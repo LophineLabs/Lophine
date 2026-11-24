@@ -119,7 +119,7 @@ index 65a51655e7b477768e56fd30e0cb6fc201d690aa..cb360e27aab17bc686443b07a7d87f24
          OFF("off"),
          LAN("lan");
 diff --git a/net/minecraft/server/PlayerAdvancements.java b/net/minecraft/server/PlayerAdvancements.java
-index e70701663abd6f19a506690167d80f0dceab8000..bb5052f1b6aecb1c39306ee60983b309bc336c74 100644
+index df4f74ccedd50fe50c857128d1cf73b92a64cda1..8b229f0e0d8eda2d8719b361c7057e4d45135133 100644
 --- a/net/minecraft/server/PlayerAdvancements.java
 +++ b/net/minecraft/server/PlayerAdvancements.java
 @@ -167,6 +167,11 @@ public class PlayerAdvancements {
@@ -316,7 +316,7 @@ index ef8c1e81327dd3dd3535bb86920f2522f00b0b35..8e7029b560a99003858f09319f89a04f
              }
          }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 909a51ebb4b4d76c967fcb5a458d9a8e5985a0a3..289d08a9363d4674f5b23b5ca9c1c5d66fb4849b 100644
+index fd54b72c75637b4502a71c2dafb9a143c33b6555..701378ea5dd7895a28017a11bd0aa253c73e2334 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -246,6 +246,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -335,7 +335,7 @@ index 909a51ebb4b4d76c967fcb5a458d9a8e5985a0a3..289d08a9363d4674f5b23b5ca9c1c5d6
          this.updateTickData(); // Folia - region threading - make sure it is initialised before ticked
      }
  
-@@ -2887,6 +2889,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2888,6 +2890,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          return this.players;
      }
  
@@ -348,7 +348,7 @@ index 909a51ebb4b4d76c967fcb5a458d9a8e5985a0a3..289d08a9363d4674f5b23b5ca9c1c5d6
      @Override
      public void updatePOIOnBlockStateChange(final BlockPos pos, final BlockState oldState, final BlockState newState) {
          Optional<Holder<PoiType>> oldType = PoiTypes.forState(oldState);
-@@ -3351,6 +3359,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3352,6 +3360,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              // ServerLevel.this.getChunkSource().addEntity(entity); // Paper - ignore and warn about illegal addEntity calls instead of crashing server; moved down below valid=true
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.add(player);
@@ -360,7 +360,7 @@ index 909a51ebb4b4d76c967fcb5a458d9a8e5985a0a3..289d08a9363d4674f5b23b5ca9c1c5d6
                  if (player.isReceivingWaypoints()) {
                      ServerLevel.this.getWaypointManager().addPlayer(player);
                  }
-@@ -3421,6 +3434,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3422,6 +3435,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              ServerLevel.this.getChunkSource().removeEntity(entity);
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.remove(player);
@@ -419,10 +419,10 @@ index f794e459e3c8a2efedda35c3b723f5038874965f..8cbbf32d3056ba45742a6b85b31c82d4
          org.bukkit.event.player.PlayerChangedWorldEvent changeEvent = new org.bukkit.event.player.PlayerChangedWorldEvent(this.getBukkitEntity(), oldLevel.getWorld());
          this.level().getCraftServer().getPluginManager().callEvent(changeEvent);
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index b79583c79b3fad648f122d3bb28e3060be68d9d0..397bee3bf81652b068d814ff0783febdba45d79c 100644
+index 21ad84e205159514a6342f573fda3b2692e5ae00..d0b399d02dcbf2d4e523be1c5f0bf47108ac8292 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -3969,7 +3969,7 @@ public class ServerGamePacketListenerImpl
+@@ -3971,7 +3971,7 @@ public class ServerGamePacketListenerImpl
      }
  
      @Deprecated @io.papermc.paper.annotation.DoNotUse // Paper - Add PlayerLoadedWorldEvent

@@ -5,10 +5,10 @@ Subject: [PATCH] Fix entity portal-teleport speed
 
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 3e0cfbc9f465ff0160b4e3fb2c64463eb8ce61f7..78153eb952b6f9d30e2de706e6ea6f8210439bc1 100644
+index 1b8541316e630ad38cf1ec76ccbb0a7dbb9af4b9..ea612303d11fde4b4269ffea0b410ed5a0c2de17 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -1502,7 +1502,65 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1503,7 +1503,65 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          foliaProfiler.startTimer(timerId);
          try {
          // Folia end - profiler
@@ -74,7 +74,7 @@ index 3e0cfbc9f465ff0160b4e3fb2c64463eb8ce61f7..78153eb952b6f9d30e2de706e6ea6f82
          entity.tick();
          // Folia start - region threading
          if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(entity)) {
-@@ -1513,6 +1571,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1514,6 +1572,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              // portalled
              return;
          }

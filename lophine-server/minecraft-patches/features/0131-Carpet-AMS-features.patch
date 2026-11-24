@@ -202,7 +202,7 @@ index 8e7029b560a99003858f09319f89a04f9c458bbb..03b4614473addb5777434657a51e4865
      }
  
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index f3ceb19261594bfdbd436428e189f757b5f4642f..7d16ab6f41f7d941efdb9b61171e901ff3c78bde 100644
+index 166c16265347e8ce1a3be874dabd5f65b74043ac..fd2b4b3edd036a40675dc43876f215f46a10cba8 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -843,6 +843,9 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -285,10 +285,10 @@ index 083a82b5200a251e85f155d1df016cd8b4f18db5..04190db3ccb9bd8aed6e768a5afd4adf
      public static final TicketType PLUGIN = register("plugin", NO_TIMEOUT, FLAG_LOADING | FLAG_SIMULATION); // CraftBukkit
      public static final TicketType POST_TELEPORT = register("post_teleport", 5L, FLAG_LOADING | FLAG_SIMULATION); // Paper
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 277f8a0bbf526c74f33fc499cc76a9b0ce2dd21e..9f7748037f172fa6622ab3755fa610e33861ac87 100644
+index 420c665e8021c8092959566e2c8b138a80c2bccc..3c03bfe49255a6f97c55cc081b721215ffc68160 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -4075,6 +4075,7 @@ public class ServerGamePacketListenerImpl
+@@ -4077,6 +4077,7 @@ public class ServerGamePacketListenerImpl
      @Override
      public void handleChangeGameMode(final ServerboundChangeGameModePacket packet) {
          PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());

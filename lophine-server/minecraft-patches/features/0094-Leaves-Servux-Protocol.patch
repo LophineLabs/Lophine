@@ -55,10 +55,10 @@ index 8432d0ce22ddc9c9bfa98901e403697f40e53c99..9ec141359c4422c1574dac71a88b7f50
 +    // Leaves end - servux
  }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index db4a9380d1fddc5d737f2c92e33d9f4eee16135d..909a51ebb4b4d76c967fcb5a458d9a8e5985a0a3 100644
+index 7fbd8e5a01a45aea68ea672b86d743f643968ef9..fd54b72c75637b4502a71c2dafb9a143c33b6555 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -1085,6 +1085,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1086,6 +1086,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
  
          for (int sectionIndex = 0, sectionsLen = sections.length; sectionIndex < sectionsLen; sectionIndex++) {
              final int offsetY = (sectionIndex + minSection) << 4;
@@ -66,7 +66,7 @@ index db4a9380d1fddc5d737f2c92e33d9f4eee16135d..909a51ebb4b4d76c967fcb5a458d9a8e
              final LevelChunkSection section = sections[sectionIndex];
              final net.minecraft.world.level.chunk.PalettedContainer<net.minecraft.world.level.block.state.BlockState> states = section.getStates();
              if (!section.isRandomlyTickingBlocks()) {
-@@ -1186,6 +1187,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1187,6 +1188,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      public void tickPrecipitation(final BlockPos pos) {
          BlockPos topPos = this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, pos);
          BlockPos belowPos = topPos.below();
@@ -74,7 +74,7 @@ index db4a9380d1fddc5d737f2c92e33d9f4eee16135d..909a51ebb4b4d76c967fcb5a458d9a8e
          Biome biome = this.getBiome(topPos).value();
          if (biome.shouldFreeze(this, belowPos)) {
              org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(this, belowPos, Blocks.ICE.defaultBlockState(), Block.UPDATE_ALL, null); // CraftBukkit
-@@ -2290,6 +2292,10 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2291,6 +2293,10 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          BlockEventData eventData;
          while ((eventData = worldRegionData.removeFirstBlockEvent()) != null) {
              // Folia end - regionised ticking
@@ -85,7 +85,7 @@ index db4a9380d1fddc5d737f2c92e33d9f4eee16135d..909a51ebb4b4d76c967fcb5a458d9a8e
              if (this.shouldTickBlocksAt(eventData.pos())) {
                  if (this.doBlockEvent(eventData)) {
                      this.server
-@@ -2854,6 +2860,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2855,6 +2861,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              this.server.updateEffectiveRespawnData();
          }
          // Paper end

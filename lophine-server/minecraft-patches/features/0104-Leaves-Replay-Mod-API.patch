@@ -137,7 +137,7 @@ index cb360e27aab17bc686443b07a7d87f2410b42f54..454e473d97079bfddacfc4fc086f1f56
                      player.connection.disconnect(net.kyori.adventure.text.Component.text(org.spigotmc.SpigotConfig.whitelistMessage), org.bukkit.event.player.PlayerKickEvent.Cause.WHITELIST); // Paper - use configurable message & kick event cause
                  }
 diff --git a/net/minecraft/server/PlayerAdvancements.java b/net/minecraft/server/PlayerAdvancements.java
-index bb5052f1b6aecb1c39306ee60983b309bc336c74..82e2dba5b0fbf75f56b73970c300a9fbbb43f2c8 100644
+index 8b229f0e0d8eda2d8719b361c7057e4d45135133..c4702f8241c5796f011abb2160a3cc9448ba559a 100644
 --- a/net/minecraft/server/PlayerAdvancements.java
 +++ b/net/minecraft/server/PlayerAdvancements.java
 @@ -168,7 +168,7 @@ public class PlayerAdvancements {
@@ -289,10 +289,10 @@ index 37c9f983ae89c497f44a1b7967d741abf909e0a0..d7fb2505f2a86ca0d81f144624ef2e1a
  
              this.setListData(players);
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 289d08a9363d4674f5b23b5ca9c1c5d66fb4849b..8d4d718a445569820016423bdfd7b78fd7e5153a 100644
+index 701378ea5dd7895a28017a11bd0aa253c73e2334..f3d468cde604aca0d44227093f18cd4a91540d9d 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -3360,7 +3360,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3361,7 +3361,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.add(player);
                  // Leaves start - skip
@@ -301,7 +301,7 @@ index 289d08a9363d4674f5b23b5ca9c1c5d66fb4849b..8d4d718a445569820016423bdfd7b78f
                      ServerLevel.this.realPlayers.add(player);
                  }
                  // Leaves end - skip
-@@ -3435,7 +3435,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3436,7 +3436,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.remove(player);
                  // Leaves start - skip

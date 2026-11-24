@@ -759,7 +759,7 @@ index b3715395edb7cbc8eee6487a8de52e1a34414982..5a0b26f5da31f8a58c5d0cd8dd8611ea
  
      private void getFullChunk(final long chunkKey, final Consumer<LevelChunk> output) {
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 7869426b5825f9e4e623bfb0da3c284063a51b24..1730edcae94d3fadad57710185806a717f380d6c 100644
+index 2fae7a8eedb8d1ed151a90aad58d39c93baddb62..c31fad6a6bb33cffd4bc0521be67e3bf182ab578 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -846,6 +846,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -847,7 +847,7 @@ index 7869426b5825f9e4e623bfb0da3c284063a51b24..1730edcae94d3fadad57710185806a71
      }
  
      // Folia start - region threading
-@@ -1162,6 +1173,23 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1163,6 +1174,23 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      // Paper end - optimise random ticking
  
      public void tickChunk(final LevelChunk chunk, final int tickSpeed) {
@@ -871,7 +871,7 @@ index 7869426b5825f9e4e623bfb0da3c284063a51b24..1730edcae94d3fadad57710185806a71
          final io.papermc.paper.threadedregions.util.SimpleThreadLocalRandomSource simpleRandom = this.simpleRandom; // Paper - optimise random ticking // Folia - region threading
          ChunkPos chunkPos = chunk.getPos();
          int minX = chunkPos.getMinBlockX();
-@@ -1544,6 +1572,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1545,6 +1573,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      // Paper end - log detailed entity tick information
  
      public void tickNonPassenger(final Entity entity) {
@@ -884,7 +884,7 @@ index 7869426b5825f9e4e623bfb0da3c284063a51b24..1730edcae94d3fadad57710185806a71
          // Paper start - log detailed entity tick information
          ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread("Cannot tick an entity off-main");
          LevelChunk levelChunk = entity.shouldTickHot() ? this.getChunkIfLoaded(entity.moonrise$getSectionX(),entity.moonrise$getSectionZ()) : null; // KioCG
-@@ -1654,9 +1688,17 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1655,9 +1689,17 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          }
          } finally { if (levelChunk != null) levelChunk.getChunkHot().stopTickingAndCount(); } // KioCG
          // Paper end - log detailed entity tick information
@@ -903,7 +903,7 @@ index 7869426b5825f9e4e623bfb0da3c284063a51b24..1730edcae94d3fadad57710185806a71
          if (entity.isRemoved() || entity.getVehicle() != vehicle) {
              entity.stopRiding();
          } else if (entity instanceof Player || this.getCurrentWorldData().hasEntityTickingEntity(entity)) { // Folia - region threading
-@@ -1707,6 +1749,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1708,6 +1750,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              } finally { foliaProfiler.stopTimer(timerId); } // Folia - profiler
              } finally { if (levelChunk != null) levelChunk.getChunkHot().stopTickingAndCount(); } // KioCG
          }
@@ -912,7 +912,7 @@ index 7869426b5825f9e4e623bfb0da3c284063a51b24..1730edcae94d3fadad57710185806a71
      }
  
      public void updateNeighboursOnBlockSet(final BlockPos pos, final BlockState oldState) {
-@@ -1948,6 +1992,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1949,6 +1993,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      }
  
      private boolean carpetAddEntityAfterBlockDrop(final Entity entity, final org.bukkit.event.entity.CreatureSpawnEvent.@Nullable SpawnReason spawnReason) {
@@ -920,7 +920,7 @@ index 7869426b5825f9e4e623bfb0da3c284063a51b24..1730edcae94d3fadad57710185806a71
              return this.moonrise$getEntityLookup().addNewEntity(entity); // Paper - rewrite chunk system
      }
  
-@@ -2334,6 +2379,27 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2335,6 +2380,27 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          // CraftBukkit end
          ParticleOptions explosionParticle = explosion.isSmall() ? smallExplosionParticles : largeExplosionParticles;
  
@@ -948,7 +948,7 @@ index 7869426b5825f9e4e623bfb0da3c284063a51b24..1730edcae94d3fadad57710185806a71
          for (ServerPlayer player : this.getLocalPlayers()) { // Folia - region thraeding
              if (player.distanceToSqr(center) < 4096.0) {
                  Optional<Vec3> playerKnockback = Optional.ofNullable(explosion.getHitPlayers().get(player));
-@@ -2345,6 +2411,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2346,6 +2412,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
                      );
              }
          }
@@ -956,7 +956,7 @@ index 7869426b5825f9e4e623bfb0da3c284063a51b24..1730edcae94d3fadad57710185806a71
  
          return explosion; // CraftBukkit
          });
-@@ -2436,7 +2503,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2437,7 +2504,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
                              eventData.pos().getX(),
                              eventData.pos().getY(),
                              eventData.pos().getZ(),
@@ -965,7 +965,7 @@ index 7869426b5825f9e4e623bfb0da3c284063a51b24..1730edcae94d3fadad57710185806a71
                              this.dimension(),
                              new ClientboundBlockEventPacket(eventData.pos(), eventData.block(), eventData.paramA(), eventData.paramB())
                          );
-@@ -2450,12 +2517,14 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2451,12 +2518,14 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      }
  
      private boolean doBlockEvent(final BlockEventData eventData) {
@@ -981,7 +981,7 @@ index 7869426b5825f9e4e623bfb0da3c284063a51b24..1730edcae94d3fadad57710185806a71
      }
  
      @Override
-@@ -3030,6 +3099,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3031,6 +3100,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
  
      @Override
      public void updatePOIOnBlockStateChange(final BlockPos pos, final BlockState oldState, final BlockState newState) {
@@ -1100,7 +1100,7 @@ index 650ce1664d54c0c2d309d1555a90f877e32de19b..1d9ac01724e3177b7c97907daad3ead3
  
      private static class Request {
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 2a385dba5e61e941512ff084d24e7ad4240ff892..6a9d84cc53e51ad93dbd8634f4b36ee2d03569f2 100644
+index b5b97e6a82635f5e9f5dc7532484bb4120098829..48ba176269eb8facb2306c553cf9b0c664678fee 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -1503,7 +1503,7 @@ public class ServerGamePacketListenerImpl
@@ -1132,7 +1132,7 @@ index 2a385dba5e61e941512ff084d24e7ad4240ff892..6a9d84cc53e51ad93dbd8634f4b36ee2
          }
      }
  
-@@ -3007,7 +3012,8 @@ public class ServerGamePacketListenerImpl
+@@ -3009,7 +3014,8 @@ public class ServerGamePacketListenerImpl
  
          // CraftBukkit start - replaced with thread safe throttle
          // throttler.increment();
@@ -1142,7 +1142,7 @@ index 2a385dba5e61e941512ff084d24e7ad4240ff892..6a9d84cc53e51ad93dbd8634f4b36ee2
          // CraftBukkit end - replaced with thread safe throttle
              && !this.server.getPlayerList().isOp(this.player.nameAndId())
              && !this.server.isSingleplayerOwner(this.player.nameAndId())) {
-@@ -3975,7 +3981,9 @@ public class ServerGamePacketListenerImpl
+@@ -3977,7 +3983,9 @@ public class ServerGamePacketListenerImpl
                  if (io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.updateEquipmentOnPlayerActions) this.player.detectEquipmentUpdates(); // Paper - Force update attributes.
              } else if (drop && validData) {
                  if (this.dropSpamThrottler.isUnderThreshold()) {
@@ -1153,7 +1153,7 @@ index 2a385dba5e61e941512ff084d24e7ad4240ff892..6a9d84cc53e51ad93dbd8634f4b36ee2
                      this.player.drop(itemStack, true, Prediction.PREDICTED);
                  } else {
                      LOGGER.warn("Player {} was dropping items too fast in creative mode, ignoring.", this.player.getPlainTextName());
-@@ -4080,6 +4088,9 @@ public class ServerGamePacketListenerImpl
+@@ -4082,6 +4090,9 @@ public class ServerGamePacketListenerImpl
      @Override
      public void handleChangeGameMode(final ServerboundChangeGameModePacket packet) {
          PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());

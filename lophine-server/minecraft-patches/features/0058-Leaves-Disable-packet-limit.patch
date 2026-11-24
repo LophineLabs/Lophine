@@ -20,7 +20,7 @@ index c0462e5952467504b8a079737a1e7a13b71e57b1..38dc1c6cf8011ae26b54cdb6a0c1a59c
                  synchronized (PACKET_LIMIT_LOCK) {
                      if (this.allPacketCounts != null) {
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index b0772a4dd1357b6640895e3941aa7531d9b1cf9e..60dc5757e12840d9fdc12869e1946249d46d2665 100644
+index bddb6ead2be359c1e9e25e42736b0b9eb282ce62..4e2ae5bd585448d562bfac9f6b4591bc9a5fc4df 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -911,7 +911,7 @@ public class ServerGamePacketListenerImpl
@@ -32,7 +32,7 @@ index b0772a4dd1357b6640895e3941aa7531d9b1cf9e..60dc5757e12840d9fdc12869e1946249
              this.disconnectAsync(Component.translatable("disconnect.spam"), org.bukkit.event.player.PlayerKickEvent.Cause.SPAM);
              return;
          }
-@@ -2188,6 +2188,7 @@ public class ServerGamePacketListenerImpl
+@@ -2190,6 +2190,7 @@ public class ServerGamePacketListenerImpl
      private long lastLimitedPacket = -1;
  
      private boolean checkLimit(long timestamp) {
@@ -40,7 +40,7 @@ index b0772a4dd1357b6640895e3941aa7531d9b1cf9e..60dc5757e12840d9fdc12869e1946249
          if (!io.papermc.paper.configuration.GlobalConfiguration.get().spamLimiter.incomingPacketThreshold.enabled()) {
              return true;
          }
-@@ -2754,6 +2755,8 @@ public class ServerGamePacketListenerImpl
+@@ -2756,6 +2757,8 @@ public class ServerGamePacketListenerImpl
  
      // Spigot start - spam exclusions
      private void detectRateSpam(final TickThrottler throttler, final String message) {
@@ -49,7 +49,7 @@ index b0772a4dd1357b6640895e3941aa7531d9b1cf9e..60dc5757e12840d9fdc12869e1946249
          if (org.spigotmc.SpigotConfig.enableSpamExclusions) {
              for (String exclude : org.spigotmc.SpigotConfig.spamExclusions) {
                  if (exclude != null && message.startsWith(exclude)) {
-@@ -3553,7 +3556,7 @@ public class ServerGamePacketListenerImpl
+@@ -3555,7 +3558,7 @@ public class ServerGamePacketListenerImpl
      @Override
      public void handlePlaceRecipe(final ServerboundPlaceRecipePacket packet) {
          // Paper start - auto recipe limit
