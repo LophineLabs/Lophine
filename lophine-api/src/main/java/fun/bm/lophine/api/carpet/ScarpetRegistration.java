@@ -1,6 +1,8 @@
 package fun.bm.lophine.api.carpet;
 
-/** A thread-safe plugin-owned registration. Closing it is idempotent and non-blocking. */
+/**
+ * A thread-safe plugin-owned registration. Closing it is idempotent and non-blocking.
+ */
 public interface ScarpetRegistration extends AutoCloseable {
     /**
      * Returns the name callable from Scarpet.
@@ -16,7 +18,9 @@ public interface ScarpetRegistration extends AutoCloseable {
      */
     boolean isRegistered();
 
-    /** Revokes new calls and fails pending results; already executing plugin work may finish. */
+    /**
+     * Revokes new calls and fails pending results; already executing plugin work may finish.
+     */
     @Override
     void close();
 }

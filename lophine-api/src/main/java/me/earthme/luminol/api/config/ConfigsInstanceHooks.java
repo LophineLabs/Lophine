@@ -104,9 +104,9 @@ public interface ConfigsInstanceHooks {
      * File reloads are reported separately through {@link #afterReload}.
      *
      * @param instance configuration instance
-     * @param field applied field
+     * @param field    applied field
      * @param previous previous live value
-     * @param current resulting live value
+     * @param current  resulting live value
      */
     default void afterValueChanged(@NotNull LuminolConfigsInstance instance, @NotNull Field field, Object previous, Object current) {
     }

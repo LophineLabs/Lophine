@@ -1,9 +1,10 @@
 package fun.bm.lophine.api.carpet;
 
-import java.util.Objects;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Objects;
 
 /**
  * Notification after a live rule value changes, dispatched on the Folia global
@@ -84,15 +85,25 @@ public final class CarpetRuleChangeEvent extends Event {
         return HANDLERS;
     }
 
-    /** Origin of a live mutation. */
+    /**
+     * Origin of a live mutation.
+     */
     public enum Cause {
-        /** A Carpet rule command or its Scarpet command wrapper. */
+        /**
+         * A Carpet rule command or its Scarpet command wrapper.
+         */
         COMMAND,
-        /** A plugin invoked CarpetApi.setRule. */
+        /**
+         * A plugin invoked CarpetApi.setRule.
+         */
         API,
-        /** A completed configuration reload. */
+        /**
+         * A completed configuration reload.
+         */
         RELOAD,
-        /** A configuration application outside the native rule command. */
+        /**
+         * A configuration application outside the native rule command.
+         */
         CONFIGURATION
     }
 }

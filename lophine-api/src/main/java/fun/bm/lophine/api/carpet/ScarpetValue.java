@@ -4,12 +4,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/** Immutable data exchanged with Scarpet. Maps preserve typed keys, including numbers. */
+/**
+ * Immutable data exchanged with Scarpet. Maps preserve typed keys, including numbers.
+ */
 public sealed interface ScarpetValue permits ScarpetValue.Null, ScarpetValue.Bool, ScarpetValue.Integer,
         ScarpetValue.Decimal, ScarpetValue.Text, ScarpetValue.Sequence, ScarpetValue.Mapping {
-    /** Explicit script null; Java null is never a script value. */
+    /**
+     * Explicit script null; Java null is never a script value.
+     */
     enum Null implements ScarpetValue {
-        /** The script null singleton. */
+        /**
+         * The script null singleton.
+         */
         INSTANCE
     }
 
@@ -18,21 +24,24 @@ public sealed interface ScarpetValue permits ScarpetValue.Null, ScarpetValue.Boo
      *
      * @param value boolean value
      */
-    record Bool(boolean value) implements ScarpetValue { }
+    record Bool(boolean value) implements ScarpetValue {
+    }
 
     /**
      * An immutable script data value.
      *
      * @param value signed 64-bit integer, preserving integers beyond double precision
      */
-    record Integer(long value) implements ScarpetValue { }
+    record Integer(long value) implements ScarpetValue {
+    }
 
     /**
      * An immutable script data value.
      *
      * @param value floating-point value
      */
-    record Decimal(double value) implements ScarpetValue { }
+    record Decimal(double value) implements ScarpetValue {
+    }
 
     /**
      * An immutable script data value.

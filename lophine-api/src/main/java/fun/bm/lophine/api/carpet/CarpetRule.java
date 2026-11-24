@@ -1,8 +1,9 @@
 package fun.bm.lophine.api.carpet;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.List;
 import java.util.Objects;
-import org.jspecify.annotations.Nullable;
 
 /**
  * An immutable point-in-time rule view. Values are command-form strings; list

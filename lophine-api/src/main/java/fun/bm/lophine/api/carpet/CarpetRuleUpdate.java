@@ -26,13 +26,21 @@ public record CarpetRuleUpdate(CarpetRule rule, String requestedValue, Status st
         Objects.requireNonNull(status);
     }
 
-    /** Runtime application status. */
+    /**
+     * Runtime application status.
+     */
     public enum Status {
-        /** The live value changed. */
+        /**
+         * The live value changed.
+         */
         UPDATED,
-        /** The live value already matched. A requested save still occurs. */
+        /**
+         * The live value already matched. A requested save still occurs.
+         */
         UNCHANGED,
-        /** Saved successfully, but the live value requires a restart to change. */
+        /**
+         * Saved successfully, but the live value requires a restart to change.
+         */
         SAVED_FOR_RESTART
     }
 }

@@ -1,10 +1,11 @@
 package fun.bm.lophine.api.carpet;
 
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 
 /**
  * Access to this server's Carpet integration. Methods may be called from any thread.
@@ -47,7 +48,7 @@ public interface CarpetApi {
      * @param value   command-form input, including comma-separated lists
      * @param persist whether to save the value as the startup default
      * @return applied/unchanged/restart status after native notifications complete;
-     *         invalid, unavailable or protocol-blocked requests fail exceptionally
+     * invalid, unavailable or protocol-blocked requests fail exceptionally
      */
     CompletableFuture<CarpetRuleUpdate> setRule(Plugin owner, String name, String value, boolean persist);
 
