@@ -342,7 +342,7 @@ index a3257b552c7e76269a00cc7416f630e41cf2b3c5..0ff0f5ea29aa3c07a0eae77210a864ec
  
      private static int teleportToEntity(final CommandSourceStack source, final Collection<? extends Entity> entities, final Entity destination) throws CommandSyntaxException {
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index fd2b4b3edd036a40675dc43876f215f46a10cba8..2fae7a8eedb8d1ed151a90aad58d39c93baddb62 100644
+index 75198b08c9bb27b2568496e18e674ef56349a078..647c798a4bb7ce7d6e404f5ad3565780664d5b7b 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -1936,10 +1936,38 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -411,10 +411,10 @@ index fd2b4b3edd036a40675dc43876f215f46a10cba8..2fae7a8eedb8d1ed151a90aad58d39c9
  
      @Override
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 3ada8ef6829c1b0654acaf250d6d4446d2771cca..1e85945c05162ca26b90701d2b1702e870f363a8 100644
+index a3a14f2790b218f379fe54668563217aa94856c7..b59ccad6ecfd6ffd80e289a17f56b4fad7d171aa 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
-@@ -658,6 +658,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -659,6 +659,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      @Override
      protected void readAdditionalSaveData(final ValueInput input) {
          super.readAdditionalSaveData(input);
@@ -422,7 +422,7 @@ index 3ada8ef6829c1b0654acaf250d6d4446d2771cca..1e85945c05162ca26b90701d2b1702e8
          this.wardenSpawnTracker = input.read("warden_spawn_tracker", WardenSpawnTracker.CODEC).orElseGet(WardenSpawnTracker::new);
          this.enteredNetherPosition = input.read("entered_nether_pos", Vec3.CODEC).orElse(null);
          this.currentExplosionImpactPos = input.read("last_explosion_impact_pos", Vec3.CODEC).orElse(null);
-@@ -696,6 +697,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -697,6 +698,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      @Override
      protected void addAdditionalSaveData(final ValueOutput output) {
          super.addAdditionalSaveData(output);
@@ -430,7 +430,7 @@ index 3ada8ef6829c1b0654acaf250d6d4446d2771cca..1e85945c05162ca26b90701d2b1702e8
          output.store("warden_spawn_tracker", WardenSpawnTracker.CODEC, this.wardenSpawnTracker);
          this.storeGameTypes(output);
          output.putBoolean("seenCredits", this.seenCredits);
-@@ -841,7 +843,37 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -842,7 +844,37 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      @Override
      public void tick() {
          if (carpet.script.external.ScarpetNativeRemovals.tickPending(this)) return;
@@ -468,7 +468,7 @@ index 3ada8ef6829c1b0654acaf250d6d4446d2771cca..1e85945c05162ca26b90701d2b1702e8
          // Luminol start - Status bars
          this.statusBarList.tick();
          // Luminol end - Status bars
-@@ -1169,14 +1201,16 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1170,14 +1202,16 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      @Override
      public void removeEntitiesOnShoulder() {
          if (this.timeEntitySatOnShoulder + 20L < this.level().getGameTime()) {
@@ -493,7 +493,7 @@ index 3ada8ef6829c1b0654acaf250d6d4446d2771cca..1e85945c05162ca26b90701d2b1702e8
          }
      }
  
-@@ -1192,14 +1226,41 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1193,14 +1227,41 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      }
      // Paper end - release entity api
  
@@ -543,7 +543,7 @@ index 3ada8ef6829c1b0654acaf250d6d4446d2771cca..1e85945c05162ca26b90701d2b1702e8
          if (!tag.isEmpty()) {
              try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
                  return EntityType.create(
-@@ -1345,7 +1406,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1346,7 +1407,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
              return java.util.concurrent.CompletableFuture.completedFuture(null);
          }
          List<DefaultDrop> loot = new java.util.ArrayList<>(this.getInventory().getContainerSize()); // Paper - Restore vanilla drops behavior
@@ -552,7 +552,7 @@ index 3ada8ef6829c1b0654acaf250d6d4446d2771cca..1e85945c05162ca26b90701d2b1702e8
          if (!keepInventory) {
              for (ItemStack item : this.getInventory().getContents()) {
                  if (!item.isEmpty() && !EnchantmentHelper.has(item, net.minecraft.world.item.enchantment.EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
-@@ -1525,7 +1586,8 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1526,7 +1587,8 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      @Override
      public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
          if (carpet.script.external.ScarpetDamageContinuations.deferPaused(this, () -> this.hurtServer(level, source, damage))) return false;
@@ -562,7 +562,7 @@ index 3ada8ef6829c1b0654acaf250d6d4446d2771cca..1e85945c05162ca26b90701d2b1702e8
      }
  
      private boolean carpetHurtServerNative(final ServerLevel level, final DamageSource source, final float damage) {
-@@ -2873,6 +2935,30 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2874,6 +2936,30 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
      @Override
      public void completeUsingItem() {
@@ -593,7 +593,7 @@ index 3ada8ef6829c1b0654acaf250d6d4446d2771cca..1e85945c05162ca26b90701d2b1702e8
          if (!this.useItem.isEmpty() && this.isUsingItem()) {
              this.connection.send(new ClientboundEntityEventPacket(this, EntityEvent.USE_ITEM_COMPLETE));
              super.completeUsingItem();
-@@ -2934,6 +3020,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2935,6 +3021,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.waypointIcon().copyFrom(oldPlayer.waypointIcon());
          fun.bm.lophine.carpet.ams.AmsManagementCommands.onRespawn(this, restoreAll);
          // Lophine start - Carpet features
@@ -601,7 +601,7 @@ index 3ada8ef6829c1b0654acaf250d6d4446d2771cca..1e85945c05162ca26b90701d2b1702e8
          // Lophine end - Carpet features
      }
  
-@@ -3452,6 +3539,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3453,6 +3540,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
      @Override
      public @Nullable ItemEntity drop(final ItemStack itemStack, final boolean thrownFromHand, final Prediction prediction, final boolean callEvent, final java.util.function.@Nullable Consumer<org.bukkit.entity.Item> entityOperation) { // Paper - Extend dropItem API
@@ -870,10 +870,10 @@ index 75c4e1966008826060047eead980b7b0f6e09ae4..15172777006c6116b50145850775ac6d
              return Component.translatable("death.attack.generic", this.mob.getDisplayName());
          } else {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 2756892d034ef309b186158c07d5ef2eeb1625b7..464a798edffa1ff3d0482e017fe1c9e64789eb1c 100644
+index ea27bb1f0c596cd096bf1a5a8058afa5e4cbffc5..6d5225f5fdd0744676d706fc452486bbfb2ca58b 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -6532,6 +6532,11 @@ public abstract class Entity
+@@ -6533,6 +6533,11 @@ public abstract class Entity
      }
  
      public float maxUpStep() {
@@ -885,7 +885,7 @@ index 2756892d034ef309b186158c07d5ef2eeb1625b7..464a798edffa1ff3d0482e017fe1c9e6
          return 0.0F;
      }
  
-@@ -6563,6 +6568,10 @@ public abstract class Entity
+@@ -6564,6 +6569,10 @@ public abstract class Entity
          // Paper end - rewrite chunk system
          org.bukkit.craftbukkit.event.CraftEventFactory.callEntityRemoveEvent(this, cause); // CraftBukkit
          final boolean alreadyRemoved = this.removalReason != null; // Paper - Folia schedulers
@@ -913,7 +913,7 @@ index c609d9c4d6b7e0670025f13cbe8d956694f3c1b5..1ded07d0477483da6489e1e603bd3565
          long carpetTotal = (long) this.getValue() * this.count + (long) orb.getValue() * orb.count;
          if (carpetCombineDifferentValues(this) && carpetTotal > Short.MAX_VALUE) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index d6235d9e0f19c7383ed5ac3a55604ce21acb5954..3d1abe61a4f975c8d70f77a3047d110fe08b3946 100644
+index c3ddca102051c03b3fd07d1f2afa4b7155292a17..40c098562cba8d56f51d88ba64edc3cc2a90d206 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -360,7 +360,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -925,8 +925,8 @@ index d6235d9e0f19c7383ed5ac3a55604ce21acb5954..3d1abe61a4f975c8d70f77a3047d110f
      }
  
      @Override
-@@ -1555,9 +1555,28 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
-             if (damage <= carpetLastHurt) return false;
+@@ -1558,9 +1558,28 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+             }
              event = this.handleEntityDamage(source, damage, carpetLastHurt);
              tookFullDamage = false;
 -        } else {
@@ -957,7 +957,7 @@ index d6235d9e0f19c7383ed5ac3a55604ce21acb5954..3d1abe61a4f975c8d70f77a3047d110f
              damage = this.computeAmountFromEntityDamageEvent(event);
              float finalDamage = (float)event.getFinalDamage();
              boolean applied = deferred ? carpet.script.external.ScarpetDamageContinuations.resumeInner(this, () -> this.actuallyHurt(level, source, finalDamage, event))
-@@ -1829,6 +1848,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1832,6 +1851,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          // CraftBukkit start
          InteractionHand usedHand = null;
          ItemStack itemStack = ItemStack.EMPTY;
@@ -965,7 +965,7 @@ index d6235d9e0f19c7383ed5ac3a55604ce21acb5954..3d1abe61a4f975c8d70f77a3047d110f
          for (InteractionHand hand : InteractionHand.values()) {
              itemStack = this.getItemInHand(hand);
              protection = itemStack.get(DataComponents.DEATH_PROTECTION);
-@@ -1840,6 +1860,14 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1843,6 +1863,14 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              }
          }
  
@@ -980,7 +980,7 @@ index d6235d9e0f19c7383ed5ac3a55604ce21acb5954..3d1abe61a4f975c8d70f77a3047d110f
          final org.bukkit.inventory.EquipmentSlot handSlot = (usedHand != null) ? org.bukkit.craftbukkit.CraftEquipmentSlot.getHand(usedHand) : null;
          final EntityResurrectEvent event = new EntityResurrectEvent(this.getBukkitEntity(), handSlot);
          event.setCancelled(protectionItem == null);
-@@ -1849,7 +1877,12 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1852,7 +1880,12 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              protection = null;
          } else {
              if (!itemStack.isEmpty() && protectionItem != null) { // Paper - only reduce item if actual totem was found
@@ -994,7 +994,7 @@ index d6235d9e0f19c7383ed5ac3a55604ce21acb5954..3d1abe61a4f975c8d70f77a3047d110f
              }
              // Paper start - fix NPE when pre-cancelled EntityResurrectEvent is uncancelled
              // restore the previous behavior in that case by defaulting to vanilla's totem of undying effect
-@@ -1866,7 +1899,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1869,7 +1902,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
  
              this.setHealth(1.0F);
              protection.applyEffects(protectionItem, this);
@@ -1006,7 +1006,7 @@ index d6235d9e0f19c7383ed5ac3a55604ce21acb5954..3d1abe61a4f975c8d70f77a3047d110f
          }
  
          return protection != null;
-@@ -3024,6 +3061,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3027,6 +3064,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      }
  
      public ItemStack getMainHandItem() {
@@ -1014,7 +1014,7 @@ index d6235d9e0f19c7383ed5ac3a55604ce21acb5954..3d1abe61a4f975c8d70f77a3047d110f
          return this.getItemBySlot(EquipmentSlot.MAINHAND);
      }
  
-@@ -3062,6 +3100,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3065,6 +3103,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      }
  
      public ItemStack getItemInHand(final InteractionHand hand) {
@@ -1022,7 +1022,7 @@ index d6235d9e0f19c7383ed5ac3a55604ce21acb5954..3d1abe61a4f975c8d70f77a3047d110f
          if (hand == InteractionHand.MAIN_HAND) {
              return this.getItemBySlot(EquipmentSlot.MAINHAND);
          } else if (hand == InteractionHand.OFF_HAND) {
-@@ -3890,7 +3929,23 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3893,7 +3932,23 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          for (EquipmentSlot slot : EquipmentSlot.VALUES_ARRAY) { // Gale - JettPack - reduce array allocations
              ItemStack previous = lastEquipmentItems.get(slot);
              ItemStack current = this.getItemBySlot(slot);
@@ -1047,7 +1047,7 @@ index d6235d9e0f19c7383ed5ac3a55604ce21acb5954..3d1abe61a4f975c8d70f77a3047d110f
                  // Paper start - EntityEquipmentChangedEvent, PlayerArmorChangeEvent
                  final org.bukkit.inventory.ItemStack oldItem = CraftItemStack.asBukkitCopy(previous);
                  final org.bukkit.inventory.ItemStack newItem = CraftItemStack.asBukkitCopy(current);
-@@ -3917,7 +3972,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3920,7 +3975,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                  EquipmentSlot slot = entry.getKey();
                  ItemStack current = entry.getValue();
                  if (!current.isEmpty() && !current.isBroken()) {
@@ -1058,7 +1058,7 @@ index d6235d9e0f19c7383ed5ac3a55604ce21acb5954..3d1abe61a4f975c8d70f77a3047d110f
                          AttributeInstance instance = this.attributes.getInstance(attribute);
                          if (instance != null) {
                              instance.removeModifier(modifier.id());
-@@ -4485,6 +4542,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4488,6 +4545,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      // Paper end - Properly cancel usable items
      // Paper start - lag compensate eating
      protected long eatStartTime;
@@ -1067,7 +1067,7 @@ index d6235d9e0f19c7383ed5ac3a55604ce21acb5954..3d1abe61a4f975c8d70f77a3047d110f
      protected int totalEatTimeTicks;
      // Paper end - lag compensate eating
      private void updatingUsingItem() {
-@@ -4645,6 +4704,19 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4648,6 +4707,19 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      }
  
      public void completeUsingItem() {
@@ -1087,7 +1087,7 @@ index d6235d9e0f19c7383ed5ac3a55604ce21acb5954..3d1abe61a4f975c8d70f77a3047d110f
          if (!this.level().isClientSide() || this.isUsingItem()) {
              InteractionHand hand = this.getUsedItemHand();
              if (!this.useItem.equals(this.getItemInHand(hand))) {
-@@ -4685,7 +4757,12 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4688,7 +4760,12 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                      // Paper end
                      // CraftBukkit end
                      if (result != this.useItem) {
@@ -1557,10 +1557,10 @@ index 338a7cf65bbc19648b655e9d20b07beb11a2cebc..d5991c9ed44a4f1b15e4a4b9208c14d3
      }
  
 diff --git a/net/minecraft/world/entity/projectile/FishingHook.java b/net/minecraft/world/entity/projectile/FishingHook.java
-index 3c328afbe635dee08a49f6e0554f83e1124ad395..084a81ef57e9bea4043b1f2573e6498cae790bc4 100644
+index 7f17baad5d59fd30f2e2ce1945d8eba4406580e7..7fa8f49ac0fb89b2e8acd44f95788e4c44699472 100644
 --- a/net/minecraft/world/entity/projectile/FishingHook.java
 +++ b/net/minecraft/world/entity/projectile/FishingHook.java
-@@ -440,6 +440,11 @@ public class FishingHook extends Projectile {
+@@ -441,6 +441,11 @@ public class FishingHook extends Projectile {
      // Paper end - more projectile api - extract time until lured reset logic
  
      public boolean calculateOpenWater(final BlockPos blockPos) {

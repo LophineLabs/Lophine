@@ -316,7 +316,7 @@ index ef8c1e81327dd3dd3535bb86920f2522f00b0b35..8e7029b560a99003858f09319f89a04f
              }
          }
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index fd54b72c75637b4502a71c2dafb9a143c33b6555..701378ea5dd7895a28017a11bd0aa253c73e2334 100644
+index 3ecc92e2eee659dc56d7eadff6dc3b06dd1f1801..54cfbd686e4677cae0387e81ad10eb3e5f5ee5d0 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -246,6 +246,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -360,7 +360,7 @@ index fd54b72c75637b4502a71c2dafb9a143c33b6555..701378ea5dd7895a28017a11bd0aa253
                  if (player.isReceivingWaypoints()) {
                      ServerLevel.this.getWaypointManager().addPlayer(player);
                  }
-@@ -3422,6 +3435,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3424,6 +3437,11 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              ServerLevel.this.getChunkSource().removeEntity(entity);
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.remove(player);
@@ -373,7 +373,7 @@ index fd54b72c75637b4502a71c2dafb9a143c33b6555..701378ea5dd7895a28017a11bd0aa253
                  ServerLevel.this.updateSleepingPlayerList();
              }
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index f794e459e3c8a2efedda35c3b723f5038874965f..8cbbf32d3056ba45742a6b85b31c82d4bdd153a6 100644
+index 778ee948a58f191efb8f1f4690dd98fde8a1b173..f1962c565a7782414f5d2e2e977f3da87a18c422 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -236,7 +236,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -397,7 +397,7 @@ index f794e459e3c8a2efedda35c3b723f5038874965f..8cbbf32d3056ba45742a6b85b31c82d4
      private @Nullable Vec3 levitationStartPos;
      private int levitationStartTime;
      private boolean disconnected;
-@@ -1495,7 +1495,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1496,7 +1496,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      }
      // Lophine End - Cross Region Damage trace
  
@@ -406,7 +406,7 @@ index f794e459e3c8a2efedda35c3b723f5038874965f..8cbbf32d3056ba45742a6b85b31c82d4
          AABB aabb = new AABB(this.blockPosition()).inflate(32.0, 10.0, 32.0);
          this.level()
              .getEntitiesOfClass(Mob.class, aabb, EntitySelector.NO_SPECTATORS)
-@@ -2204,6 +2204,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2205,6 +2205,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.lastSentHealth = -1.0F;
          this.lastSentFood = -1;
          this.teleportSpectators(transition, oldLevel);
@@ -584,7 +584,7 @@ index 284ac8b7042c9f7d1ffb404f16b8556a68eddfc6..4cfa4f55afa35aee8ed1338bf1140eab
  
      public @Nullable ServerPlayer getPlayer(final String playerName) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 138ac958efe2db8d2db6eca92bd64376447a4198..b2fad1d5ccd017389c7b8186e02cd92f66a48b5d 100644
+index 530a3f6bea4549418b08b659f349f1509a512957..b8fdaebe8a1b4a39e6e324c1f2ed1e9e882736ff 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1295,7 +1295,7 @@ public abstract class Entity
@@ -605,7 +605,7 @@ index 138ac958efe2db8d2db6eca92bd64376447a4198..b2fad1d5ccd017389c7b8186e02cd92f
          // Paper start - optimise collisions
          final boolean xZero = movement.x == 0.0;
          final boolean yZero = movement.y == 0.0;
-@@ -6036,7 +6036,7 @@ public abstract class Entity
+@@ -6037,7 +6037,7 @@ public abstract class Entity
          return MoveSimulationType.AUTHORITATIVE_SIDE;
      }
  
@@ -615,10 +615,10 @@ index 138ac958efe2db8d2db6eca92bd64376447a4198..b2fad1d5ccd017389c7b8186e02cd92f
              case SERVER_AND_CLIENT -> true;
              case AUTHORITATIVE_SIDE -> this.isLocalInstanceAuthoritative();
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index f7b57c47b94dac3bd5f1abe182f14f94f0ee25a1..e012c5753d3ad18f38254381432f7219ca034b1c 100644
+index c28cdce1bf66df8dca74cbf4e4b265b9fe386b4d..05cd7c0fb6e91f5f77d543d22b535d1b5a619e84 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -2020,7 +2020,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -2021,7 +2021,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          return 0; // CraftBukkit
      }
  
@@ -627,7 +627,7 @@ index f7b57c47b94dac3bd5f1abe182f14f94f0ee25a1..e012c5753d3ad18f38254381432f7219
          // CraftBukkit start - Update getExpReward() above if the removed if() changes!
          if (!(this instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon)) { // CraftBukkit - SPIGOT-2420: Special case ender dragon will drop the xp over time
              ExperienceOrb.awardWithDirection(level, this.position(), Vec3.ZERO, this.expToDrop, this instanceof ServerPlayer ? org.bukkit.entity.ExperienceOrb.SpawnReason.PLAYER_DEATH : org.bukkit.entity.ExperienceOrb.SpawnReason.ENTITY_DEATH, entity, this); // Paper
-@@ -3354,7 +3354,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3355,7 +3355,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      private void travelRidden(final Player controller, final Vec3 selfInput) {
          Vec3 riddenInput = this.getRiddenInput(controller, selfInput);
          this.tickRidden(controller, riddenInput);
@@ -636,7 +636,7 @@ index f7b57c47b94dac3bd5f1abe182f14f94f0ee25a1..e012c5753d3ad18f38254381432f7219
              this.setSpeed(this.getRiddenSpeed(controller));
              this.travel(riddenInput);
          } else {
-@@ -4300,7 +4300,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4301,7 +4301,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          // Paper start - lag compensate eating
          // we add 1 to the expected time to avoid lag compensating when we should not
          final boolean shouldLagCompensate = this.useItem.has(DataComponents.FOOD) && this.eatStartTime != -1 && (System.nanoTime() - this.eatStartTime) > ((1L + this.totalEatTimeTicks) * 50L * (1000L * 1000L));
@@ -645,7 +645,7 @@ index f7b57c47b94dac3bd5f1abe182f14f94f0ee25a1..e012c5753d3ad18f38254381432f7219
              this.useItemRemaining = 0;
              // Paper end - lag compensate eating
              this.completeUsingItem();
-@@ -4490,6 +4490,23 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4491,6 +4491,23 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.stopUsingItem();
      }
  
@@ -723,7 +723,7 @@ index 3de1e8c6f51dbfa3f4ccadeb0cc08642398e90e0..84109460c012d23fb27bfbbd3fbe786c
              boolean cancelled = false;
              org.bukkit.entity.Player player = (org.bukkit.entity.Player) entity.getBukkitEntity();
 diff --git a/net/minecraft/world/entity/projectile/FishingHook.java b/net/minecraft/world/entity/projectile/FishingHook.java
-index 20deed9e67bd4b7e0ed2c5f8fafe58e2ee677844..3c328afbe635dee08a49f6e0554f83e1124ad395 100644
+index ea1c39665cef582862e19d690708f23f3a28117a..7f17baad5d59fd30f2e2ce1945d8eba4406580e7 100644
 --- a/net/minecraft/world/entity/projectile/FishingHook.java
 +++ b/net/minecraft/world/entity/projectile/FishingHook.java
 @@ -60,7 +60,7 @@ public class FishingHook extends Projectile {
