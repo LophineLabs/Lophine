@@ -289,7 +289,7 @@ index 37c9f983ae89c497f44a1b7967d741abf909e0a0..d7fb2505f2a86ca0d81f144624ef2e1a
  
              this.setListData(players);
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 701378ea5dd7895a28017a11bd0aa253c73e2334..f3d468cde604aca0d44227093f18cd4a91540d9d 100644
+index 54cfbd686e4677cae0387e81ad10eb3e5f5ee5d0..5724b8cffb4321bbd03ca3cc08b959e2846c725b 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -3361,7 +3361,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -301,7 +301,7 @@ index 701378ea5dd7895a28017a11bd0aa253c73e2334..f3d468cde604aca0d44227093f18cd4a
                      ServerLevel.this.realPlayers.add(player);
                  }
                  // Leaves end - skip
-@@ -3436,7 +3436,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -3438,7 +3438,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              if (entity instanceof ServerPlayer player) {
                  ServerLevel.this.players.remove(player);
                  // Leaves start - skip
@@ -551,7 +551,7 @@ index 4cfa4f55afa35aee8ed1338bf1140eab899efa23..981217432f84bdd26ea327c515d06e0f
          // Leaves end - fakeplayer support
  
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index e012c5753d3ad18f38254381432f7219ca034b1c..ea3d6e0d7db5687c6ec3f19f93766a7a3483ceec 100644
+index 05cd7c0fb6e91f5f77d543d22b535d1b5a619e84..f230b9cb7cd898d778a0cc26cc7f2048eec418cc 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -276,7 +276,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin

@@ -30,7 +30,7 @@ index cbdaa095b56e91fc95c9a3ac71150398e1c6b0cd..15ea3db109f248df7810ef525e404d0b
              new PhantomSpawner(), new PatrolSpawner(), new CatSpawner(), new VillageSiege(), new WanderingTraderSpawner(savedDataStorage) // Paper - save to world data
          );
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 8bb1ee3fde4ce34ff2d153c3e20f38f7727758ba..05c0e6d2ce05e998548396ed552fbe16d68c16e8 100644
+index fb1243bb602800b04e2c132def954efb74fbadbb..dbb10cf9168f9e9154ebb0053d1f0708a79b4c4e 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -178,7 +178,6 @@ import net.minecraft.world.item.trading.MerchantOffers;
@@ -41,7 +41,7 @@ index 8bb1ee3fde4ce34ff2d153c3e20f38f7727758ba..05c0e6d2ce05e998548396ed552fbe16
  import net.minecraft.world.level.block.AbstractBedBlock;
  import net.minecraft.world.level.block.Block;
  import net.minecraft.world.level.block.HorizontalDirectionalBlock;
-@@ -3706,7 +3705,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3707,7 +3706,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          return new CommonPlayerSpawnInfo(
              level.dimensionTypeRegistration(),
              level.dimension(),

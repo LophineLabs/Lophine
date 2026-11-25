@@ -759,7 +759,7 @@ index b3715395edb7cbc8eee6487a8de52e1a34414982..5a0b26f5da31f8a58c5d0cd8dd8611ea
  
      private void getFullChunk(final long chunkKey, final Consumer<LevelChunk> output) {
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 2fae7a8eedb8d1ed151a90aad58d39c93baddb62..c31fad6a6bb33cffd4bc0521be67e3bf182ab578 100644
+index 647c798a4bb7ce7d6e404f5ad3565780664d5b7b..31e617323c56b5249c47c0195fb664e899c3e7a7 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -846,6 +846,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -994,7 +994,7 @@ index 2fae7a8eedb8d1ed151a90aad58d39c93baddb62..c31fad6a6bb33cffd4bc0521be67e3bf
          Optional<Holder<PoiType>> newType = PoiTypes.forState(newState);
          if (!Objects.equals(oldType, newType)) {
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 1e85945c05162ca26b90701d2b1702e870f363a8..f5074e5b5e0f8e7343c324661ee5d5d330daac72 100644
+index b59ccad6ecfd6ffd80e289a17f56b4fad7d171aa..8d2bc16b23a413feae78f1fd32d428c40b1d7228 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -264,6 +264,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -1005,7 +1005,7 @@ index 1e85945c05162ca26b90701d2b1702e870f363a8..f5074e5b5e0f8e7343c324661ee5d5d3
      private @Nullable Vec3 startingToFallPosition;
      private @Nullable Vec3 enteredNetherPosition;
      private @Nullable Vec3 enteredLavaOnVehiclePosition;
-@@ -869,7 +870,10 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -870,7 +871,10 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          fun.bm.lophine.carpet.org.OrgExperienceTransfers.tick(this);
          fun.bm.lophine.carpet.org.OrgInventoryTransfers.tick(this);
          fun.bm.lophine.carpet.org.OrgNavigation.tick(this);
@@ -1017,7 +1017,7 @@ index 1e85945c05162ca26b90701d2b1702e870f363a8..f5074e5b5e0f8e7343c324661ee5d5d3
          fun.bm.lophine.carpet.org.OrgHiddenPlayerActions.tick(this);
          fun.bm.lophine.carpet.org.OrgFakePlayerActions.tick(this);
          fun.bm.lophine.carpet.org.OrgPlayerManager.observe(this);
-@@ -3020,6 +3024,9 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3021,6 +3025,9 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.waypointIcon().copyFrom(oldPlayer.waypointIcon());
          fun.bm.lophine.carpet.ams.AmsManagementCommands.onRespawn(this, restoreAll);
          // Lophine start - Carpet features
@@ -1027,7 +1027,7 @@ index 1e85945c05162ca26b90701d2b1702e870f363a8..f5074e5b5e0f8e7343c324661ee5d5d3
          fun.bm.lophine.carpet.org.OrgNavigation.copyFrom(this, oldPlayer);
          // Lophine end - Carpet features
      }
-@@ -3210,7 +3217,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3211,7 +3218,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      }
  
      public void sendSystemMessage(final Component rawMessage, final boolean overlay) {
@@ -1036,7 +1036,7 @@ index 1e85945c05162ca26b90701d2b1702e870f363a8..f5074e5b5e0f8e7343c324661ee5d5d3
          if (this.acceptsSystemMessages(overlay)) {
              this.connection
                  .send(
-@@ -3295,6 +3302,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3296,6 +3303,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.particleStatus = information.particleStatus();
          this.getEntityData().set(DATA_PLAYER_MODE_CUSTOMISATION, (byte)information.modelCustomisation());
          this.getEntityData().set(DATA_PLAYER_MAIN_HAND, information.mainHand());
@@ -1248,7 +1248,7 @@ index 9ce50c3771e7f4c087245b500dc0432d39988a03..df6c5b7cefa43c23e8cb0ede133b5c2d
          this.age = newAge;
          if (oldAge < 0 && newAge >= 0 || oldAge >= 0 && newAge < 0) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 464a798edffa1ff3d0482e017fe1c9e64789eb1c..5de2a78cc8f2ba08d462e2522d45789150b9efab 100644
+index 6d5225f5fdd0744676d706fc452486bbfb2ca58b..da6b5a72d99d8c25f618f06419dcce33f17e213b 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -267,6 +267,8 @@ public abstract class Entity
@@ -1548,7 +1548,7 @@ index 464a798edffa1ff3d0482e017fe1c9e64789eb1c..5de2a78cc8f2ba08d462e2522d457891
      public final boolean teleportAsync(TeleportTransition teleportTarget, long teleportFlags,
                                         java.util.function.Consumer<Entity> teleportComplete) {
          PositionMoveRotation move = PositionMoveRotation.calculateAbsolute(PositionMoveRotation.of(this), PositionMoveRotation.of(teleportTarget), teleportTarget.relatives());
-@@ -6580,6 +6690,11 @@ public abstract class Entity
+@@ -6581,6 +6691,11 @@ public abstract class Entity
              this.removeEventCause = cause; // Paper
          }
  
@@ -1663,7 +1663,7 @@ index 1ded07d0477483da6489e1e603bd356547196ee5..17bf9bc1cc59aba4b5ef53c5ee29de8e
                  int remaining = this.repairPlayerItems(serverPlayer, this.getValue());
                  if (remaining > 0) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 3d1abe61a4f975c8d70f77a3047d110fe08b3946..cdb228965da28119d976ab82a0436cef3c75e986 100644
+index 40c098562cba8d56f51d88ba64edc3cc2a90d206..3fb09ce5e4f822a33775bcce087ee9c9c5404015 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -228,7 +228,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -1696,7 +1696,7 @@ index 3d1abe61a4f975c8d70f77a3047d110fe08b3946..cdb228965da28119d976ab82a0436cef
              this.level().addFreshEntity(entity);
          }
  
-@@ -1954,6 +1959,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1957,6 +1962,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
  
      private java.util.concurrent.CompletableFuture<Void> carpetPerformDeathAsync(final DamageSource source) {
          if(this.isRemoved()||this.dead)return java.util.concurrent.CompletableFuture.completedFuture(null);
@@ -1704,7 +1704,7 @@ index 3d1abe61a4f975c8d70f77a3047d110fe08b3946..cdb228965da28119d976ab82a0436cef
          final Entity sourceEntity=source.getEntity();
          final ServerLevel originalWorld=(ServerLevel)this.level();
          this.deathDropItems=new java.util.ArrayList<>();
-@@ -2042,6 +2048,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -2045,6 +2051,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                          return;
                      }
                      // CraftBukkit end
@@ -1712,7 +1712,7 @@ index 3d1abe61a4f975c8d70f77a3047d110fe08b3946..cdb228965da28119d976ab82a0436cef
                      this.level().addFreshEntity(itemEntity);
                  }
              }
-@@ -3036,7 +3043,17 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3039,7 +3046,17 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
  
      @Override
      protected void onBelowWorld() {

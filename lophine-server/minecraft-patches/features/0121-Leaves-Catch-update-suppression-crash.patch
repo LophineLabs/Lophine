@@ -74,7 +74,7 @@ index 205b05bf20ea0e44f588fee6b22900332e1872a1..7674098486a45d82c1a75b6c05128555
  
              profiler.pop();
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 3c021e8edec76638f39610523ed166810f87527b..549f24a0010c3e87b351ef00c52e7a10b42a4fdd 100644
+index 9eb99415cd488057495d5a86c3110dc313c9382c..882a2ccd7ca2d25933b1753697a917a9e3997553 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -963,7 +963,18 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -98,10 +98,10 @@ index 3c021e8edec76638f39610523ed166810f87527b..549f24a0010c3e87b351ef00c52e7a10
                                  }
                              }
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 8cbbf32d3056ba45742a6b85b31c82d4bdd153a6..ecfb27d8bc8f196fc571e702603038c4cff004fa 100644
+index f1962c565a7782414f5d2e2e977f3da87a18c422..9ce5c2f25e67b677935aefb16a671465c32c6c56 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
-@@ -1116,6 +1116,12 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1117,6 +1117,12 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
              // Folia - region threading - move to main tick loop where we can detect duplicates
              // CraftBukkit end
@@ -115,7 +115,7 @@ index 8cbbf32d3056ba45742a6b85b31c82d4bdd153a6..ecfb27d8bc8f196fc571e702603038c4
              CrashReport report = CrashReport.forThrowable(t, "Ticking player");
              CrashReportCategory category = report.addCategory("Player being ticked");
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 3466e5576f2dfb684b76cbf8f03269c64fb06340..ce90fb4c4320e90416e1d60f1e47c02e8270fe85 100644
+index 1df6ac51616f8fa35f93d2538068268dc070a5a9..3cbecd058a4d70079a2dfab9d9602cf3dafd7578 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1563,8 +1563,18 @@ public abstract class Entity

@@ -8,10 +8,10 @@ This patch is used with permission from the original author.
 Licensed under: GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html)
 
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java b/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java
-index 3c29be8be0ae20100a946238bb71aab23240e4ff..f5bafc2ba9f626b483475db174e08834fe81b220 100644
+index 68a9fda32c09c067c0bdb3436be5a33852392d46..0244707f6b24467ccf439e0e9c71634b60bbfd4c 100644
 --- a/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java
-@@ -957,14 +957,18 @@ public final class ChunkHolderManager {
+@@ -958,14 +958,18 @@ public final class ChunkHolderManager {
  
              final int lowerChunkX = CoordinateUtils.getChunkX(sectionKey) << sectionShift;
              final int lowerChunkZ = CoordinateUtils.getChunkZ(sectionKey) << sectionShift;

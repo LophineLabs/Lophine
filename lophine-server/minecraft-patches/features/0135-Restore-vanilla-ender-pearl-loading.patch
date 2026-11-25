@@ -5,7 +5,7 @@ Subject: [PATCH] Restore vanilla ender pearl loading
 
 
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index f5074e5b5e0f8e7343c324661ee5d5d330daac72..8bb1ee3fde4ce34ff2d153c3e20f38f7727758ba 100644
+index 8d2bc16b23a413feae78f1fd32d428c40b1d7228..fb1243bb602800b04e2c132def954efb74fbadbb 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -281,7 +281,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -17,7 +17,7 @@ index f5074e5b5e0f8e7343c324661ee5d5d330daac72..8bb1ee3fde4ce34ff2d153c3e20f38f7
      private boolean postEffectsDirty = true;
      private long timeEntitySatOnShoulder;
      private CompoundTag shoulderEntityLeft = new CompoundTag();
-@@ -756,16 +756,17 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -757,16 +757,17 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
      private void saveEnderPearls(final ValueOutput playerOutput) {
          if (!this.enderPearls.isEmpty()) {
@@ -43,7 +43,7 @@ index f5074e5b5e0f8e7343c324661ee5d5d330daac72..8bb1ee3fde4ce34ff2d153c3e20f38f7
                  }
              }
          }
-@@ -1180,6 +1181,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1181,6 +1182,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
                          );
                  }
              }
@@ -51,7 +51,7 @@ index f5074e5b5e0f8e7343c324661ee5d5d330daac72..8bb1ee3fde4ce34ff2d153c3e20f38f7
          }
      }
  
-@@ -2553,7 +2555,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2554,7 +2556,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          // Lophine - Carpet features: fake players never send teleport ACKs, so isChangingDimension
          // would otherwise remain true after respawn / End return and make them permanently invulnerable.
          return (super.isInvulnerableTo(level, source) || this.isChangingDimension() && !this.isFakePlayer() && !source.is(DamageTypes.ENDER_PEARL) || !this.connection.hasClientLoaded())
@@ -60,7 +60,7 @@ index f5074e5b5e0f8e7343c324661ee5d5d330daac72..8bb1ee3fde4ce34ff2d153c3e20f38f7
          // Paper end - disable player cramming
      }
  
-@@ -3774,11 +3776,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3775,11 +3777,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      }
  
      public void registerEnderPearl(final ThrownEnderpearl enderPearl) {

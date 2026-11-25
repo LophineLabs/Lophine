@@ -89,7 +89,7 @@ index 240416aba0ad4649e1db401aff2565f972f5ca11..623dcb8e372a751d06b0dbf9233f7039
              this.stateVisible = this.stateUpdating;
          }
 diff --git a/ca/spottedleaf/moonrise/patches/starlight/util/SaveUtil.java b/ca/spottedleaf/moonrise/patches/starlight/util/SaveUtil.java
-index 95154636727366adfb4fb67e7db8b09f3684f853..525d9869bd833d5f2e3d93d30fb00e89365bfe7c 100644
+index b790bd079b04d48359b22b299a408479d9eb2cf5..d49eb8435c92058388e349961445dd63e3a34b74 100644
 --- a/ca/spottedleaf/moonrise/patches/starlight/util/SaveUtil.java
 +++ b/ca/spottedleaf/moonrise/patches/starlight/util/SaveUtil.java
 @@ -166,7 +166,7 @@ public final class SaveUtil {

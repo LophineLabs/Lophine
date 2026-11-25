@@ -48,10 +48,10 @@ index f5679d20870a4fc63cc2331632dd221bdaf31ce0..93c0b808c80b0d95bd8606e81a81544d
          AABB aabb = new AABB(this.blockPosition()).inflate(32.0, 10.0, 32.0);
          this.level()
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 31d06cd4ee6e920fb07af02c448c86c2d8e905fb..00ca622d1079bc53119da44b78bbed62ca5b49f8 100644
+index 597083646f877cd59818dfac7a294b633fa6766a..2f5b93cda96fdca9b41aa61348f1419d52bc039d 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -1875,6 +1875,13 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1876,6 +1876,13 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              Runnable afterEvent = () -> { // Paper
              if (killer != null) {
                  killer.awardKillScore(this, source);
@@ -65,7 +65,7 @@ index 31d06cd4ee6e920fb07af02c448c86c2d8e905fb..00ca622d1079bc53119da44b78bbed62
              }
  
              if (this.isSleeping()) {
-@@ -1962,6 +1969,19 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1963,6 +1970,19 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.postDeathEventTasks.add(() -> this.dropExperience(level, source.getEntity())); // Paper
      }
  
@@ -85,7 +85,7 @@ index 31d06cd4ee6e920fb07af02c448c86c2d8e905fb..00ca622d1079bc53119da44b78bbed62
      protected void dropEquipment(final ServerLevel level) {
      }
  
-@@ -2628,6 +2648,18 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -2629,6 +2649,18 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          }
      }
  

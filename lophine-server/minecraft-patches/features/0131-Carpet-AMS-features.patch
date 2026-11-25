@@ -202,7 +202,7 @@ index 8e7029b560a99003858f09319f89a04f9c458bbb..03b4614473addb5777434657a51e4865
      }
  
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 166c16265347e8ce1a3be874dabd5f65b74043ac..fd2b4b3edd036a40675dc43876f215f46a10cba8 100644
+index 1d36f166592e0f83f350487a80536e670d299902..75198b08c9bb27b2568496e18e674ef56349a078 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -843,6 +843,9 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -216,10 +216,10 @@ index 166c16265347e8ce1a3be874dabd5f65b74043ac..fd2b4b3edd036a40675dc43876f215f4
          // Lophine start - Global Entities Counter
          if (fun.bm.lophine.config.modules.experiment.GlobalEntitiesCounter.isEnabled()) {
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 5d8256305bb0be3dec15031cef6d7ea67bef458e..3ada8ef6829c1b0654acaf250d6d4446d2771cca 100644
+index 2b51a03a7a8b2169fd79de8634726607f7e533f7..a3a14f2790b218f379fe54668563217aa94856c7 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
-@@ -1353,6 +1353,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1354,6 +1354,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
                  }
              }
          }
@@ -231,7 +231,7 @@ index 5d8256305bb0be3dec15031cef6d7ea67bef458e..3ada8ef6829c1b0654acaf250d6d4446
          if(!this.isSpectator()&&this.shouldDropLoot(this.level())) {
              this.deathDropItems=new java.util.ArrayList<>();
              var finish=carpet.script.external.ScarpetRuntime.captureNativeContinuation(()->carpet.script.external.ScarpetNativeDeathActors.target(this,()->{
-@@ -1457,6 +1462,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1458,6 +1463,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.getCombatTracker().recheckStatus();
          this.setLastDeathLocation(Optional.of(GlobalPos.of(this.level().dimension(), this.blockPosition())));
          this.connection.markClientUnloadedAfterDeath();
@@ -239,7 +239,7 @@ index 5d8256305bb0be3dec15031cef6d7ea67bef458e..3ada8ef6829c1b0654acaf250d6d4446
      }
  
      // Lophine Start - Cross Region Damage trace
-@@ -2471,6 +2477,12 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2472,6 +2478,12 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
      @Override
      public boolean isInvulnerableTo(final ServerLevel level, final DamageSource source) {
@@ -252,7 +252,7 @@ index 5d8256305bb0be3dec15031cef6d7ea67bef458e..3ada8ef6829c1b0654acaf250d6d4446
          // Paper start - disable player cramming
          // Lophine - Carpet features: fake players never send teleport ACKs, so isChangingDimension
          // would otherwise remain true after respawn / End return and make them permanently invulnerable.
-@@ -2920,6 +2932,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2921,6 +2933,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.setShoulderEntityRight(oldPlayer.getShoulderEntityRight());
          this.setLastDeathLocation(oldPlayer.getLastDeathLocation());
          this.waypointIcon().copyFrom(oldPlayer.waypointIcon());
@@ -260,7 +260,7 @@ index 5d8256305bb0be3dec15031cef6d7ea67bef458e..3ada8ef6829c1b0654acaf250d6d4446
          // Lophine start - Carpet features
          // Lophine end - Carpet features
      }
-@@ -3109,7 +3122,8 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3110,7 +3123,8 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.sendOverlayMessage(Component.translatable("build.spawn_protection", pos.toShortString()).withStyle(ChatFormatting.RED));
      }
  
@@ -367,7 +367,7 @@ index 6541fe108f60d2c55a47f0bb5ba3b17f270cd5fa..9ce50c3771e7f4c087245b500dc0432d
              return this.entityData.get(DATA_BABY_ID) ? -1 : 1;
          } else {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 4f1ac2eecfc51d2a590b9f5f3866508614ffedcd..2756892d034ef309b186158c07d5ef2eeb1625b7 100644
+index 81f01dc5eed9a2f83fa5563df9acc6e4d922f6a9..ea27bb1f0c596cd096bf1a5a8058afa5e4cbffc5 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -807,7 +807,7 @@ public abstract class Entity
@@ -403,7 +403,7 @@ index 4f1ac2eecfc51d2a590b9f5f3866508614ffedcd..2756892d034ef309b186158c07d5ef2e
      }
  
      public @Nullable ItemEntity spawnAtLocation(final ServerLevel level, final ItemStack itemStack, final Vec3 offset) {
-@@ -4912,7 +4927,8 @@ public abstract class Entity
+@@ -4913,7 +4928,8 @@ public abstract class Entity
                                      destination, finalPos, this.getDeltaMovement(), Direction.WEST.toYRot(), 0.0f, // Kaiiju - Vanilla end teleportation
                                      false, false,
                                      /*Relative.union(Relative.DELTA, Set.of(Relative.X_ROT))*/Set.of(), // Kaiiju - Vanilla end teleportation
@@ -413,7 +413,7 @@ index 4f1ac2eecfc51d2a590b9f5f3866508614ffedcd..2756892d034ef309b186158c07d5ef2e
                                      org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.END_PORTAL,
                                      TeleportTransition.PassengerTeleportationMode.POSITION_RIDER
                                  )
-@@ -4949,7 +4965,8 @@ public abstract class Entity
+@@ -4950,7 +4966,8 @@ public abstract class Entity
                                      destination, finalPos, this.getDeltaMovement(), 0.0f, 0.0f, // Kaiiju - Vanilla end teleportation
                                      false, false,
                                      Relative.union(Relative.DELTA, Relative.ROTATION),
@@ -460,7 +460,7 @@ index 278ff63532717d0bc34f7110a60e4a95e56642b1..8bec3de958e129e25955459cccfa1e8f
  
      default double leashElasticDistance() {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index a6c32e8066ccb15a50fb5744c40d6e121956e254..d6235d9e0f19c7383ed5ac3a55604ce21acb5954 100644
+index f57c01ad3790e816f6a8662e8fb6c47e64788656..c3ddca102051c03b3fd07d1f2afa4b7155292a17 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -1091,6 +1091,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -474,7 +474,7 @@ index a6c32e8066ccb15a50fb5744c40d6e121956e254..d6235d9e0f19c7383ed5ac3a55604ce2
          return Mth.clamp(visibilityPercent, 0.0, 10.0);
      }
  
-@@ -1957,6 +1961,24 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1960,6 +1964,24 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              &&this.level() instanceof ServerLevel level&&level.getGameRules().get(GameRules.SHOW_DEATH_MESSAGES)){
              if(org.spigotmc.SpigotConfig.logNamedDeaths)LOGGER.info("Named entity {} died: {}",this,this.getCombatTracker().getDeathMessage().getString());
          }
@@ -499,7 +499,7 @@ index a6c32e8066ccb15a50fb5744c40d6e121956e254..d6235d9e0f19c7383ed5ac3a55604ce2
      }
  
      protected void handleKillingBlow() {
-@@ -2090,6 +2112,53 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -2093,6 +2115,53 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          if (!lootTable.isEmpty()) {
              this.dropFromLootTable(level, source, playerKilled, lootTable.get());
          }
