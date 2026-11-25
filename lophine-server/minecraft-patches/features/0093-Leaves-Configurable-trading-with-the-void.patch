@@ -28,7 +28,7 @@ index ac212b931ae6164c7c1a92781cbed5c27d3e6d98..72d00df59e90d7123ec521f44492f5fd
              // Spigot end
              ServerLevel.this.getChunkSource().removeEntity(entity);
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index f794e459e3c8a2efedda35c3b723f5038874965f..778ee948a58f191efb8f1f4690dd98fde8a1b173 100644
+index f794e459e3c8a2efedda35c3b723f5038874965f..0621c10c1396eaf6ee6eaf4765fe3eed8f32b005 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -450,6 +450,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -39,14 +39,16 @@ index f794e459e3c8a2efedda35c3b723f5038874965f..778ee948a58f191efb8f1f4690dd98fd
      // Paper start - rewrite chunk system
      private ca.spottedleaf.moonrise.patches.chunk_system.player.RegionizedPlayerChunkLoader.PlayerChunkLoaderData chunkLoader;
      private final ca.spottedleaf.moonrise.patches.chunk_system.player.RegionizedPlayerChunkLoader.ViewDistanceHolder viewDistanceHolder = new ca.spottedleaf.moonrise.patches.chunk_system.player.RegionizedPlayerChunkLoader.ViewDistanceHolder();
-@@ -2617,6 +2618,11 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -2617,6 +2618,13 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      @Override
      public void doCloseContainer() {
-+        if (this.keepMerchantMenuOnRegionMigration) { // Lophine start - Configurable trading with the void
++        // Lophine start - Configurable trading with the void
++        if (this.keepMerchantMenuOnRegionMigration) {
 +            boolean keepMerchantMenu = this.isRemoved() && this.getRemovalReason() == Entity.RemovalReason.CHANGED_DIMENSION && this.containerMenu instanceof net.minecraft.world.inventory.MerchantMenu;
 +            this.keepMerchantMenuOnRegionMigration = false;
 +            if (keepMerchantMenu) return;
-+        } // Lophine end - Configurable trading with the void
++        }
++        // Lophine end - Configurable trading with the void
          this.containerMenu.removed(this);
          this.inventoryMenu.transferState(this.containerMenu);
          this.containerMenu = this.inventoryMenu;
