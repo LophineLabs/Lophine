@@ -16,7 +16,7 @@ import me.earthme.luminol.api.config.enums.EnumRunnableType;
 public class SecureSeedConfig {
     @ConfigInfo(name = "enabled")
     @DoNotLoad(when = EnumLoadType.RELOAD)
-    public static WorldValue<Boolean> enabled = WorldValues.key(false);
+    public static final WorldValue<Boolean> enabled = WorldValues.key(false);
 
     @NeedRun(when = EnumRunnableType.ON_LOADED)
     public static void checkUseV2(CommentedFileConfig configInstance) {

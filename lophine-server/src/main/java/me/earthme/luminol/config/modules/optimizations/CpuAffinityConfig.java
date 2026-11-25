@@ -22,37 +22,37 @@ import java.util.List;
 public class CpuAffinityConfig {
     @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "enabled_for_tickregion")
-    public static WorldValue<Boolean> enabledForTickRegion = WorldValues.key(false);
+    public static final WorldValue<Boolean> enabledForTickRegion = WorldValues.key(false);
     @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "enable_for_chunksystem_worker")
-    public static WorldValue<Boolean> enabledForChunkSystemWorker = WorldValues.key(false);
+    public static final WorldValue<Boolean> enabledForChunkSystemWorker = WorldValues.key(false);
     @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "enable_for_chunksystem_io")
-    public static WorldValue<Boolean> enabledForChunkSystemIo = WorldValues.key(false);
+    public static final WorldValue<Boolean> enabledForChunkSystemIo = WorldValues.key(false);
     @ConfigInfo(name = "enable_for_netty_io")
-    public static WorldValue<Boolean> enableForNettyIo = WorldValues.key(false);
+    public static final WorldValue<Boolean> enableForNettyIo = WorldValues.key(false);
 
     @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "tickregion_affinity")
-    public static WorldValue<List<String>> tickRegionAffinity = WorldValues.key(Affinity.getAffinity()
+    public static final WorldValue<List<String>> tickRegionAffinity = WorldValues.key(Affinity.getAffinity()
             .stream()
             .mapToObj(String::valueOf)
             .toList());
     @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "chunksystem_worker_affinity")
-    public static WorldValue<List<String>> chunkSystemWorkerAffinity = WorldValues.key(Affinity.getAffinity()
+    public static final WorldValue<List<String>> chunkSystemWorkerAffinity = WorldValues.key(Affinity.getAffinity()
             .stream()
             .mapToObj(String::valueOf)
             .toList());
     @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "chunksystem_io_affinity")
-    public static WorldValue<List<String>> chunkSystemIoAffinity = WorldValues.key(Affinity.getAffinity()
+    public static final WorldValue<List<String>> chunkSystemIoAffinity = WorldValues.key(Affinity.getAffinity()
             .stream()
             .mapToObj(String::valueOf)
             .toList());
     @DoNotLoad(when = EnumLoadType.RELOAD)
     @ConfigInfo(name = "netty_io_affinity")
-    public static WorldValue<List<String>> nettyIoAffinity = WorldValues.key(Affinity.getAffinity()
+    public static final WorldValue<List<String>> nettyIoAffinity = WorldValues.key(Affinity.getAffinity()
             .stream()
             .mapToObj(String::valueOf)
             .toList());
