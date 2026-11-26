@@ -75,7 +75,7 @@ index f91f6c9681df012d906b2ea6ec5e853d74ccdfe1..269e71a5700b5e629a46422535b710ad
      }
  
 diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
-index dcbdffd521fd37fe7de222023ed3b933787473b2..fe9df490b2676dab1f0a8cd2fad21f2be5836e42 100644
+index 941d58dbc95253d3f4e986c24333c1b439ce07c3..d7ac424c086f44e982e2d426363f4228d35d817d 100644
 --- a/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -239,7 +239,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
@@ -87,10 +87,10 @@ index dcbdffd521fd37fe7de222023ed3b933787473b2..fe9df490b2676dab1f0a8cd2fad21f2b
          // Paper start - fix converting txt to json file; convert old users earlier after PlayerList creation but before file load/save
          if (this.convertOldUsers()) {
              this.services().nameToIdCache().save(false); // Paper
-@@ -249,7 +249,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
-         org.spigotmc.WatchdogThread.doStart(org.spigotmc.SpigotConfig.timeoutTime, org.spigotmc.SpigotConfig.restartOnCrash); // Paper - start watchdog thread
+@@ -250,7 +250,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
          consoleThread.start(); // Paper - Enhance console tab completions for brigadier commands; start console thread after MinecraftServer.console & PaperConfig are initialized
          io.papermc.paper.command.PaperCommands.registerCommands(this); // Paper - setup /paper command
+         me.earthme.luminol.commands.CommandRegister.register(); // Lophine - register commands after the built-in commands so they can be overridden
 -        this.server.spark.registerCommandBeforePlugins(this.server); // Paper - spark
 +        if (false) this.server.spark.registerCommandBeforePlugins(this.server); // Paper - spark // Luminol - Force disable builtin spark
          com.destroystokyo.paper.Metrics.PaperMetrics.startMetrics(); // Paper - start metrics

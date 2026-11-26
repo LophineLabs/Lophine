@@ -15,17 +15,34 @@ import java.util.stream.Stream;
 
 public final class MarkdownI18n {
     private static final Logger LOGGER = LogUtils.getClassLogger();
-    private static final String RESOURCE_ROOT = "assets/lophine/markdown/";
-
+    private static volatile List<MarkdownI18n> instances = List.of();
     private static volatile Map<String, MarkdownTemplate> cache = Map.of();
+
+    private final String RESOURCE_ROOT;
+
+    public MarkdownI18n(String path) {
+        RESOURCE_ROOT = path;
+    }
+
+    public static void add(String name) {
+        List<MarkdownI18n> list = new ArrayList<>(instances);
+        list.add(new MarkdownI18n(name));
+        instances = List.copyOf(list);
+    }
 
     public static void reload(String targetLang, String defaultLang) {
         Map<String, MarkdownTemplate> compiled = new LinkedHashMap<>();
+        for (MarkdownI18n instance : instances) {
+            instance.reload(targetLang, defaultLang, compiled);
+        }
+        cache = Map.copyOf(compiled);
+    }
+
+    public void reload(String targetLang, String defaultLang, Map<String, MarkdownTemplate> compiled) {
         loadLang(defaultLang, compiled);
         if (targetLang != null && !targetLang.isBlank() && !defaultLang.equals(targetLang)) {
             loadLang(targetLang, compiled);
         }
-        cache = Map.copyOf(compiled);
     }
 
     public static @NotNull MarkdownTemplate get(String key) {
@@ -33,7 +50,7 @@ public final class MarkdownI18n {
         return template != null ? template : MarkdownParser.parse("");
     }
 
-    private static void loadLang(String lang, Map<String, MarkdownTemplate> into) {
+    private void loadLang(String lang, Map<String, MarkdownTemplate> into) {
         String directory = RESOURCE_ROOT + lang + "/";
         try {
             for (String fileName : listFiles(lang)) {
@@ -48,7 +65,7 @@ public final class MarkdownI18n {
         }
     }
 
-    private static List<String> listFiles(String lang) throws Exception {
+    private List<String> listFiles(String lang) throws Exception {
         Enumeration<URL> roots = MarkdownI18n.class.getClassLoader().getResources(RESOURCE_ROOT + lang);
         LinkedHashSet<String> names = new LinkedHashSet<>();
         while (roots.hasMoreElements()) {

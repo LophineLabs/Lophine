@@ -5,9 +5,10 @@ import me.earthme.luminol.commands.bar.BarCommand;
 
 public class CommandRegister {
     /**
-     * Register commands after config loading
-     * This method is called after system configuration is fully loaded,
-     * used to register commands that depend on complete configuration
+     * Register commands after the configuration has been loaded.
+     * This method is called once the configuration and the Paper built-in commands are fully
+     * loaded, so it can register commands that depend on the complete configuration, or that
+     * must be registered after all other built-in commands have been registered.
      */
     public static void register() {
         new BarCommand().register();

@@ -18,6 +18,7 @@ import net.minecraft.locale.Language;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -36,7 +37,7 @@ import java.util.function.BiConsumer;
 /*
  * authored by: Helvetica Volubi <suisuroru@blue-millennium.fun>
  * modified by: Lumine1909 <133463833+Lumine1909@users.noreply.github.com>
- * Some of diff form Leaves
+ * Some diffs form Leaves
  */
 public class ServerI18nUtil {
     private static final Logger logger = LogUtils.getClassLogger();
@@ -61,18 +62,36 @@ public class ServerI18nUtil {
 
     private static Set<String> register() {
         Set<String> paths = new HashSet<>();
-        register(paths, "assets/lophine/lang");
-        return paths;
+        register(paths, "assets/lophine/lang", "assets/lophine/markdown");
+        return Set.copyOf(paths);
     }
 
-    private static void register(Set<String> paths, String base) {
-        if (!base.startsWith("/")) {
-            base = "/" + base;
+    private static void register(Set<String> paths, @Nullable String jsonBase, @Nullable String markdownBase) {
+        if (jsonBase != null) paths.add(normalizePath(jsonBase, true, true));
+        if (markdownBase != null) MarkdownI18n.add(normalizePath(markdownBase, false, true));
+    }
+
+    private static String normalizePath(String path, boolean prefix, boolean subfix) {
+        boolean edited = false;
+        boolean hasPrefix = path.startsWith("/");
+        if (!hasPrefix && prefix) {
+            path = "/" + path;
+            edited = true;
+        } else if (hasPrefix && !prefix) {
+            path = path.substring(1);
+            edited = true;
         }
-        if (!base.endsWith("/")) {
-            base += "/";
+
+        boolean hasSubfix = path.endsWith("/");
+        if (!hasSubfix && subfix) {
+            path += "/";
+            edited = true;
+        } else if (hasSubfix && !subfix) {
+            path = path.substring(0, path.length() - 1);
+            edited = true;
         }
-        paths.add(base);
+
+        return edited ? normalizePath(path, prefix, subfix) : path;
     }
 
     public static void reload() {

@@ -5,7 +5,6 @@ import fun.bm.lophine.carpet.CarpetConfigHooks;
 import me.earthme.luminol.api.config.TransformLogic;
 import me.earthme.luminol.api.config.WorldValues;
 import me.earthme.luminol.api.config.annotation.TransformedConfig;
-import me.earthme.luminol.commands.CommandRegister;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -61,7 +60,6 @@ public class ConfigManager {
         runTaskBeforeFinalLoad();
         // Finalize loading
         runForEachConfig(ConfigsInstance::finalizeLoadConfig);
-        CommandRegister.register(); // register command after config loaded to enable some command didn't depend on config files
         initialized = true;
     }
 

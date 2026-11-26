@@ -14,10 +14,12 @@ public class CommandHolder {
 
     public static void registerCommand(LiteralArgumentBuilder<CommandSourceStack> command) {
         String name = command.getLiteral();
-        if (commands.containsKey(name)) {
-            unregisterCommand(name);
-        }
+        commands.remove(name);
         PaperCommands.INSTANCE.setValid();
+        // Drop any command that already owns this label (for example the built-in tps registered by
+        // PaperCommands.registerCommands) so this command overrides it instead of clashing when the
+        // literal is added back to the dispatcher root.
+        PaperCommands.INSTANCE.getDispatcher().getRoot().removeCommand(name);
         PaperCommands.INSTANCE.getDispatcher().register(command);
         PaperCommands.INSTANCE.invalidate();
         commands.put(name, command);
@@ -35,7 +37,10 @@ public class CommandHolder {
     public static void onReloadCommands() {
         try {
             PaperCommands.INSTANCE.setValid();
-            commands.forEach((name, command) -> PaperCommands.INSTANCE.getDispatcher().register(command));
+            commands.forEach((name, command) -> {
+                PaperCommands.INSTANCE.getDispatcher().getRoot().removeCommand(name);
+                PaperCommands.INSTANCE.getDispatcher().register(command);
+            });
             PaperCommands.INSTANCE.invalidate();
         } catch (Exception e) {
             LogUtils.getClassLogger().error("Failed to reload commands", e);

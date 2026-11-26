@@ -254,7 +254,7 @@ index 3021b70b941ed09c5c58b98d30830a2279b8339c..d289f59475b617ae527d123239297f69
      }
  }
 diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
-index 96efd4e9dc86c6005fe8c4d1bfcf6e25ff13cb1a..9b5736327af2ead2b6d367c780fc01ab49f4491a 100644
+index 9449442dce99538d87c06599a916b97cf1618e08..7d289b6fe9e91e4335fd6f4072dd2adbbdc38859 100644
 --- a/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -230,6 +230,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
@@ -265,7 +265,7 @@ index 96efd4e9dc86c6005fe8c4d1bfcf6e25ff13cb1a..9b5736327af2ead2b6d367c780fc01ab
          this.setPlayerList(new DedicatedPlayerList(this, this.registries(), this.playerDataStorage));
          org.spigotmc.SpigotConfig.init((java.io.File) this.options.valueOf("spigot-settings"));
          org.spigotmc.SpigotConfig.registerCommands();
-@@ -254,6 +255,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+@@ -255,6 +256,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
          com.destroystokyo.paper.Metrics.PaperMetrics.startMetrics(); // Paper - start metrics
          com.destroystokyo.paper.VersionHistoryManager.INSTANCE.getClass(); // Paper - load version history now
  

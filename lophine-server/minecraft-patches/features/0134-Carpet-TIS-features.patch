@@ -697,10 +697,10 @@ index cd8d85e6c48e2edbe5edcdd40e0ea39c2f13738c..1bf095ead41915a6b03785a62f254fbd
 +    // Lophine end - Carpet features
  }
 diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
-index 9b5736327af2ead2b6d367c780fc01ab49f4491a..d849a1e67e159c45c32d83d1d2f9f659d1ed947a 100644
+index 7d289b6fe9e91e4335fd6f4072dd2adbbdc38859..5bdc64e3f7ff30e66a2cef20930697469e353941 100644
 --- a/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/net/minecraft/server/dedicated/DedicatedServer.java
-@@ -569,6 +569,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+@@ -570,6 +570,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
      }
  
      public void handleConsoleInputs() {
@@ -709,7 +709,7 @@ index 9b5736327af2ead2b6d367c780fc01ab49f4491a..d849a1e67e159c45c32d83d1d2f9f659
          // Paper start - Perf: use proper queue
          ConsoleInput input;
          while ((input = this.serverCommandQueue.poll()) != null) {
-@@ -581,6 +583,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+@@ -582,6 +584,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
              // CraftBukkit end
              this.getCommands().performPrefixedCommand(input.source, input.msg);
          }
@@ -718,7 +718,7 @@ index 9b5736327af2ead2b6d367c780fc01ab49f4491a..d849a1e67e159c45c32d83d1d2f9f659
      }
  
      @Override
-@@ -905,7 +909,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+@@ -906,7 +910,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
              if (event.isCancelled()) {
                  return;
              }
