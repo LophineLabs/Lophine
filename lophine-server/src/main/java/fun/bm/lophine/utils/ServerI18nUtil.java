@@ -71,7 +71,7 @@ public class ServerI18nUtil {
         if (markdownBase != null) MarkdownI18n.add(normalizePath(markdownBase, false, true));
     }
 
-    private static String normalizePath(String path, boolean prefix, boolean subfix) {
+    private static String normalizePath(String path, boolean prefix, boolean suffix) {
         boolean edited = false;
         boolean hasPrefix = path.startsWith("/");
         if (!hasPrefix && prefix) {
@@ -83,15 +83,15 @@ public class ServerI18nUtil {
         }
 
         boolean hasSubfix = path.endsWith("/");
-        if (!hasSubfix && subfix) {
+        if (!hasSubfix && suffix) {
             path += "/";
             edited = true;
-        } else if (hasSubfix && !subfix) {
+        } else if (hasSubfix && !suffix) {
             path = path.substring(0, path.length() - 1);
             edited = true;
         }
 
-        return edited ? normalizePath(path, prefix, subfix) : path;
+        return edited ? normalizePath(path, prefix, suffix) : path;
     }
 
     public static void reload() {
