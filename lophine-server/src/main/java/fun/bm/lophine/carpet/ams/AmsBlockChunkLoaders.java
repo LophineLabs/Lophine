@@ -20,6 +20,7 @@ public final class AmsBlockChunkLoaders {
     }
 
     public static void note(final ServerLevel level, final BlockPos pos) {
+        if (AmsBlockLoaderConfig.trigger(AmsBlockLoaderConfig.Type.NOTEBLOCK, level, pos, pos)) return;
         final String option = GeneralCompatConfig.noteBlockChunkLoader;
         if ("false".equals(option)) {
             return;
@@ -33,6 +34,7 @@ public final class AmsBlockChunkLoaders {
     }
 
     public static void piston(final ServerLevel level, final BlockPos pos, final BlockState state) {
+        if (AmsBlockLoaderConfig.trigger(AmsBlockLoaderConfig.Type.PISTON, level, pos, pos.relative(state.getValue(PistonBaseBlock.FACING)))) return;
         final String option = GeneralCompatConfig.pistonBlockChunkLoader;
         if ("false".equals(option)) {
             return;
@@ -72,6 +74,7 @@ public final class AmsBlockChunkLoaders {
     }
 
     public static void bell(final ServerLevel level, final BlockPos pos) {
+        if (AmsBlockLoaderConfig.trigger(AmsBlockLoaderConfig.Type.BELL, level, pos, pos)) return;
         if (GeneralCompatConfig.bellBlockChunkLoader) {
             add(level, pos, TicketType.AMS_BELL_BLOCK_LOADER);
         }

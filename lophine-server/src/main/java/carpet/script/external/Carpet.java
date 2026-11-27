@@ -154,6 +154,9 @@ public final class Carpet {
 
     public static void applyRuleSideEffects(CommandSourceStack source, String name, Object value) {
         if (name.equals("commandScriptACE")) ScarpetRuntime.of(source.getServer()).updateRunPermission(source);
+        if (name.equals("commandLocationTag") && !"false".equals(value)) {
+            fun.bm.lophine.carpet.ams.AmsLocationTags.rescan(source.getServer());
+        }
         if (name.equals("scriptsAppStore")) {
             String path = value.toString();
             if (!java.util.Objects.equals(configuredAppStore, path)) {

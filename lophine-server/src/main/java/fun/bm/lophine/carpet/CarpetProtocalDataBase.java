@@ -204,6 +204,7 @@ public final class CarpetProtocalDataBase {
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "debugNbtQueryNoPermission", GeneralCompatConfig.debugNbtQueryNoPermission));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "deobfuscateCrashReportStackTrace", GeneralCompatConfig.deobfuscateCrashReportStackTrace));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "dispenserNoItemCost", GeneralCompatConfig.dispenserNoItemCost));
+        registerRule(CarpetServerProtocol.CarpetRule.of("carpettisaddition", "dropperNoItemCost", GeneralCompatConfig.dropperNoItemCost));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "dispensersFireDragonBreath", GeneralCompatConfig.dispensersFireDragonBreath));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "dustTrapdoorReintroduced", GeneralCompatConfig.dustTrapdoorReintroduced));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "elytraFireworkKeepLeashConnection", GeneralCompatConfig.elytraFireworkKeepLeashConnection));
@@ -285,6 +286,7 @@ public final class CarpetProtocalDataBase {
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "structureBlockDoNotPreserveFluid", GeneralCompatConfig.structureBlockDoNotPreserveFluid));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "synchronizedLightThread", GeneralCompatConfig.synchronizedLightThread));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "syncServerMsptMetricsData", GeneralCompatConfig.syncServerMsptMetricsData));
+        registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "tickSprintZeroMeansStop", GeneralCompatConfig.tickSprintZeroMeansStop));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "tickCommandCarpetfied", GeneralCompatConfig.tickCommandCarpetfied));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "tickCommandEnhance", GeneralCompatConfig.tickCommandEnhance));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "tickCommandPermission", GeneralCompatConfig.tickCommandPermission));
@@ -548,10 +550,18 @@ public final class CarpetProtocalDataBase {
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "experimentalMinecartEnabled", GeneralCompatConfig.experimentalMinecartEnabled));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "amsTranslationMode", GeneralCompatConfig.amsTranslationMode));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "amsNetworkProtocol", GeneralCompatConfig.amsNetworkProtocol));
+        registerRule(CarpetServerProtocol.CarpetRule.of("carpetamsaddition", "blockHardnessSyncProtocol", GeneralCompatConfig.blockHardnessSyncProtocol));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "commandAmspDebug", GeneralCompatConfig.commandAmspDebug));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "commandCustomBlockHardness", GeneralCompatConfig.commandCustomBlockHardness));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "commandGetClientPlayerFps", GeneralCompatConfig.commandGetClientPlayerFps));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "commandSetPlayerPose", GeneralCompatConfig.commandSetPlayerPose));
+        registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "incompatibleNetworkProtocolWarningDisabled", GeneralCompatConfig.incompatibleNetworkProtocolWarningDisabled));
+        registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "commandLocationTag", GeneralCompatConfig.commandLocationTag));
+        registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "commandNoteblockChunkloader", GeneralCompatConfig.commandNoteblockChunkloader));
+        registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "commandPistonChunkloader", GeneralCompatConfig.commandPistonChunkloader));
+        registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "commandBellChunkloader", GeneralCompatConfig.commandBellChunkloader));
+        registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "destroyBlockPosWarningDisabled", GeneralCompatConfig.destroyBlockPosWarningDisabled));
+        registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "realPlayerControlDisabled", GeneralCompatConfig.realPlayerControlDisabled));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "noteBlockChunkLoader", GeneralCompatConfig.noteBlockChunkLoader));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "pistonBlockChunkLoader", GeneralCompatConfig.pistonBlockChunkLoader));
         registerRule(CarpetServerProtocol.CarpetRule.of("carpet", "bellBlockChunkLoader", GeneralCompatConfig.bellBlockChunkLoader));

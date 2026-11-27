@@ -333,8 +333,8 @@ public abstract class ScriptHost {
 
     public void delGlobalVariable(Module module, String varName) {
         ModuleData data = getModuleData(module);
-        data.globalFunctions.remove(varName);
-        data.functionImports.remove(varName);
+        data.globalVariables.remove(varName);
+        data.globalsImports.remove(varName);
     }
 
     private ModuleData getModuleData(Module module) {
@@ -459,6 +459,14 @@ public abstract class ScriptHost {
 
     public boolean isPerUser() {
         return perUser;
+    }
+
+    public boolean isPlayerApp() {
+        return this.perUser || this.parent != null;
+    }
+
+    public Set<String> getAppUsers() {
+        return (this.parent == null ? this : this.parent).getUserList();
     }
 
     public Set<String> getUserList() {

@@ -3,6 +3,8 @@ package fun.bm.lophine.carpet;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import fun.bm.lophine.carpet.ams.AmsBlockLoaderCommands;
+import fun.bm.lophine.carpet.ams.AmsLocationTagCommands;
 import fun.bm.lophine.carpet.ams.CarpetAMSCommands;
 import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import fun.bm.lophine.carpet.org.*;
@@ -23,6 +25,8 @@ public final class CarpetCompatCommand {
     public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final net.minecraft.commands.CommandBuildContext buildContext) {
         CarpetDistanceCommand.register(dispatcher);
         CarpetAMSCommands.register(dispatcher);
+        AmsBlockLoaderCommands.register(dispatcher, buildContext);
+        AmsLocationTagCommands.register(dispatcher);
         OrgRulePlayerPreferences.register(dispatcher);
         OrgFakePlayerActionCommands.register(dispatcher, buildContext);
         OrgHiddenActionCommands.register(dispatcher);

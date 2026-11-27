@@ -271,19 +271,32 @@ index 2b51a03a7a8b2169fd79de8634726607f7e533f7..a3a14f2790b218f379fe54668563217a
              this.connection
                  .send(
 diff --git a/net/minecraft/server/level/TicketType.java b/net/minecraft/server/level/TicketType.java
-index 083a82b5200a251e85f155d1df016cd8b4f18db5..04190db3ccb9bd8aed6e768a5afd4adff3b7ed6f 100644
+index 6f720980b615cf651405d290de0a0966deab3058..8516c4a53f926f0ff4d4d02c02903aba70afe8b3 100644
 --- a/net/minecraft/server/level/TicketType.java
 +++ b/net/minecraft/server/level/TicketType.java
-@@ -62,6 +62,9 @@ public final class TicketType<T> implements ca.spottedleaf.moonrise.patches.chun
+@@ -62,6 +62,12 @@ public final class TicketType<T> implements ca.spottedleaf.moonrise.patches.chun
      public static final TicketType FORCED = register("forced", NO_TIMEOUT, FLAG_PERSIST | FLAG_LOADING | FLAG_SIMULATION | FLAG_KEEP_DIMENSION_ACTIVE);
      public static final TicketType PORTAL = register("portal", 300L, me.earthme.luminol.config.modules.misc.SavePortalTicketsConfig.doSave ? FLAG_PERSIST | FLAG_LOADING | FLAG_SIMULATION | FLAG_KEEP_DIMENSION_ACTIVE : FLAG_LOADING | FLAG_SIMULATION | FLAG_KEEP_DIMENSION_ACTIVE);
      public static final TicketType ENDER_PEARL = register("ender_pearl", 40L, FLAG_LOADING | FLAG_SIMULATION | FLAG_KEEP_DIMENSION_ACTIVE);
 +    public static final TicketType AMS_NOTE_BLOCK_LOADER = register("note_block_loader", fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.blockChunkLoaderTimeController, FLAG_PERSIST | FLAG_LOADING | FLAG_SIMULATION | FLAG_KEEP_DIMENSION_ACTIVE);
 +    public static final TicketType AMS_PISTON_BLOCK_LOADER = register("piston_block_loader", fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.blockChunkLoaderTimeController, FLAG_PERSIST | FLAG_LOADING | FLAG_SIMULATION | FLAG_KEEP_DIMENSION_ACTIVE);
 +    public static final TicketType AMS_BELL_BLOCK_LOADER = register("bell_block_loader", fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.blockChunkLoaderTimeController, FLAG_PERSIST | FLAG_LOADING | FLAG_SIMULATION | FLAG_KEEP_DIMENSION_ACTIVE);
++    public static final TicketType AMS_CUSTOM_NOTE_LOADER = register("carpetamsaddition:note_block_loader", 300L, FLAG_LOADING | FLAG_SIMULATION | FLAG_KEEP_DIMENSION_ACTIVE);
++    public static final TicketType AMS_CUSTOM_PISTON_LOADER = register("carpetamsaddition:piston_block_loader", 300L, FLAG_LOADING | FLAG_SIMULATION | FLAG_KEEP_DIMENSION_ACTIVE);
++    public static final TicketType AMS_CUSTOM_BELL_LOADER = register("carpetamsaddition:bell_block_loader", 300L, FLAG_LOADING | FLAG_SIMULATION | FLAG_KEEP_DIMENSION_ACTIVE);
      public static final TicketType UNKNOWN = register("unknown", 1L, FLAG_CAN_EXPIRE_IF_UNLOADED | FLAG_LOADING);
      public static final TicketType PLUGIN = register("plugin", NO_TIMEOUT, FLAG_LOADING | FLAG_SIMULATION); // CraftBukkit
      public static final TicketType POST_TELEPORT = register("post_teleport", 5L, FLAG_LOADING | FLAG_SIMULATION); // Paper
+@@ -139,6 +145,9 @@ public final class TicketType<T> implements ca.spottedleaf.moonrise.patches.chun
+     public static int PLUGIN_TYPE_TIMEOUT = 600;
+     // Paper - rewrite chunk system - convert to class
+     public long timeout() {
++        if (this == AMS_CUSTOM_NOTE_LOADER || this == AMS_CUSTOM_PISTON_LOADER || this == AMS_CUSTOM_BELL_LOADER) {
++            return fun.bm.lophine.carpet.ams.AmsBlockLoaderConfig.customTimeout(this);
++        }
+         return this == PLUGIN ? PLUGIN_TYPE_TIMEOUT : this.timeout;
+     }
+     // Paper end - chunk-gc config
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 index 420c665e8021c8092959566e2c8b138a80c2bccc..3c03bfe49255a6f97c55cc081b721215ffc68160 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
@@ -932,7 +945,7 @@ index 2d5a04a286e09e37ffec124096ad57d46cef76df..434b5be8d2c4fb39a87e7c504ecbdc46
              if (SharedConstants.DEBUG_UNLOCK_ALL_TRADES && data.level() < 5) {
                  this.increaseMerchantCareer(level);
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index 18fb2ca17b5ec2ff239ebc8174fbee9ca4eef2cb..338a7cf65bbc19648b655e9d20b07beb11a2cebc 100644
+index 18fb2ca17b5ec2ff239ebc8174fbee9ca4eef2cb..09cb1fd42c3aed31b946adc5cb5a4c665df01644 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -699,10 +699,35 @@ public abstract class Player extends Avatar implements ContainerUser {
@@ -971,16 +984,15 @@ index 18fb2ca17b5ec2ff239ebc8174fbee9ca4eef2cb..338a7cf65bbc19648b655e9d20b07beb
      protected void destroyVanishingCursedItems() {
          for (int i = 0; i < this.inventory.getContainerSize(); i++) {
              ItemStack itemStack = this.inventory.getItem(i);
-@@ -750,7 +775,7 @@ public abstract class Player extends Avatar implements ContainerUser {
-             speed /= 5.0F;
-         }
- 
--        return speed;
-+        return fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.kirinArm ? Float.MAX_VALUE : speed;
+@@ -726,6 +751,7 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
-     public boolean hasCorrectToolForDrops(final BlockState state) {
-@@ -1145,6 +1170,28 @@ public abstract class Player extends Avatar implements ContainerUser {
+     public float getDestroySpeed(final BlockState state) {
++        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.kirinArm) return Float.MAX_VALUE;
+         float speed = this.inventory.getSelectedItem().getDestroySpeed(state);
+         if (speed > 1.0F) {
+             speed += (float)this.getAttributeValue(Attributes.MINING_EFFICIENCY);
+@@ -1145,6 +1171,28 @@ public abstract class Player extends Avatar implements ContainerUser {
  
          if (playerAttackEntityEvent.callEvent() && willAttack) { // Logic moved to willAttack local variable.
          // Paper end - PlayerAttackEntityEvent
@@ -1009,7 +1021,7 @@ index 18fb2ca17b5ec2ff239ebc8174fbee9ca4eef2cb..338a7cf65bbc19648b655e9d20b07beb
              float baseDamage = this.isAutoSpinAttack() ? this.autoSpinAttackDmg : (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
              ItemStack attackingItemStack = this.getWeaponItem();
              DamageSource damageSource = this.createAttackSource(attackingItemStack); final DamageSource dmgSourceFinal = damageSource; // Paper - damage events
-@@ -1210,7 +1257,8 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1210,7 +1258,8 @@ public abstract class Player extends Avatar implements ContainerUser {
      private record CarpetAttackDamage(float base,float magic,float total,DamageSource source,boolean full,boolean knockback,boolean critical,boolean sweep) {}
      public java.util.concurrent.CompletableFuture<Void> carpetAttackNativeAsync(final Entity entity) {
          return carpet.script.external.ScarpetLootActors.jobNative((ServerLevel)this.level(),()->
@@ -1019,7 +1031,7 @@ index 18fb2ca17b5ec2ff239ebc8174fbee9ca4eef2cb..338a7cf65bbc19648b655e9d20b07beb
                  carpet.script.external.ScarpetNativeDeathActors.entity(this,()->{
                      var event=new io.papermc.paper.event.player.PrePlayerAttackEntityEvent((org.bukkit.entity.Player)this.getBukkitEntity(),read.api(),read.allowed());
                      return event.callEvent()&&read.allowed();
-@@ -1982,6 +2030,9 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1982,6 +2031,9 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
      public void awardStat(final Stat<?> stat) {
@@ -1029,7 +1041,7 @@ index 18fb2ca17b5ec2ff239ebc8174fbee9ca4eef2cb..338a7cf65bbc19648b655e9d20b07beb
          this.awardStat(stat, 1);
      }
  
-@@ -2044,6 +2095,22 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -2044,6 +2096,22 @@ public abstract class Player extends Avatar implements ContainerUser {
  
      @Override
      public float getSpeed() {
@@ -1052,7 +1064,7 @@ index 18fb2ca17b5ec2ff239ebc8174fbee9ca4eef2cb..338a7cf65bbc19648b655e9d20b07beb
          return (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED);
      }
  
-@@ -2700,7 +2767,9 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -2700,7 +2768,9 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
      public boolean isWithinEntityInteractionRange(final AABB aabb, final double buffer) {
@@ -1063,7 +1075,7 @@ index 18fb2ca17b5ec2ff239ebc8174fbee9ca4eef2cb..338a7cf65bbc19648b655e9d20b07beb
          double distanceToSq = aabb.distanceToSqr(this.getEyePosition());
          if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.antiCheatDisabled
              && maxRange * maxRange < 1024.0 && distanceToSq < 1024.0) {
-@@ -2714,7 +2783,9 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -2714,7 +2784,9 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
      public boolean isWithinBlockInteractionRange(final BlockPos pos, final double buffer) {
@@ -1205,6 +1217,25 @@ index 1873b9376df57ff73d2a1583b60a512cfff7b998..1879c8f142b7c560a9205f7c130dedfe
          return true;
      }
  
+diff --git a/net/minecraft/world/item/BoneMealItem.java b/net/minecraft/world/item/BoneMealItem.java
+index c2d5e695b1b9ba804cc1b56209fa4c5fcd02d3ab..190444d3afabcf425ad1da9f79b0ca2cd4284eac 100644
+--- a/net/minecraft/world/item/BoneMealItem.java
++++ b/net/minecraft/world/item/BoneMealItem.java
+@@ -70,6 +70,14 @@ public class BoneMealItem extends Item {
+
+     public static boolean growCrop(final ItemStack itemStack, final Level level, final BlockPos pos) {
+         BlockState state = level.getBlockState(pos);
++        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.fertilizableSmallFlower
++                && state.getBlock() instanceof net.minecraft.world.level.block.SporeBlossomBlock) {
++            if (level instanceof ServerLevel serverLevel) {
++                net.minecraft.world.level.block.Block.popResource(serverLevel, pos, new ItemStack(state.getBlock()));
++                itemStack.shrink(1);
++            }
++            return true;
++        }
+         if (state.getBlock() instanceof BonemealableBlock block && block.isValidBonemealTarget(level, pos, state, BonemealSource.INTERACTION)) {
+             if (level instanceof ServerLevel serverLevel) {
+                 if (block.isBonemealSuccess(level, level.getRandom(), pos, state, BonemealSource.INTERACTION)) {
 diff --git a/net/minecraft/world/item/BucketItem.java b/net/minecraft/world/item/BucketItem.java
 index a26a9cef3781480d092ed4989bc2f226d94bfc9e..9015b9e2ccf7febe188d516dba131fb8d361c039 100644
 --- a/net/minecraft/world/item/BucketItem.java
@@ -2139,6 +2170,20 @@ index c6a28b78fe1fa350081c889a241c7d891c2cbb30..29b36efda74f2f6d2448337f496bcd66
      private int openCount;
      private ShulkerBoxBlockEntity.AnimationStatus animationStatus = ShulkerBoxBlockEntity.AnimationStatus.CLOSED;
      private float progress;
+diff --git a/net/minecraft/world/level/block/entity/SignBlockEntity.java b/net/minecraft/world/level/block/entity/SignBlockEntity.java
+index 94e1b950a819cb199a580a7f1d993f0f09c208bd..23fe7310b05928ef5ba6f4722e5e01f404b9e713 100644
+--- a/net/minecraft/world/level/block/entity/SignBlockEntity.java
++++ b/net/minecraft/world/level/block/entity/SignBlockEntity.java
+@@ -208,6 +208,9 @@ public class SignBlockEntity extends BlockEntity {
+         }
+
+         this.markUpdated();
++        if (slot == SignTextSlot.FRONT && this.level instanceof ServerLevel serverLevel) {
++            fun.bm.lophine.carpet.ams.AmsLocationTags.changed(serverLevel, this.worldPosition, this);
++        }
+     }
+
+     public boolean canExecuteClickCommands(final SignTextSlot slot, final Player player) {
 diff --git a/net/minecraft/world/level/block/piston/PistonBaseBlock.java b/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 index 437cb20fcf26f1bb6e4dd6f82796bf32b2b7ba9f..5f08a011dd6bdd0191db6d1ef11336714bc266ce 100644
 --- a/net/minecraft/world/level/block/piston/PistonBaseBlock.java
@@ -2233,6 +2278,42 @@ index c716c0d5760b1dbda035f420003e83e3b61dee14..df11661c5c3d9a0e880b585b1933e9fb
              BlockBehaviour.OffsetFunction function = this.offsetFunction;
              return function != null ? function.evaluate(this.asState(), pos) : Vec3.ZERO;
          }
+diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
+index 0fb6ee3adf2f7499b5e56ffa416326398875c9db..ddb39318ce952383cbe9621a05b3c5ec1e720c73 100644
+--- a/net/minecraft/world/level/chunk/LevelChunk.java
++++ b/net/minecraft/world/level/chunk/LevelChunk.java
+@@ -606,6 +606,11 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+             if (previousEntry != null && previousEntry != blockEntity) {
+                 previousEntry.setRemoved();
+             }
++            if ((blockEntity instanceof net.minecraft.world.level.block.entity.SignBlockEntity
++                    || previousEntry instanceof net.minecraft.world.level.block.entity.SignBlockEntity)
++                    && this.level instanceof ServerLevel serverLevel) {
++                fun.bm.lophine.carpet.ams.AmsLocationTags.changed(serverLevel, pos, blockEntity);
++            }
+         }
+     }
+
+@@ -640,6 +645,9 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+                 if (this.level instanceof ServerLevel serverLevel) {
+                     this.removeGameEventListener(removeThis, serverLevel);
+                     serverLevel.debugSynchronizers().dropBlockEntity(pos);
++                    if (removeThis instanceof net.minecraft.world.level.block.entity.SignBlockEntity) {
++                        fun.bm.lophine.carpet.ams.AmsLocationTags.changed(serverLevel, pos, null);
++                    }
+                 }
+
+                 removeThis.setRemoved();
+@@ -687,6 +695,9 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
+         // Paper start
+         this.loadedTicketLevel = true;
+         // Paper end
++        if (this.level instanceof ServerLevel serverLevel) {
++            fun.bm.lophine.carpet.ams.AmsLocationTags.scan(serverLevel, this);
++        }
+         org.bukkit.Server server = this.level.getCraftServer();
+         // Paper - rewrite chunk system
+         if (server != null) {
 diff --git a/net/minecraft/world/level/dimension/end/DragonRespawnStage.java b/net/minecraft/world/level/dimension/end/DragonRespawnStage.java
 index 8f29fb6049b2d3bb5ab1f21257dcb52d99ab4014..f702fbb49da4b64782054d08743c14452fc568e5 100644
 --- a/net/minecraft/world/level/dimension/end/DragonRespawnStage.java
@@ -2351,17 +2432,19 @@ index 9c58323e78c889d299a264a5774277eba08ba56d..007bdc63b15cd5801ff027a2708fb452
              }
              if (eggEvent.callEvent()) {
 diff --git a/net/minecraft/world/level/levelgen/PhantomSpawner.java b/net/minecraft/world/level/levelgen/PhantomSpawner.java
-index 7c79ee351df1cb3e38ac24a58154db14058054c6..cca1e16cb178fac4973983a2bf848b816d310eb9 100644
+index 7c79ee351df1cb3e38ac24a58154db14058054c6..977b560e62abc1a990e941ac5579d6d761023e79 100644
 --- a/net/minecraft/world/level/levelgen/PhantomSpawner.java
 +++ b/net/minecraft/world/level/levelgen/PhantomSpawner.java
-@@ -78,6 +78,7 @@ public class PhantomSpawner implements CustomSpawner {
-                                                         phantom.spawningEntity = player.getUUID(); // Paper - PhantomPreSpawnEvent
+@@ -79,6 +79,9 @@ public class PhantomSpawner implements CustomSpawner {
                                                          phantom.snapTo(spawnPos, 0.0F, 0.0F);
                                                          groupData = phantom.finalizeSpawn(level, difficulty, EntitySpawnReason.NATURAL, groupData);
-+                                                        fun.bm.lophine.carpet.ams.AmsServerMessages.phantomSpawn(level.getServer(), player.getGameProfile().name(), phantom.getX(), phantom.getY(), phantom.getZ());
                                                          level.addFreshEntityWithPassengers(phantom, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.NATURAL); // CraftBukkit
++                                                        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.phantomSpawnAlert && level.getEntity(phantom.getId()) == phantom) {
++                                                            fun.bm.lophine.carpet.ams.AmsServerMessages.phantomSpawn(level.getServer(), player.getGameProfile().name(), phantom.getX(), phantom.getY(), phantom.getZ());
++                                                        }
                                                      }
                                                  }
+                                             }
 diff --git a/net/minecraft/world/level/levelgen/feature/EndSpikeFeature.java b/net/minecraft/world/level/levelgen/feature/EndSpikeFeature.java
 index 8136b413e3357648b0162496a9f1ce01fccc41cb..85796d68a50a12e643cc338462a1ab5993d5f682 100644
 --- a/net/minecraft/world/level/levelgen/feature/EndSpikeFeature.java

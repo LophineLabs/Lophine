@@ -959,12 +959,15 @@ carpettisaddition:
         desc: Deobfuscate stack traces in crash report
       dispenserNoItemCost:
         name: dispenserNoItemCost
-        desc: Dispensers and droppers execute without having the itemstack inside decreased
-        extra:
-          '0': Either dropping and using items do not cost, but dropper transferring item still costs
+        desc: Dispensers do not consume items when activated
       dispensersFireDragonBreath:
         name: dispensersFireDragonBreath
         desc: Dispenser can fire dragon breath bottle to create a dragon breath effect cloud
+      dropperNoItemCost:
+        name: dropperNoItemCost
+        desc: Droppers do not consume items when dropping them into the world
+        extra:
+          '0': Transferring items into containers still consumes items
       dustTrapdoorReintroduced:
         name: dustTrapdoorReintroduced
         desc: Reintroduced the dust-trapdoor instant update looper
@@ -1365,6 +1368,7 @@ carpettisaddition:
         extra:
           '0': It's useful to test if your contraption is locational or not
           '1': Does not work with rule fastRedstoneDust
+          '2': Modes are none (false), shuffle (true), and random_pos
       redstoneDustRepeaterComparatorIgnoreUpwardsStateUpdate:
         name: redstoneDustRepeaterComparatorIgnoreUpwardsStateUpdate
         desc: Make redstone dust, redstone repeater and redstone comparator ignore state updates from below

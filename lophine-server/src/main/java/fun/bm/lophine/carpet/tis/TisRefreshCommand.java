@@ -17,7 +17,6 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
-import net.minecraft.server.level.ChunkTrackingView;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
@@ -45,7 +44,7 @@ public final class TisRefreshCommand {
                         .executes(context -> refresh(context.getSource(), new Selection(true, null, null)))
                         .then(Commands.literal("current").executes(context -> refresh(context.getSource(), new Selection(true, null, null))))
                         .then(Commands.literal("all").executes(context -> refresh(context.getSource(), new Selection(false, null, null))))
-                        .then(Commands.literal("inrange").then(Commands.argument("chebyshevDistance", IntegerArgumentType.integer())
+                        .then(Commands.literal("inrange").then(Commands.argument("chebyshevDistance", IntegerArgumentType.integer(0))
                                 .executes(context -> {
                                     int distance = IntegerArgumentType.getInteger(context, "chebyshevDistance");
                                     return refresh(context.getSource(), new Selection(false, null, distance));
@@ -133,8 +132,10 @@ public final class TisRefreshCommand {
             var iterator = loader.getSentChunksRaw().iterator();
             while (iterator.hasNext()) {
                 ChunkPos pos = ChunkPos.unpack(iterator.nextLong());
-                if (selection.distance() == null || ChunkTrackingView.isWithinDistance(pos.x(), pos.z(), selection.distance(),
-                        watched.x(), watched.z(), true)) chunks.add(pos);
+                if (selection.distance() == null
+                        || Math.max(Math.abs((long) pos.x() - watched.x()), Math.abs((long) pos.z() - watched.z())) <= selection.distance()) {
+                    chunks.add(pos);
+                }
             }
         }
         // Both controller implementations inspect only the player bypass permission for null chunk.

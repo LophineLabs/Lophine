@@ -109,8 +109,9 @@ public final class OrgUtilityCommands {
                         startCreeper(context.getSource(), EntityArgument.getPlayer(context, "player")))));
     }
 
-    private static int toggleSpectator(CommandSourceStack source, ServerPlayer player, boolean fake) throws CommandSyntaxException {
-        if (fake && !(player instanceof fun.bm.lophine.carpet.CarpetFakePlayer)) throw FAKE_ONLY.create();
+    private static int toggleSpectator(CommandSourceStack source, ServerPlayer player, boolean explicitTarget) throws CommandSyntaxException {
+        boolean fake = player instanceof fun.bm.lophine.carpet.CarpetFakePlayer;
+        if (explicitTarget && !fake && source.getEntity() != player) throw FAKE_ONLY.create();
         return OrgCommandNativeEffects.command(source, 1, () ->
                 TisCommandContinuations.then(OrgMenuNativeEffects.run(player, () -> {
                     ServerPlayer target = player;

@@ -41,6 +41,10 @@ public final class TisTickRules {
         return GeneralCompatConfig.tickCommandCarpetfied || GeneralCompatConfig.tickWarpCommandAsAnAlias;
     }
 
+    public static boolean zeroStopsSprint() {
+        return GeneralCompatConfig.tickCommandCarpetfied || GeneralCompatConfig.tickSprintZeroMeansStop;
+    }
+
     public static Suggestions filterSuggestions(final String text, final Suggestions suggestions) {
         String command = text.startsWith("/") ? text.substring(1) : text;
         if ((command.startsWith("tick sprint ") || warp() && command.startsWith("tick warp ")) && !enhance()

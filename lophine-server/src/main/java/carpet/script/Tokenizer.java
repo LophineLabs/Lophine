@@ -146,17 +146,10 @@ public class Tokenizer {
             if (ch == '0' && (peekNextChar() == 'x' || peekNextChar() == 'X')) {
                 isHex = true;
             }
-            while ((isHex
-                    && isHexDigit(
-                    ch))
-                    || (Character.isDigit(ch) || ch == decimalSeparator || ch == 'e' || ch == 'E'
-                    || (ch == minusSign && token.length() > 0
-                    && ('e' == token.charAt(token.length() - 1)
-                    || 'E' == token.charAt(token.length() - 1)))
-                    || (ch == '+' && token.length() > 0
-                    && ('e' == token.charAt(token.length() - 1)
-                    || 'E' == token.charAt(token.length() - 1))))
-                    && (pos < input.length())) {
+            while (pos < input.length() && (isHex ? isHexDigit(ch)
+                    : Character.isDigit(ch) || ch == decimalSeparator || ch == 'e' || ch == 'E'
+                    || ((ch == minusSign || ch == '+') && token.length() > 0
+                    && ('e' == token.charAt(token.length() - 1) || 'E' == token.charAt(token.length() - 1))))) {
                 token.append(input.charAt(pos++));
                 linepos++;
                 ch = pos == input.length() ? 0 : input.charAt(pos);

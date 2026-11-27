@@ -959,12 +959,15 @@ carpettisaddition:
         desc: 反混淆崩溃报告中输出的堆栈追踪
       dispenserNoItemCost:
         name: 发射器不消耗物品
-        desc: 开启后，发射器和投掷器被激活时不再消耗物品
-        extra:
-          '0': 无论投掷物品还是使用物品都如此，但是投掷器传输物品仍会消耗物品
+        desc: 发射器被激活时不消耗物品
       dispensersFireDragonBreath:
         name: 发射器发射龙息
         desc: 发射器可使用龙息瓶创造出龙息效果云
+      dropperNoItemCost:
+        name: 投掷器不消耗物品
+        desc: 投掷器向世界投掷物品时不消耗物品
+        extra:
+          '0': 向容器传输物品仍会消耗
       dustTrapdoorReintroduced:
         name: 重新引入粉板瞬时更新循环
         desc: 重新引入由红石粉+活板门组成的瞬时更新循环结构
@@ -1365,6 +1368,7 @@ carpettisaddition:
         extra:
           '0': 有助于测试你的装置是否依赖于位置
           '1': 在规则fastRedstoneDust启用时无效
+          '2': 模式包括 none（false）、shuffle（true）和 random_pos
       redstoneDustRepeaterComparatorIgnoreUpwardsStateUpdate:
         name: 红石粉中继器比较器忽略向上状态更新
         desc: 让红石粉、红石中继器和红石比较器忽略来自下方的状态更新

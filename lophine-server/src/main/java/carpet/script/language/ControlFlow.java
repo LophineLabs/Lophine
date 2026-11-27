@@ -107,25 +107,28 @@ public class ControlFlow {
                         )
                 )));
 
-                if (lv.size() == 2) {
-                    if (ret.thrownExceptionType.isUserException()) {
-                        val = lv.get(1).evalValue(c, t);
-                    }
-                } else {
-                    int pointer = 1;
-                    while (pointer < lv.size() - 1) {
-                        if (ret.thrownExceptionType.isRelevantFor(lv.get(pointer).evalValue(c).getString())) {
-                            val = lv.get(pointer + 1).evalValue(c, t);
-                            break;
+                try {
+                    if (lv.size() == 2) {
+                        if (ret.thrownExceptionType.isUserException()) {
+                            val = lv.get(1).evalValue(c, t);
                         }
-                        pointer += 2;
+                    } else {
+                        int pointer = 1;
+                        while (pointer < lv.size() - 1) {
+                            if (ret.thrownExceptionType.isRelevantFor(lv.get(pointer).evalValue(c).getString())) {
+                                val = lv.get(pointer + 1).evalValue(c, t);
+                                break;
+                            }
+                            pointer += 2;
+                        }
                     }
-                }
-                c.setVariable("_", defaultVal);
-                if (trace != null) {
-                    c.setVariable("_trace", trace);
-                } else {
-                    c.delVariable("_trace");
+                } finally {
+                    c.setVariable("_", defaultVal);
+                    if (trace != null) {
+                        c.setVariable("_trace", trace);
+                    } else {
+                        c.delVariable("_trace");
+                    }
                 }
                 if (val == null)  // not handled
                 {

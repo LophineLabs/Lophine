@@ -21,7 +21,7 @@
 | `naturalSpawningUse13Heightmap`、`naturalSpawningUse13HeightmapExtra`  | 自然生成按旧版光遮挡高度，extra 排除指定方块 |
 | `preciseEntityPlacement`  | 盔甲架、水晶与刷怪蛋按点击位置生成，在 finalizeSpawn 与插件生成事件前定位 |
 | `dispensersFireDragonBreath`  | 发射器消耗龙息生成上游参数的效果云，保留取消与换物品事件，跨区域调度目标生成 |
-| `redstoneDustRandomUpdateOrder`、`redstoneDustRepeaterComparatorIgnoreUpwardsStateUpdate`  | 随机线更新顺序，不消耗世界随机源；红石线忽略中继器、比较器上方状态更新 |
+| `redstoneDustRandomUpdateOrder`、`redstoneDustRepeaterComparatorIgnoreUpwardsStateUpdate`  | 默认按原版顺序更新。shuffle（兼容旧值 true）均匀打乱，random_pos 模拟随机坐标的原版顺序。两种模式均不消耗世界随机源。另一个规则使红石线忽略中继器、比较器上方状态更新 |
 | `noToolBreak`、`betterTotemOfUndying`、`knockbackStick`  | 修补工具最后一点耐久时停用工具与属性；图腾可查背包和潜影盒；木棍通过铁砧接受击退 |
 | `disableCreativeContainerDrops`、`blockDropsDirectlyEnterInventory`  | 创造破坏容器不掉内容；破坏战利品直接进入背包，custom 使用随玩家数据保存的开关 |
 | `itemPickupRangeExpand`、`itemPickupRangeExpandPlayerControl` | 扩大物品拾取范围，支持玩家持久开关；Folia 先取得覆盖区域的完整所有权，再沿原生触碰入口执行，以保留 Carpet 碰撞事件 |
@@ -47,7 +47,7 @@
 | Org `/navigate` (`commandNavigate`)  | 实体、玩家、UUID、路径点、方块坐标、重生点、死亡点和停止分支；路径点子树受 `commandLocations` 控制，死亡导航另受 `navigate.death` 控制；跟踪状态与原版服务端线包顺序已对照 |
 | `keepMobInLazyChunks`  | 官方两个 1.14.4 版本混入在 >=1.15 指向 DummyClass；保留规则入口。Folia 原生仅对 entity-ticking 实体检查消失，已移除额外的 AI 阶段搬移与消失保护 |
 | `chunkUpdatePacketThreshold`  | 上游版本类明确限制在 1.16 之前；保留审计结果，无行为占位 |
-| `canMineSpawner`  | 精准采集刷怪笼时保留生成逻辑 NBT，重新放置恢复逻辑，采集时不掉经验 |
+| `canMineSpawner`  | 精准采集普通和试炼刷怪笼时保留生成逻辑 NBT，重新放置恢复逻辑。试炼刷怪笼保留不祥状态，普通刷怪笼采集时不掉经验 |
 | `tooledTNT`  | 爆炸方块战利品及经验使用造成爆炸生物主手工具；跨 Folia 区域使用其最近一次刻的工具副本，避免直接读另一地区的物品栏 |
 | `HUDLoggerUpdateInterval` | HUD 刷新间隔为 1–1000 刻，默认 20，运行时读取新间隔 |
 | `chatMessageLengthLimitUnlocked`  | 入站聊天与出站签名消息正文上限按上游设为 32000 字符；有签名与无签名命令解除 Paper 的 256 字符限制。客户端需具备相应长消息支持 |
@@ -58,7 +58,7 @@
 | `commandDistance` | `/distance from`、`to` 与直接两点测距，球面、水平与曼哈顿距离；支持 true/false/ops/0–4 权限 |
 | `channelingIgnoreConditions` | 引雷三叉戟击中实体或方块时可忽略天气，或同时忽略天气与天空；回调之外保持普通天气判定 |
 | `gazeDisguiseEquipmentExtended` | 头部装备头颅物品时可避开末影人凝视判定 |
-| `renewableDragonHead` | 末影龙因苦力怕伤害进入死亡阶段时使用其头颅掉落额度，死亡结束额外生成龙头；与上游一样不另加充能检查 |
+| `renewableDragonHead` | 末影龙因苦力怕伤害进入死亡阶段时使用其头颅掉落额度，死亡结束额外生成龙头；仅充能苦力怕可以消耗该额度 |
 | `easyRefreshTrades` | 零经验一级村民可通过反复打开交易刷新交易，主手绿宝石块保留当前交易；原交易生成与插件事件路径保留 |
 | `flippinCactus`、`rotatorBlock` | 主手仙人掌翻转方块，副手仙人掌反向放置，发射器仙人掌旋转邻接方块；包含台阶、楼梯、柱形方块及活塞保护 |
 | `movableBlockEntities`  | 活塞携带原方块实体与库存，落位重新注册；保存使用上游 carriedTileEntityCM 格式；规则关闭后仍读取已存携带数据，避免丢失库存。保留光照、POI 与插件事件路径 |
@@ -188,7 +188,7 @@
 | `poiUpdates` | 可关闭 POI 方块状态更新 |
 | `enchantCommandNoRestriction` | `/enchant` 可跳过等级、适用物品和已有附魔兼容性限制 |
 | `entityMomentumLoss` | 可关闭实体加载时超过 10 的运动分量清零逻辑 |
-| `dispenserNoItemCost` | 发射器及向外抛出的投掷器物品不会被消耗，投掷器向容器传输仍正常消耗 |
+| `dispenserNoItemCost`、`dropperNoItemCost` | 分别控制发射器与投掷器的物品消耗，投掷器向容器传输时仍正常消耗。已有配置首次加载时会用旧的发射器值补齐缺失的投掷器设置 |
 | `explosionNoEntityInfluence` | 爆炸不对实体造成伤害、击退或其他命中效果 |
 | `scheduledRandomTickCactus`、`scheduledRandomTickBamboo`、`scheduledRandomTickChorusFlower`、`scheduledRandomTickSugarCane`、`scheduledRandomTickStem`、`scheduledRandomTickAllPlants` | 对应植物收到计划刻时也执行一次随机生长刻 |
 | `netherWaterPlacement` | 玩家可在水会蒸发的环境中放置水桶内容物 |

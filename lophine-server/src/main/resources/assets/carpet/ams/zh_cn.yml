@@ -1,4 +1,8 @@
 carpetamsaddition:
+  amsp:
+    incompatible_protocol: '客户端使用的 AMSP 通道不受支持。服务端支持 %s 和 %s。'
+    incompatible_protocol_hint: '开启 incompatibleNetworkProtocolWarningDisabled 可关闭此警告。'
+
   carpet:
     totalRules:
       version: '版本'
@@ -9,6 +13,8 @@ carpetamsaddition:
       highlightCoordButtonHoverText: '使用Fuzz模组高亮路径点，使用/coordCompass clear取消高亮'
 
   rule:
+    realPlayerControlDisabled:
+      blocked: '<AMSP> 无法通过 /player 操作真实玩家'
     amsUpdateSuppressionCrashFix:
       msg: '更新抑制位置 @ %s -> [ %s ] | 原因：%s'
       copy: '复制坐标到剪切板'
@@ -23,11 +29,66 @@ carpetamsaddition:
       location: '死亡位置'
       copy: '复制坐标到剪切板'
     phantomSpawnAlert:
-      msg: '§b<phantomSpawnAlert> §r§e%s §r§d召唤了幻翼 §r§e@ §r§a[ %s ]'
+      msg: '%s 召唤了幻翼 %s'
     experimentalMinecartSpeed:
       vanilla_command_disabled: '<Carpet AMS Addition> 该游戏规则已由 minecartMaxSpeed 地毯规则接管'
 
   command:
+    amsloc:
+      title: '位置标记'
+      help_list: '/amsloc list [page] - 查看位置列表'
+      help_dimension: '/amsloc list dimension <dimension> [page] - 按维度查看'
+      help_info: '/amsloc info <id> - 查看标记详情'
+      help_config: '/amsloc config - 查看识别配置'
+      help_marker: '/amsloc config marker <text> - 设置第一行识别文本'
+      help_type: '/amsloc config sign <type> - 设置告示牌类型'
+      help_reset: '/amsloc config reset - 恢复默认识别配置'
+      help_rescan: '/amsloc rescan - 分批重新扫描已加载区块'
+      help_sign: '告示牌正面第一行填写识别文本，第二至第四行分别去掉首尾空白后直接拼接为名称，不加分隔符，拼接结果不能为空，编辑或拆除后自动更新'
+      recognition: '识别文本：%s | 告示牌类型：%s'
+      list: '位置标记 · 第 %s/%s 页 · 共 %s 处'
+      empty: '没有找到位置标记，未加载区块中的旧告示牌将在区块加载后被发现'
+      page_invalid: '页码超出范围，共 %s 页'
+      missing: '该位置标记不存在'
+      details: '[详情]'
+      details_hover: '点击查看 %s 的维度和坐标'
+      previous_hover: '点击查看上一页（第 %s 页）'
+      next_hover: '点击查看下一页（第 %s 页）'
+      previous: '[上一页]'
+      next: '[下一页]'
+      overworld: '[主世界]'
+      nether: '[下界]'
+      end: '[末地]'
+      invalid_sign: '无效的告示牌类型，请使用当前版本补全中提供的类型'
+      invalid_marker: '识别文本不能为空或包含换行'
+      saved: '识别配置已保存，目录已清空并开始重新检查已加载区块，其他标记随区块加载重新发现'
+      save_failed: '保存失败，配置未修改，请查看服务器日志'
+      rescan: '已安排检查 %s 个已加载区块'
+    blockChunkloader:
+      saved: "已保存 %s 加载器配置"
+      invalid: "操作失败，配置未修改：%s"
+      missing_group: "条件组不存在：%s"
+      denied: "对应规则为 false 或你没有此加载器的配置权限"
+      show: "%s 加载器：启用=%s，时长=%sgt，加载范围=%s区块"
+      group: "条件组 %s："
+      group_enabled: "已启用"
+      group_disabled: "已停用"
+      group_mode: "，组内模式="
+      group_details: "，%s 条条件"
+      condition: "#%s 偏移 (dx,dy,dz) = (%s,%s,%s) "
+      test_group: "条件组 %s："
+      test_condition: "条件 #%s："
+      test_result: "组合条件匹配=%s"
+      unloaded: "测试位置所在区块未加载，无法检测条件"
+      all: "all"
+      any: "any"
+      is: "是"
+      not: "不是"
+      match: "满足"
+      fail: "不满足"
+      unknown: "未知"
+      help: "使用说明见官网："
+      help_hover: "点击跳转"
     commandHelper:
       refresh_cmd_tree: '<Carpet AMS Addition> 命令树已被刷新'
 

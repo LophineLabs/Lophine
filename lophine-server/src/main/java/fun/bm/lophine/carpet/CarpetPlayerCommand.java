@@ -17,6 +17,7 @@ import fun.bm.lophine.carpet.org.*;
 import fun.bm.lophine.carpet.tis.TisFakePlayerRules;
 import net.minecraft.SharedConstants;
 import net.minecraft.commands.CommandBuildContext;
+import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.DimensionArgument;
@@ -171,6 +172,11 @@ public class CarpetPlayerCommand {
         }
         if (player.isFakePlayer() && !(player instanceof CarpetFakePlayer)) {
             feedback(source, "This fake player belongs to another backend", true);
+            return false;
+        }
+        if (GeneralCompatConfig.realPlayerControlDisabled && !player.isFakePlayer()) {
+            feedback(source, fun.bm.lophine.carpet.ams.AmsTranslations.message(
+                    source, "rule.realPlayerControlDisabled.blocked"), true);
             return false;
         }
         ServerPlayer sender = source.getPlayer();
@@ -509,9 +515,13 @@ public class CarpetPlayerCommand {
     }
 
     private static void feedback(CommandSourceStack source, String message, boolean failure) {
+        feedback(source, net.minecraft.network.chat.Component.literal(message), failure);
+    }
+
+    private static void feedback(CommandSourceStack source, net.minecraft.network.chat.Component message, boolean failure) {
         Runnable send = () -> {
-            if (failure) source.sendFailure(net.minecraft.network.chat.Component.literal(message));
-            else source.sendSuccess(() -> net.minecraft.network.chat.Component.literal(message), false);
+            if (failure) source.sendFailure(message);
+            else source.sendSuccess(() -> message, false);
         };
         ServerPlayer recipient = source.getPlayer();
         if (recipient == null || ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(recipient)) send.run();

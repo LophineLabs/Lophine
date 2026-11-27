@@ -47,9 +47,20 @@ public final class OrgFakePlayerActions {
     public static final Filter EMPTY = new Filter("minecraft:air", ItemStack::isEmpty);
     public static final Filter ANY = new Filter("*", stack -> !stack.isEmpty());
 
-    public record Librarian(BlockPos jobSite, int minLevel, int maxPrice) {
+    public record Librarian(BlockPos jobSite, int minLevel, int maxPrice, OrgLibrarianSearch.PriceLevel priceLevel,
+                            BlockPos from, BlockPos to, long startTime, int refreshCount) {
+        public Librarian(BlockPos jobSite, int minLevel, int maxPrice) {
+            this(jobSite, minLevel, maxPrice, null, null, null, 0, 0);
+        }
+
         public Librarian {
             jobSite = jobSite.immutable();
+            if (from != null) from = from.immutable();
+            if (to != null) to = to.immutable();
+        }
+
+        public String mode() {
+            return priceLevel == null ? "specific" : from == null ? "any" : "missing";
         }
     }
 
@@ -75,10 +86,16 @@ public final class OrgFakePlayerActions {
         boolean pendingArea, digging, notifiedLocked, notifiedMaterials, notifiedExperience;
         long areaEpoch;
         long started;
+        int checksUntilMissingReport = 1;
+        boolean announcedNoMissing;
         CarpetPlayerActionPack.Action miningAction;
 
         State(Action action) {
             this.action = action;
+            if (action.librarian() != null) {
+                started = action.librarian().startTime();
+                refreshCount = action.librarian().refreshCount();
+            }
         }
     }
 
@@ -175,7 +192,13 @@ public final class OrgFakePlayerActions {
     public static Action get(ServerPlayer player) {
         if (!TickThread.isTickThreadFor(player)) throw new IllegalStateException("Fake action read requires its owner");
         State state = STATES.get(player);
-        return state == null ? Action.simple("stop", List.of()) : state.action;
+        if (state == null) return Action.simple("stop", List.of());
+        Action action = state.action;
+        Librarian spec = action.librarian();
+        if (spec == null) return action;
+        return new Action(action.kind(), action.filters(), action.index(), action.name(), action.enchantment(), action.dropOther(),
+                action.moreContainer(), action.voidTrade(), action.selected(), action.other(),
+                new Librarian(spec.jobSite(), spec.minLevel(), spec.maxPrice(), spec.priceLevel(), spec.from(), spec.to(), state.started, state.refreshCount));
     }
 
     public static void tick(ServerPlayer player) {
@@ -717,13 +740,18 @@ public final class OrgFakePlayerActions {
     }
 
     private static void area(CarpetFakePlayer player, State state, net.minecraft.world.phys.AABB box, java.util.function.Consumer<CarpetFakePlayer> action) {
+        area(player, state, box, false, action);
+    }
+
+    private static void area(CarpetFakePlayer player, State state, net.minecraft.world.phys.AABB box, boolean loadedOnly,
+                             java.util.function.Consumer<CarpetFakePlayer> action) {
         if (state.pendingArea) return;
         state.pendingArea = true;
         long epoch = ++state.areaEpoch;
         var world = player.level();
         var id = player.getUUID();
         var bounds = CarpetPlayerTargetArea.Bounds.query(box);
-        var nativeArea = CarpetRegionLease.<CompletableFuture<Void>>runValue(world, bounds.minX(), bounds.minZ(), bounds.maxX(), bounds.maxZ(), lease -> {
+        java.util.function.Function<CarpetRegionLease.Lease<CompletableFuture<Void>>, CompletableFuture<Void>> body = lease -> {
             ServerPlayer actor = world.getServer().getPlayerList().getPlayer(id);
             if (!(actor instanceof CarpetFakePlayer bot) || !TickThread.isTickThreadFor(actor) || actor.isRemoved() || actor.level() != world || STATES.get(actor) != state || state.areaEpoch != epoch)
                 return CompletableFuture.completedFuture(null);
@@ -741,7 +769,10 @@ public final class OrgFakePlayerActions {
                     return (Void) null;
                 }
             });
-        }).thenCompose(Function.identity());
+        };
+        var nativeArea = (loadedOnly
+                ? CarpetRegionLease.runOwnedLoadedPhaseValue(world, bounds.minX(), bounds.minZ(), bounds.maxX(), bounds.maxZ(), body)
+                : CarpetRegionLease.runValue(world, bounds.minX(), bounds.minZ(), bounds.maxX(), bounds.maxZ(), body)).thenCompose(Function.identity());
         var committed = nativeArea.handle((ignored, failure) -> failure).thenCompose(failure -> owned(player, () -> {
             try (var admitted = carpet.script.external.ScarpetPlayerInventoryGate.acceptedScope(player)) {
                 // The player may have moved outside the captured area. Retry from its current owner.
@@ -819,7 +850,7 @@ public final class OrgFakePlayerActions {
         if (spec == null) throw new IllegalStateException("Missing librarian job site");
         BlockPos pos = spec.jobSite;
         if (!TickThread.isTickThreadFor(player.level(), pos) || !player.isWithinBlockInteractionRange(pos, 0)) return;
-        if (state.started == 0) state.started = System.nanoTime();
+        if (state.started <= 0) state.started = fun.bm.lophine.carpet.CarpetServerClock.gameTime();
         var block = player.level().getBlockState(pos);
         if (state.digging) {
             if (!block.is(net.minecraft.world.level.block.Blocks.LECTERN)) {
@@ -881,7 +912,9 @@ public final class OrgFakePlayerActions {
         if (!block.is(net.minecraft.world.level.block.Blocks.LECTERN)) return;
         var box = new net.minecraft.world.phys.AABB(pos.getX() - 128.0, player.level().getMinY() - 64.0, pos.getZ() - 128.0,
                 pos.getX() + 128.0, player.level().getMaxY() + 64.0, pos.getZ() + 128.0);
-        area(player, state, box, actor -> {
+        var exclusion = spec.from() == null ? null : OrgFinderBounds.ofEntities(player.level(), spec.from(), spec.to());
+        boolean checkExclusion = exclusion != null && !exclusion.empty();
+        area(player, state, checkExclusion ? box.minmax(exclusion.box()) : box, checkExclusion, actor -> {
             if (!actor.level().getBlockState(pos).is(net.minecraft.world.level.block.Blocks.LECTERN) || !actor.isWithinBlockInteractionRange(pos, 0))
                 return;
             var expected = new net.minecraft.core.GlobalPos(actor.level().dimension(), pos);
@@ -890,10 +923,28 @@ public final class OrgFakePlayerActions {
             if (villagers.isEmpty()) return;
             var villager = villagers.getFirst();
             actor.lookAt(EntityAnchorArgument.Anchor.EYES, villager.getEyePosition());
-            for (var offer : villager.getOffers()) {
-                var stored = offer.getResult().get(DataComponents.STORED_ENCHANTMENTS);
-                int level = stored == null ? 0 : stored.getLevel(state.action.enchantment);
-                if (level < spec.minLevel || offer.getBaseCostA().getCount() > spec.maxPrice) continue;
+            var matches = OrgLibrarianSearch.matches(villager, spec, state.action.enchantment);
+            if (checkExclusion && (!matches.isEmpty() || state.checksUntilMissingReport <= 1)) {
+                var vendors = actor.level().getEntitiesOfClass(net.minecraft.world.entity.npc.villager.Villager.class, exclusion.box(),
+                        other -> other != villager && TickThread.isTickThreadFor(other));
+                var existing = new java.util.HashSet<Holder<Enchantment>>();
+                for (var vendor : vendors) {
+                    for (var match : OrgLibrarianSearch.matches(vendor, spec, null)) existing.add(match.enchantment());
+                }
+                if (--state.checksUntilMissingReport <= 0) {
+                    state.checksUntilMissingReport = 60;
+                    boolean allCovered = actor.level().registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT)
+                            .listElements().filter(holder -> holder.is(net.minecraft.tags.EnchantmentTags.TRADEABLE)).allMatch(existing::contains);
+                    if (allCovered && !state.announcedNoMissing) {
+                        announce(actor, OrgFinderText.localized("carpet-org-addition.command.playerAction.librarian.reason.no_missing"));
+                    }
+                    state.announcedNoMissing = allCovered;
+                }
+                if (matches.stream().anyMatch(match -> existing.contains(match.enchantment()))) matches = List.of();
+            } else if (checkExclusion) {
+                state.checksUntilMissingReport--;
+            }
+            if (!matches.isEmpty()) {
                 // Remove name tags/leads/spawn eggs before the normal merchant interaction.
                 if (actor.getMainHandItem().is(Items.NAME_TAG) || actor.getMainHandItem().is(Items.LEAD) || actor.getMainHandItem().is(Items.VILLAGER_SPAWN_EGG))
                     for (int i = 0; i < actor.getInventory().getNonEquipmentItems().size(); i++) {
@@ -903,7 +954,7 @@ public final class OrgFakePlayerActions {
                             break;
                         }
                     }
-                librarianLock(actor, state, villager, offer, level);
+                librarianLock(actor, state, villager, matches);
                 return;
             }
             if (villager.getVillagerXp() == 0) state.digging = true;
@@ -915,7 +966,7 @@ public final class OrgFakePlayerActions {
     }
 
     private static void librarianLock(CarpetFakePlayer actor, State state, net.minecraft.world.entity.npc.villager.Villager villager,
-                                      net.minecraft.world.item.trading.MerchantOffer offer, int level) {
+                                      List<OrgLibrarianSearch.Match> matches) {
         var opened = OrgMenuNativeEffects.run(actor, () -> {
             TickThread.ensureTickThread(villager, "Librarian merchant interaction requires the original shared region");
             villager.mobInteract(actor, InteractionHand.MAIN_HAND);
@@ -929,8 +980,16 @@ public final class OrgFakePlayerActions {
                     return null;
                 }), ignored -> OrgMenuNativeEffects.run(actor, () -> {
                     STATES.remove(actor, state);
-                    announce(actor, Component.literal("Librarian found: level " + level + ", price " + offer.getBaseCostA().getCount() + ", refreshes " + state.refreshCount
-                            + ", elapsed " + (System.nanoTime() - state.started) / 1_000_000_000L + "s, " + (success ? "trade locked" : "trade unlocked")));
+                    var report = Component.empty();
+                    for (var match : matches) {
+                        if (!report.getSiblings().isEmpty()) report.append(Component.literal(", "));
+                        report.append(match.enchantment().value().description())
+                                .append(Component.literal(" " + match.level() + " (" + match.price() + " emeralds)"));
+                    }
+                    report.append(Component.literal(" | " + state.refreshCount + " refreshes | "
+                            + OrgLibrarianSearch.elapsedSeconds(state.started) + "s | "
+                            + (success ? "trade locked" : "trade unlocked")));
+                    announce(actor, report);
                     return null;
                 })));
         carpet.script.external.ScarpetNativeWork.record(closed);

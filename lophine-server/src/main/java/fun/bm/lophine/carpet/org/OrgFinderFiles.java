@@ -45,18 +45,24 @@ public final class OrgFinderFiles {
         var player = context.getSource().getPlayerOrException();
         try {
             var predicate = experience ? null : OrgFinderCommands.itemPredicate(context);
-            var handle = OrgFinderService.startExternal(player);
-            var query = new Query(context.getSource(), player, handle, experience, predicate, experience ? "" : OrgFinderText.argument(context, "itemStack"));
-            var completion = CarpetAsyncCommandResults.defer(context.getSource());
-            query.actual.whenComplete((ignored, failure) -> completion.complete(failure == null, failure == null ? 1 : 0));
-            try {
-                query.start();
-            } catch (Throwable failure) {
-                query.finish(failure);
-            }
+            String input = experience ? "" : OrgFinderText.argument(context, "itemStack");
+            var label = experience ? Component.empty() : OrgFinderText.itemLabel(input, predicate);
+            start(context.getSource(), player, experience, predicate, label, input);
             return 1;
         } catch (IllegalArgumentException | IllegalStateException failure) {
             throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(OrgFinderService.commandFailure(failure)).create();
+        }
+    }
+
+    static void start(CommandSourceStack source, ServerPlayer player, boolean experience, Predicate<ItemStack> predicate, Component label, String input) {
+        var handle = OrgFinderService.startExternal(player);
+        var query = new Query(source, player, handle, experience, predicate, label, input);
+        var completion = CarpetAsyncCommandResults.defer(source);
+        query.actual.whenComplete((ignored, failure) -> completion.complete(failure == null, failure == null ? 1 : 0));
+        try {
+            query.start();
+        } catch (Throwable failure) {
+            query.finish(failure);
         }
     }
 
@@ -86,7 +92,7 @@ public final class OrgFinderFiles {
         BigInteger totalExperience = BigInteger.ZERO;
         boolean terminal, nested, progressShown;
 
-        Query(CommandSourceStack source, ServerPlayer player, OrgFinderService.External handle, boolean experience, Predicate<ItemStack> predicate, String itemInput) {
+        Query(CommandSourceStack source, ServerPlayer player, OrgFinderService.External handle, boolean experience, Predicate<ItemStack> predicate, Component label, String itemInput) {
             this.source = source;
             this.player = player;
             this.server = source.getServer();
@@ -94,7 +100,7 @@ public final class OrgFinderFiles {
             this.experience = experience;
             this.predicate = predicate;
             this.itemInput = itemInput;
-            this.label = experience ? Component.empty() : OrgFinderText.itemLabel(itemInput, predicate);
+            this.label = label.copy();
             this.reader = OrgFinderPlayerData.reader(server, handle::cancelled);
             output = carpet.script.external.ScarpetRuntime.captureNativeFunction(body -> OrgFinderService.output(player, body));
             nextOwned = carpet.script.external.ScarpetRuntime.captureNativeConsumer(owner -> {

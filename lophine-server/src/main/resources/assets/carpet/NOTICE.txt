@@ -20,4 +20,8 @@ The zh_tw translations for Carpet TIS Addition (tis/zh_tw.yml), Carpet Org Addit
 (org/zh_tw.json) and Carpet AMS Addition (ams/zh_tw.yml) are not upstream files.
 Lophine translated them from the pinned upstream en_us and zh_cn files listed above.
 
+Later updates to these bundles also draw from Fabric Carpet f22bae3f,
+Carpet AMS Addition 66b8c3b0, Carpet Org Addition 69264014,
+and Carpet TIS Addition e357d753 (v1.84.0).
+
 See the adjacent project LICENSE files for the original terms and attribution.

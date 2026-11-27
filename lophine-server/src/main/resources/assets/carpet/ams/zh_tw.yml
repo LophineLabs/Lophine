@@ -1,4 +1,8 @@
 carpetamsaddition:
+  amsp:
+    incompatible_protocol: '客戶端使用的 AMSP 通道不受支援。伺服器支援 %s 和 %s。'
+    incompatible_protocol_hint: '開啟 incompatibleNetworkProtocolWarningDisabled 可關閉此警告。'
+
   carpet:
     totalRules:
       version: "版本"
@@ -9,6 +13,8 @@ carpetamsaddition:
       highlightCoordButtonHoverText: "使用 Fuzz 模組標示路徑點，使用 /coordCompass clear 取消標示"
 
   rule:
+    realPlayerControlDisabled:
+      blocked: '無法使用 /player 控制真人玩家'
     amsUpdateSuppressionCrashFix:
       msg: "更新抑制位置 @ %s -> [ %s ] | 原因：%s"
       copy: "複製座標到剪貼簿"
@@ -23,11 +29,66 @@ carpetamsaddition:
       location: "死亡位置"
       copy: "複製座標到剪貼簿"
     phantomSpawnAlert:
-      msg: "§b<phantomSpawnAlert> §r§e%s §r§d召喚了夜魅 §r§e@ §r§a[ %s ]"
+      msg: '%s 召喚了夜魅 %s'
     experimentalMinecartSpeed:
       vanilla_command_disabled: "<Carpet AMS Addition> 此遊戲規則已由 Carpet 規則 minecartMaxSpeed 接管"
 
   command:
+    amsloc:
+      title: '地標'
+      help_list: '/amsloc list [page] - 列出地標'
+      help_dimension: '/amsloc list dimension <dimension> [page] - 依維度篩選'
+      help_info: '/amsloc info <id> - 顯示地標詳細資料'
+      help_config: '/amsloc config - 顯示辨識設定'
+      help_marker: '/amsloc config marker <text> - 設定第一行標記'
+      help_type: '/amsloc config sign <type> - 設定告示牌類型'
+      help_reset: '/amsloc config reset - 恢復預設設定'
+      help_rescan: '/amsloc rescan - 重新掃描已載入的區塊'
+      help_sign: '在正面第一行寫入標記。第 2 到 4 行各自去除前後空白後，直接接成地標名稱。編輯或移除告示牌會更新地標。'
+      recognition: '標記：%s ｜告示牌類型：%s'
+      list: '地標 · 第 %s/%s 頁 · 共 %s 個地標'
+      empty: '沒有地標。尚未載入的區塊會在載入後重新掃描。'
+      page_invalid: '頁碼超出範圍，共有 %s 頁'
+      missing: '這個地標不存在'
+      details: '[詳細資料]'
+      details_hover: '點擊檢視 %s 的維度和座標'
+      previous_hover: '點擊檢視上一頁（第 %s 頁）'
+      next_hover: '點擊檢視下一頁（第 %s 頁）'
+      previous: '[上一頁]'
+      next: '[下一頁]'
+      overworld: '[主世界]'
+      nether: '[地獄]'
+      end: '[終界]'
+      invalid_sign: '告示牌類型無效，請選擇目前版本支援的類型'
+      invalid_marker: '標記不能留空或包含換行'
+      saved: '已儲存辨識設定並重新掃描已載入區塊。其他地標會在區塊載入時重新發現。'
+      save_failed: '儲存失敗，設定未變更。請檢查伺服器日誌。'
+      rescan: '已檢查 %s 個載入中的區塊'
+    blockChunkloader:
+      saved: "已儲存 %s 載入器設定"
+      invalid: "操作失敗，設定未變更：%s"
+      missing_group: "找不到條件群組：%s"
+      denied: "對應規則已停用，或你沒有設定此載入器的權限"
+      show: "%s 載入器：啟用=%s，時長=%s 刻，範圍=%s 區塊"
+      group: "條件群組 %s："
+      group_enabled: "已啟用"
+      group_disabled: "已停用"
+      group_mode: "，模式="
+      group_details: "，%s 個條件"
+      condition: "#%s 偏移 (dx,dy,dz) = (%s,%s,%s) "
+      test_group: "條件群組 %s："
+      test_condition: "條件 #%s："
+      test_result: "組合條件符合=%s"
+      unloaded: "測試位置的區塊尚未載入，無法檢查條件"
+      all: "全部符合"
+      any: "任一符合"
+      is: "是"
+      not: "不是"
+      match: "符合"
+      fail: "不符合"
+      unknown: "未知"
+      help: "用法請參考官方網站："
+      help_hover: "點擊開啟"
     commandHelper:
       refresh_cmd_tree: "<Carpet AMS Addition> 已重新整理指令樹"
     playerChunkLoading:

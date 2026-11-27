@@ -5,6 +5,7 @@ import fun.bm.lophine.carpet.config.modules.GeneralCompatConfig;
 import fun.bm.lophine.utils.FileResolver;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerPlayer;
@@ -90,7 +91,11 @@ public final class AmsTranslations {
                 if (args[i] instanceof Component component) args[i] = translateText(component, language);
             result = Component.translatableWithFallback(contents.getKey(), contents.getFallback(), args);
         } else result = original.plainCopy();
-        result.setStyle(original.getStyle());
+        var style = original.getStyle();
+        if (style.getHoverEvent() instanceof HoverEvent.ShowText hoverText) {
+            style = style.withHoverEvent(new HoverEvent.ShowText(translateText(hoverText.value(), language)));
+        }
+        result.setStyle(style);
         for (Component sibling : original.getSiblings()) result.append(translateText(sibling, language));
         return result;
     }

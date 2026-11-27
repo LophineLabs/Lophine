@@ -610,7 +610,7 @@ index a3a14f2790b218f379fe54668563217aa94856c7..b59ccad6ecfd6ffd80e289a17f56b4fa
          if (thrownFromHand) {
              ItemStack droppedItemStack = entity != null ? entity.getItem() : ItemStack.EMPTY;
 diff --git a/net/minecraft/server/level/ServerPlayerGameMode.java b/net/minecraft/server/level/ServerPlayerGameMode.java
-index 6e7f1b8cda82d6a7b80961f1d0e8e85f21607505..f2871f400d6efef33a05a4028eca317ff73fcf05 100644
+index 387fef284c596a8df84693566744e39d2966d694..d0283331052d9cc619cc16e251f551e15fb76de3 100644
 --- a/net/minecraft/server/level/ServerPlayerGameMode.java
 +++ b/net/minecraft/server/level/ServerPlayerGameMode.java
 @@ -132,6 +132,10 @@ public class ServerPlayerGameMode {
@@ -643,7 +643,7 @@ index 6e7f1b8cda82d6a7b80961f1d0e8e85f21607505..f2871f400d6efef33a05a4028eca317f
          // Paper start - Don't allow digging into unloaded chunks
          if (!Objects.equals(this.destroyPos, pos) && !BlockPos.ZERO.equals(this.destroyPos)) { // Paper
 -            ServerPlayerGameMode.LOGGER.debug("Mismatch in destroy block pos: {} {}", this.destroyPos, pos); // CraftBukkit - SPIGOT-5457 sent by client when interact event cancelled
-+            if (!fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.suppressionMismatchInDestroyBlockPosWarn) {
++            if (!fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.suppressDestroyBlockPosDiagnostic()) {
 +                ServerPlayerGameMode.LOGGER.debug("Mismatch in destroy block pos: {} {}", this.destroyPos, pos); // CraftBukkit - SPIGOT-5457 sent by client when interact event cancelled
 +            }
              BlockState destroyState = this.level.getBlockStateIfLoaded(this.destroyPos); // Don't load unloaded chunks for stale records here
@@ -1423,7 +1423,7 @@ index 2ea8a969d96f38f0021cc2c04df9950373f113b5..970f15f746a156714edcb007a1a4a684
      public void setChanged() {
          this.timesChanged++;
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index 338a7cf65bbc19648b655e9d20b07beb11a2cebc..d5991c9ed44a4f1b15e4a4b9208c14d363d505f3 100644
+index 09cb1fd42c3aed31b946adc5cb5a4c665df01644..3516575b8bf87b7149860082845834d2bebaf50a 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -572,6 +572,9 @@ public abstract class Player extends Avatar implements ContainerUser {
@@ -1441,10 +1441,10 @@ index 338a7cf65bbc19648b655e9d20b07beb11a2cebc..d5991c9ed44a4f1b15e4a4b9208c14d3
  
      public float getDestroySpeed(final BlockState state) {
 +        if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.applyToolEffectsImmediately) this.detectEquipmentUpdates();
+         if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.kirinArm) return Float.MAX_VALUE;
          float speed = this.inventory.getSelectedItem().getDestroySpeed(state);
          if (speed > 1.0F) {
-             speed += (float)this.getAttributeValue(Attributes.MINING_EFFICIENCY);
-@@ -1028,6 +1032,59 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1029,6 +1033,59 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
      public InteractionResult interactOn(final Entity entity, final InteractionHand hand, final Vec3 location) {
@@ -1504,7 +1504,7 @@ index 338a7cf65bbc19648b655e9d20b07beb11a2cebc..d5991c9ed44a4f1b15e4a4b9208c14d3
          if (this.isSpectator()) {
              if (entity instanceof MenuProvider menuProvider) {
                  this.openMenu(menuProvider);
-@@ -1160,6 +1217,19 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1161,6 +1218,19 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
      public void attack(final Entity entity) {
@@ -1524,7 +1524,7 @@ index 338a7cf65bbc19648b655e9d20b07beb11a2cebc..d5991c9ed44a4f1b15e4a4b9208c14d3
          // Paper start - PlayerAttackEntityEvent
          boolean willAttack = !this.cannotAttack(entity); // Vanilla logic
          io.papermc.paper.event.player.PrePlayerAttackEntityEvent playerAttackEntityEvent = new io.papermc.paper.event.player.PrePlayerAttackEntityEvent(
-@@ -2302,6 +2372,13 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -2303,6 +2373,13 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
      public boolean canEat(final boolean canAlwaysEat) {
@@ -1538,7 +1538,7 @@ index 338a7cf65bbc19648b655e9d20b07beb11a2cebc..d5991c9ed44a4f1b15e4a4b9208c14d3
          return this.abilities.invulnerable || canAlwaysEat || this.foodData.needsFood();
      }
  
-@@ -2755,10 +2832,17 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -2756,10 +2833,17 @@ public abstract class Player extends Avatar implements ContainerUser {
      }
  
      public double blockInteractionRange() {
@@ -1701,7 +1701,7 @@ index 98dbb4e4cb5e234ddc24449071806e805b50c5bc..ad4e20fa61f65bd4fe3ce032dad8840c
              stack.shrink(1);
              this.inputSlots.setItem(slot, stack);
 diff --git a/net/minecraft/world/item/BlockItem.java b/net/minecraft/world/item/BlockItem.java
-index 40851aa4a9c7df06f28f72013264442ff9568353..4d5df78673025ec58601ef08d02f08add25270f8 100644
+index 40851aa4a9c7df06f28f72013264442ff9568353..a85dee17bae05a23e6b672d7b03e03274ae29317 100644
 --- a/net/minecraft/world/item/BlockItem.java
 +++ b/net/minecraft/world/item/BlockItem.java
 @@ -237,7 +237,8 @@ public class BlockItem extends Item {
@@ -1709,7 +1709,7 @@ index 40851aa4a9c7df06f28f72013264442ff9568353..4d5df78673025ec58601ef08d02f08ad
                  }
  
 -                if (!type.onlyOpCanSetNbt() || player != null && (player.canUseGameMasterBlocks() || (player.getAbilities().instabuild && player.getBukkitEntity().hasPermission("minecraft.nbt.place")))) { // Spigot - add permission
-+                if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.canMineSpawner && blockEntity instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity
++                if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.canMineSpawner && blockEntity instanceof net.minecraft.world.level.Spawner
 +                    || !type.onlyOpCanSetNbt() || player != null && (player.canUseGameMasterBlocks() || (player.getAbilities().instabuild && player.getBukkitEntity().hasPermission("minecraft.nbt.place")))) { // Spigot - add permission
                      return customData.loadInto(blockEntity, level.registryAccess());
                  }
@@ -2358,20 +2358,25 @@ index b9127f290f2a75380e79f06098cf85ecf2b00b1e..2c52845352be6e9e1b0f63cea0cbabb7
                          }
                          // CraftBukkit end
 diff --git a/net/minecraft/world/level/block/Block.java b/net/minecraft/world/level/block/Block.java
-index be7b57a638bbc53a1cd7bc49861aa807b055243e..9750c54e6c7d993b6e6d25d25ca0d3f28e02d4db 100644
+index be7b57a638bbc53a1cd7bc49861aa807b055243e..21d997705c463faa62d5cdb06b0d5ab2f19088a0 100644
 --- a/net/minecraft/world/level/block/Block.java
 +++ b/net/minecraft/world/level/block/Block.java
-@@ -621,6 +621,18 @@ public class Block extends BlockBehaviour implements ItemLike {
+@@ -621,6 +621,23 @@ public class Block extends BlockBehaviour implements ItemLike {
  
      public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
          if (!level.isClientSide() && !player.isCreative()) {
-+            if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.canMineSpawner && this instanceof SpawnerBlock
++            if (fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.canMineSpawner
++                && (this instanceof SpawnerBlock || this instanceof TrialSpawnerBlock)
 +                && fun.bm.lophine.carpet.config.modules.GeneralCompatConfig.hasSilkTouch(player.getMainHandItem())
-+                && level.getBlockEntity(pos) instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity spawner) {
-+                ItemStack item = new ItemStack(net.minecraft.world.item.Items.SPAWNER);
++                && level.getBlockEntity(pos) instanceof BlockEntity spawnerData && spawnerData instanceof net.minecraft.world.level.Spawner) {
++                ItemStack item = new ItemStack(this.asItem());
 +                var output = net.minecraft.world.level.storage.TagValueOutput.createWithContext(net.minecraft.util.ProblemReporter.DISCARDING, level.registryAccess());
-+                spawner.getSpawner().save(output);
-+                net.minecraft.world.item.BlockItem.setBlockEntityData(item, spawner.getType(), output);
++                spawnerData.saveCustomOnly(output);
++                net.minecraft.world.item.BlockItem.setBlockEntityData(item, spawnerData.getType(), output);
++                item.applyComponents(spawnerData.collectComponents());
++                if (this instanceof TrialSpawnerBlock) {
++                    item.set(net.minecraft.core.component.DataComponents.BLOCK_STATE, net.minecraft.world.item.component.BlockItemStateProperties.EMPTY.with(TrialSpawnerBlock.OMINOUS, state));
++                }
 +                net.minecraft.world.entity.item.ItemEntity dropped = new net.minecraft.world.entity.item.ItemEntity(level,
 +                    pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, item);
 +                dropped.setDefaultPickUpDelay();
@@ -3033,7 +3038,7 @@ index b410af1f886d6b744cf05c168524cf35f689cfd7..8b7f404eaa44dadacad745de092eb8bf
                              // Paper start - Remove the Block Entity if it's invalid
                          } else {
 diff --git a/net/minecraft/world/level/levelgen/PhantomSpawner.java b/net/minecraft/world/level/levelgen/PhantomSpawner.java
-index cca1e16cb178fac4973983a2bf848b816d310eb9..7ebe57a339d25795ccefe8ed9f40beee8d4fb742 100644
+index 977b560e62abc1a990e941ac5579d6d761023e79..f46f2f8bd5f74e1d6674a0b8b0324a21906a4bd5 100644
 --- a/net/minecraft/world/level/levelgen/PhantomSpawner.java
 +++ b/net/minecraft/world/level/levelgen/PhantomSpawner.java
 @@ -59,6 +59,13 @@ public class PhantomSpawner implements CustomSpawner {

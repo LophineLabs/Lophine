@@ -43,6 +43,7 @@ public class CarpetLoggerProtocol implements LeavesProtocol {
         fun.bm.lophine.carpet.tis.TisSamplingLoggers.registerLoggers();
         fun.bm.lophine.carpet.tis.TisMovementLogger.registerLogger();
         fun.bm.lophine.carpet.tis.TisLifetimeTracker.registerLogger();
+        fun.bm.lophine.carpet.tis.TisEntityLifecycleLoggers.registerLoggers();
         fun.bm.lophine.carpet.tis.TisMicroTiming.registerLogger();
         fun.bm.lophine.carpet.CarpetPathfindingLogger.registerLogger();
         fun.bm.lophine.carpet.org.OrgHiddenPathProtocol.registerLogger();

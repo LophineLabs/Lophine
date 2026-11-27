@@ -5,6 +5,7 @@ package fun.bm.lophine.carpet.org;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -27,6 +28,9 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -133,6 +137,52 @@ public final class OrgPlayerManagerCommands {
         }).thenCompose(names -> SharedSuggestionProvider.suggest(names.stream().map(StringArgumentType::escapeIfRequired), builder));
     }
 
+    private static SuggestionProvider<CommandSourceStack> groups(String operation) {
+        return (context, builder) -> CompletableFuture.supplyAsync(() -> {
+            var store = manager(context).store;
+            var groups = new TreeSet<String>();
+            try {
+                if ("remove".equals(operation)) {
+                    addGroups(store.load(name(context)), groups);
+                } else {
+                    for (String name : store.names()) {
+                        addGroups(store.load(name), groups);
+                    }
+                    if ("add".equals(operation)) {
+                        var existing = new TreeSet<String>();
+                        addGroups(store.load(name(context)), existing);
+                        groups.removeAll(existing);
+                    }
+                }
+            } catch (IOException failure) {
+                return List.<String>of();
+            }
+            return List.copyOf(groups);
+        }).thenCompose(groups -> {
+            String input = builder.getRemaining();
+            String search = builder.getRemainingLowerCase();
+            for (String group : groups) {
+                String suggestion = StringArgumentType.escapeIfRequired(group);
+                if (suggestion.toLowerCase(Locale.ROOT).contains(search)) builder.suggest(suggestion);
+            }
+            if ("add".equals(operation)) {
+                if (input.startsWith("\"") && (input.length() == 1 || !input.endsWith("\""))) {
+                    builder.suggest(input + '"');
+                } else if (!input.startsWith("\"")
+                        && input.chars().anyMatch(character -> !StringReader.isAllowedInUnquotedString((char) character))) {
+                    builder.suggest(StringArgumentType.escapeIfRequired(input));
+                }
+            }
+            return builder.buildFuture();
+        });
+    }
+
+    private static void addGroups(JsonObject profile, Set<String> groups) {
+        if (profile.has("group")) {
+            for (var group : profile.getAsJsonArray("group")) groups.add(group.getAsString());
+        }
+    }
+
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext access) {
         var root = Commands.literal("playerManager").requires(source -> OrgUtilityCommands.permitted(source, GeneralCompatConfig.commandPlayerManager));
         root.then(Commands.literal("save").then(Commands.argument("player", EntityArgument.player()).executes(context -> save(context, "", false)).then(Commands.argument("comment", StringArgumentType.string()).executes(context -> save(context, StringArgumentType.getString(context, "comment"), false)))));
@@ -150,7 +200,7 @@ public final class OrgPlayerManagerCommands {
         root.then(Commands.literal("autologin").requires(source -> pass(source, "playerManager.autologin")).then(Commands.argument("name", StringArgumentType.string()).suggests(profiles()).then(Commands.argument("autologin", BoolArgumentType.bool()).executes(OrgPlayerManagerCommands::autologin))));
         var group = Commands.literal("group");
         for (String operation : List.of("add", "remove"))
-            group.then(Commands.literal(operation).then(Commands.argument("name", StringArgumentType.string()).suggests(profiles()).then(Commands.argument("group", StringArgumentType.string()).executes(context -> io(context, manager -> manager.store.modify(name(context), profile -> {
+            group.then(Commands.literal(operation).then(Commands.argument("name", StringArgumentType.string()).suggests(profiles()).then(Commands.argument("group", StringArgumentType.string()).suggests(groups(operation)).executes(context -> io(context, manager -> manager.store.modify(name(context), profile -> {
                 String selected = StringArgumentType.getString(context, "group");
                 var previous = profile.has("group") ? profile.getAsJsonArray("group") : new JsonArray();
                 JsonArray result = new JsonArray();
@@ -169,12 +219,12 @@ public final class OrgPlayerManagerCommands {
                 return profile;
             }))))));
         var listGroup = Commands.literal("list");
-        listGroup.then(Commands.literal("group").then(Commands.argument("group", StringArgumentType.string()).executes(context -> list(context, StringArgumentType.getString(context, "group"), null, false))));
+        listGroup.then(Commands.literal("group").then(Commands.argument("group", StringArgumentType.string()).suggests(groups("list")).executes(context -> list(context, StringArgumentType.getString(context, "group"), null, false))));
         listGroup.then(Commands.literal("ungrouped").executes(context -> list(context, null, null, true)));
         listGroup.then(Commands.literal("all").executes(context -> list(context, null, null, false)));
         group.then(listGroup);
         for (String operation : List.of("spawn", "kill"))
-            group.then(Commands.literal(operation).then(Commands.argument("group", StringArgumentType.string()).executes(context -> group(context, operation))));
+            group.then(Commands.literal(operation).then(Commands.argument("group", StringArgumentType.string()).suggests(groups(operation)).executes(context -> group(context, operation))));
         root.then(group);
         root.then(Commands.literal("list").executes(context -> list(context, null, null, false, true)).then(Commands.argument("filter", StringArgumentType.string()).executes(context -> list(context, null, StringArgumentType.getString(context, "filter"), false))));
         root.then(Commands.literal("remove").then(Commands.argument("name", StringArgumentType.string()).suggests(profiles()).executes(context -> io(context, manager -> {

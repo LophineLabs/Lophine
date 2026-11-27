@@ -1,4 +1,8 @@
 carpetamsaddition:
+  amsp:
+    incompatible_protocol: 'Your AMSP client uses an unsupported channel. This server supports %s and %s.'
+    incompatible_protocol_hint: 'Enable incompatibleNetworkProtocolWarningDisabled to hide this warning.'
+
   carpet:
     totalRules:
       version: 'version'
@@ -9,6 +13,8 @@ carpetamsaddition:
       highlightCoordButtonHoverText: 'Use fuzz mod to highlight waypoints, use /coordCompass clear to remove the highlight'
 
   rule:
+    realPlayerControlDisabled:
+      blocked: 'Real players cannot be controlled with /player'
     amsUpdateSuppressionCrashFix:
       msg: 'Update suppression location @ %s -> [ %s ] | reason: %s'
       copy: 'copy coord to clipboard'
@@ -23,11 +29,66 @@ carpetamsaddition:
       location: 'death location'
       copy: 'copy coord to clipboard'
     phantomSpawnAlert:
-      msg: '§b<phantomSpawnAlert> §r§e%s §r§dsummoned phantoms §r§e@ §r§a[ %s ]'
+      msg: '%s summoned phantoms %s'
     experimentalMinecartSpeed:
       vanilla_command_disabled: '<Carpet AMS Addition> The rules of the game have been taken over by the minecartMaxSpeed carpet rules'
 
   command:
+    amsloc:
+      title: 'Location tags'
+      help_list: '/amsloc list [page] - List locations'
+      help_dimension: '/amsloc list dimension <dimension> [page] - Filter by dimension'
+      help_info: '/amsloc info <id> - Show location details'
+      help_config: '/amsloc config - Show recognition settings'
+      help_marker: '/amsloc config marker <text> - Set first-line marker'
+      help_type: '/amsloc config sign <type> - Set sign type'
+      help_reset: '/amsloc config reset - Restore default settings'
+      help_rescan: '/amsloc rescan - Rescan loaded chunks in batches'
+      help_sign: 'Put the marker on the first front-side line. Lines 2–4 are trimmed individually and joined without separators to form a nonblank name. Editing or removing a sign updates the directory'
+      recognition: 'Marker: %s | sign type: %s'
+      list: 'Location tags · Page %s/%s · %s locations'
+      empty: 'No location tags found. Existing signs in unloaded chunks will be discovered when their chunks load.'
+      page_invalid: 'Page out of range; there are %s pages'
+      missing: 'This location tag does not exist'
+      details: '[Details]'
+      details_hover: 'Click to view the dimension and coordinates of %s'
+      previous_hover: 'Click to view the previous page (page %s)'
+      next_hover: 'Click to view the next page (page %s)'
+      previous: '[Previous]'
+      next: '[Next]'
+      overworld: '[Overworld]'
+      nether: '[Nether]'
+      end: '[End]'
+      invalid_sign: 'Invalid sign type, choose a type suggested for this Minecraft version'
+      invalid_marker: 'The marker must not be blank or contain a line break'
+      saved: 'Recognition settings saved. The directory has been cleared and loaded chunks queued for checking, other tags are rediscovered as chunks load'
+      save_failed: 'Save failed, settings unchanged. Check the server log'
+      rescan: 'Queued %s loaded chunks for checking'
+    blockChunkloader:
+      saved: "Saved configuration for the %s loader"
+      invalid: "Operation failed; configuration unchanged: %s"
+      missing_group: "Condition group not found: %s"
+      denied: "The corresponding rule is false or you lack permission to configure this loader"
+      show: "%s loader: enabled=%s, duration=%sgt, area=%s chunks"
+      group: "Condition group %s: "
+      group_enabled: "enabled"
+      group_disabled: "disabled"
+      group_mode: ", mode="
+      group_details: ", %s conditions"
+      condition: "#%s offset (dx,dy,dz) = (%s,%s,%s) "
+      test_group: "Condition group %s: "
+      test_condition: "Condition #%s: "
+      test_result: "Combined conditions match=%s"
+      unloaded: "The test position is in an unloaded chunk, conditions cannot be checked"
+      all: "all"
+      any: "any"
+      is: "is"
+      not: "is not"
+      match: "match"
+      fail: "no match"
+      unknown: "unknown"
+      help: "See the official website for usage instructions:"
+      help_hover: "Click to open"
     commandHelper:
       refresh_cmd_tree: '<Carpet AMS Addition> Command tree has been refreshed'
 

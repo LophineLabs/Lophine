@@ -115,6 +115,9 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "amsNetworkProtocol", section = "ams")
     public static volatile boolean amsNetworkProtocol = false;
 
+    @ConfigInfo(name = "blockHardnessSyncProtocol", section = "ams")
+    public static volatile boolean blockHardnessSyncProtocol = false;
+
     @ConfigInfo(name = "amsTranslationMode", section = "ams")
     public static volatile String amsTranslationMode = "client";
 
@@ -314,6 +317,9 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "commandRaid", section = "tis")
     public static volatile String commandRaid = "true";
 
+    @ConfigInfo(name = "tickSprintZeroMeansStop", section = "tis")
+    public static volatile boolean tickSprintZeroMeansStop = false;
+
     @ConfigInfo(name = "tickCommandCarpetfied", section = "tis")
     public static volatile boolean tickCommandCarpetfied = false;
 
@@ -425,6 +431,27 @@ public class GeneralCompatConfig {
     @ConfigInfo(name = "creativePlayersLoadChunks")
     public static volatile boolean creativePlayersLoadChunks = true;
 
+    @ConfigInfo(name = "incompatibleNetworkProtocolWarningDisabled", section = "ams")
+    public static volatile boolean incompatibleNetworkProtocolWarningDisabled = false;
+
+    @ConfigInfo(name = "commandLocationTag", section = "ams")
+    public static volatile String commandLocationTag = "false";
+
+    @ConfigInfo(name = "commandNoteblockChunkloader", section = "ams")
+    public static volatile String commandNoteblockChunkloader = "false";
+
+    @ConfigInfo(name = "commandPistonChunkloader", section = "ams")
+    public static volatile String commandPistonChunkloader = "false";
+
+    @ConfigInfo(name = "commandBellChunkloader", section = "ams")
+    public static volatile String commandBellChunkloader = "false";
+
+    @ConfigInfo(name = "destroyBlockPosWarningDisabled", section = "ams")
+    public static volatile boolean destroyBlockPosWarningDisabled = false;
+
+    @ConfigInfo(name = "realPlayerControlDisabled", section = "ams")
+    public static volatile boolean realPlayerControlDisabled = false;
+
     @ConfigInfo(name = "noteBlockChunkLoader", section = "ams")
     public static volatile String noteBlockChunkLoader = "false";
 
@@ -533,7 +560,7 @@ public class GeneralCompatConfig {
     public static volatile boolean dispensersFireDragonBreath = false;
 
     @ConfigInfo(name = "redstoneDustRandomUpdateOrder", section = "tis")
-    public static volatile boolean redstoneDustRandomUpdateOrder = false;
+    public static volatile String redstoneDustRandomUpdateOrder = "false";
 
     @ConfigInfo(name = "redstoneDustRepeaterComparatorIgnoreUpwardsStateUpdate", section = "tis")
     public static volatile boolean redstoneDustRepeaterComparatorIgnoreUpwardsStateUpdate = false;
@@ -921,6 +948,9 @@ public class GeneralCompatConfig {
 
     @ConfigInfo(name = "dispenserNoItemCost", section = "tis")
     public static volatile boolean dispenserNoItemCost = false;
+
+    @ConfigInfo(name = "dropperNoItemCost", section = "tis")
+    public static volatile boolean dropperNoItemCost = false;
 
     @ConfigInfo(name = "explosionNoEntityInfluence", section = "tis")
     public static volatile boolean explosionNoEntityInfluence = false;
@@ -1415,7 +1445,8 @@ public class GeneralCompatConfig {
     }
 
     public static double minecartPickupSpeedThreshold() {
-        return minecartTakePassengerMinVelocity == 0.1D ? 0.01D : Math.nextDown(minecartTakePassengerMinVelocity);
+        double minVelocity = Math.max(0.0D, minecartTakePassengerMinVelocity);
+        return minVelocity == 0.1D ? 0.01D : minVelocity * minVelocity;
     }
 
     private static final java.util.Random SPAWN_BABY_RANDOM = new java.util.Random();
@@ -1546,6 +1577,10 @@ public class GeneralCompatConfig {
 
     public static boolean mergedUpdateSuppressionCrashEnabled() {
         return !"false".equals(amsUpdateSuppressionCrashFix) || yeetUpdateSuppressionCrash;
+    }
+
+    public static boolean suppressDestroyBlockPosDiagnostic() {
+        return destroyBlockPosWarningDisabled || suppressionMismatchInDestroyBlockPosWarn;
     }
 
     public static boolean amsUpdateSuppressionSilent() {

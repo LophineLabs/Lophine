@@ -46,7 +46,11 @@ public class Context {
     }
 
     public void setVariable(String name, LazyValue lv) {
-        variables.put(name, lv);
+        if (lv == null) {
+            delVariable(name);
+        } else {
+            variables.put(name, lv);
+        }
     }
 
     public void delVariable(String variable) {

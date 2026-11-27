@@ -55,7 +55,7 @@ public final class TisUtilityCommands {
             switch (unit) {
                 case "s" -> Thread.sleep(duration * 1000L);
                 case "ms" -> Thread.sleep(duration);
-                case "us" -> Thread.sleep(duration / 1000L, duration % 1000);
+                case "us" -> Thread.sleep(java.time.Duration.of(duration, java.time.temporal.ChronoUnit.MICROS));
                 default -> throw new IllegalArgumentException(unit);
             }
         } catch (InterruptedException interrupted) {

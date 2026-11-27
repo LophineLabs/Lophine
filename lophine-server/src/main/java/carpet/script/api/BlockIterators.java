@@ -47,7 +47,7 @@ public class BlockIterators {
                 );
             }
             Vec3i upperRange = range;
-            if (lv.size() > rangeLocator.offset + 1) // +1 cause we still need the expression
+            if (lv.size() > rangeLocator.offset) // The expression was removed from lv.
             {
                 rangeLocator = Vector3Argument.findIn(lv, rangeLocator.offset);
                 if (rangeLocator.fromBlock) {
@@ -225,8 +225,8 @@ public class BlockIterators {
                 Vector3Argument diffLocator = Vector3Argument.findIn(lv, cposLocator.offset);
                 if (diffLocator.fromBlock) {
                     sminx = Mth.floor(abs(diffLocator.vec.x - cx));
-                    sminy = Mth.floor(abs(diffLocator.vec.y - cx));
-                    sminz = Mth.floor(abs(diffLocator.vec.z - cx));
+                    sminy = Mth.floor(abs(diffLocator.vec.y - cy));
+                    sminz = Mth.floor(abs(diffLocator.vec.z - cz));
                 } else {
                     sminx = Mth.floor(abs(diffLocator.vec.x));
                     sminy = Mth.floor(abs(diffLocator.vec.y));
@@ -236,8 +236,8 @@ public class BlockIterators {
                     Vector3Argument posDiff = Vector3Argument.findIn(lv, diffLocator.offset);
                     if (posDiff.fromBlock) {
                         smaxx = Mth.floor(abs(posDiff.vec.x - cx));
-                        smaxy = Mth.floor(abs(posDiff.vec.y - cx));
-                        smaxz = Mth.floor(abs(posDiff.vec.z - cx));
+                        smaxy = Mth.floor(abs(posDiff.vec.y - cy));
+                        smaxz = Mth.floor(abs(posDiff.vec.z - cz));
                     } else {
                         smaxx = Mth.floor(abs(posDiff.vec.x));
                         smaxy = Mth.floor(abs(posDiff.vec.y));

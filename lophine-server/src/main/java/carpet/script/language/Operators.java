@@ -239,11 +239,8 @@ public class Operators {
         expression.addMathematicalBinaryIntFunction("bitwise_arithmetic_shift_right", (num, amount) -> num >> amount);
         expression.addMathematicalBinaryIntFunction("bitwise_roll_left", (num, amount) -> Long.rotateLeft(num, (int) amount));
         expression.addMathematicalBinaryIntFunction("bitwise_roll_right", (num, amount) -> Long.rotateRight(num, (int) amount));
-        expression.addMathematicalUnaryIntFunction("bitwise_not", d -> {
-            long num = (long) d;
-            return ~num;
-        });
-        expression.addMathematicalUnaryIntFunction("bitwise_popcount", d -> (long) Long.bitCount((long) d));
+        expression.addUnaryFunction("bitwise_not", value -> new NumericValue(~bitwiseOperand(value)));
+        expression.addUnaryFunction("bitwise_popcount", value -> new NumericValue(Long.bitCount(bitwiseOperand(value))));
         expression.addMathematicalUnaryIntFunction("double_to_long_bits", Double::doubleToLongBits);
         expression.addUnaryFunction("long_to_double_bits", v ->
                 new NumericValue(Double.longBitsToDouble(NumericValue.asNumber(v).getLong())));
@@ -267,14 +264,24 @@ public class Operators {
             if (size < 2) {
                 return Value.TRUE;
             }
-            // need to order them so same obejects will be next to each other.
             lv.sort(Comparator.comparingInt(Value::hashCode));
-            Value prev = lv.get(0);
-            for (Value next : lv.subList(1, size)) {
-                if (prev.equals(next)) {
-                    return Value.FALSE;
+            Value previous = lv.get(0);
+            int previousHash = previous.hashCode();
+            int collisionStart = 0;
+            for (int i = 1; i < size; i++) {
+                Value next = lv.get(i);
+                // Adjacent Scarpet values may compare equal even when their hashes differ.
+                if (previous.equals(next)) return Value.FALSE;
+                int hash = next.hashCode();
+                if (hash == previousHash) {
+                    for (int j = collisionStart; j < i - 1; j++) {
+                        if (lv.get(j).equals(next)) return Value.FALSE;
+                    }
+                } else {
+                    collisionStart = i;
+                    previousHash = hash;
                 }
-                prev = next;
+                previous = next;
             }
             return Value.TRUE;
         });
@@ -405,10 +412,10 @@ public class Operators {
                     Value rval = ri.next();
                     String lname = lval.getVariable();
                     String rname = rval.getVariable();
-                    lval.reboundedTo(rname);
-                    rval.reboundedTo(lname);
-                    expression.setAnyVariable(c, lname, (cc, tt) -> rval);
-                    expression.setAnyVariable(c, rname, (cc, tt) -> lval);
+                    Value newLeft = rval.reboundedTo(lname);
+                    Value newRight = lval.reboundedTo(rname);
+                    expression.setAnyVariable(c, lname, (cc, tt) -> newLeft);
+                    expression.setAnyVariable(c, rname, (cc, tt) -> newRight);
                 }
                 return Value.TRUE;
             }
@@ -444,6 +451,10 @@ public class Operators {
             FunctionUnpackedArgumentsValue fuaval = new FunctionUnpackedArgumentsValue(alv.unpack());
             return (cc, tt) -> fuaval;
         });
+    }
 
+    private static long bitwiseOperand(Value value) {
+        NumericValue number = NumericValue.asNumber(value);
+        return number.isInteger() ? number.getLong() : (long) number.getDouble();
     }
 }

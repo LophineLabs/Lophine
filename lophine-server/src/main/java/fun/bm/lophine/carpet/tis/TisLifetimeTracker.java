@@ -99,11 +99,6 @@ public final class TisLifetimeTracker {
         });
     }
 
-    public static int activeTrackId() {
-        Session session = ACTIVE.get();
-        return session == null ? -1 : session.id;
-    }
-
     private static synchronized int start(CommandSourceStack source, boolean restart) {
         Session previous = ACTIVE.get();
         if (previous != null && !restart) {
@@ -522,6 +517,16 @@ public final class TisLifetimeTracker {
             deathDamage = source.getMsgId();
         }
 
+        public String beginDamage(DamageSource source) {
+            String previous = deathDamage;
+            damage(source);
+            return previous;
+        }
+
+        public void restoreDamage(String previous) {
+            deathDamage = previous;
+        }
+
         public void pendingSpawn(String reason, JsonObject data) {
             if (current()) {
                 pendingReason = reason;
@@ -587,7 +592,7 @@ public final class TisLifetimeTracker {
         }
 
         private void record(String type, String reason, JsonObject data, long lifetime, Vec3 eventPosition) {
-            if (!TisLifetimeRecorder.isRecording()) return;
+            if (!TisLifetimeRecorder.isRecording(session.id)) return;
             JsonObject record = new JsonObject();
             record.addProperty("serverTick", ((ServerLevel) entity.level()).getServer().getTickCount());
             record.addProperty("gameTime", CarpetServerClock.gameTime());
@@ -601,7 +606,7 @@ public final class TisLifetimeTracker {
             record.add("entityPosition", vector(entity.position()));
             record.addProperty("entityDimension", entity.level().dimension().identifier().toString());
             record.addProperty("entityLifetime", lifetime);
-            TisLifetimeRecorder.add(GSON.toJson(record));
+            TisLifetimeRecorder.add(session.id, GSON.toJson(record));
         }
     }
 

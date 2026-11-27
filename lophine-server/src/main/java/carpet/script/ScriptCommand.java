@@ -269,17 +269,16 @@ public class ScriptCommand {
                 then(argument("app", StringArgumentType.word()).
                         suggests((cc, bb) -> suggest(ss(cc).listAvailableModules(true), bb)).
                         executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, true, false, false, null, Expression.LoadOverride.DEFAULT))).
-                        //then(literal("canonical").executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, true, false, false, null, Expression.LoadOverride.CANONICAL)))).
-                        //then(literal("optimized").executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, true, false, false, null, Expression.LoadOverride.OPTIMIZED)))).
-                        //then(literal("functional").executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, true, false, false, null, Expression.LoadOverride.FUNCTIONAL)))).
-                        //then(literal("functional_optimized").executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, true, false, false, null, Expression.LoadOverride.FUNCTIONAL_OPTIMIZED)))).
+                        then(literal("canonical").executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, true, false, false, null, Expression.LoadOverride.CANONICAL)))).
+                        then(literal("optimized").executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, true, false, false, null, Expression.LoadOverride.OPTIMIZED)))).
+                        then(literal("functional").executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, true, false, false, null, Expression.LoadOverride.FUNCTIONAL)))).
+                        then(literal("functional_optimized").executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, true, false, false, null, Expression.LoadOverride.FUNCTIONAL_OPTIMIZED)))).
                                 then(literal("global").
-                                        executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, false, false, false, null, Expression.LoadOverride.DEFAULT)))
-                                //.
-                                //then(literal("canonical").executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, false, false, false, null, Expression.LoadOverride.CANONICAL)))).
-                                //then(literal("optimized").executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, false, false, false, null, Expression.LoadOverride.OPTIMIZED)))).
-                                //then(literal("functional").executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, false, false, false, null, Expression.LoadOverride.FUNCTIONAL)))).
-                                //then(literal("functional_optimized").executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, false, false, false, null, Expression.LoadOverride.FUNCTIONAL_OPTIMIZED))))
+                                        executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, false, false, false, null, Expression.LoadOverride.DEFAULT))).
+                                then(literal("canonical").executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, false, false, false, null, Expression.LoadOverride.CANONICAL)))).
+                                then(literal("optimized").executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, false, false, false, null, Expression.LoadOverride.OPTIMIZED)))).
+                                then(literal("functional").executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, false, false, false, null, Expression.LoadOverride.FUNCTIONAL)))).
+                                then(literal("functional_optimized").executes(carpet.script.external.ScarpetRuntime.command((cc) -> ss(cc).addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, false, false, false, null, Expression.LoadOverride.FUNCTIONAL_OPTIMIZED))))
                         )
                 );
         LiteralArgumentBuilder<CommandSourceStack> f = literal("unload").requires(Vanilla::ServerPlayer_canScriptACE).
@@ -361,13 +360,13 @@ public class ScriptCommand {
 
         dispatcher.register(literal("script").
                 requires(Vanilla::ServerPlayer_canScriptGeneral).
-                then(b).then(u).then(o).then(l).then(s).then(c).then(h).then(i).then(e).then(t).then(a).then(f).then(q).then(d).then(r));
+                then(b).then(u).then(o).then(l).then(s).then(c).then(h).then(i).then(e).then(t).then(a).then(f).then(q).then(d).then(r).then(x));
         dispatcher.register(literal("script").
                 requires(Vanilla::ServerPlayer_canScriptGeneral).
                 then(literal("in").
                         then(argument("app", StringArgumentType.word()).
                                 suggests((cc, bb) -> suggest(ss(cc).modules.keySet(), bb)).
-                                then(b).then(u).then(o).then(l).then(s).then(c).then(h).then(i).then(e).then(t))));
+                                then(b).then(u).then(o).then(l).then(s).then(c).then(h).then(i).then(e).then(t).then(x))));
     }
 
     private static CarpetScriptHost getHost(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -693,7 +692,7 @@ public class ScriptCommand {
                         BlockPos position = mbpos.immutable();
                         if (carpet.script.external.ScarpetRuntime.atBlock(world, position, () ->
                                 (replacement == null || replacement.test(new BlockInWorld(world, position, true)))
-                                        && block.place(world, position, 2 | Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS)))
+                                        && block.place(world, position, Block.UPDATE_CLIENTS | Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS)))
                             ++affected;
                     }
                 }

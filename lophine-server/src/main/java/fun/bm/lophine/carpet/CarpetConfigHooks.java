@@ -3,6 +3,7 @@ package fun.bm.lophine.carpet;
 import me.earthme.luminol.api.config.ConfigsInstanceHooks;
 import me.earthme.luminol.api.config.LuminolConfigsInstance;
 import me.earthme.luminol.api.config.annotation.ConfigInfo;
+import me.earthme.luminol.config.ConfigsInstance;
 import me.earthme.luminol.config.IllegalFormatConversionExceptionWithOrigin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,6 +47,21 @@ public final class CarpetConfigHooks implements ConfigsInstanceHooks {
 
     @Override
     public void aroundLoadModules(@NotNull LuminolConfigsInstance instance, @NotNull Runnable load) throws Exception {
+        if (instance instanceof ConfigsInstance configs) {
+            // Existing Lophine configs used one value for both types of blocks.
+            var file = configs.getFileInstance();
+            String dispenserPath = CarpetRuleRegistry.get("dispenserNoItemCost").path();
+            String dropperPath = CarpetRuleRegistry.get("dropperNoItemCost").path();
+            Object previous = file.get(dispenserPath);
+            if (!file.contains(dropperPath) && (previous instanceof Boolean || "true".equals(previous) || "false".equals(previous))) {
+                file.set(dropperPath, previous);
+            }
+            for (String name : List.of("naturalSpawningUse13Heightmap", "naturalSpawningUse13HeightmapExtra")) {
+                String corrected = CarpetRuleRegistry.get(name).path();
+                String legacy = corrected.replace(name, name.replace("natural", "natual"));
+                if (file.contains(legacy) && !file.contains(corrected)) file.set(corrected, file.get(legacy));
+            }
+        }
         try (var view = CarpetRuleRegistry.configurationView(instance::peekConfigValue)) {
             load.run();
         }

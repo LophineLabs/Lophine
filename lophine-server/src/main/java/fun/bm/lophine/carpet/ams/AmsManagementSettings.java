@@ -106,6 +106,8 @@ public final class AmsManagementSettings {
     public static synchronized void load(MinecraftServer server) {
         if (loaded == server) return;
         loaded = server;
+        AmsBlockLoaderConfig.load(server);
+        AmsLocationTags.load(server);
         UNREADABLE.clear();
         ANTI_FIRE.clear();
         MOVABLE.clear();
@@ -243,6 +245,8 @@ public final class AmsManagementSettings {
     }
 
     public static void flushAtShutdown() {
+        MinecraftServer server = loaded;
+        if (server != null) AmsLocationTags.flush(server);
         try {
             IO.submit(() -> {
             }).get(5, java.util.concurrent.TimeUnit.SECONDS);

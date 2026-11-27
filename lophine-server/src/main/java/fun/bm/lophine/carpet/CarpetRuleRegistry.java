@@ -143,7 +143,7 @@ public final class CarpetRuleRegistry {
                          "violentNetherPortalCreation",
                          "noteBlockChunkLoader", "pistonBlockChunkLoader", "fakePlayerKeepInventoryCondition",
                          "openPlayerInventory", "amsUpdateSuppressionCrashFix", "blueSkullController",
-                         "itemAntiExplosion", "channelingIgnoreConditions", "renewableCoral", "thickFungusGrowth",
+                         "itemAntiExplosion", "channelingIgnoreConditions", "renewableCoral", "thickFungusGrowth", "redstoneDustRandomUpdateOrder",
                          "chainStone",
                          "forceOpenContainer", "carpetCommandPermissionLevel", "microTimingDyeMarker",
                          "microTimingTarget", "microTimingTickDivision" -> lower;
@@ -170,6 +170,7 @@ public final class CarpetRuleRegistry {
         }
         Set<String> choices = switch (name) {
             case "renewableCoral" -> Set.of("false", "true", "expanded");
+            case "redstoneDustRandomUpdateOrder" -> Set.of("false", "true", "none", "shuffle", "random_pos");
             case "thickFungusGrowth" -> Set.of("false", "random", "all");
             case "chainStone" -> Set.of("false", "true", "stick_to_all");
             case "forceOpenContainer" -> Set.of("false", "any", "shulker_box");

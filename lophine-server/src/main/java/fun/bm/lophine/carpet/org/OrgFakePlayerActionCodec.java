@@ -63,17 +63,7 @@ public final class OrgFakePlayerActionCodec {
         }
         if (action.enchantment() != null)
             data.addProperty("enchantment", action.enchantment().unwrapKey().orElseThrow().identifier().toString());
-        if (action.librarian() != null) {
-            JsonObject pos = new JsonObject();
-            pos.addProperty("x", action.librarian().jobSite().getX());
-            pos.addProperty("y", action.librarian().jobSite().getY());
-            pos.addProperty("z", action.librarian().jobSite().getZ());
-            data.add("block_pos", pos);
-            data.addProperty("min_level", action.librarian().minLevel());
-            data.addProperty("max_price", action.librarian().maxPrice());
-            data.addProperty("start_time", 0);
-            data.addProperty("refresh_count", 0);
-        }
+        if (action.librarian() != null) writeLibrarian(data, action.librarian());
         JsonObject result = new JsonObject();
         result.add(key, data);
         return result;
@@ -114,14 +104,57 @@ public final class OrgFakePlayerActionCodec {
             default -> throw new IllegalArgumentException("Unknown or unregistered Org action " + kind);
         }
         Holder<Enchantment> enchantment = data.has("enchantment") ? access.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(net.minecraft.resources.ResourceKey.create(Registries.ENCHANTMENT, Identifier.parse(data.get("enchantment").getAsString()))) : null;
-        OrgFakePlayerActions.Librarian librarian = null;
-        if (kind.equals("librarian")) {
-            JsonObject pos = data.getAsJsonObject("block_pos");
-            librarian = new OrgFakePlayerActions.Librarian(new BlockPos(pos.get("x").getAsInt(), pos.get("y").getAsInt(), pos.get("z").getAsInt()), data.get("min_level").getAsInt(), data.get("max_price").getAsInt());
-        }
+        OrgFakePlayerActions.Librarian librarian = kind.equals("librarian") ? readLibrarian(data) : null;
         return new OrgFakePlayerActions.Action(kind, filters, data.has("index") ? data.get("index").getAsInt() : data.has("button") ? data.get("button").getAsInt() : 0,
                 data.has("name") ? data.get("name").getAsString() : "", enchantment, !data.has("dropOther") || data.get("dropOther").getAsBoolean(), data.has("moreContainer") && data.get("moreContainer").getAsBoolean(), data.has("void_trade") && data.get("void_trade").getAsBoolean(),
                 kind.equals("sorting") ? vector(data.getAsJsonArray("thisVec")) : Vec3.ZERO, kind.equals("sorting") ? vector(data.getAsJsonArray("otherVec")) : Vec3.ZERO, librarian);
+    }
+
+    static void writeLibrarian(JsonObject data, OrgFakePlayerActions.Librarian spec) {
+        data.addProperty("type", spec.mode());
+        data.add("lectern_pos", position(spec.jobSite()));
+        if (spec.priceLevel() == null) {
+            data.addProperty("min_level", spec.minLevel());
+            data.addProperty("max_price", spec.maxPrice());
+        } else {
+            data.addProperty("price", spec.priceLevel().id());
+            if (spec.from() != null) {
+                data.add("from", position(spec.from()));
+                data.add("to", position(spec.to()));
+            }
+        }
+        data.addProperty("start_time", spec.startTime());
+        data.addProperty("refresh_count", spec.refreshCount());
+    }
+
+    static OrgFakePlayerActions.Librarian readLibrarian(JsonObject data) {
+        BlockPos jobSite = position(data.getAsJsonObject(data.has("lectern_pos") ? "lectern_pos" : "block_pos"));
+        String mode = data.has("type") ? data.get("type").getAsString() : "specific";
+        long started = data.has("start_time") ? data.get("start_time").getAsLong() : 0;
+        int refreshes = data.has("refresh_count") ? data.get("refresh_count").getAsInt() : 0;
+        return switch (mode) {
+            case "specific" -> new OrgFakePlayerActions.Librarian(jobSite, data.get("min_level").getAsInt(),
+                    data.get("max_price").getAsInt(), null, null, null, started, refreshes);
+            case "any", "missing" -> {
+                OrgLibrarianSearch.PriceLevel price = OrgLibrarianSearch.PriceLevel.valueOf(data.get("price").getAsString().toUpperCase(java.util.Locale.ROOT));
+                BlockPos from = mode.equals("missing") ? position(data.getAsJsonObject("from")) : null;
+                BlockPos to = mode.equals("missing") ? position(data.getAsJsonObject("to")) : null;
+                yield new OrgFakePlayerActions.Librarian(jobSite, -1, -1, price, from, to, started, refreshes);
+            }
+            default -> throw new IllegalArgumentException("Unknown librarian search mode: " + mode);
+        };
+    }
+
+    private static JsonObject position(BlockPos pos) {
+        JsonObject data = new JsonObject();
+        data.addProperty("x", pos.getX());
+        data.addProperty("y", pos.getY());
+        data.addProperty("z", pos.getZ());
+        return data;
+    }
+
+    private static BlockPos position(JsonObject pos) {
+        return new BlockPos(pos.get("x").getAsInt(), pos.get("y").getAsInt(), pos.get("z").getAsInt());
     }
 
     static OrgFakePlayerActions.Filter filter(String expression, CommandBuildContext access) throws CommandSyntaxException {

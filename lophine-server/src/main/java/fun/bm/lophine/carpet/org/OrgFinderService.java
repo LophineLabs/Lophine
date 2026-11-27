@@ -31,6 +31,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
+import net.minecraft.world.level.block.entity.BrushableBlockEntity;
+import net.minecraft.world.level.block.entity.CampfireBlockEntity;
+import net.minecraft.world.level.block.entity.LecternBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.material.PushReaction;
@@ -242,7 +245,16 @@ final class OrgFinderService {
             output = carpet.script.external.ScarpetRuntime.captureNativeFunction(body -> OrgFinderService.output(player, body));
             nextOwned = carpet.script.external.ScarpetRuntime.captureNativeConsumer(owner -> {
                 try {
-                    Component progress = kind == Kind.BLOCK ? OrgFinderText.finder("block.progress", this.label, OrgFinderText.progress(visited, bounds.size())) : null;
+                    Component progress = switch (kind) {
+                        case BLOCK -> OrgFinderText.finder("block.progress", this.label, OrgFinderText.progress(visited, bounds.size()));
+                        case ITEM -> {
+                            long width = (bounds.maxX() >> 4) - (bounds.minX() >> 4) + 1L;
+                            long completed = ((chunkZ - (bounds.minZ() >> 4)) * width) + chunkX - (bounds.minX() >> 4);
+                            long total = width * ((bounds.maxZ() >> 4) - (bounds.minZ() >> 4) + 1L);
+                            yield OrgFinderText.finder("item.progress", this.label, OrgFinderText.progress(completed, total));
+                        }
+                        default -> null;
+                    };
                     boolean notice = !warned && System.nanoTime() - started > (kind == Kind.BLOCK ? 60 : 20) * 1_000_000_000L;
                     if (notice) warned = true;
                     if (progress == null && !notice) {
@@ -311,8 +323,17 @@ final class OrgFinderService {
                     if (cancelled) throw new CancellationException("Finder cancelled");
                     BlockPos pos = blockEntities.get(blockEntityCursor);
                     var entity = chunk.getBlockEntity(pos);
-                    if (entity instanceof Container inventory && !count(inventory, pos, entity instanceof BaseContainerBlockEntity named ? named.getName() : chunk.getBlockState(pos).getBlock().getName()))
-                        return;
+                    Container inventory = switch (entity) {
+                        case Container contents -> contents;
+                        case BrushableBlockEntity brushable when brushable.lootTable == null -> new SimpleContainer(brushable.getItem());
+                        case LecternBlockEntity lectern -> new SimpleContainer(lectern.getBook());
+                        case CampfireBlockEntity campfire -> new SimpleContainer(campfire.getItems().toArray(ItemStack[]::new));
+                        case null, default -> null;
+                    };
+                    if (inventory != null) {
+                        var title = entity instanceof BaseContainerBlockEntity named ? named.getName() : entity.getBlockState().getBlock().getName();
+                        if (!count(inventory, pos, title)) return;
+                    }
                     blockEntityCursor++;
                     if (System.nanoTime() >= deadline) return;
                 }

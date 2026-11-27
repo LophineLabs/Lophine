@@ -32,6 +32,9 @@ public final class CarpetNativeSpawns {
             var difficulty = TisCommandContinuations.then(placed, position -> ScarpetLootActors.original(supplied, net.minecraft.world.phys.Vec3.atCenterOf(position), () -> supplied.getCurrentDifficultyAt(position)));
             var initialized = TisCommandContinuations.then(difficulty, local -> ScarpetLootActors.original(admitted, elder.position(), () -> {
                 elder.finalizeSpawn(supplied, local, EntitySpawnReason.CONVERSION, null);
+                var from = new com.google.gson.JsonObject();
+                from.addProperty("fromType", "minecraft:guardian");
+                fun.bm.lophine.carpet.tis.TisLifetimeTracker.markSpawn(elder, "mob_conversion", from);
                 return (Void) null;
             }));
             var named = TisCommandContinuations.then(initialized, ignored -> ScarpetLootConditions.actor(guardian, () -> {
@@ -45,8 +48,11 @@ public final class CarpetNativeSpawns {
             var added = TisCommandContinuations.then(named, original -> ScarpetLootActors.original(original, elder.position(), () -> original.addFreshEntity(elder, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.LIGHTNING)));
             return TisCommandContinuations.then(added, accepted -> ScarpetLootConditions.actor(guardian, () -> {
                 // Paper cancellation retains the original guardian and its normal lightning response.
-                if (accepted) guardian.discard();
-                else rejected.run();
+                if (accepted) {
+                    fun.bm.lophine.carpet.tis.TisLifetimeTracker.removed(guardian, "mob_conversion",
+                            fun.bm.lophine.carpet.tis.TisLifetimeTracker.related(elder, "toType"));
+                    guardian.discard();
+                } else rejected.run();
                 return (Void) null;
             }));
         }));

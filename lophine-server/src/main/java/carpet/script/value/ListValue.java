@@ -12,8 +12,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static java.lang.Math.abs;
-
 public class ListValue extends AbstractListValue implements ContainerValueInterface {
     protected final List<Value> items;
 
@@ -241,10 +239,7 @@ public class ListValue extends AbstractListValue implements ContainerValueInterf
         if (idx >= 0 && idx < len) {
             return (int) idx;
         }
-        long range = abs(idx) / len;
-        idx += (range + 2) * len;
-        idx = idx % len;
-        return (int) idx;
+        return Math.floorMod(idx, len);
     }
 
     public static class ListConstructorValue extends ListValue {
@@ -273,6 +268,7 @@ public class ListValue extends AbstractListValue implements ContainerValueInterf
     public Value slice(long fromDesc, Long toDesc) {
         List<Value> items = getItems();
         int size = items.size();
+        if (size == 0) return ListValue.of();
         int from = normalizeIndex(fromDesc, size);
         if (toDesc == null) {
             return new ListValue(new ArrayList<>(getItems().subList(from, size)));

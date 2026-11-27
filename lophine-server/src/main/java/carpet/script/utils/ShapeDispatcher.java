@@ -297,15 +297,8 @@ public class ShapeDispatcher {
             this.b = (color >> 8 & 0xFF) / 255.0F;
             this.a = (color & 0xFF) / 255.0F;
 
-            debug = false;
-            if (options.containsKey("debug")) {
-                debug = options.get("debug").getBoolean();
-            }
-
-            seethrough = false;
-            if (options.containsKey("debug")) {
-                seethrough = options.get("seethrough").getBoolean();
-            }
+            debug = options.getOrDefault("debug", optional.get("debug")).getBoolean();
+            seethrough = options.getOrDefault("seethrough", optional.get("seethrough")).getBoolean();
 
             key = 0;
             followEntity = -1;
@@ -359,7 +352,7 @@ public class ShapeDispatcher {
 
         protected ParticleOptions replacementParticle(RegistryAccess regs) {
             boolean bg = fa == 0;
-            return new DustParticleOptions(ARGB.colorFromFloat(1.0f, (bg ? r : fr), (bg ? r : fr), (bg ? r : fr)), 1);
+            return new DustParticleOptions(ARGB.colorFromFloat(1.0f, bg ? r : fr, bg ? g : fg, bg ? b : fb), 1);
         }
 
 
@@ -382,6 +375,7 @@ public class ShapeDispatcher {
             hash ^= followEntity;
             hash *= 1099511628211L;
             hash ^= Boolean.hashCode(debug);
+            hash *= 1099511628211L;
             hash ^= Boolean.hashCode(seethrough);
             hash *= 1099511628211L;
             if (followEntity >= 0) {

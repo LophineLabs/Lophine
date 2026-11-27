@@ -93,9 +93,21 @@ final class OrgPlayerActionInfo {
             }
             case "librarian" -> {
                 var enchantment = action.enchantment();
-                int maximum = enchantment.value().getMaxLevel(), level = action.librarian().minLevel(), price = action.librarian().maxPrice();
-                int factor = enchantment.is(EnchantmentTags.DOUBLE_TRADE_PRICE) ? 2 : 1, min = (2 + level * 3) * factor, max = (6 + level * 13) * factor;
+                var spec = action.librarian();
                 lines.add(localized(key, "%s is farming enchanted book trades", name));
+                lines.add(localized(key + ".count", "Current refresh count: %s", spec.refreshCount()));
+                lines.add(localized(key + ".time", "Current time taken: %s", OrgLibrarianSearch.elapsedSeconds(spec.startTime()) + "s"));
+                if (spec.priceLevel() != null) {
+                    var mode = spec.from() == null ? localized(key + ".enchantment.any", "Any enchantment")
+                            : localized(key + ".enchantment.missing", "Enchantments not sold within %s to %s", spec.from().toShortString(), spec.to().toShortString());
+                    lines.add(localized(key + ".enchantment", "Enchantment: %s", mode));
+                    lines.add(localized(key + ".level", "Minimum accepted level: %s", localized(key + ".level.max", "Maximum enchantment level")));
+                    lines.add(localized(key + ".price.upper_limit", "Trade price upper limit: %s",
+                            localized(key + ".price." + spec.priceLevel().id(), spec.priceLevel().id())));
+                    break;
+                }
+                int maximum = enchantment.value().getMaxLevel(), level = spec.minLevel(), price = spec.maxPrice();
+                int factor = enchantment.is(EnchantmentTags.DOUBLE_TRADE_PRICE) ? 2 : 1, min = (2 + level * 3) * factor, max = (6 + level * 13) * factor;
                 lines.add(localized(key + ".enchantment", "Enchantment: %s", enchantment.value().description()));
                 lines.add(localized(key + (level == maximum ? ".max_level" : ".level"), "Minimum accepted level: %s", level).withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(localized(key + ".level.prompt", "This enchantment's max level is %s", maximum)))));
                 lines.add(localized(key + (price == min ? ".min_price" : ".price"), "Maximum accepted price: %s", price).withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(localized(key + ".price.prompt", "Price range: [%s-%s] (at min accepted level %s)", min, max, level)))));

@@ -29,8 +29,8 @@ public class SystemInfo {
             return name == null ? Value.NULL : new StringValue(name);
         });
         put("app_list", c -> ListValue.wrap(((CarpetScriptHost) c.host).scriptServer().modules.keySet().stream().filter(Objects::nonNull).map(StringValue::new)));
-        put("app_scope", c -> StringValue.of(c.host.isPerUser() ? "player" : "global"));
-        put("app_players", c -> ListValue.wrap(c.host.getUserList().stream().map(StringValue::new)));
+        put("app_scope", c -> StringValue.of(c.host.isPlayerApp() ? "player" : "global"));
+        put("app_players", c -> ListValue.wrap(c.host.getAppUsers().stream().map(StringValue::new)));
 
         put("world_name", c -> new StringValue(c.server().getWorldData().getLevelName()));
         put("world_seed", c -> new NumericValue(c.level().getSeed()));

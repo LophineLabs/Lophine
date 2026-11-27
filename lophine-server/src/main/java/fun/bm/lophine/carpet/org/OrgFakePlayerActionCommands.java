@@ -77,7 +77,14 @@ public final class OrgFakePlayerActionCommands {
         enchantment.executes(context -> librarian(context, -1, 64));
         enchantment.then(Commands.argument("level", IntegerArgumentType.integer(1)).then(Commands.argument("price", IntegerArgumentType.integer(1, 64)).executes(context -> librarian(context, IntegerArgumentType.getInteger(context, "level"), IntegerArgumentType.getInteger(context, "price")))));
         enchantment.then(Commands.literal("max").executes(context -> librarian(context, -1, 64)).then(Commands.argument("price", IntegerArgumentType.integer(1, 64)).executes(context -> librarian(context, -1, IntegerArgumentType.getInteger(context, "price")))));
-        player.then(Commands.literal("librarian").then(Commands.argument("jobSite", BlockPosArgument.blockPos()).then(enchantment)));
+        var any = Commands.literal("any");
+        for (var price : OrgLibrarianSearch.PriceLevel.values()) {
+            any.then(Commands.literal(price.id()).executes(context -> librarian(context, price, false))
+                    .then(Commands.literal("exclude").then(Commands.argument("from", BlockPosArgument.blockPos())
+                            .then(Commands.argument("to", BlockPosArgument.blockPos()).executes(context -> librarian(context, price, true))))));
+        }
+        player.then(Commands.literal("librarian").then(Commands.argument("jobSite", BlockPosArgument.blockPos())
+                .then(enchantment).then(Commands.literal("specific").then(enchantment)).then(any)));
         dispatcher.register(Commands.literal("playerAction").requires(source -> OrgUtilityCommands.permitted(source, GeneralCompatConfig.commandPlayerAction)).then(player));
     }
 
@@ -133,8 +140,27 @@ public final class OrgFakePlayerActionCommands {
 
     private static int librarian(CommandContext<CommandSourceStack> context, int level, int price) throws CommandSyntaxException {
         var enchantment = ResourceArgument.getEnchantment(context, "enchantment");
-        return assign(context, new OrgFakePlayerActions.Action("librarian", List.of(), 0, "", enchantment, false, false, false, Vec3.ZERO, Vec3.ZERO,
-                new OrgFakePlayerActions.Librarian(BlockPosArgument.getBlockPos(context, "jobSite"), level == -1 ? enchantment.value().getMaxLevel() : level, price)));
+        var spec = new OrgFakePlayerActions.Librarian(BlockPosArgument.getBlockPos(context, "jobSite"), level == -1 ? enchantment.value().getMaxLevel() : level, price);
+        return assignLibrarian(context, spec, enchantment);
+    }
+
+    private static int librarian(CommandContext<CommandSourceStack> context, OrgLibrarianSearch.PriceLevel price, boolean missing) throws CommandSyntaxException {
+        var from = missing ? BlockPosArgument.getBlockPos(context, "from") : null;
+        var to = missing ? BlockPosArgument.getBlockPos(context, "to") : null;
+        if (missing) {
+            try {
+                OrgFinderBounds.ofEntities(context.getSource().getLevel(), from, to);
+            } catch (OrgFinderBounds.TooBig failure) {
+                throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(Component.literal(failure.getMessage())).create();
+            }
+        }
+        return assignLibrarian(context, new OrgFakePlayerActions.Librarian(BlockPosArgument.getBlockPos(context, "jobSite"),
+                -1, -1, price, from, to, 0, 0), null);
+    }
+
+    private static int assignLibrarian(CommandContext<CommandSourceStack> context, OrgFakePlayerActions.Librarian spec,
+                                       net.minecraft.core.Holder<net.minecraft.world.item.enchantment.Enchantment> enchantment) throws CommandSyntaxException {
+        return assign(context, new OrgFakePlayerActions.Action("librarian", List.of(), 0, "", enchantment, false, false, false, Vec3.ZERO, Vec3.ZERO, spec));
     }
 
     private static int assign(CommandContext<CommandSourceStack> context, OrgFakePlayerActions.Action action) throws CommandSyntaxException {

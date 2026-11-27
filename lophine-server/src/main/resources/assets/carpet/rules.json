@@ -2083,6 +2083,24 @@
     "source": "Carpet-TIS-Addition/src/main/java/carpettisaddition/CarpetTISAdditionSettings.java:179"
   },
   {
+    "name": "dropperNoItemCost",
+    "project": "Carpet TIS Addition",
+    "type": "boolean",
+    "description": "",
+    "extra": [],
+    "categories": [
+      "TIS",
+      "dispenser",
+      "creative"
+    ],
+    "options": [
+      "true",
+      "false"
+    ],
+    "strict": true,
+    "source": "Carpet-TIS-Addition/src/main/java/carpettisaddition/CarpetTISAdditionSettings.java:184"
+  },
+  {
     "name": "dustTrapdoorReintroduced",
     "project": "Carpet TIS Addition",
     "type": "boolean",
@@ -3189,7 +3207,7 @@
   {
     "name": "redstoneDustRandomUpdateOrder",
     "project": "Carpet TIS Addition",
-    "type": "boolean",
+    "type": "String",
     "description": "",
     "extra": [],
     "categories": [
@@ -3197,10 +3215,13 @@
       "creative"
     ],
     "options": [
+      "false",
       "true",
-      "false"
+      "none",
+      "shuffle",
+      "random_pos"
     ],
-    "strict": true,
+    "strict": false,
     "source": "Carpet-TIS-Addition/src/main/java/carpettisaddition/CarpetTISAdditionSettings.java:592"
   },
   {
@@ -3505,6 +3526,23 @@
     ],
     "strict": true,
     "source": "Carpet-TIS-Addition/src/main/java/carpettisaddition/CarpetTISAdditionSettings.java:730"
+  },
+  {
+    "name": "tickSprintZeroMeansStop",
+    "project": "Carpet TIS Addition",
+    "type": "boolean",
+    "description": "Treat a bare tick sprint command or a duration that rounds to zero as tick sprint stop. tickCommandCarpetfied also enables this shortcut.",
+    "extra": [],
+    "categories": [
+      "TIS",
+      "command"
+    ],
+    "options": [
+      "true",
+      "false"
+    ],
+    "strict": true,
+    "source": "Carpet-TIS-Addition/src/main/java/carpettisaddition/CarpetTISAdditionSettings.java"
   },
   {
     "name": "tickCommandCarpetfied",
@@ -8293,6 +8331,23 @@
     "source": "Carpet-AMS-Addition/src/main/java/carpetamsaddition/CarpetAMSAdditionSettings.java:608"
   },
   {
+    "name": "blockHardnessSyncProtocol",
+    "project": "Carpet AMS Addition",
+    "type": "boolean",
+    "description": "Synchronize server block hardness with AMSP v2 clients",
+    "extra": [],
+    "categories": [
+      "AMS",
+      "AMS_network"
+    ],
+    "options": [
+      "true",
+      "false"
+    ],
+    "strict": true,
+    "source": "Carpet-AMS-Addition/src/main/java/carpetamsaddition/CarpetAMSAdditionSettings.java:608"
+  },
+  {
     "name": "commandAmspDebug",
     "project": "Carpet AMS Addition",
     "type": "String",
@@ -8389,6 +8444,150 @@
     ],
     "strict": true,
     "source": "Carpet-AMS-Addition/src/main/java/carpetamsaddition/CarpetAMSAdditionSettings.java:632"
+  },
+  {
+    "name": "incompatibleNetworkProtocolWarningDisabled",
+    "project": "Carpet AMS Addition",
+    "type": "boolean",
+    "description": "Suppress incompatible AMSP client warnings.",
+    "extra": [],
+    "categories": [
+      "AMS",
+      "AMS_NETWORK"
+    ],
+    "options": [
+      "true",
+      "false"
+    ],
+    "strict": true,
+    "source": "Carpet-AMS-Addition/src/main/java/carpetamsaddition/CarpetAMSAdditionSettings.java"
+  },
+  {
+    "name": "commandLocationTag",
+    "project": "Carpet AMS Addition",
+    "type": "String",
+    "description": "Index marked signs and browse their coordinates with /amsloc.",
+    "extra": [],
+    "categories": [
+      "AMS",
+      "command",
+      "feature"
+    ],
+    "options": [
+      "false",
+      "true",
+      "ops",
+      "0",
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "strict": true,
+    "source": "Carpet-AMS-Addition/src/main/java/carpetamsaddition/CarpetAMSAdditionSettings.java"
+  },
+  {
+    "name": "commandNoteblockChunkloader",
+    "project": "Carpet AMS Addition",
+    "type": "String",
+    "description": "Permission for /blockChunkloader noteblock. Set to false to disable the configurable loader.",
+    "extra": [],
+    "categories": [
+      "AMS",
+      "command"
+    ],
+    "options": [
+      "false",
+      "true",
+      "ops",
+      "0",
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "strict": true,
+    "source": "Carpet-AMS-Addition/src/main/java/carpetamsaddition/CarpetAMSAdditionSettings.java"
+  },
+  {
+    "name": "commandPistonChunkloader",
+    "project": "Carpet AMS Addition",
+    "type": "String",
+    "description": "Permission for /blockChunkloader piston. Set to false to disable the configurable loader.",
+    "extra": [],
+    "categories": [
+      "AMS",
+      "command"
+    ],
+    "options": [
+      "false",
+      "true",
+      "ops",
+      "0",
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "strict": true,
+    "source": "Carpet-AMS-Addition/src/main/java/carpetamsaddition/CarpetAMSAdditionSettings.java"
+  },
+  {
+    "name": "commandBellChunkloader",
+    "project": "Carpet AMS Addition",
+    "type": "String",
+    "description": "Permission for /blockChunkloader bell. Set to false to disable the configurable loader.",
+    "extra": [],
+    "categories": [
+      "AMS",
+      "command"
+    ],
+    "options": [
+      "false",
+      "true",
+      "ops",
+      "0",
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "strict": true,
+    "source": "Carpet-AMS-Addition/src/main/java/carpetamsaddition/CarpetAMSAdditionSettings.java"
+  },
+  {
+    "name": "destroyBlockPosWarningDisabled",
+    "project": "Carpet AMS Addition",
+    "type": "boolean",
+    "description": "Suppress the block break position mismatch diagnostic.",
+    "extra": [],
+    "categories": [
+      "AMS",
+      "feature"
+    ],
+    "options": [
+      "true",
+      "false"
+    ],
+    "strict": true,
+    "source": "Carpet-AMS-Addition/src/main/java/carpetamsaddition/CarpetAMSAdditionSettings.java"
+  },
+  {
+    "name": "realPlayerControlDisabled",
+    "project": "Carpet AMS Addition",
+    "type": "boolean",
+    "description": "Prevent the Carpet player command from controlling real players.",
+    "extra": [],
+    "categories": [
+      "AMS",
+      "feature"
+    ],
+    "options": [
+      "true",
+      "false"
+    ],
+    "strict": true,
+    "source": "Carpet-AMS-Addition/src/main/java/carpetamsaddition/CarpetAMSAdditionSettings.java"
   },
   {
     "name": "noteBlockChunkLoader",

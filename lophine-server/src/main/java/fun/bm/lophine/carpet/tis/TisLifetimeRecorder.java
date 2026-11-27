@@ -46,8 +46,9 @@ final class TisLifetimeRecorder {
         TisRaycastCommand.feedback(source, "Lifetime recorder: " + (config.enabled ? "enabled" : "disabled") + ", " + state);
         if (hasPermission(source)) {
             TisRaycastCommand.feedback(source, "Config: " + CONFIG.toAbsolutePath() + "; output: " + config.outputDirectory
-                    + "; sampleRate=" + config.sampleRate + "; maxRecords=" + config.maxOutputRecordCount
-                    + "; maxFileBytes=" + config.maxOutputFileBytes);
+                    + "; sampleRate=" + (active == null ? config.sampleRate : active.sampleRate)
+                    + "; maxRecords=" + (active == null ? config.maxOutputRecordCount : active.maxRecords)
+                    + "; maxFileBytes=" + (active == null ? config.maxOutputFileBytes : active.maxBytes));
             if (active != null)
                 TisRaycastCommand.feedback(source, "File: " + active.path.toAbsolutePath() + "; records="
                         + active.records.get() + "; bytes=" + active.bytes.get() + "; queued=" + active.queue.size()
@@ -62,9 +63,6 @@ final class TisLifetimeRecorder {
             validate(next);
             config = next;
             save();
-            stop(source);
-            int id = TisLifetimeTracker.activeTrackId();
-            if (id >= 0) start(source, id);
             TisRaycastCommand.feedback(source, "Lifetime recorder configuration reloaded");
             return 1;
         } catch (Exception failure) {
@@ -80,8 +78,7 @@ final class TisLifetimeRecorder {
         }
         config.enabled = enabled;
         save();
-        if (enabled && TisLifetimeTracker.activeTrackId() >= 0) start(source, TisLifetimeTracker.activeTrackId());
-        else stop(source);
+        if (!enabled) stop(source);
         return 1;
     }
 
@@ -103,7 +100,7 @@ final class TisLifetimeRecorder {
                 }
             }
             String filename = "rec_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + "_" + id + ".jsonl";
-            Writer next = new Writer(folder.resolve(filename), settings.maxOutputRecordCount, settings.maxOutputFileBytes);
+            Writer next = new Writer(folder.resolve(filename), id, settings.maxOutputRecordCount, settings.maxOutputFileBytes, settings.sampleRate);
             writer = next;
             state = "running";
             next.thread.start();
@@ -130,18 +127,16 @@ final class TisLifetimeRecorder {
                 + " records, " + current.bytes.get() + " bytes");
     }
 
-    static void add(String json) {
+    static void add(int trackId, String json) {
         Writer current = writer;
-        Config settings = config;
-        if (current == null || !current.working.get() || !settings.enabled) return;
-        // Preserve the pinned implementation's comparison when sampleRate is below one.
-        if (settings.sampleRate < 1.0 && ThreadLocalRandom.current().nextFloat() < settings.sampleRate) return;
+        if (current == null || current.trackId != trackId || !current.working.get()) return;
+        if (current.sampleRate < 1.0 && ThreadLocalRandom.current().nextDouble() >= current.sampleRate) return;
         if (!current.queue.offer(json)) current.dropped.incrementAndGet();
     }
 
-    static boolean isRecording() {
+    static boolean isRecording(int trackId) {
         Writer current = writer;
-        return config.enabled && current != null && current.working.get();
+        return current != null && current.trackId == trackId && current.working.get();
     }
 
     private static Config load() {
@@ -194,8 +189,10 @@ final class TisLifetimeRecorder {
 
     private static final class Writer {
         final Path path;
+        final int trackId;
         final long maxRecords;
         final long maxBytes;
+        final double sampleRate;
         final AtomicLong records = new AtomicLong();
         final AtomicLong bytes = new AtomicLong();
         final AtomicLong dropped = new AtomicLong();
@@ -203,10 +200,12 @@ final class TisLifetimeRecorder {
         final ArrayBlockingQueue<String> queue = new ArrayBlockingQueue<>(10000);
         final Thread thread;
 
-        Writer(Path path, long maxRecords, long maxBytes) {
+        Writer(Path path, int trackId, long maxRecords, long maxBytes, double sampleRate) {
             this.path = path;
+            this.trackId = trackId;
             this.maxRecords = maxRecords;
             this.maxBytes = maxBytes;
+            this.sampleRate = sampleRate;
             this.thread = Thread.ofVirtual().name("tiscm-lifetime-record-writer").unstarted(this::write);
         }
 

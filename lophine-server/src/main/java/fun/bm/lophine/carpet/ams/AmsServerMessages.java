@@ -60,8 +60,12 @@ public final class AmsServerMessages {
 
     public static CompletableFuture<Void> phantomSpawnAsync(final MinecraftServer server, final String playerName, final double x, final double y, final double z) {
         if (!GeneralCompatConfig.phantomSpawnAlert) return CompletableFuture.completedFuture(null);
-        String coordinates = x + ", " + y + ", " + z;
-        return AmsNativeCommandEffects.nativeReceipt(server, () -> broadcast(server, Component.literal(serverText("rule.phantomSpawnAlert.msg", playerName, coordinates).getString())));
+        Component player = Component.literal(playerName).withStyle(ChatFormatting.YELLOW);
+        Component coordinates = Component.literal("@ ").withStyle(ChatFormatting.YELLOW)
+                .append(Component.literal("[ " + x + ", " + y + ", " + z + " ]").withStyle(ChatFormatting.GREEN));
+        Component message = Component.literal("<phantomSpawnAlert> ").withStyle(ChatFormatting.AQUA)
+                .append(serverText("rule.phantomSpawnAlert.msg", player, coordinates).withStyle(ChatFormatting.LIGHT_PURPLE));
+        return AmsNativeCommandEffects.nativeReceipt(server, () -> broadcast(server, message));
     }
 
     private static MutableComponent serverText(String key, Object... args) {

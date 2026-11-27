@@ -906,12 +906,15 @@ carpettisaddition:
         desc: "反混淆崩潰報告中的堆疊追蹤"
       dispenserNoItemCost:
         name: "發射器不消耗物品"
-        desc: "發射器與投擲器觸發時不會減少內部的物品堆疊數量"
-        extra:
-          '0': "無論是投擲或使用物品皆不消耗，但投擲器向容器傳輸物品時仍會消耗"
+        desc: 發射器啟動時不消耗物品
       dispensersFireDragonBreath:
         name: "發射器發射龍之吐息"
         desc: "發射器可發射龍之吐息以產生龍之吐息藥水效果雲"
+      dropperNoItemCost:
+        name: 投擲器不消耗物品
+        desc: 投擲器將物品丟到世界時不消耗物品
+        extra:
+          '0': 向容器傳輸物品仍會消耗
       dustTrapdoorReintroduced:
         name: "重新引入紅石粉地板門迴圈"
         desc: "重新引入由紅石粉與地板門組成的瞬時更新循環器"
@@ -1310,6 +1313,7 @@ carpettisaddition:
         extra:
           '0': "有助於測試你的紅石裝置是否具有位置相依性"
           '1': "在規則 fastRedstoneDust 啟用時無效"
+          '2': 模式包括 none（false）、shuffle（true）和 random_pos
       redstoneDustRepeaterComparatorIgnoreUpwardsStateUpdate:
         name: "紅石忽略下方狀態更新"
         desc: "讓紅石粉、紅石中繼器與紅石比較器忽略來自下方的狀態更新"
